@@ -41,7 +41,7 @@ documented” does not prove that a project cannot be extended to support it.
 | Evidence content hashes | Yes | No | Not documented | Not documented | Not documented | Not documented |
 | Per-source prompt-injection flags | Yes | No | Not documented | Not documented | Not documented | Not documented |
 | Public-IP and redirect revalidation | Yes | Service boundary | Not documented | Not documented | Egress controls documented | Not documented |
-| Reproducible evaluation path | Offline + live harness | No QA harness | Project dependent | DeepResearch Bench | Published datasets | Not documented |
+| Reproducible evaluation path | Offline + retrieval + generation harness | No QA harness | Project dependent | DeepResearch Bench | Published datasets | Not documented |
 
 ## What EvidenceMesh can claim today
 
@@ -71,6 +71,11 @@ metrics because DDGS failed every call in the managed test environment. The
 federation preserved partial results but inherited the failed provider's
 15-second deadline. This is a reliability finding, not evidence of competitive
 superiority.
+
+Phase 4 removes DDGS from the recommended default, promotes the pinned private
+SearXNG path and adds a controlled model-generation harness. Those are product
+and evaluation improvements, not evidence that EvidenceMesh already beats the
+complete agents in this table.
 
 ## Fair next comparison
 

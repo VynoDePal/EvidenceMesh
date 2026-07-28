@@ -11,3 +11,4 @@ dist/
 *.py[cod]
 *.sqlite3
 benchmarks/results/*.local.*
+benchmarks/private-results/

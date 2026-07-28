@@ -4,6 +4,9 @@ Status: **locked for the Phase 2 pilot**
 
 Snapshot date: **2026-07-28**
 
+This is the historical Phase 2/3 protocol. The current recommended SearXNG
+profile is defined in [protocol v2](benchmark-protocol-v2.md).
+
 ## Decision
 
 EvidenceMesh is a retrieval layer, while several projects commonly described as

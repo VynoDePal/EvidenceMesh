@@ -1,0 +1,150 @@
+name: Phase 4 SearXNG Benchmark
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/phase4-benchmark.yml
+      - benchmarks/run_live_retrieval.py
+      - compose.yaml
+      - docker/searxng/settings.yml
+      - src/evidencemesh/providers/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase4-benchmark-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  retrieval-200:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Detect an already committed result
+        id: benchmark-state
+        shell: bash
+        run: |
+          if [[ -f benchmarks/results/simpleqa_retrieval_phase4_2026-07-28.json ]]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        if: steps.benchmark-state.outputs.run == 'true'
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install benchmark environment
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Start checksum-pinned SearXNG
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: docker compose up --detach --wait --wait-timeout 180 searxng
+
+      - name: Verify SearXNG image digest
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          docker image inspect \
+            "searxng/searxng:2026.7.26-b060c780d@sha256:d0aaeb14880e6e92bde1518fcc7261e995783367d63d95203383607bef9c6516" \
+            --format '{{json .RepoDigests}}' |
+            grep --fixed-strings \
+              "sha256:d0aaeb14880e6e92bde1518fcc7261e995783367d63d95203383607bef9c6516"
+
+      - name: Run the interleaved 200-case benchmark
+        if: steps.benchmark-state.outputs.run == 'true'
+        env:
+          EVIDENCEMESH_BENCHMARK_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+          EVIDENCEMESH_SEARXNG_URL: http://127.0.0.1:8888
+          EVIDENCEMESH_CACHE_PATH: /tmp/evidencemesh-phase4-cache.sqlite3
+        run: |
+          uv run python benchmarks/run_live_retrieval.py \
+            --simpleqa \
+            --sample-size 200 \
+            --seed 0 \
+            --profile federated=searxng,wikipedia \
+            --profile searxng=searxng \
+            --profile wikipedia=wikipedia \
+            --provider-config searxng=docker/searxng/settings.yml \
+            --provider-image \
+              searxng=searxng/searxng:2026.7.26-b060c780d@sha256:d0aaeb14880e6e92bde1518fcc7261e995783367d63d95203383607bef9c6516 \
+            --max-results 10 \
+            --concurrency 1 \
+            --request-timeout 15 \
+            --provider-failure-threshold 3 \
+            --provider-recovery-seconds 60 \
+            --network-region "GitHub-hosted ubuntu-latest; physical region not exposed" \
+            --progress \
+            --output /tmp/simpleqa_retrieval_phase4_2026-07-28.json
+
+      - name: Validate benchmark provenance
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          uv run python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("/tmp/simpleqa_retrieval_phase4_2026-07-28.json")
+          report = json.loads(path.read_text(encoding="utf-8"))
+          profiles = {
+              entry["name"]: entry["providers"]
+              for entry in report["protocol"]["profiles"]
+          }
+          provenance = report["protocol"]["provider_configuration"]["searxng"]
+          observations = report["protocol"]["provider_observations"]["searxng"]
+          expected = (
+              report["schema_version"] == 4
+              and report["sample"]["count"] == 200
+              and profiles["federated"] == ["searxng", "wikipedia"]
+              and profiles["searxng"] == ["searxng"]
+              and len(provenance["config_sha256"]) == 64
+              and "@sha256:" in provenance["image"]
+              and observations["logical_calls"] == 200
+          )
+          if not expected:
+              raise AssertionError(json.dumps(report["protocol"], indent=2, sort_keys=True))
+          summary = [
+              "## Phase 4 SearXNG retrieval",
+              "",
+              "| Profile | Availability | Gold URL @10 | Answer coverage @10 | p95 ms |",
+              "|---|---:|---:|---:|---:|",
+          ]
+          for name in ("federated", "searxng", "wikipedia"):
+              metrics = report["metrics"][name]
+              summary.append(
+                  f"| {name} | {metrics['availability']['rate']} | "
+                  f"{metrics['gold_url_hit_at_10']['rate']} | "
+                  f"{metrics['answer_coverage_at_10']['rate']} | "
+                  f"{metrics['latency_ms']['p95']} |"
+              )
+          with Path("/tmp/phase4-summary.md").open("w", encoding="utf-8") as output:
+              output.write("\n".join(summary) + "\n")
+          PY
+          cat /tmp/phase4-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Show SearXNG logs on failure
+        if: failure() && steps.benchmark-state.outputs.run == 'true'
+        run: docker compose logs --no-color searxng
+
+      - name: Stop SearXNG
+        if: always() && steps.benchmark-state.outputs.run == 'true'
+        run: docker compose down --volumes
+
+      - name: Upload raw report
+        if: always() && steps.benchmark-state.outputs.run == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: phase4-searxng-${{ github.event.pull_request.head.sha || github.sha }}
+          path: /tmp/simpleqa_retrieval_phase4_2026-07-28.json
+          if-no-files-found: warn
+          retention-days: 14

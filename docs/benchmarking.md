@@ -14,8 +14,10 @@ suite cannot be bit-for-bit deterministic because the web changes.
 
 A one-question [zero-key smoke run](../benchmarks/results/live_smoke_2026-07-28.md)
 is committed only as an interface/connectivity check; it is not included in any
-quality claim. The locked [benchmark protocol v1](benchmark-protocol-v1.md)
-defines the comparative Phase 2 pilot and the publication rules.
+quality claim. The historical [benchmark protocol v1](benchmark-protocol-v1.md)
+defines the Phase 2/3 DDGS runs. The locked
+[benchmark protocol v2](benchmark-protocol-v2.md) defines the Phase 4
+self-hosted SearXNG run and controlled answer-generation track.
 
 The first
 [30-row SimpleQA retrieval pilot](../benchmarks/results/simpleqa_retrieval_pilot_2026-07-28.md)
@@ -76,19 +78,28 @@ Every published result must include:
 - hit metrics with 95% Wilson intervals, latency percentiles and failure rates;
 - raw machine-readable output.
 
-The default zero-key pilot is:
+The current default zero-key retrieval profile is:
 
 ```bash
 uv run python benchmarks/run_live_retrieval.py \
   --simpleqa \
   --sample-size 30 \
   --seed 0 \
+  --profile federated=searxng,wikipedia \
+  --profile searxng=searxng \
+  --profile wikipedia=wikipedia \
+  --provider-config searxng=docker/searxng/settings.yml \
+  --provider-image \
+    searxng=searxng/searxng:2026.7.26-b060c780d@sha256:d0aaeb14880e6e92bde1518fcc7261e995783367d63d95203383607bef9c6516 \
   --max-results 10 \
-  --concurrency 3 \
+  --concurrency 1 \
   --request-timeout 15 \
   --progress \
   --output benchmarks/results/simpleqa_retrieval_pilot_2026-07-28.json
 ```
+
+The dedicated Phase 4 workflow runs the same profile over 200 rows on a
+GitHub-hosted runner, verifies the image digest and uploads the raw report.
 
 For the Phase 3 reliability run:
 
@@ -106,10 +117,21 @@ uv run python benchmarks/run_live_retrieval.py \
   --output benchmarks/results/simpleqa_retrieval_phase3_2026-07-28.json
 ```
 
+## End-to-end generation
+
+`benchmarks/run_end_to_end.py` now fixes the evidence-to-answer prompt and
+records model, budget, latency, usage and citation telemetry. Its public report
+contains hashes rather than benchmark text; an optional gitignored bundle
+carries the text for separate official grading. See the
+[end-to-end guide](end-to-end-benchmark.md).
+
+The runner intentionally produces no correctness score. That prevents local
+string matching from being presented as official SimpleQA accuracy.
+
 ## Planned standard evaluations
 
-- SimpleQA for checksum-pinned source recall and, separately, answer accuracy
-  with the official judge.
+- SimpleQA answer accuracy with the official judge over the new generation
+  bundle.
 - BrowseComp for hard, multi-hop browsing with a fixed client model.
 - DeepResearch Bench FACT/RACE for citation and report quality.
 

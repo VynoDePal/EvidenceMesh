@@ -45,8 +45,9 @@ or a formal security certification.
   its background thread.
 - PDF and HTML parser dependencies remain an attack surface; production
   deployments still need container CPU and memory limits.
-- Python and SearXNG container base tags are not digest-pinned, so image
-  contents can drift even though Python dependencies use the frozen lock.
+- The SearXNG image is digest-pinned. The Python container base tag is not, so
+  its contents can still drift even though Python dependencies use the frozen
+  lock.
 - Prompt-injection and source-quality signals are heuristic, not guarantees.
 - No independent third-party security audit has been completed.
 

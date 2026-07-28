@@ -10,6 +10,7 @@ from benchmarks.run_live_retrieval import (
     Profile,
     ProviderSnapshot,
     aggregate_profile,
+    aggregate_provider_observations,
     answer_covered,
     extract_source_urls,
     first_answer_rank,
@@ -21,6 +22,7 @@ from benchmarks.run_live_retrieval import (
     parse_jsonl,
     parse_profiles,
     parse_simpleqa,
+    provider_configuration_manifest,
     provider_endpoint_manifest,
     rate_metric,
     select_sample,
@@ -146,7 +148,7 @@ def test_parse_jsonl_validates_and_canonicalises() -> None:
 
 def test_profile_parser_defaults_and_rejects_duplicates() -> None:
     profiles = parse_profiles(None)
-    assert profiles[0] == Profile("federated", ("ddgs", "wikipedia"))
+    assert profiles[0] == Profile("federated", ("searxng", "wikipedia"))
     assert parse_profiles(["custom=wikipedia,ddgs,wikipedia"])[0].providers == (
         "wikipedia",
         "ddgs",
@@ -165,6 +167,25 @@ def test_provider_endpoint_manifest_is_explicit_and_secret_free() -> None:
     manifest = provider_endpoint_manifest(settings, ("ddgs", "wikipedia"))
     assert manifest["wikipedia"] == "https://{language}.wikipedia.test/w/api.php"
     assert "runtime" in manifest["ddgs"]
+
+
+def test_provider_configuration_manifest_hashes_files(tmp_path) -> None:
+    config = tmp_path / "settings.yml"
+    config.write_text("search:\n  safe_search: 1\n", encoding="utf-8")
+    manifest = provider_configuration_manifest(
+        ("searxng", "wikipedia"),
+        config_values=[f"searxng={config}"],
+        image_values=["searxng=searxng/searxng:tag@sha256:digest"],
+    )
+    assert manifest["searxng"]["config_file"] == "settings.yml"
+    assert len(manifest["searxng"]["config_sha256"]) == 64
+    assert "@sha256:" in manifest["searxng"]["image"]
+    with pytest.raises(ValueError, match="not active"):
+        provider_configuration_manifest(
+            ("wikipedia",),
+            config_values=None,
+            image_values=["searxng=image"],
+        )
 
 
 def test_rank_metrics() -> None:
@@ -211,6 +232,33 @@ def test_profiles_share_provider_snapshots() -> None:
     assert result["provider_attempt_count"] == 1
     assert result["provider_skip_count"] == 0
     assert result["latency_ms"] == 12.0
+
+
+def test_provider_observations_record_searxng_upstream_failures() -> None:
+    snapshots = [
+        ProviderSnapshot(
+            row_id="q1",
+            provider="searxng",
+            latency_ms=10,
+            results=(),
+            error=None,
+            diagnostics={"unresponsive_engines": ["brave"]},
+        ),
+        ProviderSnapshot(
+            row_id="q2",
+            provider="searxng",
+            latency_ms=10,
+            results=(),
+            error="failed",
+            attempted=True,
+            failure_kind="provider_error",
+        ),
+    ]
+    observations = aggregate_provider_observations(snapshots)["searxng"]
+    assert observations["logical_calls"] == 2
+    assert observations["failed_attempts"] == 1
+    assert observations["calls_with_unresponsive_upstreams"] == 1
+    assert observations["unresponsive_upstream_engines"] == ["brave"]
 
 
 def test_circuit_open_snapshot_is_reported_as_a_skipped_attempt() -> None:

@@ -5,15 +5,26 @@
 ### SearXNG
 
 EvidenceMesh calls `/search?format=json`. The included Compose configuration is
-for local development. It pins SearXNG `2026.7.26-b060c780d` and its
-multi-platform image digest, enables JSON explicitly, and bounds upstream engine
-requests to eight seconds. Public SearXNG instances can throttle or disable
-JSON, so a private instance is recommended.
+the recommended zero-key general-web path. It pins SearXNG
+`2026.7.26-b060c780d` and its multi-platform image digest, enables JSON
+explicitly, and retains a small zero-key engine set for web, news, science and
+code searches. General web uses `brave`, `duckduckgo` and `wikipedia`; the
+complete list is reviewable in the settings file. Upstream requests are bounded
+at eight seconds. Public SearXNG instances can throttle or disable JSON; do not
+load-test them. Run the included private instance.
+
+If every result is absent while SearXNG reports unresponsive upstream engines,
+the adapter returns a provider failure. When results survive a partial upstream
+failure, the raw provider records retain the unavailable engine names for
+benchmark diagnostics.
 
 ### DDGS
 
-DDGS is a keyless fallback. Upstream engines can rate-limit automated traffic;
-failures are returned as partial-provider warnings.
+DDGS is an opt-in experimental fallback, not a default. Upstream engines can
+rate-limit automated traffic and behavior can differ by network. Phase 2 and
+Phase 3 observed persistent failure in one managed environment, so enabling it
+requires an explicit `EVIDENCEMESH_PROVIDERS` value. Failures remain isolated as
+partial-provider warnings.
 
 ### Wikipedia
 
@@ -43,7 +54,8 @@ unlimited free backend. Every HTTP provider response is streamed through a
 
 Each provider has an independent, process-local circuit breaker. Operational
 exceptions and EvidenceMesh request deadlines count as failed attempts; empty
-but valid result lists count as successful responses. The default circuit opens
+but valid result lists count as successful responses except when SearXNG
+explicitly reports unavailable upstream engines. The default circuit opens
 after three consecutive failures, rejects later network attempts immediately
 for 60 seconds, and then permits one half-open recovery probe. A success closes
 the circuit. Cached search results are read before circuit admission, so useful

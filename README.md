@@ -23,7 +23,8 @@ Most search MCPs are thin wrappers around one paid API. Most deep-research
 projects bundle a particular model, search service and report writer.
 EvidenceMesh separates those concerns:
 
-- **Free core:** self-hosted SearXNG, DDGS, Wikipedia and Crossref.
+- **Free core:** self-hosted SearXNG, Wikipedia and Crossref; DDGS is an
+  environment-sensitive opt-in adapter.
 - **Provider federation:** reciprocal-rank fusion across independent result lists.
 - **Evidence, not hidden answers:** quotations, retrieval time, content hash,
   provenance signals and risk flags.
@@ -52,7 +53,8 @@ pages never become model instructions.
 ## Quick start
 
 Requirements: Python 3.11+ and [uv](https://docs.astral.sh/uv/). Docker is
-optional but recommended for the default SearXNG provider.
+required for the recommended free general-web path because it runs the private
+default SearXNG service.
 
 ```bash
 git clone https://github.com/VynoDePal/EvidenceMesh.git
@@ -122,7 +124,7 @@ research workflow.
 | Provider | Key required | Default | Profiles |
 |---|---:|---:|---|
 | SearXNG | No | Yes | Web, news, academic, code |
-| DDGS | No | Yes | Web, news, academic, code |
+| DDGS | No | No | Web, news, academic, code |
 | Wikipedia | No | Yes | Web, academic |
 | Crossref | No | Yes | Academic |
 | Brave | Yes | No | Web, news, academic, code |
@@ -133,7 +135,7 @@ research workflow.
 Select providers with:
 
 ```bash
-export EVIDENCEMESH_PROVIDERS=searxng,ddgs,wikipedia,crossref
+export EVIDENCEMESH_PROVIDERS=searxng,wikipedia,crossref
 export EVIDENCEMESH_SEARXNG_URL=http://127.0.0.1:8888
 export EVIDENCEMESH_PROVIDER_FAILURE_THRESHOLD=3
 export EVIDENCEMESH_PROVIDER_RECOVERY_SECONDS=60
@@ -190,7 +192,9 @@ uv run python benchmarks/run_live_retrieval.py \
 The offline benchmark tests algorithms, not real-world search quality. Live
 results must record provider configuration, date, dataset sample and hardware.
 See the [benchmark methodology](docs/benchmarking.md), the
-[locked protocol](docs/benchmark-protocol-v1.md), the
+[Phase 2/3 protocol](docs/benchmark-protocol-v1.md), the
+[locked Phase 4 protocol](docs/benchmark-protocol-v2.md), the
+[end-to-end guide](docs/end-to-end-benchmark.md), the
 [competitive snapshot](docs/competitive-benchmark.md) and the committed
 [offline v1 result](benchmarks/results/offline_v1.md). A
 [zero-key live smoke test](benchmarks/results/live_smoke_2026-07-28.md) records
@@ -202,6 +206,10 @@ release claims. The
 [200-row Phase 3 reliability run](benchmarks/results/simpleqa_retrieval_phase3_2026-07-28.md)
 shows the circuit breaker reducing sustained federated p95 latency to 888 ms,
 but only 70.5% availability; the release decision therefore remains no-go.
+Phase 4 replaces that measured DDGS dependency with the private SearXNG
+default, adds a provenance-locked 200-case GitHub benchmark, and introduces a
+controlled end-to-end generation runner. No answer-quality score is claimed
+until the separate official evaluator is run.
 
 ## Security
 
@@ -229,7 +237,7 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current suite contains 128 tests and reports over 90% branch-aware coverage
+The current suite contains 155 tests and reports over 90% branch-aware coverage
 locally. CI repeats the suite on Python 3.11, 3.12 and 3.13.
 
 ## License

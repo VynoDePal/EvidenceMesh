@@ -94,6 +94,17 @@ def test_settings_reject_unknown_provider() -> None:
         Settings(enabled_providers=["unknown"])
 
 
+def test_settings_default_to_self_hosted_zero_key_profile(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("EVIDENCEMESH_PROVIDERS", raising=False)
+    assert Settings.from_env().enabled_providers == [
+        "searxng",
+        "wikipedia",
+        "crossref",
+    ]
+
+
 def test_settings_reject_invalid_boolean_environment(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

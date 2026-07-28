@@ -25,7 +25,7 @@ class Settings(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     enabled_providers: list[str] = Field(
-        default_factory=lambda: ["searxng", "ddgs", "wikipedia", "crossref"]
+        default_factory=lambda: ["searxng", "wikipedia", "crossref"]
     )
     searxng_url: str = "http://127.0.0.1:8888"
     wikipedia_url_template: str = "https://{language}.wikipedia.org/w/api.php"
@@ -78,7 +78,7 @@ class Settings(BaseModel):
         providers = os.getenv("EVIDENCEMESH_PROVIDERS")
         data: dict[str, Any] = {
             "enabled_providers": (
-                providers.split(",") if providers else ["searxng", "ddgs", "wikipedia", "crossref"]
+                providers.split(",") if providers else ["searxng", "wikipedia", "crossref"]
             ),
             "searxng_url": os.getenv(
                 "EVIDENCEMESH_SEARXNG_URL",

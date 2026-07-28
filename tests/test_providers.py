@@ -115,6 +115,7 @@ async def test_searxng_provider_maps_request_and_result() -> None:
                     "engines": ["one", "two"],
                 },
                 {"title": "missing URL"},
+                "invalid item",
             ]
         },
         captured,
@@ -129,11 +130,31 @@ async def test_searxng_provider_maps_request_and_result() -> None:
             time_range=TimeRange.WEEK,
         ),
     )
+    assert len(results) == 1
     assert results[0].title == "Alpha"
     assert results[0].source_type.value == "news"
+    assert results[0].metadata["engines"] == ["one", "two"]
+    assert results[0].metadata["unresponsive_engines"] == []
     assert captured[0].url.params["categories"] == "news"
     assert captured[0].url.params["safesearch"] == "2"
     assert captured[0].url.params["time_range"] == "week"
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_searxng_provider_rejects_total_upstream_failure() -> None:
+    client = json_client(
+        {
+            "results": [],
+            "unresponsive_engines": [
+                ["duckduckgo", "timeout"],
+                ["brave", "rate limit"],
+            ],
+        }
+    )
+    provider = SearxngProvider("https://search.example", client)
+    with pytest.raises(ProviderError, match="2 upstream engine"):
+        await provider.search("alpha", SearchRequest(query="alpha"))
     await client.aclose()
 
 

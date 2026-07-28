@@ -22,3 +22,7 @@ All notable changes to EvidenceMesh are documented here.
 - Checksum-pinned SearXNG Compose profile with a live adapter integration job.
 - Published 200-row SimpleQA reliability run with logical-call, network-attempt
   and circuit-skip accounting; release decision remains no-go.
+- Replaced DDGS in the recommended profile with the pinned, self-hosted
+  SearXNG path and added explicit upstream-engine failure accounting.
+- Added a 200-case SearXNG GitHub Actions benchmark with image/config
+  provenance and a privacy-separated end-to-end answer-generation harness.

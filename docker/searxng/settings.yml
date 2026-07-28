@@ -1,4 +1,17 @@
-use_default_settings: true
+use_default_settings:
+  engines:
+    keep_only:
+      - brave.news
+      - brave
+      - docker hub
+      - duckduckgo
+      - duckduckgo news
+      - mdn
+      - openairedatasets
+      - openairepublications
+      - stackoverflow
+      - wikipedia
+      - wikinews
 
 general:
   debug: false

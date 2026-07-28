@@ -25,6 +25,7 @@ import time
 import unicodedata
 from collections.abc import Iterable
 from dataclasses import dataclass
+from dataclasses import field as dataclass_field
 from datetime import UTC, datetime
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
@@ -53,10 +54,11 @@ SIMPLEQA_REFERENCE_REPO_COMMIT = "652c89d0ca9df547706735883097e9537d40dc47"
 SIMPLEQA_REFERENCE_FILE_BLOB = "0fc266800a87ace55ec192c9a91cafe92fef7b48"
 MAX_DATASET_BYTES = 5_000_000
 DEFAULT_PROFILES = (
-    "federated=ddgs,wikipedia",
-    "ddgs=ddgs",
+    "federated=searxng,wikipedia",
+    "searxng=searxng",
     "wikipedia=wikipedia",
 )
+MAX_PROVIDER_CONFIG_BYTES = 1_000_000
 
 
 @dataclass(frozen=True, slots=True)
@@ -93,6 +95,7 @@ class ProviderSnapshot:
     error: str | None
     attempted: bool = True
     failure_kind: str | None = None
+    diagnostics: dict[str, Any] = dataclass_field(default_factory=dict)
 
 
 def sha256_bytes(payload: bytes) -> str:
@@ -148,6 +151,50 @@ def provider_endpoint_manifest(
         "wikipedia": settings.wikipedia_url_template,
     }
     return {name: known[name] for name in provider_names}
+
+
+def parse_named_values(values: list[str] | None, *, label: str) -> dict[str, str]:
+    parsed: dict[str, str] = {}
+    for value in values or []:
+        name, separator, item = value.partition("=")
+        name = name.strip().lower()
+        item = item.strip()
+        if not separator or not re.fullmatch(r"[a-z0-9][a-z0-9_-]{0,63}", name) or not item:
+            raise ValueError(f"{label} values must use PROVIDER=VALUE syntax")
+        if name in parsed:
+            raise ValueError(f"{label} providers must be unique")
+        parsed[name] = item
+    return parsed
+
+
+def provider_configuration_manifest(
+    provider_names: tuple[str, ...],
+    *,
+    config_values: list[str] | None,
+    image_values: list[str] | None,
+) -> dict[str, dict[str, str]]:
+    active = set(provider_names)
+    configs = parse_named_values(config_values, label="provider config")
+    images = parse_named_values(image_values, label="provider image")
+    unknown = (set(configs) | set(images)) - active
+    if unknown:
+        raise ValueError(f"provider provenance names are not active: {sorted(unknown)}")
+
+    manifest: dict[str, dict[str, str]] = {}
+    for provider_name in provider_names:
+        entry: dict[str, str] = {}
+        if config_path_value := configs.get(provider_name):
+            path = Path(config_path_value)
+            payload = path.read_bytes()
+            if len(payload) > MAX_PROVIDER_CONFIG_BYTES:
+                raise ValueError(f"provider config exceeds byte limit: {path.name}")
+            entry["config_file"] = path.name
+            entry["config_sha256"] = sha256_bytes(payload)
+        if image := images.get(provider_name):
+            entry["image"] = image
+        if entry:
+            manifest[provider_name] = entry
+    return manifest
 
 
 def stable_row_id(question: str) -> str:
@@ -388,6 +435,16 @@ def result_record(hit: SearchHit) -> dict[str, Any]:
     }
 
 
+def provider_result_diagnostics(results: list[ProviderResult]) -> dict[str, Any]:
+    unresponsive_engines: set[str] = set()
+    for result in results:
+        values = result.metadata.get("unresponsive_engines")
+        if not isinstance(values, list):
+            continue
+        unresponsive_engines.update(value for value in values if isinstance(value, str))
+    return {"unresponsive_engines": sorted(unresponsive_engines)} if unresponsive_engines else {}
+
+
 async def retrieve_provider_snapshot(
     engine: EvidenceMesh,
     provider: SearchProvider,
@@ -422,6 +479,7 @@ async def retrieve_provider_snapshot(
             latency_ms=round((time.perf_counter() - started) * 1_000, 3),
             results=tuple(results),
             error=None,
+            diagnostics=provider_result_diagnostics(results),
         )
     except ProviderCircuitOpenError as exc:
         error = str(exc)
@@ -708,6 +766,34 @@ def distribution(rows: list[BenchmarkRow], field: str) -> dict[str, int]:
     return dict(sorted(values.items()))
 
 
+def aggregate_provider_observations(
+    snapshots: list[ProviderSnapshot],
+) -> dict[str, dict[str, Any]]:
+    observations: dict[str, dict[str, Any]] = {}
+    for provider_name in sorted({snapshot.provider for snapshot in snapshots}):
+        selected = [snapshot for snapshot in snapshots if snapshot.provider == provider_name]
+        engines = sorted(
+            {
+                engine
+                for snapshot in selected
+                for engine in snapshot.diagnostics.get("unresponsive_engines", [])
+                if isinstance(engine, str)
+            }
+        )
+        observations[provider_name] = {
+            "logical_calls": len(selected),
+            "network_attempts": sum(snapshot.attempted for snapshot in selected),
+            "failed_attempts": sum(
+                snapshot.attempted and snapshot.error is not None for snapshot in selected
+            ),
+            "calls_with_unresponsive_upstreams": sum(
+                bool(snapshot.diagnostics.get("unresponsive_engines")) for snapshot in selected
+            ),
+            "unresponsive_upstream_engines": engines,
+        }
+    return observations
+
+
 async def evaluate(
     rows: list[BenchmarkRow],
     profiles: list[Profile],
@@ -722,6 +808,7 @@ async def evaluate(
     language: str,
     network_region: str,
     progress: bool,
+    provider_configuration: dict[str, dict[str, str]] | None = None,
 ) -> dict[str, Any]:
     started_at = datetime.now(UTC)
     semaphore = asyncio.Semaphore(concurrency)
@@ -810,7 +897,7 @@ async def evaluate(
 
     sample_ids = [row.id for row in rows]
     report = {
-        "schema_version": 3,
+        "schema_version": 4,
         "benchmark": "retrieval-only/simpleqa-source-recall-v1",
         "task_type": "retrieval_only",
         "dataset": dataset_metadata,
@@ -840,6 +927,8 @@ async def evaluate(
                 snapshot.failure_kind == "circuit_open" for snapshot in snapshots
             ),
             "provider_endpoints": provider_endpoint_manifest(settings, provider_names),
+            "provider_configuration": provider_configuration or {},
+            "provider_observations": aggregate_provider_observations(snapshots),
             "max_results": max_results,
             "language": language,
             "cache": False,
@@ -937,7 +1026,17 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--profile",
         action="append",
-        help="repeatable NAME=provider,provider profile (defaults to zero-key trio)",
+        help="repeatable NAME=provider,provider profile (defaults to SearXNG ablations)",
+    )
+    parser.add_argument(
+        "--provider-config",
+        action="append",
+        help="repeatable PROVIDER=PATH configuration provenance; stores name and SHA-256",
+    )
+    parser.add_argument(
+        "--provider-image",
+        action="append",
+        help="repeatable PROVIDER=IMAGE immutable image provenance",
     )
     parser.add_argument("--max-results", type=int, default=10, choices=range(1, 51))
     parser.add_argument("--concurrency", type=int, default=3, choices=range(1, 17))
@@ -973,6 +1072,14 @@ def main() -> None:
         rows, dataset_metadata = load_dataset(arguments)
         sample = select_sample(rows, sample_size=arguments.sample_size, seed=arguments.seed)
         profiles = parse_profiles(arguments.profile)
+        provider_names = tuple(
+            dict.fromkeys(provider for profile in profiles for provider in profile.providers)
+        )
+        provider_configuration = provider_configuration_manifest(
+            provider_names,
+            config_values=arguments.provider_config,
+            image_values=arguments.provider_image,
+        )
         report = asyncio.run(
             evaluate(
                 sample,
@@ -987,6 +1094,7 @@ def main() -> None:
                 language=arguments.language,
                 network_region=arguments.network_region,
                 progress=arguments.progress,
+                provider_configuration=provider_configuration,
             )
         )
     except (OSError, ValueError, httpx.HTTPError) as exc:
