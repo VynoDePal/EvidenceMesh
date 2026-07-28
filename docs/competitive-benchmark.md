@@ -89,6 +89,15 @@ minimum-two-engine requirement prevented promotion and any tuned SimpleQA
 rerun. This preserves evaluation independence; it does not establish a
 competitive quality result.
 
+Phase 6 adds direct academic, reference and repository verticals plus
+deterministic traffic-aware routing. Its
+[24-case multi-source result](../benchmarks/results/multisource_calibration_phase6_2026-07-28.md)
+measured 100% availability and 91.7% target/family hit rates, but it also
+measured a 33.3% partial-failure rate because SearXNG failed in 8/12 routed
+cases. That exceeds the pre-registered 25% maximum. The functional gate and the
+separate two-network gate are therefore both closed; this is still evidence
+against a best-in-class claim.
+
 ## Fair next comparison
 
 Use EvidenceMesh as the retrieval MCP for a fixed external model, then compare

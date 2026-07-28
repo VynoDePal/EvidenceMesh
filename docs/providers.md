@@ -25,6 +25,9 @@ complete list is reviewable in the settings file. Upstream requests are bounded
 at eight seconds. Public SearXNG instances can throttle or disable JSON; do not
 load-test them. Run the included private instance. The router uses SearXNG for
 web and news only; dedicated providers handle academic and repository searches.
+The isolated DuckDuckGo candidate still failed 8/12 routed calls in the Phase 6
+GitHub calibration, so it must be treated as a degradable path rather than a
+reliable sole web backend.
 
 If every result is absent while SearXNG reports unresponsive upstream engines,
 the adapter returns a provider failure. When results survive a partial upstream

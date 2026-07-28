@@ -141,3 +141,46 @@ def test_committed_phase5_result_matches_locked_protocol() -> None:
         "content",
     }
     assert all(not private_fields & set(outcome) for outcome in report["outcomes"])
+
+
+def test_committed_phase6_result_matches_locked_protocol() -> None:
+    root = Path(__file__).parents[1]
+    result_path = root / "benchmarks" / "results" / "multisource_calibration_phase6_2026-07-28.json"
+    result_bytes = result_path.read_bytes()
+    assert hashlib.sha256(result_bytes).hexdigest() == (
+        "9fe5671b41136165b2e2856c0c2d6bff54020067859dff22021e135f099f96c4"
+    )
+    report = json.loads(result_bytes)
+
+    assert report["schema_version"] == 1
+    assert report["benchmark"] == "evidencemesh-multisource-calibration-v1"
+    assert report["environment"]["commit_sha"] == ("f79a7a919528e68096288498acf60c0babc80716")
+    assert report["suite"]["sha256"] == (
+        "e99e584cb115a3bb343d052b368e127acd924be7a6aabef98ae90c3c86acce34"
+    )
+    assert report["provider_configuration"]["searxng"]["sha256"] == (
+        "26a74f699515539fdb9bed3f1d3bda57ef908e1111d5393b4af2009fd7069645"
+    )
+    assert report["protocol"]["request_count"] == 24
+    assert report["protocol"]["retry_policy"] == "none"
+    assert len(report["outcomes"]) == 24
+
+    overall = report["metrics"]["overall"]
+    assert overall["availability"]["numerator"] == 24
+    assert overall["target_domain_hit_at_10"]["numerator"] == 22
+    assert overall["expected_family_hit_at_10"]["numerator"] == 22
+    assert overall["partial_failure"]["numerator"] == 8
+    assert report["metrics"]["providers"]["searxng"] == {
+        "requested_cases": 12,
+        "succeeded_cases": 4,
+        "contributed_cases": 4,
+    }
+    decision = report["decision"]
+    assert decision["functional_gate_passed"] is False
+    assert decision["checks"]["partial_failure_rate"] is False
+    assert decision["cross_network_gate"]["status"] == "not_testable"
+    assert decision["stage_b_200_case_run_allowed"] is False
+    assert decision["release_decision"] == "no-go"
+
+    private_fields = {"query", "title", "snippet", "content", "url", "results"}
+    assert all(not private_fields & set(outcome) for outcome in report["outcomes"])

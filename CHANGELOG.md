@@ -47,3 +47,7 @@ All notable changes to EvidenceMesh are documented here.
 - Locked the 24-case Phase 6 multi-source calibration and its two-independent-
   network release gate; Common Crawl remains an archive candidate rather than
   being misrepresented as full-text query search.
+- Published the Phase 6 result: 24/24 availability, 22/24 target and expected-
+  family hits, but 8/24 partial failures because SearXNG succeeded in only 4/12
+  routed cases. The functional gate failed, so Stage B was not run and the
+  release decision remains no-go.

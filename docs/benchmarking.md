@@ -154,7 +154,9 @@ policy and pre-registered gates in
 
 The two-independent-network gate is intentionally separate from the functional
 metrics. A one-network pass cannot authorize the 200-case stage or a release
-claim.
+claim. The committed
+[Phase 6 result](../benchmarks/results/multisource_calibration_phase6_2026-07-28.md)
+failed the functional gate on partial failures, so no Stage B run was made.
 
 ## End-to-end generation
 

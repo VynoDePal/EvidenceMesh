@@ -241,7 +241,13 @@ different, multi-source composition: DuckDuckGo is isolated behind private
 SearXNG for general web, while direct reference, academic and repository
 verticals add independent coverage. Its protocol requires successful
 replication on two independently administered networks; that release gate
-cannot be waived when only one environment is available.
+cannot be waived when only one environment is available. The
+[Phase 6 calibration](benchmarks/results/multisource_calibration_phase6_2026-07-28.md)
+returned results for 24/24 cases and hit the target domain and expected source
+family for 22/24, with five providers and all four families contributing.
+However, SearXNG failed in 8/12 routed cases, producing a 33.3% partial-failure
+rate above the locked 25% maximum. The functional gate therefore failed, the
+200-case stage was not run, and the release decision remains no-go.
 
 ## Security
 
@@ -269,7 +275,7 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current suite contains 179 tests and reports over 90% branch-aware coverage
+The current suite contains 180 tests and reports over 90% branch-aware coverage
 locally. CI repeats the suite on Python 3.11, 3.12 and 3.13.
 
 ## License
