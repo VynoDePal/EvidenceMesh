@@ -198,7 +198,10 @@ connectivity and partial-failure behavior without presenting one question as a
 quality score. The
 [30-row SimpleQA retrieval pilot](benchmarks/results/simpleqa_retrieval_pilot_2026-07-28.md)
 is the first comparative live baseline; it records a no-go for superiority and
-release claims.
+release claims. The
+[200-row Phase 3 reliability run](benchmarks/results/simpleqa_retrieval_phase3_2026-07-28.md)
+shows the circuit breaker reducing sustained federated p95 latency to 888 ms,
+but only 70.5% availability; the release decision therefore remains no-go.
 
 ## Security
 

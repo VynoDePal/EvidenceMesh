@@ -20,3 +20,5 @@ All notable changes to EvidenceMesh are documented here.
 - Per-provider circuit breakers with fail-fast open state, single half-open
   recovery probes and runtime health telemetry.
 - Checksum-pinned SearXNG Compose profile with a live adapter integration job.
+- Published 200-row SimpleQA reliability run with logical-call, network-attempt
+  and circuit-skip accounting; release decision remains no-go.

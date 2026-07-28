@@ -23,6 +23,13 @@ is a critical baseline. It demonstrated provider failure isolation but did not
 meet the proposed reliability or latency gates and does not support a
 superiority claim.
 
+The
+[200-row Phase 3 reliability run](../benchmarks/results/simpleqa_retrieval_phase3_2026-07-28.md)
+then exercised the provider circuit breaker. It reduced sustained federated p95
+latency to 888 ms by skipping 195 repeated DDGS attempts, while availability
+remained 70.5%. The raw report preserves both logical failures and actual
+network-attempt accounting.
+
 ## Offline federation benchmark
 
 `src/evidencemesh/data/federation_v1.json` is a packaged fixture containing
