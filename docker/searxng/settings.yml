@@ -7,6 +7,9 @@ general:
 search:
   safe_search: 1
   autocomplete: ""
+  formats:
+    - html
+    - json
 
 server:
   secret_key: "local-development-only-change-before-public-deployment"
@@ -15,10 +18,6 @@ server:
 
 ui:
   static_use_hash: true
-
-formats:
-  - html
-  - json
 
 outgoing:
   request_timeout: 4.0
