@@ -10,6 +10,7 @@ from evidencemesh.urls import (
     canonicalize_url,
     domain_matches,
     hostname_from_url,
+    is_supported_http_url,
     registrable_domain_hint,
 )
 
@@ -23,6 +24,10 @@ from evidencemesh.urls import (
         ),
         ("http://example.com:80/", "http://example.com/"),
         ("https://example.com/a/", "https://example.com/a"),
+        (
+            "https://[2606:4700:4700::1111]/dns-query",
+            "https://[2606:4700:4700::1111]/dns-query",
+        ),
         ("mailto:test@example.com", "mailto:test@example.com"),
     ],
 )
@@ -33,6 +38,21 @@ def test_canonicalize_url(raw: str, expected: str) -> None:
 def test_canonicalize_duckduckgo_redirect() -> None:
     wrapped = "https://duckduckgo.com/l/?uddg=https%3A%2F%2FExample.com%2Fa%3Futm_source%3Dx"
     assert canonicalize_url(wrapped) == "https://example.com/a"
+
+
+def test_malformed_and_non_http_result_urls_are_not_exposed() -> None:
+    assert canonicalize_url("http://[:::1") == "http://[:::1"
+    assert is_supported_http_url("https://example.com/path")
+    assert not is_supported_http_url("javascript:alert(1)")
+    assert not is_supported_http_url("file:///etc/passwd")
+    assert not is_supported_http_url("https://user:pass@example.com/path")
+    assert not is_supported_http_url("http://[:::1")
+    assert not is_supported_http_url("http://localhost/path")
+    assert not is_supported_http_url("http://127.0.0.1/path")
+    assert not is_supported_http_url("http://127.1/path")
+    assert not is_supported_http_url("http://2130706433/path")
+    assert not is_supported_http_url("http://0177.0.0.1/path")
+    assert not is_supported_http_url("http://0x7f000001/path")
 
 
 def test_url_helpers() -> None:
@@ -63,6 +83,18 @@ async def test_url_guard_accepts_public_https() -> None:
 
 
 @pytest.mark.asyncio
+async def test_url_guard_pins_validated_address_and_preserves_host() -> None:
+    guard = StubGuard({"93.184.216.34", "2606:4700:4700::1111"})
+    targets = await guard.resolve_targets("https://www.example.com/a?b=1#ignored")
+    assert [target.url for target in targets] == [
+        "https://93.184.216.34/a?b=1",
+        "https://[2606:4700:4700::1111]/a?b=1",
+    ]
+    assert {target.host_header for target in targets} == {"www.example.com"}
+    assert {target.server_hostname for target in targets} == {"www.example.com"}
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "url",
     [
@@ -71,6 +103,8 @@ async def test_url_guard_accepts_public_https() -> None:
         "http://localhost/",
         "http://name.local/",
         "http://example.com:8080/",
+        "http://example.com:0/",
+        "http://[:::1",
     ],
 )
 async def test_url_guard_rejects_unsafe_forms(url: str) -> None:
@@ -79,7 +113,17 @@ async def test_url_guard_rejects_unsafe_forms(url: str) -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("address", ["127.0.0.1", "10.0.0.1", "169.254.1.1", "::1"])
+@pytest.mark.parametrize(
+    "address",
+    [
+        "127.0.0.1",
+        "10.0.0.1",
+        "169.254.1.1",
+        "::1",
+        "64:ff9b::a9fe:a9fe",
+        "64:ff9b:1::808:808",
+    ],
+)
 async def test_url_guard_rejects_non_public_resolution(address: str) -> None:
     with pytest.raises(UnsafeURLError, match="non-public"):
         await StubGuard({address}).validate("https://example.com")
@@ -99,3 +143,13 @@ async def test_url_guard_private_override() -> None:
 async def test_url_guard_rejects_empty_resolution() -> None:
     with pytest.raises(UnsafeURLError, match="did not resolve"):
         await StubGuard(set()).validate("https://example.com")
+
+
+@pytest.mark.asyncio
+async def test_url_guard_wraps_resolver_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fail_resolution(*args: object, **kwargs: object) -> object:
+        raise OSError("resolver unavailable")
+
+    monkeypatch.setattr("evidencemesh.urls.socket.getaddrinfo", fail_resolution)
+    with pytest.raises(UnsafeURLError, match="resolution failed"):
+        await URLGuard().validate("https://unresolvable.invalid")

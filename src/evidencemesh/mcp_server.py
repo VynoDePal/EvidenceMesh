@@ -61,7 +61,7 @@ async def search_web(
 ) -> dict[str, Any]:
     """Federated web search with RRF ranking, deduplication and stable citations."""
 
-    await ctx.info(f"Searching {profile.value} sources for: {query}")
+    await ctx.info(f"Searching configured {profile.value} sources")
     response = await _engine(ctx).search(
         SearchRequest(
             query=query,
@@ -129,6 +129,8 @@ async def batch_search(
 ) -> dict[str, Any]:
     """Run up to 20 independent searches with bounded concurrency."""
 
+    if len(queries) > 20:
+        raise ValueError("batch_search accepts at most 20 queries")
     requests = [
         SearchRequest(
             query=query,
@@ -205,6 +207,8 @@ Required workflow:
 
 def main() -> None:
     transport = os.getenv("EVIDENCEMESH_TRANSPORT", "stdio").lower()
+    if transport not in {"http", "stdio"}:
+        raise ValueError("EVIDENCEMESH_TRANSPORT must be 'stdio' or 'http'")
     if transport == "http":
         mcp.run(
             transport="http",

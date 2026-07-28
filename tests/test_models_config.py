@@ -12,10 +12,10 @@ from evidencemesh.models import FetchRequest, ResearchRequest, SearchRequest
 def test_search_request_normalises_domains_and_variants() -> None:
     request = SearchRequest(
         query="example query",
-        domains=["Example.COM.", "example.com"],
+        domains=["Example.COM.", "example.com", "Café.example"],
         query_variants=[" second query ", "second query"],
     )
-    assert request.domains == ["example.com"]
+    assert request.domains == ["example.com", "xn--caf-dma.example"]
     assert request.query_variants == ["second query"]
 
 
@@ -26,6 +26,8 @@ def test_search_request_normalises_domains_and_variants() -> None:
         ("language", "english"),
         ("domains", ["https://example.com"]),
         ("domains", ["bad..example"]),
+        ("domains", ["bad_domain.example"]),
+        ("domains", ["-bad.example"]),
         ("exclude_domains", ["name@example.com"]),
         ("limit", 51),
         ("content_budget_chars", 999),
@@ -71,14 +73,26 @@ def test_settings_from_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> N
     monkeypatch.setenv("EVIDENCEMESH_ALLOW_PRIVATE_NETWORKS", "yes")
     monkeypatch.setenv("EVIDENCEMESH_RESPECT_ROBOTS_TXT", "off")
     monkeypatch.setenv("EVIDENCEMESH_MAX_CONCURRENCY", "3")
+    monkeypatch.setenv("EVIDENCEMESH_DNS_TIMEOUT", "4")
+    monkeypatch.setenv("EVIDENCEMESH_MAX_PDF_PAGES", "25")
     settings = Settings.from_env()
     assert settings.enabled_providers == ["ddgs", "wikipedia"]
     assert settings.cache_path == cache_path
     assert settings.allow_private_networks is True
     assert settings.respect_robots_txt is False
     assert settings.max_concurrency == 3
+    assert settings.dns_timeout_seconds == 4
+    assert settings.max_pdf_pages == 25
 
 
 def test_settings_reject_unknown_provider() -> None:
     with pytest.raises(ValidationError, match="unknown providers"):
         Settings(enabled_providers=["unknown"])
+
+
+def test_settings_reject_invalid_boolean_environment(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("EVIDENCEMESH_RESPECT_ROBOTS_TXT", "treu")
+    with pytest.raises(ValueError, match="must be a boolean"):
+        Settings.from_env()

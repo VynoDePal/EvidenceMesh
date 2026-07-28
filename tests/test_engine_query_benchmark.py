@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 
 import pytest
@@ -8,9 +9,10 @@ from pydantic import ValidationError
 
 from evidencemesh.benchmark import load_fixture, run_offline_benchmark
 from evidencemesh.engine import EvidenceMesh
-from evidencemesh.errors import ProviderError
+from evidencemesh.errors import FetchError, ProviderError
 from evidencemesh.models import (
     FetchedDocument,
+    FetchRequest,
     ProviderResult,
     ResearchRequest,
     SearchDepth,
@@ -109,8 +111,52 @@ async def test_search_isolates_provider_failures(settings, result: ProviderResul
     await engine.aclose()
 
 
+class SlowProvider(StaticProvider):
+    async def search(self, query: str, request: SearchRequest) -> list[ProviderResult]:
+        await asyncio.sleep(0.05)
+        return []
+
+
+@pytest.mark.asyncio
+async def test_search_enforces_provider_total_deadline(settings) -> None:
+    short_deadline = settings.model_copy(update={"request_timeout_seconds": 0.01})
+    engine = EvidenceMesh(short_deadline, providers=[SlowProvider("slow")])
+    response = await engine.search(SearchRequest(query="deadline test", use_cache=False))
+    assert response.results == []
+    assert "request deadline" in response.metadata.provider_failures["slow:deadline test"]
+    assert "partial results" in response.warnings[0]
+    await engine.aclose()
+
+
+@pytest.mark.asyncio
+async def test_provider_deadline_includes_concurrency_queue(settings) -> None:
+    short_deadline = settings.model_copy(
+        update={
+            "max_concurrency": 1,
+            "request_timeout_seconds": 0.08,
+        }
+    )
+    engine = EvidenceMesh(short_deadline, providers=[SlowProvider("slow")])
+    response = await engine.search(
+        SearchRequest(
+            query="first query",
+            query_variants=["second query"],
+            use_cache=False,
+        )
+    )
+    assert len(response.metadata.provider_failures) == 1
+    assert "slow:second query" in response.metadata.provider_failures
+    await engine.aclose()
+
+
 class AcademicOnlyProvider(StaticProvider):
     supported_profiles = frozenset({SearchProfile.ACADEMIC})
+
+
+class SlowFetcher(StaticFetcher):
+    async def fetch(self, url: str, *, max_chars: int = 30_000) -> FetchedDocument:
+        await asyncio.sleep(0.05)
+        return await super().fetch(url, max_chars=max_chars)
 
 
 @pytest.mark.asyncio
@@ -173,6 +219,45 @@ async def test_fetch_document_cache(
     second = await engine.fetch(document.url, max_chars=5_000)
     assert first == second
     assert fetcher.calls == [document.url]
+    await engine.aclose()
+
+
+@pytest.mark.asyncio
+async def test_fetch_deadline_includes_concurrency_queue(
+    settings,
+    document: FetchedDocument,
+) -> None:
+    second_url = "https://docs.example.org/second"
+    second_document = document.model_copy(
+        update={
+            "url": second_url,
+            "canonical_url": second_url,
+        }
+    )
+    short_deadline = settings.model_copy(
+        update={
+            "fetch_timeout_seconds": 0.08,
+            "max_concurrency": 1,
+        }
+    )
+    engine = EvidenceMesh(
+        short_deadline,
+        providers=[],
+        fetcher=SlowFetcher(
+            {
+                document.url: document,
+                second_url: second_document,
+            }
+        ),
+    )
+    outcomes = await asyncio.gather(
+        engine.fetch(FetchRequest(url=document.url, use_cache=False)),
+        engine.fetch(FetchRequest(url=second_url, use_cache=False)),
+        return_exceptions=True,
+    )
+    assert outcomes[0] == document
+    assert isinstance(outcomes[1], FetchError)
+    assert "total deadline" in str(outcomes[1])
     await engine.aclose()
 
 

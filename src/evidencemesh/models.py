@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import ipaddress
+import re
 from datetime import datetime
 from enum import StrEnum
 from typing import Annotated, Any
@@ -49,6 +51,7 @@ class SourceType(StrEnum):
 
 
 Domain = Annotated[str, Field(min_length=1, max_length=253)]
+_DOMAIN_LABEL = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$")
 
 
 def _normalise_domain(value: str) -> str:
@@ -57,7 +60,19 @@ def _normalise_domain(value: str) -> str:
         raise ValueError("domains must be hostnames without a scheme, path or user information")
     if not value or any(not part for part in value.split(".")):
         raise ValueError("invalid domain")
-    return value
+    try:
+        address = ipaddress.ip_address(value)
+    except ValueError:
+        try:
+            value = value.encode("idna").decode("ascii")
+        except UnicodeError as exc:
+            raise ValueError("invalid internationalized domain") from exc
+        if len(value) > 253 or any(not _DOMAIN_LABEL.fullmatch(part) for part in value.split(".")):
+            raise ValueError("invalid domain") from None
+        return value
+    if isinstance(address, ipaddress.IPv6Address):
+        raise ValueError("IPv6 addresses are not accepted as domain filters")
+    return address.compressed
 
 
 class SearchRequest(StrictModel):
@@ -139,12 +154,12 @@ class FetchRequest(StrictModel):
 class ProviderResult(StrictModel):
     """Provider-neutral result before fusion and citation assignment."""
 
-    title: str
-    url: str
-    snippet: str = ""
-    provider: str
+    title: Annotated[str, Field(max_length=1_000)]
+    url: Annotated[str, Field(min_length=1, max_length=8_192)]
+    snippet: Annotated[str, Field(max_length=12_000)] = ""
+    provider: Annotated[str, Field(min_length=1, max_length=64)]
     rank: Annotated[int, Field(ge=1)]
-    query: str
+    query: Annotated[str, Field(min_length=1, max_length=512)]
     published_at: datetime | None = None
     source_type: SourceType = SourceType.WEB
     provider_score: float | None = None

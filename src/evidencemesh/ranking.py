@@ -13,6 +13,7 @@ from evidencemesh.urls import (
     canonicalize_url,
     domain_matches,
     hostname_from_url,
+    is_supported_http_url,
     registrable_domain_hint,
 )
 
@@ -112,8 +113,14 @@ def _merge_results(results: list[ProviderResult], rrf_k: int = 60) -> list[_Aggr
     aggregates: dict[str, _Aggregate] = {}
     title_keys: dict[str, list[str]] = defaultdict(list)
     for result in results:
+        if not is_supported_http_url(result.url):
+            continue
         canonical = canonicalize_url(result.url)
+        if not is_supported_http_url(canonical):
+            continue
         host = hostname_from_url(canonical)
+        if not host:
+            continue
         key = canonical
         if key not in aggregates:
             diversity_key = registrable_domain_hint(host)

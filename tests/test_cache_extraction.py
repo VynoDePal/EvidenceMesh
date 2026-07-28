@@ -75,6 +75,32 @@ def test_plain_text_is_truncated() -> None:
     assert truncated is True
 
 
+def test_pdf_extraction_stops_at_page_limit(monkeypatch: pytest.MonkeyPatch) -> None:
+    class FakePage:
+        def __init__(self, text: str) -> None:
+            self.text = text
+
+        def extract_text(self) -> str:
+            return self.text
+
+    class FakeReader:
+        def __init__(self, *_: object, **__: object) -> None:
+            self.metadata = None
+            self.pages = [FakePage("page one evidence"), FakePage("page two evidence")]
+
+    monkeypatch.setattr("evidencemesh.extraction.PdfReader", FakeReader)
+    _, text, flags, truncated = extract_content(
+        b"synthetic pdf",
+        media_type="application/pdf",
+        url="https://example.com/a.pdf",
+        max_chars=1_000,
+        max_pdf_pages=1,
+    )
+    assert text == "page one evidence"
+    assert "pdf_page_limit_reached" in flags
+    assert truncated is True
+
+
 @pytest.mark.parametrize(
     ("data", "media_type", "url", "message"),
     [

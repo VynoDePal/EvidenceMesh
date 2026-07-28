@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+import ipaddress
 from pathlib import Path
 
 import httpx
@@ -9,6 +11,7 @@ from conftest import PermissiveGuard
 from evidencemesh.config import Settings
 from evidencemesh.errors import FetchError, UnsupportedContentError
 from evidencemesh.fetcher import RobotsPolicy, WebFetcher
+from evidencemesh.urls import URLGuard
 
 
 def fetch_settings(tmp_path: Path, **overrides: object) -> Settings:
@@ -19,6 +22,27 @@ def fetch_settings(tmp_path: Path, **overrides: object) -> Settings:
         max_download_bytes=100_000,
         **overrides,
     )
+
+
+class PinningGuard(URLGuard):
+    async def _resolve(
+        self,
+        hostname: str,
+        port: int,
+    ) -> set[ipaddress.IPv4Address | ipaddress.IPv6Address]:
+        return {ipaddress.ip_address("93.184.216.34")}
+
+
+class MultiAddressPinningGuard(URLGuard):
+    async def _resolve(
+        self,
+        hostname: str,
+        port: int,
+    ) -> set[ipaddress.IPv4Address | ipaddress.IPv6Address]:
+        return {
+            ipaddress.ip_address("93.184.216.34"),
+            ipaddress.ip_address("93.184.216.35"),
+        }
 
 
 @pytest.mark.asyncio
@@ -38,6 +62,64 @@ async def test_fetcher_extracts_html(tmp_path: Path) -> None:
     assert "Useful alpha evidence" in document.text
     assert document.media_type == "text/html"
     assert guard.urls == ["https://example.com/a"]
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_fetcher_connects_to_validated_ip_with_original_host_and_sni(
+    tmp_path: Path,
+) -> None:
+    captured: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured.append(request)
+        return httpx.Response(
+            200,
+            content=b"pinned evidence",
+            headers={"content-type": "text/plain"},
+        )
+
+    client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    fetcher = WebFetcher(
+        fetch_settings(tmp_path),
+        client=client,
+        guard=PinningGuard(),
+    )
+    document = await fetcher.fetch("https://www.example.com/evidence")
+    assert document.url == "https://www.example.com/evidence"
+    assert str(captured[0].url) == "https://93.184.216.34/evidence"
+    assert captured[0].headers["host"] == "www.example.com"
+    assert captured[0].headers["connection"] == "close"
+    assert captured[0].extensions["sni_hostname"] == "www.example.com"
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_fetcher_falls_back_across_validated_addresses(tmp_path: Path) -> None:
+    captured: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured.append(str(request.url))
+        if request.url.host == "93.184.216.34":
+            raise httpx.ConnectError("first address unavailable", request=request)
+        return httpx.Response(
+            200,
+            content=b"fallback evidence",
+            headers={"content-type": "text/plain"},
+        )
+
+    client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    fetcher = WebFetcher(
+        fetch_settings(tmp_path),
+        client=client,
+        guard=MultiAddressPinningGuard(),
+    )
+    document = await fetcher.fetch("https://www.example.com/evidence")
+    assert document.text == "fallback evidence"
+    assert captured == [
+        "https://93.184.216.34/evidence",
+        "https://93.184.216.35/evidence",
+    ]
     await client.aclose()
 
 
@@ -150,6 +232,24 @@ async def test_fetcher_wraps_network_error(tmp_path: Path) -> None:
 
 
 @pytest.mark.asyncio
+async def test_fetcher_enforces_total_deadline(tmp_path: Path) -> None:
+    async def handler(request: httpx.Request) -> httpx.Response:
+        await asyncio.sleep(0.05)
+        return httpx.Response(
+            200,
+            content=b"late evidence",
+            headers={"content-type": "text/plain"},
+        )
+
+    settings = fetch_settings(tmp_path).model_copy(update={"fetch_timeout_seconds": 0.01})
+    client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    fetcher = WebFetcher(settings, client=client, guard=PermissiveGuard())
+    with pytest.raises(FetchError, match="total deadline"):
+        await fetcher.fetch("https://example.com/a")
+    await client.aclose()
+
+
+@pytest.mark.asyncio
 async def test_robots_policy_parses_and_caches_rules() -> None:
     calls = 0
 
@@ -173,6 +273,22 @@ async def test_robots_policy_parses_and_caches_rules() -> None:
 @pytest.mark.asyncio
 async def test_robots_policy_fails_open_on_unavailable_file() -> None:
     client = httpx.AsyncClient(transport=httpx.MockTransport(lambda request: httpx.Response(503)))
+    policy = RobotsPolicy(client, PermissiveGuard(), "EvidenceMesh/0.1")
+    assert await policy.allowed("https://example.com/a")
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_robots_policy_bounds_decompressed_response() -> None:
+    client = httpx.AsyncClient(
+        transport=httpx.MockTransport(
+            lambda request: httpx.Response(
+                200,
+                content=b"x" * 512_001,
+                headers={"content-length": "invalid"},
+            )
+        )
+    )
     policy = RobotsPolicy(client, PermissiveGuard(), "EvidenceMesh/0.1")
     assert await policy.allowed("https://example.com/a")
     await client.aclose()

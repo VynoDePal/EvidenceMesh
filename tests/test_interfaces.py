@@ -80,6 +80,9 @@ async def test_mcp_tools_use_shared_engine(
     assert review["status"] == "insufficient_independent_evidence"
     assert health["status"] == "ready"
     assert len(context.messages) == 2
+    assert "EvidenceMesh" not in context.messages[0]
+    with pytest.raises(ValueError, match="at most 20"):
+        await mcp_server.batch_search(["query"] * 21, ctx=context)
     await engine.aclose()
 
 
@@ -309,6 +312,9 @@ def test_cli_serve_and_mcp_main(
     monkeypatch.setenv("EVIDENCEMESH_TRANSPORT", "stdio")
     mcp_server.main()
     assert [call["transport"] for call in calls] == ["stdio", "http", "http", "stdio"]
+    monkeypatch.setenv("EVIDENCEMESH_TRANSPORT", "invalid")
+    with pytest.raises(ValueError, match="TRANSPORT"):
+        mcp_server.main()
 
 
 def test_interface_models_serialize() -> None:

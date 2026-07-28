@@ -13,7 +13,7 @@ import httpx
 
 from evidencemesh.cache import SQLiteCache
 from evidencemesh.config import Settings
-from evidencemesh.errors import EvidenceMeshError, ProviderError
+from evidencemesh.errors import EvidenceMeshError, FetchError, ProviderError
 from evidencemesh.extraction import content_sha256, select_excerpt
 from evidencemesh.fetcher import WebFetcher
 from evidencemesh.models import (
@@ -37,7 +37,7 @@ from evidencemesh.providers import build_providers
 from evidencemesh.providers.base import SearchProvider
 from evidencemesh.query import build_query_plan
 from evidencemesh.ranking import rank_results
-from evidencemesh.urls import canonicalize_url
+from evidencemesh.urls import PinnedURLResolver, canonicalize_url
 
 
 def _cache_key(payload: Any) -> str:
@@ -62,6 +62,7 @@ class EvidenceMesh:
         cache: SQLiteCache | None = None,
     ) -> None:
         self.settings = settings or Settings.from_env()
+        supplied_client = client
         self._owns_client = client is None
         self.client = client or httpx.AsyncClient(
             timeout=httpx.Timeout(self.settings.request_timeout_seconds),
@@ -76,7 +77,7 @@ class EvidenceMesh:
         else:
             self.providers = providers
             self.configuration_warnings = []
-        self.fetcher = fetcher or WebFetcher(self.settings, client=self.client)
+        self.fetcher = fetcher or WebFetcher(self.settings, client=supplied_client)
         self.cache = cache or SQLiteCache(self.settings.cache_path)
         self._semaphore = asyncio.Semaphore(self.settings.max_concurrency)
         self._closed = False
@@ -118,8 +119,14 @@ class EvidenceMesh:
             cached = self.cache.get_json("search", key)
             if cached is not None:
                 return [ProviderResult.model_validate(item) for item in cached], True
-        async with self._semaphore:
-            results = await provider.search(query, request)
+        try:
+            async with asyncio.timeout(self.settings.request_timeout_seconds):
+                async with self._semaphore:
+                    results = await provider.search(query, request)
+        except TimeoutError as exc:
+            raise ProviderError(
+                f"{provider.name} exceeded the configured request deadline"
+            ) from exc
         if request.use_cache:
             self.cache.set_json(
                 "search",
@@ -317,22 +324,26 @@ class EvidenceMesh:
         if isinstance(request, str):
             request = FetchRequest.model_validate({"url": request, **kwargs})
         url = str(request.url)
-        await self.fetcher.guard.validate(url)
-        key = _cache_key({"url": canonicalize_url(url), "max_chars": request.max_chars})
-        if request.use_cache:
-            cached = self.cache.get_json("document", key)
-            if cached is not None:
-                return FetchedDocument.model_validate(cached)
-        async with self._semaphore:
-            document = await self.fetcher.fetch(url, max_chars=request.max_chars)
-        if request.use_cache:
-            self.cache.set_json(
-                "document",
-                key,
-                document.model_dump(mode="json"),
-                self.settings.document_cache_ttl_seconds,
-            )
-        return document
+        try:
+            async with asyncio.timeout(self.settings.fetch_timeout_seconds):
+                await self.fetcher.guard.validate(url)
+                key = _cache_key({"url": canonicalize_url(url), "max_chars": request.max_chars})
+                if request.use_cache:
+                    cached = self.cache.get_json("document", key)
+                    if cached is not None:
+                        return FetchedDocument.model_validate(cached)
+                async with self._semaphore:
+                    document = await self.fetcher.fetch(url, max_chars=request.max_chars)
+                if request.use_cache:
+                    self.cache.set_json(
+                        "document",
+                        key,
+                        document.model_dump(mode="json"),
+                        self.settings.document_cache_ttl_seconds,
+                    )
+                return document
+        except TimeoutError as exc:
+            raise FetchError("fetch exceeded the configured total deadline") from exc
 
     async def research(self, request: ResearchRequest | str, **kwargs: Any) -> ResearchPacket:
         if isinstance(request, str):
@@ -474,5 +485,8 @@ class EvidenceMesh:
                 "nonstandard_ports_allowed": self.settings.allow_nonstandard_ports,
                 "robots_txt_respected": self.settings.respect_robots_txt,
                 "max_download_bytes": self.settings.max_download_bytes,
+                "dns_pinning": isinstance(self.fetcher.guard, PinnedURLResolver),
+                "dns_timeout_seconds": self.settings.dns_timeout_seconds,
+                "max_pdf_pages": self.settings.max_pdf_pages,
             },
         }

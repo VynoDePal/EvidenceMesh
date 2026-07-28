@@ -28,8 +28,9 @@ EvidenceMesh separates those concerns:
 - **Evidence, not hidden answers:** quotations, retrieval time, content hash,
   provenance signals and risk flags.
 - **Model neutral:** the MCP client keeps control of reasoning and synthesis.
-- **Defensive retrieval:** public-network URL policy, redirect revalidation,
-  byte limits, robots.txt, active-content removal and prompt-injection flags.
+- **Defensive retrieval:** public-network URL policy, DNS-pinned connections,
+  redirect revalidation, total deadlines, byte/page limits, bounded robots.txt,
+  active-content removal and prompt-injection flags.
 - **Reproducible evaluation:** deterministic algorithm benchmark plus a live
   retrieval harness for public QA datasets.
 
@@ -190,11 +191,15 @@ quality score.
 ## Security
 
 EvidenceMesh blocks private, loopback, link-local and reserved fetch targets by
-default. It also limits redirects and bytes, respects robots.txt, strips active
-HTML content and labels common prompt-injection patterns.
+default. Document connections are pinned to the public addresses that passed
+validation. It also limits redirects, time, bytes and PDF pages; bounds and
+respects robots.txt; strips active HTML content; and labels common
+prompt-injection patterns.
 
 These controls are risk reduction, not a sandbox or a truth detector. Read the
-[threat model](docs/threat-model.md) before remote deployment.
+[threat model](docs/threat-model.md) before remote deployment. The dated
+[v0.1 security and release audit](docs/security-audit-v0.1.md) records the
+closed findings, test methods and residual risks.
 
 ## Development
 
@@ -209,8 +214,8 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current local suite contains 108 tests and reports 92% branch-aware
-coverage on Python 3.11. CI repeats the suite on Python 3.11, 3.12 and 3.13.
+The current suite contains 128 tests and reports over 90% branch-aware coverage
+locally. CI repeats the suite on Python 3.11, 3.12 and 3.13.
 
 ## License
 

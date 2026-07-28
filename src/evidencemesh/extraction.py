@@ -112,7 +112,12 @@ def _extract_html(data: bytes, media_type: str, url: str) -> tuple[str, str, lis
     return title, text, detect_risk_flags(raw, is_html=True)
 
 
-def _extract_pdf(data: bytes) -> tuple[str, str, list[str]]:
+def _extract_pdf(
+    data: bytes,
+    *,
+    max_pages: int,
+    max_chars: int,
+) -> tuple[str, str, list[str]]:
     try:
         reader = PdfReader(io.BytesIO(data), strict=False)
     except Exception as exc:
@@ -121,11 +126,30 @@ def _extract_pdf(data: bytes) -> tuple[str, str, list[str]]:
     if reader.metadata and reader.metadata.title:
         title = normalise_text(str(reader.metadata.title))
     pages: list[str] = []
-    for page in reader.pages:
-        with suppress(Exception):
-            pages.append(page.extract_text() or "")
+    flags: list[str] = []
+    extraction_limit = max_chars + 1
+    extracted_chars = 0
+    for index, page in enumerate(reader.pages):
+        if index >= max_pages:
+            flags.append("pdf_page_limit_reached")
+            break
+        try:
+            page_text = page.extract_text() or ""
+        except Exception:
+            if "pdf_page_extraction_failed" not in flags:
+                flags.append("pdf_page_extraction_failed")
+            continue
+        remaining = extraction_limit - extracted_chars
+        if remaining <= 0:
+            flags.append("pdf_extraction_budget_reached")
+            break
+        pages.append(page_text[:remaining])
+        extracted_chars += len(pages[-1])
+        if len(page_text) > remaining or extracted_chars >= extraction_limit:
+            flags.append("pdf_extraction_budget_reached")
+            break
     text = normalise_text("\n\n".join(pages))
-    return title, text, detect_risk_flags(text)
+    return title, text, [*detect_risk_flags(text), *flags]
 
 
 def extract_content(
@@ -134,11 +158,16 @@ def extract_content(
     media_type: str,
     url: str,
     max_chars: int,
+    max_pdf_pages: int = 100,
 ) -> tuple[str, str, list[str], bool]:
     lowered_type = media_type.lower()
     path = urlsplit(url).path.lower()
     if "pdf" in lowered_type or path.endswith(".pdf"):
-        title, text, flags = _extract_pdf(data)
+        title, text, flags = _extract_pdf(
+            data,
+            max_pages=max_pdf_pages,
+            max_chars=max_chars,
+        )
     elif (
         "html" in lowered_type
         or "xhtml" in lowered_type
@@ -150,7 +179,9 @@ def extract_content(
         raise UnsupportedContentError(f"unsupported media type: {media_type or 'unknown'}")
     if not text:
         raise UnsupportedContentError("no readable text was extracted")
-    truncated = len(text) > max_chars
+    truncated = len(text) > max_chars or any(
+        flag in {"pdf_page_limit_reached", "pdf_extraction_budget_reached"} for flag in flags
+    )
     return title, text[:max_chars], flags, truncated
 
 

@@ -156,3 +156,39 @@ def test_empty_results() -> None:
         limit=10,
         max_per_domain=3,
     ) == ([], 0)
+
+
+def test_untrusted_non_http_and_malformed_urls_are_filtered() -> None:
+    results = [
+        make_result(title="Script", url="javascript:alert(1)", provider="hostile", rank=1),
+        make_result(title="Local file", url="file:///etc/passwd", provider="hostile", rank=2),
+        make_result(
+            title="Credentials",
+            url="https://user:pass@example.com/path",
+            provider="hostile",
+            rank=3,
+        ),
+        make_result(title="Malformed", url="http://[:::1", provider="hostile", rank=4),
+        make_result(
+            title="Wrapped credentials",
+            url=("https://duckduckgo.com/l/?uddg=https%3A%2F%2Fuser%3Apass%40example.com%2Fpath"),
+            provider="hostile",
+            rank=5,
+        ),
+        make_result(
+            title="Private target",
+            url="http://127.0.0.1/internal",
+            provider="hostile",
+            rank=6,
+        ),
+        make_result(title="Valid", url="https://example.org/evidence", provider="good", rank=1),
+    ]
+    hits, count = rank_results(
+        results,
+        query="alpha",
+        profile=SearchProfile.WEB,
+        limit=10,
+        max_per_domain=3,
+    )
+    assert count == 1
+    assert [hit.canonical_url for hit in hits] == ["https://example.org/evidence"]

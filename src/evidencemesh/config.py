@@ -13,7 +13,12 @@ def _bool_env(name: str, default: bool) -> bool:
     value = os.getenv(name)
     if value is None:
         return default
-    return value.strip().lower() in {"1", "true", "yes", "on"}
+    normalised = value.strip().lower()
+    if normalised in {"1", "true", "yes", "on"}:
+        return True
+    if normalised in {"0", "false", "no", "off"}:
+        return False
+    raise ValueError(f"{name} must be a boolean value")
 
 
 class Settings(BaseModel):
@@ -35,7 +40,10 @@ class Settings(BaseModel):
     document_cache_ttl_seconds: int = Field(default=86_400, ge=0, le=2_592_000)
     request_timeout_seconds: float = Field(default=15.0, ge=1.0, le=120.0)
     fetch_timeout_seconds: float = Field(default=20.0, ge=1.0, le=120.0)
+    dns_timeout_seconds: float = Field(default=5.0, ge=0.5, le=30.0)
+    extraction_timeout_seconds: float = Field(default=10.0, ge=1.0, le=60.0)
     max_download_bytes: int = Field(default=10_000_000, ge=100_000, le=50_000_000)
+    max_pdf_pages: int = Field(default=100, ge=1, le=1_000)
     max_concurrency: int = Field(default=8, ge=1, le=32)
     max_redirects: int = Field(default=5, ge=0, le=10)
     allow_private_networks: bool = False
@@ -107,7 +115,10 @@ class Settings(BaseModel):
             "EVIDENCEMESH_DOCUMENT_CACHE_TTL": ("document_cache_ttl_seconds", int),
             "EVIDENCEMESH_REQUEST_TIMEOUT": ("request_timeout_seconds", float),
             "EVIDENCEMESH_FETCH_TIMEOUT": ("fetch_timeout_seconds", float),
+            "EVIDENCEMESH_DNS_TIMEOUT": ("dns_timeout_seconds", float),
+            "EVIDENCEMESH_EXTRACTION_TIMEOUT": ("extraction_timeout_seconds", float),
             "EVIDENCEMESH_MAX_DOWNLOAD_BYTES": ("max_download_bytes", int),
+            "EVIDENCEMESH_MAX_PDF_PAGES": ("max_pdf_pages", int),
             "EVIDENCEMESH_MAX_CONCURRENCY": ("max_concurrency", int),
         }
         for env_name, (field_name, cast) in numeric_env.items():
