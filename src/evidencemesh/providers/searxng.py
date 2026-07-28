@@ -20,6 +20,7 @@ from evidencemesh.providers.base import (
 
 class SearxngProvider(SearchProvider):
     name = "searxng"
+    supported_profiles = frozenset({SearchProfile.WEB, SearchProfile.NEWS})
 
     def __init__(self, base_url: str, client: httpx.AsyncClient) -> None:
         self.base_url = base_url.rstrip("/")

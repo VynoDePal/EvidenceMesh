@@ -1,6 +1,18 @@
 # Providers
 
-## Zero-key defaults
+## Deployment profiles
+
+`community` is the default and contains `searxng`, `wikipedia`, `crossref`,
+`arxiv` and `github`. It requires no key and is self-hostable, but internet
+access, compute and storage are not cost-free infrastructure.
+
+`quality` includes the community set plus OpenAlex, Brave, Tavily, Exa and
+Firecrawl. Keyed adapters are enabled only when their credential or a
+self-hosted endpoint is configured; missing credentials remain visible as
+health warnings. Set `EVIDENCEMESH_DEPLOYMENT_PROFILE=quality`, or override
+either bundle with an explicit comma-separated `EVIDENCEMESH_PROVIDERS`.
+
+## Zero-key community providers
 
 ### SearXNG
 
@@ -11,7 +23,8 @@ explicitly, and retains a small zero-key engine set for web, news, science and
 code searches. General web uses `brave`, `duckduckgo` and `wikipedia`; the
 complete list is reviewable in the settings file. Upstream requests are bounded
 at eight seconds. Public SearXNG instances can throttle or disable JSON; do not
-load-test them. Run the included private instance.
+load-test them. Run the included private instance. The router uses SearXNG for
+web and news only; dedicated providers handle academic and repository searches.
 
 If every result is absent while SearXNG reports unresponsive upstream engines,
 the adapter returns a provider failure. When results survive a partial upstream
@@ -36,10 +49,28 @@ improves entity coverage but should not replace primary sources.
 Crossref is enabled only for the academic profile. Set `CROSSREF_MAILTO` to use
 the polite pool and identify your client.
 
+### arXiv
+
+arXiv is enabled only for the academic profile and reads its bounded Atom feed.
+EvidenceMesh routes only the base query, serializes calls, keeps request starts
+at least three seconds apart within the active event loop, and applies a minimum
+24-hour search-cache lifetime. Those controls reduce traffic but cannot
+coordinate independent EvidenceMesh processes or machines; operators remain
+responsible for the [arXiv API terms](https://info.arxiv.org/help/api/tou.html).
+
+### GitHub repositories
+
+The code profile uses public repository search. EvidenceMesh deliberately does
+not treat anonymous GitHub code-content search as a dependable zero-key API. It
+routes only the base query. Anonymous public repository search has a low rate
+limit; `GITHUB_TOKEN` is optional and raises the applicable quota.
+
 ## Optional API providers
 
 | Provider | Environment variable | Authentication |
 |---|---|---|
+| OpenAlex | `OPENALEX_API_KEY` | `api_key` query parameter |
+| GitHub | `GITHUB_TOKEN` | Bearer; optional for public repositories |
 | Brave | `BRAVE_API_KEY` | `X-Subscription-Token` |
 | Tavily | `TAVILY_API_KEY` | Bearer |
 | Exa | `EXA_API_KEY` | `x-api-key` |
@@ -48,7 +79,31 @@ the polite pool and identify your client.
 Provider pricing, retention and quotas are controlled by those providers and can
 change independently. EvidenceMesh never labels a limited free tier as an
 unlimited free backend. Every HTTP provider response is streamed through a
-5 MB decompressed-size limit before JSON parsing.
+5 MB decompressed-size limit before parsing. OpenAlex is not in the zero-key
+profile: its current API guidance requires a free key for meaningful quota.
+
+## Deliberate exclusions
+
+Common Crawl's CDX API searches archived URL patterns rather than arbitrary page
+text. It is therefore not presented as a search provider. A future archive
+lookup would need separate inputs, aggressive caching and its own rate-limit
+policy. This distinction prevents an archive index from being benchmarked as if
+it were a general search engine.
+
+## Deterministic routing
+
+The public search profile selects compatible source types:
+
+| Profile | Community route | Maximum query variants per provider |
+|---|---|---|
+| Web | SearXNG, Wikipedia | unlimited for SearXNG; 2 for Wikipedia |
+| News | SearXNG | unlimited |
+| Academic | Crossref, arXiv, Wikipedia | 2, 1 and 2 |
+| Code | GitHub repositories | 1 |
+
+Quality adapters join only the profiles they support. Search metadata records
+the deployment profile, routed query count and source family for every requested
+provider.
 
 ## Runtime reliability
 

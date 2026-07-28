@@ -38,6 +38,7 @@ from evidencemesh.providers.base import SearchProvider
 from evidencemesh.query import build_query_plan
 from evidencemesh.ranking import rank_results
 from evidencemesh.reliability import ProviderCircuitBreaker
+from evidencemesh.routing import build_provider_routes
 from evidencemesh.urls import PinnedURLResolver, canonicalize_url
 
 
@@ -146,7 +147,10 @@ class EvidenceMesh:
                 "search",
                 key,
                 [result.model_dump(mode="json") for result in results],
-                self.settings.search_cache_ttl_seconds,
+                max(
+                    self.settings.search_cache_ttl_seconds,
+                    provider.minimum_cache_ttl_seconds,
+                ),
             )
         return results, False
 
@@ -155,7 +159,12 @@ class EvidenceMesh:
             request = SearchRequest(query=request, **kwargs)
         started = time.perf_counter()
         queries = list(dict.fromkeys([request.query, *request.query_variants]))
-        eligible = [provider for provider in self.providers if provider.supports(request.profile)]
+        routes = build_provider_routes(
+            self.providers,
+            profile=request.profile,
+            queries=queries,
+        )
+        queries_executed = list(dict.fromkeys(query for route in routes for query in route.queries))
         failures: dict[str, str] = {}
         succeeded: set[str] = set()
         raw_results: list[ProviderResult] = []
@@ -179,7 +188,7 @@ class EvidenceMesh:
                     f"unexpected {type(exc).__name__}",
                 )
 
-        tasks = [run(provider, query) for provider in eligible for query in queries]
+        tasks = [run(route.provider, query) for route in routes for query in route.queries]
         outcomes = await asyncio.gather(*tasks) if tasks else []
         for provider_name, query, results, cache_hit, error in outcomes:
             if error:
@@ -200,7 +209,7 @@ class EvidenceMesh:
         )
         evidence: list[EvidenceItem] = []
         warnings = list(self.configuration_warnings)
-        if not eligible:
+        if not routes:
             warnings.append(f"no configured provider supports profile '{request.profile.value}'")
         if failures:
             warnings.append(
@@ -219,10 +228,15 @@ class EvidenceMesh:
 
         metadata = SearchMetadata(
             query=request.query,
-            queries_executed=queries,
-            providers_requested=[provider.name for provider in eligible],
+            queries_executed=queries_executed,
+            providers_requested=[route.provider.name for route in routes],
             providers_succeeded=sorted(succeeded),
             provider_failures=failures,
+            deployment_profile=self.settings.deployment_profile.value,
+            provider_query_counts={route.provider.name: len(route.queries) for route in routes},
+            provider_source_families={
+                route.provider.name: route.source_family.value for route in routes
+            },
             raw_result_count=len(raw_results),
             deduplicated_result_count=deduplicated_count,
             elapsed_ms=round((time.perf_counter() - started) * 1_000),
@@ -487,6 +501,13 @@ class EvidenceMesh:
             {
                 "name": provider.name,
                 "profiles": sorted(profile.value for profile in provider.supported_profiles),
+                "source_families": sorted(
+                    {
+                        provider.source_family(profile).value
+                        for profile in provider.supported_profiles
+                    }
+                ),
+                "query_budget": provider.query_budget,
                 "circuit": self._provider_circuits.snapshot(provider.name),
             }
             for provider in self.providers
@@ -497,6 +518,7 @@ class EvidenceMesh:
         return {
             "status": "ready" if self.providers and not degraded else "degraded",
             "version": "0.1.0",
+            "deployment_profile": self.settings.deployment_profile.value,
             "providers": providers,
             "configuration_warnings": self.configuration_warnings,
             "reliability": {

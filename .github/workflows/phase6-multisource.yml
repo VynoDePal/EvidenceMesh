@@ -1,0 +1,216 @@
+name: Phase 6 Multi-source Calibration
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/phase6-multisource.yml
+      - benchmarks/data/multisource_calibration_v1.json
+      - benchmarks/run_multisource_calibration.py
+      - benchmarks/results/multisource_calibration_phase6_2026-07-28.json
+      - docker/searxng/community-calibration-settings.yml
+      - docs/benchmark-protocol-v4.md
+      - src/evidencemesh/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase6-multisource-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SEARXNG_IMAGE: searxng/searxng:2026.7.26-b060c780d@sha256:d0aaeb14880e6e92bde1518fcc7261e995783367d63d95203383607bef9c6516
+  RESULT_PATH: /tmp/multisource_calibration_phase6_2026-07-28.json
+  CACHE_PATH: /tmp/evidencemesh-phase6-cache.sqlite3
+
+jobs:
+  community-calibration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Detect an already committed result
+        id: benchmark-state
+        shell: bash
+        run: |
+          if [[ -f benchmarks/results/multisource_calibration_phase6_2026-07-28.json ]]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        if: steps.benchmark-state.outputs.run == 'true'
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install benchmark environment
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Verify protocol-locked inputs
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          echo \
+            "e99e584cb115a3bb343d052b368e127acd924be7a6aabef98ae90c3c86acce34  benchmarks/data/multisource_calibration_v1.json" \
+            | sha256sum --check
+          echo \
+            "26a74f699515539fdb9bed3f1d3bda57ef908e1111d5393b4af2009fd7069645  docker/searxng/community-calibration-settings.yml" \
+            | sha256sum --check
+
+      - name: Start checksum-pinned community SearXNG
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          docker run --detach \
+            --name evidencemesh-searxng-phase6 \
+            --publish 127.0.0.1:8890:8080 \
+            --volume \
+              "$GITHUB_WORKSPACE/docker/searxng/community-calibration-settings.yml:/etc/searxng/settings.yml:ro" \
+            --env SEARXNG_BASE_URL=http://localhost:8890/ \
+            --env "SEARXNG_SECRET=$(openssl rand -hex 32)" \
+            --env FORCE_OWNERSHIP=false \
+            "$SEARXNG_IMAGE"
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:8890/ > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs evidencemesh-searxng-phase6
+          exit 1
+
+      - name: Verify SearXNG image digest
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          docker image inspect "$SEARXNG_IMAGE" --format '{{json .RepoDigests}}' |
+            grep --fixed-strings \
+              "sha256:d0aaeb14880e6e92bde1518fcc7261e995783367d63d95203383607bef9c6516"
+
+      - name: Run locked 24-case calibration
+        if: steps.benchmark-state.outputs.run == 'true'
+        env:
+          EVIDENCEMESH_BENCHMARK_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          uv run python benchmarks/run_multisource_calibration.py \
+            --suite benchmarks/data/multisource_calibration_v1.json \
+            --searxng-config docker/searxng/community-calibration-settings.yml \
+            --searxng-image "$SEARXNG_IMAGE" \
+            --searxng-url http://127.0.0.1:8890 \
+            --cache-path "$CACHE_PATH" \
+            --max-results 10 \
+            --request-timeout 20 \
+            --pause-seconds 0.5 \
+            --network-region "GitHub-hosted ubuntu-latest; physical region not exposed" \
+            --progress \
+            --output "$RESULT_PATH"
+
+      - name: Validate provenance, privacy and publish summary
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          uv run python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          path = Path(os.environ["RESULT_PATH"])
+          raw = path.read_bytes()
+          report = json.loads(raw)
+          forbidden = {"query", "title", "snippet", "content", "url", "results"}
+          expected = (
+              report["schema_version"] == 1
+              and report["benchmark"]
+                  == "evidencemesh-multisource-calibration-v1"
+              and report["suite"]["count"] == 24
+              and report["protocol"]["request_count"] == 24
+              and report["protocol"]["retry_policy"] == "none"
+              and report["protocol"]["arxiv_minimum_interval_seconds"] == 3.0
+              and report["provider_configuration"]["deployment_profile"]
+                  == "community"
+              and report["provider_configuration"]["searxng"]["sha256"]
+                  == "26a74f699515539fdb9bed3f1d3bda57ef908e1111d5393b4af2009fd7069645"
+              and "@sha256:" in
+                  report["provider_configuration"]["searxng"]["image"]
+              and len(report["outcomes"]) == 24
+              and all(not forbidden & set(outcome) for outcome in report["outcomes"])
+              and report["decision"]["cross_network_gate"]["status"]
+                  == "not_testable"
+              and report["decision"]["stage_b_200_case_run_allowed"] is False
+              and report["decision"]["release_ready"] is False
+          )
+          if not expected:
+              raise AssertionError(json.dumps(report, indent=2, sort_keys=True))
+
+          overall = report["metrics"]["overall"]
+          decision = report["decision"]
+          summary = [
+              "## Phase 6 multi-source calibration",
+              "",
+              "| Metric | Result |",
+              "|---|---:|",
+              f"| Availability | {overall['availability']['rate']} |",
+              (
+                  "| Target domain @10 | "
+                  f"{overall['target_domain_hit_at_10']['rate']} |"
+              ),
+              (
+                  "| Expected family @10 | "
+                  f"{overall['expected_family_hit_at_10']['rate']} |"
+              ),
+              (
+                  "| Partial failures | "
+                  f"{overall['partial_failure']['rate']} |"
+              ),
+              f"| p95 latency ms | {overall['latency_ms']['p95']} |",
+              (
+                  "| Contributing providers | "
+                  f"{decision['contributing_provider_count']} |"
+              ),
+              (
+                  "| Contributing families | "
+                  f"{decision['contributing_source_family_count']} |"
+              ),
+              "",
+              (
+                  "Functional gate: "
+                  f"`{decision['functional_gate_passed']}`"
+              ),
+              "",
+              "Cross-network gate: `not_testable` (1/2 environments)",
+              "",
+              "Stage B allowed: `False`",
+              "",
+              "Release decision: `no-go`",
+              "",
+              f"Raw SHA-256: `{hashlib.sha256(raw).hexdigest()}`",
+          ]
+          Path("/tmp/phase6-summary.md").write_text(
+              "\n".join(summary) + "\n",
+              encoding="utf-8",
+          )
+          PY
+          cat /tmp/phase6-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Show SearXNG logs on failure
+        if: failure() && steps.benchmark-state.outputs.run == 'true'
+        run: docker logs evidencemesh-searxng-phase6
+
+      - name: Stop calibration service
+        if: always() && steps.benchmark-state.outputs.run == 'true'
+        run: docker rm --force evidencemesh-searxng-phase6
+
+      - name: Upload raw report
+        if: always() && steps.benchmark-state.outputs.run == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: phase6-multisource-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ env.RESULT_PATH }}
+          if-no-files-found: warn
+          retention-days: 14

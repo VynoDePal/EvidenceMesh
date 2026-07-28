@@ -3,10 +3,35 @@
 from __future__ import annotations
 
 import os
+from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+
+class DeploymentProfile(StrEnum):
+    """Named provider bundles; explicit provider configuration still wins."""
+
+    COMMUNITY = "community"
+    QUALITY = "quality"
+
+
+COMMUNITY_PROVIDERS = (
+    "searxng",
+    "wikipedia",
+    "crossref",
+    "arxiv",
+    "github",
+)
+QUALITY_PROVIDERS = (
+    *COMMUNITY_PROVIDERS,
+    "openalex",
+    "brave",
+    "tavily",
+    "exa",
+    "firecrawl",
+)
 
 
 def _bool_env(name: str, default: bool) -> bool:
@@ -24,12 +49,16 @@ def _bool_env(name: str, default: bool) -> bool:
 class Settings(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    enabled_providers: list[str] = Field(
-        default_factory=lambda: ["searxng", "wikipedia", "crossref"]
-    )
+    deployment_profile: DeploymentProfile = DeploymentProfile.COMMUNITY
+    enabled_providers: list[str]
     searxng_url: str = "http://127.0.0.1:8888"
     wikipedia_url_template: str = "https://{language}.wikipedia.org/w/api.php"
     crossref_url: str = "https://api.crossref.org/works"
+    arxiv_url: str = "https://export.arxiv.org/api/query"
+    github_search_url: str = "https://api.github.com/search/repositories"
+    openalex_url: str = "https://api.openalex.org/works"
+    github_token: str | None = None
+    openalex_api_key: str | None = None
     brave_api_key: str | None = None
     tavily_api_key: str | None = None
     exa_api_key: str | None = None
@@ -54,15 +83,30 @@ class Settings(BaseModel):
     user_agent: str = "EvidenceMesh/0.1 (+https://github.com/VynoDePal/EvidenceMesh)"
     crossref_mailto: str | None = None
 
+    @model_validator(mode="before")
+    @classmethod
+    def apply_profile_defaults(cls, value: Any) -> Any:
+        if not isinstance(value, dict) or "enabled_providers" in value:
+            return value
+        data = dict(value)
+        profile = DeploymentProfile(data.get("deployment_profile", DeploymentProfile.COMMUNITY))
+        data["enabled_providers"] = list(
+            QUALITY_PROVIDERS if profile is DeploymentProfile.QUALITY else COMMUNITY_PROVIDERS
+        )
+        return data
+
     @field_validator("enabled_providers")
     @classmethod
     def normalise_providers(cls, values: list[str]) -> list[str]:
         allowed = {
+            "arxiv",
             "brave",
             "crossref",
             "ddgs",
             "exa",
             "firecrawl",
+            "github",
+            "openalex",
             "searxng",
             "tavily",
             "wikipedia",
@@ -76,14 +120,30 @@ class Settings(BaseModel):
     @classmethod
     def from_env(cls, **overrides: Any) -> Settings:
         providers = os.getenv("EVIDENCEMESH_PROVIDERS")
+        deployment_profile = os.getenv(
+            "EVIDENCEMESH_DEPLOYMENT_PROFILE",
+            DeploymentProfile.COMMUNITY.value,
+        )
         data: dict[str, Any] = {
-            "enabled_providers": (
-                providers.split(",") if providers else ["searxng", "wikipedia", "crossref"]
-            ),
+            "deployment_profile": deployment_profile,
             "searxng_url": os.getenv(
                 "EVIDENCEMESH_SEARXNG_URL",
                 "http://127.0.0.1:8888",
             ),
+            "arxiv_url": os.getenv(
+                "EVIDENCEMESH_ARXIV_URL",
+                "https://export.arxiv.org/api/query",
+            ),
+            "github_search_url": os.getenv(
+                "EVIDENCEMESH_GITHUB_SEARCH_URL",
+                "https://api.github.com/search/repositories",
+            ),
+            "openalex_url": os.getenv(
+                "EVIDENCEMESH_OPENALEX_URL",
+                "https://api.openalex.org/works",
+            ),
+            "github_token": os.getenv("GITHUB_TOKEN"),
+            "openalex_api_key": os.getenv("OPENALEX_API_KEY"),
             "brave_api_key": os.getenv("BRAVE_API_KEY"),
             "tavily_api_key": os.getenv("TAVILY_API_KEY"),
             "exa_api_key": os.getenv("EXA_API_KEY"),
@@ -112,6 +172,8 @@ class Settings(BaseModel):
             ),
             "crossref_mailto": os.getenv("CROSSREF_MAILTO"),
         }
+        if providers:
+            data["enabled_providers"] = providers.split(",")
         numeric_env = {
             "EVIDENCEMESH_SEARCH_CACHE_TTL": ("search_cache_ttl_seconds", int),
             "EVIDENCEMESH_DOCUMENT_CACHE_TTL": ("document_cache_ttl_seconds", int),

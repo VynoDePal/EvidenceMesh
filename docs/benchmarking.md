@@ -143,6 +143,19 @@ uv run python benchmarks/run_live_retrieval.py \
   --output benchmarks/results/simpleqa_retrieval_phase3_2026-07-28.json
 ```
 
+## Multi-source calibration
+
+`benchmarks/run_multisource_calibration.py` exercises the zero-key community
+route across web, reference, academic and code sources. Its 24 authored queries
+are separate from SimpleQA, and its public outcome rows omit query and result
+content. The runner enforces the suite/config hashes, traffic budget, no-retry
+policy and pre-registered gates in
+[benchmark protocol v4](benchmark-protocol-v4.md).
+
+The two-independent-network gate is intentionally separate from the functional
+metrics. A one-network pass cannot authorize the 200-case stage or a release
+claim.
+
 ## End-to-end generation
 
 `benchmarks/run_end_to_end.py` now fixes the evidence-to-answer prompt and

@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from evidencemesh.config import Settings
+from evidencemesh.config import DeploymentProfile, Settings
 from evidencemesh.models import FetchRequest, ResearchRequest, SearchRequest
 
 
@@ -102,7 +102,34 @@ def test_settings_default_to_self_hosted_zero_key_profile(
         "searxng",
         "wikipedia",
         "crossref",
+        "arxiv",
+        "github",
     ]
+
+
+def test_settings_quality_profile_adds_optional_providers(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("EVIDENCEMESH_PROVIDERS", raising=False)
+    monkeypatch.setenv("EVIDENCEMESH_DEPLOYMENT_PROFILE", "quality")
+    settings = Settings.from_env()
+    assert settings.deployment_profile is DeploymentProfile.QUALITY
+    assert settings.enabled_providers[:5] == [
+        "searxng",
+        "wikipedia",
+        "crossref",
+        "arxiv",
+        "github",
+    ]
+    assert {"openalex", "brave", "tavily", "exa", "firecrawl"} <= set(settings.enabled_providers)
+
+
+def test_explicit_provider_list_overrides_deployment_profile() -> None:
+    settings = Settings(
+        deployment_profile=DeploymentProfile.QUALITY,
+        enabled_providers=["github"],
+    )
+    assert settings.enabled_providers == ["github"]
 
 
 def test_settings_reject_invalid_boolean_environment(

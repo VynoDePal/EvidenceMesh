@@ -40,3 +40,10 @@ All notable changes to EvidenceMesh are documented here.
 - Added result-engine isolation telemetry after invalidating an initial mixed-
   engine run, and confined the ephemeral calibration secret to the container
   launch command so it is not persisted in the GitHub Actions job environment.
+- Added named zero-key `community` and optional-key `quality` deployments,
+  deterministic source-family routing and per-provider query budgets.
+- Added bounded arXiv Atom, GitHub public-repository and keyed OpenAlex
+  adapters, including arXiv pacing and a 24-hour minimum search cache.
+- Locked the 24-case Phase 6 multi-source calibration and its two-independent-
+  network release gate; Common Crawl remains an archive candidate rather than
+  being misrepresented as full-text query search.

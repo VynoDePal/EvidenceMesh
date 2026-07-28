@@ -1,0 +1,194 @@
+[
+  {
+    "id": "web-01",
+    "query": "Model Context Protocol official specification",
+    "profile": "web",
+    "expected_family": "web",
+    "target_domains": ["modelcontextprotocol.io"],
+    "topic": "web"
+  },
+  {
+    "id": "web-02",
+    "query": "Python asyncio official documentation",
+    "profile": "web",
+    "expected_family": "web",
+    "target_domains": ["docs.python.org"],
+    "topic": "web"
+  },
+  {
+    "id": "web-03",
+    "query": "FastMCP official documentation",
+    "profile": "web",
+    "expected_family": "web",
+    "target_domains": ["gofastmcp.com"],
+    "topic": "web"
+  },
+  {
+    "id": "web-04",
+    "query": "W3C Web Content Accessibility Guidelines official",
+    "profile": "web",
+    "expected_family": "web",
+    "target_domains": ["w3.org"],
+    "topic": "web"
+  },
+  {
+    "id": "web-05",
+    "query": "Ubuntu latest LTS release official",
+    "profile": "web",
+    "expected_family": "web",
+    "target_domains": ["ubuntu.com"],
+    "topic": "web"
+  },
+  {
+    "id": "web-06",
+    "query": "Rust standard library official documentation",
+    "profile": "web",
+    "expected_family": "web",
+    "target_domains": ["doc.rust-lang.org"],
+    "topic": "web"
+  },
+  {
+    "id": "reference-01",
+    "query": "Ada Lovelace",
+    "profile": "web",
+    "expected_family": "reference",
+    "target_domains": ["wikipedia.org"],
+    "topic": "reference"
+  },
+  {
+    "id": "reference-02",
+    "query": "Apollo 11",
+    "profile": "web",
+    "expected_family": "reference",
+    "target_domains": ["wikipedia.org"],
+    "topic": "reference"
+  },
+  {
+    "id": "reference-03",
+    "query": "Benin country",
+    "profile": "web",
+    "expected_family": "reference",
+    "target_domains": ["wikipedia.org"],
+    "topic": "reference"
+  },
+  {
+    "id": "reference-04",
+    "query": "Higgs boson",
+    "profile": "web",
+    "expected_family": "reference",
+    "target_domains": ["wikipedia.org"],
+    "topic": "reference"
+  },
+  {
+    "id": "reference-05",
+    "query": "World Wide Web",
+    "profile": "web",
+    "expected_family": "reference",
+    "target_domains": ["wikipedia.org"],
+    "topic": "reference"
+  },
+  {
+    "id": "reference-06",
+    "query": "Mount Kilimanjaro",
+    "profile": "web",
+    "expected_family": "reference",
+    "target_domains": ["wikipedia.org"],
+    "topic": "reference"
+  },
+  {
+    "id": "academic-01",
+    "query": "Attention Is All You Need transformer",
+    "profile": "academic",
+    "expected_family": "academic",
+    "target_domains": ["arxiv.org", "doi.org"],
+    "topic": "academic"
+  },
+  {
+    "id": "academic-02",
+    "query": "BERT Pre-training of Deep Bidirectional Transformers",
+    "profile": "academic",
+    "expected_family": "academic",
+    "target_domains": ["arxiv.org", "doi.org"],
+    "topic": "academic"
+  },
+  {
+    "id": "academic-03",
+    "query": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+    "profile": "academic",
+    "expected_family": "academic",
+    "target_domains": ["arxiv.org", "doi.org"],
+    "topic": "academic"
+  },
+  {
+    "id": "academic-04",
+    "query": "Highly accurate protein structure prediction with AlphaFold",
+    "profile": "academic",
+    "expected_family": "academic",
+    "target_domains": ["doi.org", "nature.com"],
+    "topic": "academic"
+  },
+  {
+    "id": "academic-05",
+    "query": "U-Net Convolutional Networks for Biomedical Image Segmentation",
+    "profile": "academic",
+    "expected_family": "academic",
+    "target_domains": ["arxiv.org", "doi.org"],
+    "topic": "academic"
+  },
+  {
+    "id": "academic-06",
+    "query": "Deep Residual Learning for Image Recognition",
+    "profile": "academic",
+    "expected_family": "academic",
+    "target_domains": ["arxiv.org", "doi.org"],
+    "topic": "academic"
+  },
+  {
+    "id": "code-01",
+    "query": "pydantic pydantic",
+    "profile": "code",
+    "expected_family": "code",
+    "target_domains": ["github.com"],
+    "topic": "code"
+  },
+  {
+    "id": "code-02",
+    "query": "encode httpx",
+    "profile": "code",
+    "expected_family": "code",
+    "target_domains": ["github.com"],
+    "topic": "code"
+  },
+  {
+    "id": "code-03",
+    "query": "modelcontextprotocol python sdk",
+    "profile": "code",
+    "expected_family": "code",
+    "target_domains": ["github.com"],
+    "topic": "code"
+  },
+  {
+    "id": "code-04",
+    "query": "jlowin fastmcp",
+    "profile": "code",
+    "expected_family": "code",
+    "target_domains": ["github.com"],
+    "topic": "code"
+  },
+  {
+    "id": "code-05",
+    "query": "searxng searxng",
+    "profile": "code",
+    "expected_family": "code",
+    "target_domains": ["github.com"],
+    "topic": "code"
+  },
+  {
+    "id": "code-06",
+    "query": "astral-sh uv",
+    "profile": "code",
+    "expected_family": "code",
+    "target_domains": ["github.com"],
+    "topic": "code"
+  }
+]

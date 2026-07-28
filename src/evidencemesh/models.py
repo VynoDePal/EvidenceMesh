@@ -218,6 +218,9 @@ class SearchMetadata(StrictModel):
     providers_requested: list[str]
     providers_succeeded: list[str]
     provider_failures: dict[str, str]
+    deployment_profile: str = "custom"
+    provider_query_counts: dict[str, int] = Field(default_factory=dict)
+    provider_source_families: dict[str, str] = Field(default_factory=dict)
     raw_result_count: int
     deduplicated_result_count: int
     elapsed_ms: int = Field(ge=0)

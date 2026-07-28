@@ -46,6 +46,30 @@ def test_phase5_calibration_locks_inputs_and_request_budget() -> None:
     assert "$GITHUB_ENV" not in workflow
 
 
+def test_phase6_multisource_workflow_locks_inputs_traffic_and_release_gate() -> None:
+    root = Path(__file__).parents[1]
+    workflow = (root / ".github" / "workflows" / "phase6-multisource.yml").read_text(
+        encoding="utf-8"
+    )
+    settings = yaml.safe_load(
+        (root / "docker" / "searxng" / "community-calibration-settings.yml").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert "run_multisource_calibration.py" in workflow
+    assert "--max-results 10" in workflow
+    assert "--request-timeout 20" in workflow
+    assert "--pause-seconds 0.5" in workflow
+    assert 'request_count"] == 24' in workflow
+    assert 'stage_b_200_case_run_allowed"] is False' in workflow
+    assert 'release_ready"] is False' in workflow
+    assert "searxng/searxng:2026.7.26-b060c780d@sha256:" in workflow
+    assert settings["use_default_settings"]["engines"]["keep_only"] == ["duckduckgo"]
+    assert settings["search"]["formats"] == ["html", "json"]
+    assert "secret_key" not in settings["server"]
+    assert '--env "SEARXNG_SECRET=$(openssl rand -hex 32)"' in workflow
+
+
 def test_committed_phase4_result_matches_locked_protocol() -> None:
     root = Path(__file__).parents[1]
     result_path = root / "benchmarks" / "results" / "simpleqa_retrieval_phase4_2026-07-28.json"

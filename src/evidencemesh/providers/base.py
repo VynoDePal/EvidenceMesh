@@ -12,7 +12,7 @@ from typing import Any
 
 import httpx
 
-from evidencemesh.models import ProviderResult, SearchProfile, SearchRequest
+from evidencemesh.models import ProviderResult, SearchProfile, SearchRequest, SourceType
 
 _HTML_TAG = re.compile(r"<[^>]+>")
 MAX_PROVIDER_RESPONSE_BYTES = 5_000_000
@@ -27,6 +27,29 @@ async def bounded_json_request(
     **kwargs: Any,
 ) -> dict[str, Any]:
     """Read a provider JSON object while enforcing a decompressed byte limit."""
+
+    payload = await bounded_bytes_request(
+        client,
+        method,
+        url,
+        max_bytes=max_bytes,
+        **kwargs,
+    )
+    parsed = json.loads(payload)
+    if not isinstance(parsed, dict):
+        raise ValueError("provider response must be a JSON object")
+    return parsed
+
+
+async def bounded_bytes_request(
+    client: httpx.AsyncClient,
+    method: str,
+    url: str,
+    *,
+    max_bytes: int = MAX_PROVIDER_RESPONSE_BYTES,
+    **kwargs: Any,
+) -> bytes:
+    """Read a provider response while enforcing a decompressed byte limit."""
 
     async with client.stream(method, url, **kwargs) as response:
         response.raise_for_status()
@@ -45,10 +68,7 @@ async def bounded_json_request(
             if received > max_bytes:
                 raise ValueError("provider response exceeds the byte limit")
             chunks.append(chunk)
-    payload = json.loads(b"".join(chunks))
-    if not isinstance(payload, dict):
-        raise ValueError("provider response must be a JSON object")
-    return payload
+    return b"".join(chunks)
 
 
 def strip_markup(value: str | None) -> str:
@@ -84,9 +104,17 @@ def parse_datetime(value: object) -> datetime | None:
 class SearchProvider(ABC):
     name: str
     supported_profiles: frozenset[SearchProfile] = frozenset(SearchProfile)
+    source_type: SourceType = SourceType.WEB
+    query_budget: int | None = None
+    minimum_cache_ttl_seconds: int = 0
 
     def supports(self, profile: SearchProfile) -> bool:
         return profile in self.supported_profiles
+
+    def source_family(self, profile: SearchProfile) -> SourceType:
+        if self.source_type is not SourceType.WEB:
+            return self.source_type
+        return SourceType(profile.value)
 
     @abstractmethod
     async def search(self, query: str, request: SearchRequest) -> list[ProviderResult]:

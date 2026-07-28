@@ -30,6 +30,8 @@ def _crossref_date(item: dict[str, object]) -> datetime | None:
 class CrossrefProvider(SearchProvider):
     name = "crossref"
     supported_profiles = frozenset({SearchProfile.ACADEMIC})
+    source_type = SourceType.ACADEMIC
+    query_budget = 2
 
     def __init__(self, endpoint: str, client: httpx.AsyncClient, mailto: str | None = None) -> None:
         self.endpoint = endpoint

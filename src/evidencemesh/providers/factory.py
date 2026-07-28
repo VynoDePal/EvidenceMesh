@@ -3,12 +3,15 @@ from __future__ import annotations
 import httpx
 
 from evidencemesh.config import Settings
+from evidencemesh.providers.arxiv import ArxivProvider
 from evidencemesh.providers.base import SearchProvider
 from evidencemesh.providers.brave import BraveProvider
 from evidencemesh.providers.crossref import CrossrefProvider
 from evidencemesh.providers.ddgs import DDGSProvider
 from evidencemesh.providers.exa import ExaProvider
 from evidencemesh.providers.firecrawl import FirecrawlProvider
+from evidencemesh.providers.github import GitHubProvider
+from evidencemesh.providers.openalex import OpenAlexProvider
 from evidencemesh.providers.searxng import SearxngProvider
 from evidencemesh.providers.tavily import TavilyProvider
 from evidencemesh.providers.wikipedia import WikipediaProvider
@@ -21,7 +24,9 @@ def build_providers(
     providers: list[SearchProvider] = []
     warnings: list[str] = []
     for name in settings.enabled_providers:
-        if name == "searxng":
+        if name == "arxiv":
+            providers.append(ArxivProvider(settings.arxiv_url, client))
+        elif name == "searxng":
             providers.append(SearxngProvider(settings.searxng_url, client))
         elif name == "ddgs":
             providers.append(DDGSProvider())
@@ -31,6 +36,25 @@ def build_providers(
             providers.append(
                 CrossrefProvider(settings.crossref_url, client, settings.crossref_mailto)
             )
+        elif name == "github":
+            providers.append(
+                GitHubProvider(
+                    settings.github_search_url,
+                    client,
+                    settings.github_token,
+                )
+            )
+        elif name == "openalex":
+            if settings.openalex_api_key:
+                providers.append(
+                    OpenAlexProvider(
+                        settings.openalex_url,
+                        settings.openalex_api_key,
+                        client,
+                    )
+                )
+            else:
+                warnings.append("openalex disabled: OPENALEX_API_KEY is not configured")
         elif name == "brave":
             if settings.brave_api_key:
                 providers.append(BraveProvider(settings.brave_api_key, client))

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import json
+import time
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -16,13 +18,21 @@ from evidencemesh.models import (
     SearchRequest,
     TimeRange,
 )
-from evidencemesh.providers.base import bounded_json_request, parse_datetime, strip_markup
+from evidencemesh.providers.arxiv import ArxivProvider
+from evidencemesh.providers.base import (
+    bounded_bytes_request,
+    bounded_json_request,
+    parse_datetime,
+    strip_markup,
+)
 from evidencemesh.providers.brave import BraveProvider
 from evidencemesh.providers.crossref import CrossrefProvider, _crossref_date
 from evidencemesh.providers.ddgs import DDGSProvider
 from evidencemesh.providers.exa import ExaProvider
 from evidencemesh.providers.factory import build_providers
 from evidencemesh.providers.firecrawl import FirecrawlProvider
+from evidencemesh.providers.github import GitHubProvider
+from evidencemesh.providers.openalex import OpenAlexProvider, reconstruct_abstract
 from evidencemesh.providers.searxng import SearxngProvider
 from evidencemesh.providers.tavily import TavilyProvider
 from evidencemesh.providers.wikipedia import WikipediaProvider
@@ -99,6 +109,17 @@ async def test_bounded_json_request_validates_size_and_shape() -> None:
     with pytest.raises(ValueError, match="JSON object"):
         await bounded_json_request(list_client, "GET", "https://example.com")
     await list_client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_bounded_bytes_request_returns_bounded_payload() -> None:
+    client = httpx.AsyncClient(
+        transport=httpx.MockTransport(lambda request: httpx.Response(200, content=b"bounded"))
+    )
+    assert (
+        await bounded_bytes_request(client, "GET", "https://example.com", max_bytes=7) == b"bounded"
+    )
+    await client.aclose()
 
 
 @pytest.mark.asyncio
@@ -229,6 +250,186 @@ async def test_crossref_provider_prefers_doi_and_abstract() -> None:
     assert result.url == "https://doi.org/10.1234/example"
     assert result.snippet == "Alpha evidence"
     assert captured[0].url.params["mailto"] == "dev@example.com"
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_arxiv_provider_parses_atom_and_uses_single_query_budget() -> None:
+    captured: list[httpx.Request] = []
+    atom = b"""<?xml version="1.0" encoding="UTF-8"?>
+    <feed xmlns="http://www.w3.org/2005/Atom"
+          xmlns:arxiv="http://arxiv.org/schemas/atom">
+      <entry>
+        <id>http://arxiv.org/abs/1706.03762v7</id>
+        <updated>2023-08-02T00:41:18Z</updated>
+        <published>2017-06-12T17:57:34Z</published>
+        <title>Attention Is All You Need</title>
+        <summary>A transformer architecture.</summary>
+        <author><name>Ashish Vaswani</name></author>
+        <category term="cs.CL"/>
+        <arxiv:doi>10.48550/arXiv.1706.03762</arxiv:doi>
+        <link href="http://arxiv.org/abs/1706.03762v7" rel="alternate"/>
+      </entry>
+    </feed>"""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured.append(request)
+        return httpx.Response(200, content=atom)
+
+    client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    provider = ArxivProvider(
+        "https://export.arxiv.org/api/query",
+        client,
+        minimum_interval_seconds=0,
+    )
+    result = (
+        await provider.search(
+            "transformer",
+            SearchRequest(query="transformer", profile=SearchProfile.ACADEMIC),
+        )
+    )[0]
+    assert provider.query_budget == 1
+    assert provider.minimum_cache_ttl_seconds == 86_400
+    assert result.url == "https://arxiv.org/abs/1706.03762v7"
+    assert result.metadata["categories"] == ["cs.CL"]
+    assert captured[0].url.params["search_query"] == "all:transformer"
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_arxiv_provider_rejects_xml_declarations() -> None:
+    client = httpx.AsyncClient(
+        transport=httpx.MockTransport(
+            lambda request: httpx.Response(
+                200,
+                content=b"<!DOCTYPE feed [<!ENTITY x 'unsafe'>]><feed/>",
+            )
+        )
+    )
+    provider = ArxivProvider(
+        "https://export.arxiv.org/api/query",
+        client,
+        minimum_interval_seconds=0,
+    )
+    with pytest.raises(ProviderError, match="ValueError"):
+        await provider.search(
+            "transformer",
+            SearchRequest(query="transformer", profile=SearchProfile.ACADEMIC),
+        )
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_arxiv_provider_serializes_and_paces_calls() -> None:
+    atom = b'<feed xmlns="http://www.w3.org/2005/Atom"/>'
+    starts: list[float] = []
+    active = 0
+    maximum_active = 0
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal active, maximum_active
+        starts.append(time.monotonic())
+        active += 1
+        maximum_active = max(maximum_active, active)
+        await asyncio.sleep(0.01)
+        active -= 1
+        return httpx.Response(200, content=atom)
+
+    client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    provider = ArxivProvider(
+        "https://export.arxiv.org/api/query",
+        client,
+        minimum_interval_seconds=0.02,
+    )
+    request = SearchRequest(query="transformer", profile=SearchProfile.ACADEMIC)
+    await asyncio.gather(
+        provider.search("first query", request),
+        provider.search("second query", request),
+    )
+    assert maximum_active == 1
+    assert starts[1] - starts[0] >= 0.018
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_github_provider_searches_public_repositories() -> None:
+    captured: list[httpx.Request] = []
+    client = json_client(
+        {
+            "items": [
+                {
+                    "full_name": "modelcontextprotocol/python-sdk",
+                    "html_url": "https://github.com/modelcontextprotocol/python-sdk",
+                    "description": "<b>MCP</b> Python SDK",
+                    "updated_at": "2026-07-20T12:00:00Z",
+                    "score": 1.0,
+                    "stargazers_count": 1234,
+                    "language": "Python",
+                    "default_branch": "main",
+                    "fork": False,
+                    "license": {"spdx_id": "MIT"},
+                }
+            ]
+        },
+        captured,
+    )
+    result = (
+        await GitHubProvider(
+            "https://api.github.com/search/repositories",
+            client,
+            "token",
+        ).search(
+            "model context protocol sdk",
+            SearchRequest(
+                query="model context protocol sdk",
+                profile=SearchProfile.CODE,
+            ),
+        )
+    )[0]
+    assert result.source_type.value == "code"
+    assert result.metadata["stars"] == 1234
+    assert captured[0].headers["authorization"] == "Bearer token"
+    assert captured[0].url.params["q"] == "model context protocol sdk"
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_openalex_provider_requires_factory_key_and_rebuilds_abstract() -> None:
+    captured: list[httpx.Request] = []
+    client = json_client(
+        {
+            "results": [
+                {
+                    "id": "https://openalex.org/W1",
+                    "doi": "https://doi.org/10.1234/example",
+                    "display_name": "Evidence paper",
+                    "publication_date": "2025-01-03",
+                    "abstract_inverted_index": {
+                        "Evidence": [0],
+                        "matters": [1],
+                    },
+                    "authorships": [{"author": {"display_name": "Ada Lovelace"}}],
+                    "primary_location": {"landing_page_url": "https://doi.org/10.1234/example"},
+                    "cited_by_count": 5,
+                    "type": "article",
+                }
+            ]
+        },
+        captured,
+    )
+    result = (
+        await OpenAlexProvider(
+            "https://api.openalex.org/works",
+            "free-key",
+            client,
+        ).search(
+            "evidence",
+            SearchRequest(query="evidence", profile=SearchProfile.ACADEMIC),
+        )
+    )[0]
+    assert reconstruct_abstract({"second": [1], "first": [0]}) == "first second"
+    assert result.snippet == "Evidence matters"
+    assert captured[0].url.params["api_key"] == "free-key"
     await client.aclose()
 
 
@@ -416,16 +617,21 @@ async def test_ddgs_provider_web_and_news(monkeypatch: pytest.MonkeyPatch) -> No
 async def test_provider_factory_keys_and_self_hosted_firecrawl(tmp_path: Path) -> None:
     settings = Settings(
         enabled_providers=[
+            "arxiv",
             "searxng",
             "ddgs",
             "wikipedia",
             "crossref",
+            "github",
+            "openalex",
             "brave",
             "tavily",
             "exa",
             "firecrawl",
         ],
         brave_api_key="brave",
+        github_token="github",  # noqa: S106 - inert test credential
+        openalex_api_key="openalex",
         tavily_api_key="tavily",
         exa_api_key="exa",
         firecrawl_url="http://127.0.0.1:3002",
@@ -441,11 +647,11 @@ async def test_provider_factory_keys_and_self_hosted_firecrawl(tmp_path: Path) -
 @pytest.mark.asyncio
 async def test_provider_factory_warns_for_missing_optional_keys(tmp_path: Path) -> None:
     settings = Settings(
-        enabled_providers=["brave", "tavily", "exa", "firecrawl"],
+        enabled_providers=["openalex", "brave", "tavily", "exa", "firecrawl"],
         cache_path=tmp_path / "cache.sqlite3",
     )
     client = httpx.AsyncClient()
     providers, warnings = build_providers(settings, client)
     assert providers == []
-    assert len(warnings) == 4
+    assert len(warnings) == 5
     await client.aclose()

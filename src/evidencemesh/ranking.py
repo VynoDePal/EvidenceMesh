@@ -23,11 +23,14 @@ _CLICKBAIT = re.compile(
     re.IGNORECASE,
 )
 _PROVIDER_WEIGHTS = {
+    "arxiv": 1.10,
     "brave": 1.05,
     "crossref": 1.10,
     "ddgs": 0.95,
     "exa": 1.05,
     "firecrawl": 1.00,
+    "github": 1.05,
+    "openalex": 1.10,
     "searxng": 1.00,
     "tavily": 1.05,
     "wikipedia": 1.00,

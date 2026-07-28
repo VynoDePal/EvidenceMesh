@@ -1,5 +1,6 @@
 """Evidence-first web research infrastructure for AI agents."""
 
+from evidencemesh.config import DeploymentProfile
 from evidencemesh.engine import EvidenceMesh
 from evidencemesh.models import (
     FetchedDocument,
@@ -11,6 +12,7 @@ from evidencemesh.models import (
 )
 
 __all__ = [
+    "DeploymentProfile",
     "EvidenceMesh",
     "FetchRequest",
     "FetchedDocument",

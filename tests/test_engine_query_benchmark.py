@@ -177,6 +177,32 @@ class AcademicOnlyProvider(StaticProvider):
     supported_profiles = frozenset({SearchProfile.ACADEMIC})
 
 
+class BudgetedProvider(StaticProvider):
+    query_budget = 1
+
+
+@pytest.mark.asyncio
+async def test_router_applies_query_budget_and_reports_source_family(
+    settings,
+    result: ProviderResult,
+) -> None:
+    provider = BudgetedProvider("budgeted", [result])
+    engine = EvidenceMesh(settings, providers=[provider])
+    response = await engine.search(
+        SearchRequest(
+            query="base query",
+            query_variants=["variant one", "variant two"],
+            use_cache=False,
+        )
+    )
+    assert provider.calls == ["base query"]
+    assert response.metadata.queries_executed == ["base query"]
+    assert response.metadata.provider_query_counts == {"budgeted": 1}
+    assert response.metadata.provider_source_families == {"budgeted": "web"}
+    assert response.metadata.deployment_profile == "community"
+    await engine.aclose()
+
+
 class SlowFetcher(StaticFetcher):
     async def fetch(self, url: str, *, max_chars: int = 30_000) -> FetchedDocument:
         await asyncio.sleep(0.05)

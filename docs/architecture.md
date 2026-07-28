@@ -10,19 +10,22 @@ retrieval layer usable from MCP hosts, Python applications and shell workflows.
 
 1. Validate the typed request and domain policy.
 2. Build transparent query variants or use caller-supplied subqueries.
-3. Read per-provider cache entries, then admit compatible provider calls through
-   independent circuit breakers and execute them concurrently with deadlines
-   that include queue wait.
-4. Reject unsafe result URL forms, canonicalise accepted URLs and merge exact
+3. Route each search profile to compatible source families, enforce transparent
+   per-provider query budgets, then read per-provider cache entries.
+4. Admit routed calls through independent circuit breakers and execute safe
+   groups concurrently with deadlines that include queue wait. Providers with
+   stricter upstream rules, such as arXiv, add their own serialization and
+   pacing.
+5. Reject unsafe result URL forms, canonicalise accepted URLs and merge exact
    or same-domain near-duplicate titles.
-5. Fuse ranks using weighted reciprocal-rank fusion.
-6. Add lexical relevance, source/provenance signals and freshness.
-7. Enforce a per-domain cap for source diversity.
-8. Optionally resolve selected URLs, reject any non-public answer and connect
+6. Fuse ranks using weighted reciprocal-rank fusion.
+7. Add lexical relevance, source/provenance signals and freshness.
+8. Enforce a per-domain cap for source diversity.
+9. Optionally resolve selected URLs, reject any non-public answer and connect
    to the exact validated address while preserving HTTP Host and TLS SNI.
-9. Extract main HTML/PDF text under time, byte, character and PDF-page limits;
+10. Extract main HTML/PDF text under time, byte, character and PDF-page limits;
    flag risky patterns and compute SHA-256.
-10. Return compact evidence and stable citation IDs.
+11. Return compact evidence, stable citation IDs and route telemetry.
 
 ## Ranking
 
@@ -50,7 +53,8 @@ whether to close or reopen the circuit.
 
 ## Extension points
 
-Implement `SearchProvider.search()` and register the adapter in
+Implement `SearchProvider.search()`, declare its supported profiles, source
+family, query budget and minimum cache lifetime, then register the adapter in
 `providers/factory.py`. Provider adapters must preserve provider-native rank,
 identify authentication requirements and translate dates/source types without
 inventing missing values.

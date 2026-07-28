@@ -23,8 +23,10 @@ Most search MCPs are thin wrappers around one paid API. Most deep-research
 projects bundle a particular model, search service and report writer.
 EvidenceMesh separates those concerns:
 
-- **Free core:** self-hosted SearXNG, Wikipedia and Crossref; DDGS is an
-  environment-sensitive opt-in adapter.
+- **Free core:** self-hosted SearXNG plus direct Wikipedia, Crossref, arXiv and
+  GitHub repository adapters; DDGS is an environment-sensitive opt-in.
+- **Deterministic routing:** web, reference, academic and code sources receive
+  only compatible queries, with conservative budgets for rate-limited APIs.
 - **Provider federation:** reciprocal-rank fusion across independent result lists.
 - **Evidence, not hidden answers:** quotations, retrieval time, content hash,
   provenance signals and risk flags.
@@ -121,29 +123,39 @@ research workflow.
 
 ## Providers
 
-| Provider | Key required | Default | Profiles |
-|---|---:|---:|---|
-| SearXNG | No | Yes | Web, news, academic, code |
-| DDGS | No | No | Web, news, academic, code |
-| Wikipedia | No | Yes | Web, academic |
-| Crossref | No | Yes | Academic |
-| Brave | Yes | No | Web, news, academic, code |
-| Tavily | Yes | No | Web, news, academic, code |
-| Exa | Yes | No | Web, news, academic, code |
-| Firecrawl | Cloud only | No | Web, news, academic, code |
+| Provider | Key required | `community` | `quality` | Profiles |
+|---|---:|---:|---:|---|
+| SearXNG | No | Yes | Yes | Web, news |
+| Wikipedia | No | Yes | Yes | Web, academic |
+| Crossref | No | Yes | Yes | Academic |
+| arXiv | No | Yes | Yes | Academic |
+| GitHub repositories | No; token optional | Yes | Yes | Code |
+| OpenAlex | Free key | No | Optional | Academic |
+| Brave | Yes | No | Optional | Web, news, academic, code |
+| Tavily | Yes | No | Optional | Web, news, academic, code |
+| Exa | Yes | No | Optional | Web, news, academic, code |
+| Firecrawl | Cloud only | No | Optional | Web, news, academic, code |
+| DDGS | No | No | No | Web, news, academic, code |
 
-Select providers with:
+The default `community` profile requires no API key. The `quality` profile adds
+optional adapters but silently omits none: every missing key produces a
+configuration warning.
 
 ```bash
-export EVIDENCEMESH_PROVIDERS=searxng,wikipedia,crossref
+# Named bundles.
+export EVIDENCEMESH_DEPLOYMENT_PROFILE=community  # or quality
+
+# An explicit list overrides the selected bundle.
+export EVIDENCEMESH_PROVIDERS=searxng,wikipedia,crossref,arxiv,github
 export EVIDENCEMESH_SEARXNG_URL=http://127.0.0.1:8888
 export EVIDENCEMESH_PROVIDER_FAILURE_THRESHOLD=3
 export EVIDENCEMESH_PROVIDER_RECOVERY_SECONDS=60
 ```
 
-Optional keys use `BRAVE_API_KEY`, `TAVILY_API_KEY`, `EXA_API_KEY` and
-`FIRECRAWL_API_KEY`. A self-hosted Firecrawl endpoint can be selected with
-`EVIDENCEMESH_FIRECRAWL_URL` and does not require a key.
+Optional keys use `OPENALEX_API_KEY`, `GITHUB_TOKEN`, `BRAVE_API_KEY`,
+`TAVILY_API_KEY`, `EXA_API_KEY` and `FIRECRAWL_API_KEY`. A self-hosted
+Firecrawl endpoint can be selected with `EVIDENCEMESH_FIRECRAWL_URL` and does
+not require a key.
 
 See [provider documentation](docs/providers.md) for limitations and data flow.
 
@@ -195,6 +207,7 @@ See the [benchmark methodology](docs/benchmarking.md), the
 [Phase 2/3 protocol](docs/benchmark-protocol-v1.md), the
 [locked Phase 4 protocol](docs/benchmark-protocol-v2.md), the
 [locked Phase 5 protocol](docs/benchmark-protocol-v3.md), the
+[locked Phase 6 protocol](docs/benchmark-protocol-v4.md), the
 [end-to-end guide](docs/end-to-end-benchmark.md), the
 [competitive snapshot](docs/competitive-benchmark.md) and the committed
 [offline v1 result](benchmarks/results/offline_v1.md). A
@@ -223,7 +236,12 @@ valid
 found only one eligible engine: DuckDuckGo returned results for 12/12 cases and
 found the target domain for 11/12, while every other candidate failed at least
 one gate. Because `1 < 2`, production configuration is unchanged and the
-200-case retrieval and local-model stages were not run.
+200-case retrieval and local-model stages were not run. Phase 6 evaluates a
+different, multi-source composition: DuckDuckGo is isolated behind private
+SearXNG for general web, while direct reference, academic and repository
+verticals add independent coverage. Its protocol requires successful
+replication on two independently administered networks; that release gate
+cannot be waived when only one environment is available.
 
 ## Security
 
@@ -251,7 +269,7 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current suite contains 164 tests and reports over 90% branch-aware coverage
+The current suite contains 179 tests and reports over 90% branch-aware coverage
 locally. CI repeats the suite on Python 3.11, 3.12 and 3.13.
 
 ## License
