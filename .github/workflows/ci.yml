@@ -49,7 +49,7 @@ jobs:
           enable-cache: true
       - run: uv python install ${{ matrix.python-version }}
       - run: uv sync --extra dev --locked --python ${{ matrix.python-version }}
-      - run: uv run pytest --cov=evidencemesh --cov-report=term-missing
+      - run: .venv/bin/python -m pytest --cov=evidencemesh --cov-report=term-missing
 
   package:
     runs-on: ubuntu-latest
