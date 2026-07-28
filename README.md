@@ -190,7 +190,10 @@ See the [benchmark methodology](docs/benchmarking.md), the
 [offline v1 result](benchmarks/results/offline_v1.md). A
 [zero-key live smoke test](benchmarks/results/live_smoke_2026-07-28.md) records
 connectivity and partial-failure behavior without presenting one question as a
-quality score.
+quality score. The
+[30-row SimpleQA retrieval pilot](benchmarks/results/simpleqa_retrieval_pilot_2026-07-28.md)
+is the first comparative live baseline; it records a no-go for superiority and
+release claims.
 
 ## Security
 

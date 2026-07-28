@@ -17,6 +17,12 @@ is committed only as an interface/connectivity check; it is not included in any
 quality claim. The locked [benchmark protocol v1](benchmark-protocol-v1.md)
 defines the comparative Phase 2 pilot and the publication rules.
 
+The first
+[30-row SimpleQA retrieval pilot](../benchmarks/results/simpleqa_retrieval_pilot_2026-07-28.md)
+is a critical baseline. It demonstrated provider failure isolation but did not
+meet the proposed reliability or latency gates and does not support a
+superiority claim.
+
 ## Offline federation benchmark
 
 `src/evidencemesh/data/federation_v1.json` is a packaged fixture containing

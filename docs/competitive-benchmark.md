@@ -65,6 +65,13 @@ The Phase 2 retrieval pilot compares EvidenceMesh provider compositions only.
 It must not be presented as a leaderboard against the complete products in this
 table.
 
+Its [dated result](../benchmarks/results/simpleqa_retrieval_pilot_2026-07-28.md)
+found that the zero-key federated profile tied Wikipedia-only on retrieval
+metrics because DDGS failed every call in the managed test environment. The
+federation preserved partial results but inherited the failed provider's
+15-second deadline. This is a reliability finding, not evidence of competitive
+superiority.
+
 ## Fair next comparison
 
 Use EvidenceMesh as the retrieval MCP for a fixed external model, then compare
