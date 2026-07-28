@@ -208,7 +208,39 @@ def test_profiles_share_provider_snapshots() -> None:
     assert result["answer_rank"] == 1
     assert result["gold_url_rank"] == 1
     assert result["provider_call_count"] == 1
+    assert result["provider_attempt_count"] == 1
+    assert result["provider_skip_count"] == 0
     assert result["latency_ms"] == 12.0
+
+
+def test_circuit_open_snapshot_is_reported_as_a_skipped_attempt() -> None:
+    row = BenchmarkRow(
+        id="q1",
+        question="What is the answer?",
+        answers=("Alpha",),
+    )
+    snapshot = ProviderSnapshot(
+        row_id=row.id,
+        provider="stub",
+        latency_ms=0.1,
+        results=(),
+        error="stub circuit is open",
+        attempted=False,
+        failure_kind="circuit_open",
+    )
+    result = outcome_from_snapshots(
+        row,
+        Profile("only-stub", ("stub",)),
+        {"stub": snapshot},
+        max_results=10,
+    )
+    metrics = aggregate_profile([result], max_results=10)
+
+    assert result["provider_attempt_count"] == 0
+    assert result["provider_skip_count"] == 1
+    assert result["circuit_open_skip_count"] == 1
+    assert metrics["provider_skip_rate"] == 1.0
+    assert metrics["circuit_open_skips"] == 1
 
 
 def test_rate_and_profile_aggregation() -> None:

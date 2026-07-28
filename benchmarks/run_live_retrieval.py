@@ -35,7 +35,7 @@ import httpx
 
 from evidencemesh import EvidenceMesh, SearchRequest
 from evidencemesh.config import Settings
-from evidencemesh.errors import ProviderError
+from evidencemesh.errors import ProviderCircuitOpenError, ProviderError
 from evidencemesh.models import ProviderResult, SearchHit, SearchProfile
 from evidencemesh.providers.base import SearchProvider
 from evidencemesh.ranking import rank_results
@@ -91,6 +91,8 @@ class ProviderSnapshot:
     latency_ms: float
     results: tuple[ProviderResult, ...]
     error: str | None
+    attempted: bool = True
+    failure_kind: str | None = None
 
 
 def sha256_bytes(payload: bytes) -> str:
@@ -387,12 +389,12 @@ def result_record(hit: SearchHit) -> dict[str, Any]:
 
 
 async def retrieve_provider_snapshot(
+    engine: EvidenceMesh,
     provider: SearchProvider,
     row: BenchmarkRow,
     *,
     max_results: int,
     language: str,
-    request_timeout: float,
 ) -> ProviderSnapshot:
     started = time.perf_counter()
     request = SearchRequest(
@@ -404,9 +406,16 @@ async def retrieve_provider_snapshot(
     )
     try:
         if not provider.supports(request.profile):
-            raise ProviderError(f"{provider.name} does not support the web profile")
-        async with asyncio.timeout(request_timeout):
-            results = await provider.search(row.question, request)
+            return ProviderSnapshot(
+                row_id=row.id,
+                provider=provider.name,
+                latency_ms=round((time.perf_counter() - started) * 1_000, 3),
+                results=(),
+                error=f"{provider.name} does not support the web profile",
+                attempted=False,
+                failure_kind="unsupported_profile",
+            )
+        results, _ = await engine._provider_search(provider, row.question, request)
         return ProviderSnapshot(
             row_id=row.id,
             provider=provider.name,
@@ -414,20 +423,30 @@ async def retrieve_provider_snapshot(
             results=tuple(results),
             error=None,
         )
-    except TimeoutError:
-        error = f"{provider.name} exceeded the configured request deadline"
+    except ProviderCircuitOpenError as exc:
+        error = str(exc)
+        attempted = False
+        failure_kind = "circuit_open"
     except ProviderError as exc:
         error = str(exc)
+        attempted = True
+        failure_kind = "provider_error"
     except (httpx.HTTPError, ValueError) as exc:
         error = f"{provider.name} request failed: {type(exc).__name__}"
+        attempted = True
+        failure_kind = "request_error"
     except Exception as exc:
         error = f"{provider.name} request failed unexpectedly: {type(exc).__name__}"
+        attempted = True
+        failure_kind = "unexpected_error"
     return ProviderSnapshot(
         row_id=row.id,
         provider=provider.name,
         latency_ms=round((time.perf_counter() - started) * 1_000, 3),
         results=(),
         error=error,
+        attempted=attempted,
+        failure_kind=failure_kind,
     )
 
 
@@ -441,6 +460,10 @@ def outcome_from_snapshots(
     failures: list[dict[str, str]] = []
     raw_results: list[ProviderResult] = []
     latencies: list[float] = []
+    provider_attempts = 0
+    provider_skips = 0
+    provider_attempt_failures = 0
+    circuit_open_skips = 0
     for provider_name in profile.providers:
         snapshot = snapshots.get(provider_name)
         if snapshot is None:
@@ -448,13 +471,25 @@ def outcome_from_snapshots(
                 {
                     "provider": provider_name,
                     "error": "provider is not active; inspect benchmark health",
+                    "kind": "inactive_provider",
                 }
             )
+            provider_skips += 1
             continue
         latencies.append(snapshot.latency_ms)
         raw_results.extend(snapshot.results)
+        provider_attempts += int(snapshot.attempted)
+        provider_skips += int(not snapshot.attempted)
         if snapshot.error:
-            failures.append({"provider": provider_name, "error": snapshot.error})
+            failures.append(
+                {
+                    "provider": provider_name,
+                    "error": snapshot.error,
+                    "kind": snapshot.failure_kind or "unknown",
+                }
+            )
+            provider_attempt_failures += int(snapshot.attempted)
+            circuit_open_skips += int(snapshot.failure_kind == "circuit_open")
     try:
         hits, deduplicated_count = rank_results(
             raw_results,
@@ -477,6 +512,10 @@ def outcome_from_snapshots(
         "deduplicated_result_count": deduplicated_count,
         "unique_domains": len({hit.domain for hit in hits}),
         "provider_call_count": len(profile.providers),
+        "provider_attempt_count": provider_attempts,
+        "provider_skip_count": provider_skips,
+        "provider_attempt_failure_count": provider_attempt_failures,
+        "circuit_open_skip_count": circuit_open_skips,
         "provider_failure_count": len(failures),
         "answer_rank": first_answer_rank(row.answers, hits),
         "gold_url_rank": first_gold_url_rank(row.gold_urls, hits),
@@ -525,6 +564,12 @@ def aggregate_profile(
     gold_outcomes = [outcome for outcome in outcomes if outcome["has_gold_urls"]]
     provider_calls = sum(int(outcome["provider_call_count"]) for outcome in outcomes)
     provider_failures = sum(int(outcome["provider_failure_count"]) for outcome in outcomes)
+    provider_attempts = sum(int(outcome.get("provider_attempt_count", 0)) for outcome in outcomes)
+    provider_skips = sum(int(outcome.get("provider_skip_count", 0)) for outcome in outcomes)
+    provider_attempt_failures = sum(
+        int(outcome.get("provider_attempt_failure_count", 0)) for outcome in outcomes
+    )
+    circuit_open_skips = sum(int(outcome.get("circuit_open_skip_count", 0)) for outcome in outcomes)
     metrics: dict[str, Any] = {
         "sample_count": len(outcomes),
         "availability": rate_metric(
@@ -539,6 +584,15 @@ def aggregate_profile(
         ),
         "provider_calls": provider_calls,
         "provider_failures": provider_failures,
+        "provider_attempts": provider_attempts,
+        "provider_skips": provider_skips,
+        "circuit_open_skips": circuit_open_skips,
+        "provider_attempt_failure_rate": (
+            round(provider_attempt_failures / provider_attempts, 6) if provider_attempts else None
+        ),
+        "provider_skip_rate": (
+            round(provider_skips / provider_calls, 6) if provider_calls else None
+        ),
         "latency_ms": {
             "p50": percentile(latencies, 0.50),
             "p95": percentile(latencies, 0.95),
@@ -663,6 +717,8 @@ async def evaluate(
     max_results: int,
     concurrency: int,
     request_timeout: float,
+    provider_failure_threshold: int,
+    provider_recovery_seconds: float,
     language: str,
     network_region: str,
     progress: bool,
@@ -677,19 +733,21 @@ async def evaluate(
         cache_path=Path(":memory:"),
         request_timeout_seconds=request_timeout,
         max_concurrency=concurrency,
+        provider_failure_threshold=provider_failure_threshold,
+        provider_recovery_seconds=provider_recovery_seconds,
     )
     async with EvidenceMesh(settings) as engine:
         provider_by_name = {provider.name: provider for provider in engine.providers}
-        engine_health = engine.health()
+        engine_health_before = engine.health()
 
         async def run(row: BenchmarkRow, provider: SearchProvider) -> ProviderSnapshot:
             async with semaphore:
                 snapshot = await retrieve_provider_snapshot(
+                    engine,
                     provider,
                     row,
                     max_results=max_results,
                     language=language,
-                    request_timeout=request_timeout,
                 )
                 if progress:
                     print(
@@ -710,6 +768,7 @@ async def evaluate(
             if provider_name in provider_by_name
         ]
         snapshots = list(await asyncio.gather(*tasks))
+        engine_health_after = engine.health()
 
     snapshot_index = {(snapshot.row_id, snapshot.provider): snapshot for snapshot in snapshots}
     outcomes = [
@@ -728,7 +787,8 @@ async def evaluate(
     ]
     active_names = set(provider_by_name)
     health = {
-        "shared_provider_engine": engine_health,
+        "shared_provider_engine_before": engine_health_before,
+        "shared_provider_engine_after": engine_health_after,
         "profiles": {
             profile.name: {
                 "status": (
@@ -750,7 +810,7 @@ async def evaluate(
 
     sample_ids = [row.id for row in rows]
     report = {
-        "schema_version": 2,
+        "schema_version": 3,
         "benchmark": "retrieval-only/simpleqa-source-recall-v1",
         "task_type": "retrieval_only",
         "dataset": dataset_metadata,
@@ -769,11 +829,16 @@ async def evaluate(
                 {"name": profile.name, "providers": list(profile.providers)} for profile in profiles
             ],
             "snapshot_strategy": (
-                "one live call per provider/question; every profile is ranked from the "
-                "same provider snapshots"
+                "one logical snapshot per provider/question; every profile is ranked "
+                "from the same snapshots, and open circuits are recorded as skipped "
+                "network attempts"
             ),
             "provider_call_order": "interleaved question-major",
-            "live_provider_call_count": len(snapshots),
+            "logical_provider_call_count": len(snapshots),
+            "live_provider_call_count": sum(snapshot.attempted for snapshot in snapshots),
+            "circuit_open_skip_count": sum(
+                snapshot.failure_kind == "circuit_open" for snapshot in snapshots
+            ),
             "provider_endpoints": provider_endpoint_manifest(settings, provider_names),
             "max_results": max_results,
             "language": language,
@@ -781,6 +846,8 @@ async def evaluate(
             "fetch_content": False,
             "global_provider_call_concurrency": concurrency,
             "request_timeout_seconds": request_timeout,
+            "provider_failure_threshold": provider_failure_threshold,
+            "provider_recovery_seconds": provider_recovery_seconds,
         },
         "environment": {
             "started_at": started_at.isoformat(),
@@ -875,6 +942,17 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-results", type=int, default=10, choices=range(1, 51))
     parser.add_argument("--concurrency", type=int, default=3, choices=range(1, 17))
     parser.add_argument("--request-timeout", type=float, default=15.0)
+    parser.add_argument(
+        "--provider-failure-threshold",
+        type=int,
+        default=3,
+        choices=range(1, 21),
+    )
+    parser.add_argument(
+        "--provider-recovery-seconds",
+        type=float,
+        default=60.0,
+    )
     parser.add_argument("--language", default="en")
     parser.add_argument(
         "--network-region",
@@ -904,6 +982,8 @@ def main() -> None:
                 max_results=arguments.max_results,
                 concurrency=arguments.concurrency,
                 request_timeout=arguments.request_timeout,
+                provider_failure_threshold=arguments.provider_failure_threshold,
+                provider_recovery_seconds=arguments.provider_recovery_seconds,
                 language=arguments.language,
                 network_region=arguments.network_region,
                 progress=arguments.progress,

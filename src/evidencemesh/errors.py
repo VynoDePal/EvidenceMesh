@@ -13,6 +13,10 @@ class ProviderError(EvidenceMeshError):
     """Raised when a search provider cannot satisfy a request."""
 
 
+class ProviderCircuitOpenError(ProviderError):
+    """Raised when a provider call is skipped by its reliability circuit."""
+
+
 class FetchError(EvidenceMeshError):
     """Raised when a document cannot be fetched safely."""
 

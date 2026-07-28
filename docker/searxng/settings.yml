@@ -19,3 +19,10 @@ ui:
 formats:
   - html
   - json
+
+outgoing:
+  request_timeout: 4.0
+  max_request_timeout: 8.0
+  pool_connections: 100
+  pool_maxsize: 20
+  enable_http2: true

@@ -67,7 +67,10 @@ uv run evidencemesh research "Compare open source deep-research systems"
 ```
 
 If SearXNG is unavailable, the other configured providers still run and the
-response contains an explicit partial-failure warning.
+response contains an explicit partial-failure warning. After three consecutive
+failures, EvidenceMesh opens that provider's process-local circuit for 60
+seconds so later searches do not repeatedly inherit its full deadline. One
+half-open recovery probe is allowed after the cooldown.
 
 ## MCP setup
 
@@ -132,6 +135,8 @@ Select providers with:
 ```bash
 export EVIDENCEMESH_PROVIDERS=searxng,ddgs,wikipedia,crossref
 export EVIDENCEMESH_SEARXNG_URL=http://127.0.0.1:8888
+export EVIDENCEMESH_PROVIDER_FAILURE_THRESHOLD=3
+export EVIDENCEMESH_PROVIDER_RECOVERY_SECONDS=60
 ```
 
 Optional keys use `BRAVE_API_KEY`, `TAVILY_API_KEY`, `EXA_API_KEY` and

@@ -10,8 +10,9 @@ retrieval layer usable from MCP hosts, Python applications and shell workflows.
 
 1. Validate the typed request and domain policy.
 2. Build transparent query variants or use caller-supplied subqueries.
-3. Execute compatible providers concurrently with per-call deadlines that
-   include queue wait and with per-provider cache entries.
+3. Read per-provider cache entries, then admit compatible provider calls through
+   independent circuit breakers and execute them concurrently with deadlines
+   that include queue wait.
 4. Reject unsafe result URL forms, canonicalise accepted URLs and merge exact
    or same-domain near-duplicate titles.
 5. Fuse ranks using weighted reciprocal-rank fusion.
@@ -42,7 +43,10 @@ truth score. The deterministic tie-break is the canonical URL.
 Provider calls are isolated. A failed provider-query pair is included in
 `metadata.provider_failures`; successful results are still returned. A complete
 absence of eligible providers produces an empty, typed response with a warning.
-Timeouts are reported through the same partial-failure path.
+Timeouts are reported through the same partial-failure path. Three consecutive
+operational failures open the provider's process-local circuit for 60 seconds by
+default. Calls fail fast while open; after recovery delay, one probe determines
+whether to close or reopen the circuit.
 
 ## Extension points
 

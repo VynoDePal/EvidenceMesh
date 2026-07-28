@@ -111,6 +111,30 @@ async def test_search_isolates_provider_failures(settings, result: ProviderResul
     await engine.aclose()
 
 
+@pytest.mark.asyncio
+async def test_search_opens_provider_circuit_after_repeated_failures(settings) -> None:
+    protected_settings = settings.model_copy(
+        update={
+            "provider_failure_threshold": 2,
+            "provider_recovery_seconds": 60.0,
+        }
+    )
+    provider = StaticProvider("unstable", error=ProviderError("provider offline"))
+    engine = EvidenceMesh(protected_settings, providers=[provider])
+
+    first = await engine.search(SearchRequest(query="first failure", use_cache=False))
+    second = await engine.search(SearchRequest(query="second failure", use_cache=False))
+    third = await engine.search(SearchRequest(query="skipped call", use_cache=False))
+
+    assert provider.calls == ["first failure", "second failure"]
+    assert "provider offline" in first.metadata.provider_failures["unstable:first failure"]
+    assert "provider offline" in second.metadata.provider_failures["unstable:second failure"]
+    assert "circuit is open" in third.metadata.provider_failures["unstable:skipped call"]
+    assert engine.health()["status"] == "degraded"
+    assert engine.health()["providers"][0]["circuit"]["consecutive_failures"] == 2
+    await engine.aclose()
+
+
 class SlowProvider(StaticProvider):
     async def search(self, query: str, request: SearchRequest) -> list[ProviderResult]:
         await asyncio.sleep(0.05)

@@ -73,6 +73,8 @@ def test_settings_from_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> N
     monkeypatch.setenv("EVIDENCEMESH_ALLOW_PRIVATE_NETWORKS", "yes")
     monkeypatch.setenv("EVIDENCEMESH_RESPECT_ROBOTS_TXT", "off")
     monkeypatch.setenv("EVIDENCEMESH_MAX_CONCURRENCY", "3")
+    monkeypatch.setenv("EVIDENCEMESH_PROVIDER_FAILURE_THRESHOLD", "4")
+    monkeypatch.setenv("EVIDENCEMESH_PROVIDER_RECOVERY_SECONDS", "45")
     monkeypatch.setenv("EVIDENCEMESH_DNS_TIMEOUT", "4")
     monkeypatch.setenv("EVIDENCEMESH_MAX_PDF_PAGES", "25")
     settings = Settings.from_env()
@@ -81,6 +83,8 @@ def test_settings_from_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> N
     assert settings.allow_private_networks is True
     assert settings.respect_robots_txt is False
     assert settings.max_concurrency == 3
+    assert settings.provider_failure_threshold == 4
+    assert settings.provider_recovery_seconds == 45
     assert settings.dns_timeout_seconds == 4
     assert settings.max_pdf_pages == 25
 

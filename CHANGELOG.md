@@ -17,3 +17,6 @@ All notable changes to EvidenceMesh are documented here.
 - Frozen-lock runtime dependency installation and container entrypoint smoke
   validation in CI.
 - Reproducible offline benchmark and live retrieval benchmark harness.
+- Per-provider circuit breakers with fail-fast open state, single half-open
+  recovery probes and runtime health telemetry.
+- Checksum-pinned SearXNG Compose profile with a live adapter integration job.

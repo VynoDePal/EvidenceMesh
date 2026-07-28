@@ -68,3 +68,51 @@ jobs:
       - run: docker compose config --quiet
       - run: docker build --tag evidencemesh:ci .
       - run: docker run --rm evidencemesh:ci providers
+
+  searxng-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: true
+      - run: uv python install 3.11
+      - run: uv sync --extra dev --locked --python 3.11
+      - name: Start checksum-pinned SearXNG
+        run: docker compose up --detach --wait --wait-timeout 180 searxng
+      - name: Verify image digest
+        run: |
+          docker image inspect \
+            "searxng/searxng:2026.7.26-b060c780d@sha256:d0aaeb14880e6e92bde1518fcc7261e995783367d63d95203383607bef9c6516" \
+            --format '{{json .RepoDigests}}' |
+            grep --fixed-strings \
+              "sha256:d0aaeb14880e6e92bde1518fcc7261e995783367d63d95203383607bef9c6516"
+      - name: Exercise the SearXNG adapter
+        env:
+          EVIDENCEMESH_PROVIDERS: searxng
+          EVIDENCEMESH_SEARXNG_URL: http://127.0.0.1:8888
+          EVIDENCEMESH_CACHE_PATH: /tmp/evidencemesh-searxng.sqlite3
+        run: |
+          uv run evidencemesh search \
+            "SearXNG metasearch engine" \
+            --limit 3 \
+            --output json > /tmp/evidencemesh-searxng-smoke.json
+          uv run python - <<'PY'
+          import json
+          from pathlib import Path
+
+          response = json.loads(
+              Path("/tmp/evidencemesh-searxng-smoke.json").read_text(encoding="utf-8")
+          )
+          metadata = response["metadata"]
+          assert metadata["providers_requested"] == ["searxng"]
+          assert metadata["providers_succeeded"] == ["searxng"]
+          assert metadata["provider_failures"] == {}
+          PY
+      - name: Show SearXNG logs on failure
+        if: failure()
+        run: docker compose logs --no-color searxng
+      - name: Stop SearXNG
+        if: always()
+        run: docker compose down --volumes

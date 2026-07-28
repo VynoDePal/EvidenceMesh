@@ -5,8 +5,10 @@
 ### SearXNG
 
 EvidenceMesh calls `/search?format=json`. The included Compose configuration is
-for local development. Public SearXNG instances can throttle or disable JSON,
-so a private instance is recommended.
+for local development. It pins SearXNG `2026.7.26-b060c780d` and its
+multi-platform image digest, enables JSON explicitly, and bounds upstream engine
+requests to eight seconds. Public SearXNG instances can throttle or disable
+JSON, so a private instance is recommended.
 
 ### DDGS
 
@@ -36,6 +38,26 @@ Provider pricing, retention and quotas are controlled by those providers and can
 change independently. EvidenceMesh never labels a limited free tier as an
 unlimited free backend. Every HTTP provider response is streamed through a
 5 MB decompressed-size limit before JSON parsing.
+
+## Runtime reliability
+
+Each provider has an independent, process-local circuit breaker. Operational
+exceptions and EvidenceMesh request deadlines count as failed attempts; empty
+but valid result lists count as successful responses. The default circuit opens
+after three consecutive failures, rejects later network attempts immediately
+for 60 seconds, and then permits one half-open recovery probe. A success closes
+the circuit. Cached search results are read before circuit admission, so useful
+cached evidence remains available while an upstream service recovers.
+
+Configure the policy with:
+
+```bash
+export EVIDENCEMESH_PROVIDER_FAILURE_THRESHOLD=3
+export EVIDENCEMESH_PROVIDER_RECOVERY_SECONDS=60
+```
+
+The `health` tool reports each provider's current state, failure count and
+remaining recovery delay without making a network request.
 
 ## Custom/self-hosted services
 

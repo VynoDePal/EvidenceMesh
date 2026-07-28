@@ -37,6 +37,7 @@ from evidencemesh.providers import build_providers
 from evidencemesh.providers.base import SearchProvider
 from evidencemesh.query import build_query_plan
 from evidencemesh.ranking import rank_results
+from evidencemesh.reliability import ProviderCircuitBreaker
 from evidencemesh.urls import PinnedURLResolver, canonicalize_url
 
 
@@ -80,6 +81,10 @@ class EvidenceMesh:
         self.fetcher = fetcher or WebFetcher(self.settings, client=supplied_client)
         self.cache = cache or SQLiteCache(self.settings.cache_path)
         self._semaphore = asyncio.Semaphore(self.settings.max_concurrency)
+        self._provider_circuits = ProviderCircuitBreaker(
+            self.settings.provider_failure_threshold,
+            self.settings.provider_recovery_seconds,
+        )
         self._closed = False
 
     async def __aenter__(self) -> EvidenceMesh:
@@ -119,14 +124,23 @@ class EvidenceMesh:
             cached = self.cache.get_json("search", key)
             if cached is not None:
                 return [ProviderResult.model_validate(item) for item in cached], True
+        permit = await self._provider_circuits.acquire(provider.name)
         try:
             async with asyncio.timeout(self.settings.request_timeout_seconds):
                 async with self._semaphore:
                     results = await provider.search(query, request)
+        except asyncio.CancelledError:
+            await self._provider_circuits.release(permit)
+            raise
         except TimeoutError as exc:
+            await self._provider_circuits.record_failure(permit)
             raise ProviderError(
                 f"{provider.name} exceeded the configured request deadline"
             ) from exc
+        except Exception:
+            await self._provider_circuits.record_failure(permit)
+            raise
+        await self._provider_circuits.record_success(permit)
         if request.use_cache:
             self.cache.set_json(
                 "search",
@@ -469,17 +483,28 @@ class EvidenceMesh:
         return BatchSearchResponse(responses=responses, failures=failures)
 
     def health(self) -> dict[str, Any]:
+        providers: list[dict[str, Any]] = [
+            {
+                "name": provider.name,
+                "profiles": sorted(profile.value for profile in provider.supported_profiles),
+                "circuit": self._provider_circuits.snapshot(provider.name),
+            }
+            for provider in self.providers
+        ]
+        degraded = any(
+            provider["circuit"]["status"] in {"open", "half_open"} for provider in providers
+        )
         return {
-            "status": "ready" if self.providers else "degraded",
+            "status": "ready" if self.providers and not degraded else "degraded",
             "version": "0.1.0",
-            "providers": [
-                {
-                    "name": provider.name,
-                    "profiles": sorted(profile.value for profile in provider.supported_profiles),
-                }
-                for provider in self.providers
-            ],
+            "providers": providers,
             "configuration_warnings": self.configuration_warnings,
+            "reliability": {
+                "circuit_breaker": "enabled",
+                "failure_threshold": self.settings.provider_failure_threshold,
+                "recovery_seconds": self.settings.provider_recovery_seconds,
+                "state_scope": "process-local",
+            },
             "safety": {
                 "private_networks_allowed": self.settings.allow_private_networks,
                 "nonstandard_ports_allowed": self.settings.allow_nonstandard_ports,

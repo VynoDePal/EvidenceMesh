@@ -52,6 +52,11 @@ source URL/domain recall, lexical answer coverage in titles/snippets,
 availability, provider failures, diversity and latency. This is retrieval
 measurement, not end-to-end QA accuracy.
 
+The runner uses the same provider admission path as the SDK. Reports distinguish
+logical provider calls, actual network attempts, attempt failures and
+circuit-open skips. Every compared profile is still ranked from the same shared
+snapshot for a given provider/question pair.
+
 Every published result must include:
 
 - EvidenceMesh commit SHA and configuration;
@@ -76,6 +81,22 @@ uv run python benchmarks/run_live_retrieval.py \
   --request-timeout 15 \
   --progress \
   --output benchmarks/results/simpleqa_retrieval_pilot_2026-07-28.json
+```
+
+For the Phase 3 reliability run:
+
+```bash
+uv run python benchmarks/run_live_retrieval.py \
+  --simpleqa \
+  --sample-size 200 \
+  --seed 0 \
+  --max-results 10 \
+  --concurrency 3 \
+  --request-timeout 15 \
+  --provider-failure-threshold 3 \
+  --provider-recovery-seconds 60 \
+  --progress \
+  --output benchmarks/results/simpleqa_retrieval_phase3_2026-07-28.json
 ```
 
 ## Planned standard evaluations

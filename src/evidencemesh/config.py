@@ -39,6 +39,8 @@ class Settings(BaseModel):
     search_cache_ttl_seconds: int = Field(default=3_600, ge=0, le=604_800)
     document_cache_ttl_seconds: int = Field(default=86_400, ge=0, le=2_592_000)
     request_timeout_seconds: float = Field(default=15.0, ge=1.0, le=120.0)
+    provider_failure_threshold: int = Field(default=3, ge=1, le=20)
+    provider_recovery_seconds: float = Field(default=60.0, ge=1.0, le=3_600.0)
     fetch_timeout_seconds: float = Field(default=20.0, ge=1.0, le=120.0)
     dns_timeout_seconds: float = Field(default=5.0, ge=0.5, le=30.0)
     extraction_timeout_seconds: float = Field(default=10.0, ge=1.0, le=60.0)
@@ -114,6 +116,14 @@ class Settings(BaseModel):
             "EVIDENCEMESH_SEARCH_CACHE_TTL": ("search_cache_ttl_seconds", int),
             "EVIDENCEMESH_DOCUMENT_CACHE_TTL": ("document_cache_ttl_seconds", int),
             "EVIDENCEMESH_REQUEST_TIMEOUT": ("request_timeout_seconds", float),
+            "EVIDENCEMESH_PROVIDER_FAILURE_THRESHOLD": (
+                "provider_failure_threshold",
+                int,
+            ),
+            "EVIDENCEMESH_PROVIDER_RECOVERY_SECONDS": (
+                "provider_recovery_seconds",
+                float,
+            ),
             "EVIDENCEMESH_FETCH_TIMEOUT": ("fetch_timeout_seconds", float),
             "EVIDENCEMESH_DNS_TIMEOUT": ("dns_timeout_seconds", float),
             "EVIDENCEMESH_EXTRACTION_TIMEOUT": ("extraction_timeout_seconds", float),
