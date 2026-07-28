@@ -17,7 +17,9 @@ is committed only as an interface/connectivity check; it is not included in any
 quality claim. The historical [benchmark protocol v1](benchmark-protocol-v1.md)
 defines the Phase 2/3 DDGS runs. The locked
 [benchmark protocol v2](benchmark-protocol-v2.md) defines the Phase 4
-self-hosted SearXNG run and controlled answer-generation track.
+self-hosted SearXNG run and controlled answer-generation track. The locked
+[benchmark protocol v3](benchmark-protocol-v3.md) defines the Phase 5
+engine-calibration gate before any further SimpleQA run.
 
 The first
 [30-row SimpleQA retrieval pilot](../benchmarks/results/simpleqa_retrieval_pilot_2026-07-28.md)
@@ -38,6 +40,12 @@ used the unchanged sample on a GitHub-hosted runner. SearXNG completed four of
 ten actual attempts before its circuit opened; 190 later calls were skipped.
 Federated availability was 71.5%, partial-query failure was 98.0%, and the
 release decision remained no-go.
+
+Phase 5 does not choose SearXNG engines on those SimpleQA questions. Its
+independent 12-query navigational suite issues one request to each of eight
+keyless engines, with no retry and pre-registered response, availability,
+authoritative-domain, unresponsive and latency gates. A new 200-case run is
+blocked unless at least two engines pass all gates.
 
 ## Offline federation benchmark
 

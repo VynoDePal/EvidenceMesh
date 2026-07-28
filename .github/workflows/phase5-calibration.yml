@@ -1,0 +1,185 @@
+name: Phase 5 SearXNG Calibration
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/phase5-calibration.yml
+      - benchmarks/data/searxng_calibration_v1.json
+      - benchmarks/run_searxng_calibration.py
+      - docker/searxng/calibration-settings.yml
+      - docs/benchmark-protocol-v3.md
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase5-calibration-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SEARXNG_IMAGE: searxng/searxng:2026.7.26-b060c780d@sha256:d0aaeb14880e6e92bde1518fcc7261e995783367d63d95203383607bef9c6516
+  RESULT_PATH: /tmp/searxng_calibration_phase5_2026-07-28.json
+
+jobs:
+  engine-calibration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Detect an already committed result
+        id: benchmark-state
+        shell: bash
+        run: |
+          if [[ -f benchmarks/results/searxng_calibration_phase5_2026-07-28.json ]]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        if: steps.benchmark-state.outputs.run == 'true'
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install benchmark environment
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Verify locked inputs
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          echo \
+            "06a5d97980063999768127439f594090007dff7e793ad61567d248e134779dce  benchmarks/data/searxng_calibration_v1.json" \
+            | sha256sum --check
+          echo \
+            "856ce08d2bf0c3512cb5a40f91aa54fde1860cad827bd8208fc09059c47d1584  docker/searxng/calibration-settings.yml" \
+            | sha256sum --check
+
+      - name: Generate an ephemeral SearXNG secret
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: echo "SEARXNG_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+
+      - name: Start checksum-pinned calibration service
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          docker run --detach \
+            --name evidencemesh-searxng-calibration \
+            --publish 127.0.0.1:8889:8080 \
+            --volume \
+              "$GITHUB_WORKSPACE/docker/searxng/calibration-settings.yml:/etc/searxng/settings.yml:ro" \
+            --env SEARXNG_BASE_URL=http://localhost:8889/ \
+            --env SEARXNG_SECRET \
+            --env FORCE_OWNERSHIP=false \
+            "$SEARXNG_IMAGE"
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:8889/ > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs evidencemesh-searxng-calibration
+          exit 1
+
+      - name: Verify SearXNG image digest
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          docker image inspect "$SEARXNG_IMAGE" --format '{{json .RepoDigests}}' |
+            grep --fixed-strings \
+              "sha256:d0aaeb14880e6e92bde1518fcc7261e995783367d63d95203383607bef9c6516"
+
+      - name: Run 96-request engine calibration
+        if: steps.benchmark-state.outputs.run == 'true'
+        env:
+          EVIDENCEMESH_BENCHMARK_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          uv run python benchmarks/run_searxng_calibration.py \
+            --suite benchmarks/data/searxng_calibration_v1.json \
+            --base-url http://127.0.0.1:8889 \
+            --provider-config docker/searxng/calibration-settings.yml \
+            --provider-image "$SEARXNG_IMAGE" \
+            --max-results 10 \
+            --request-timeout 12 \
+            --pause-seconds 0.25 \
+            --network-region "GitHub-hosted ubuntu-latest; physical region not exposed" \
+            --progress \
+            --output "$RESULT_PATH"
+
+      - name: Validate provenance and publish summary
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          uv run python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          path = Path(os.environ["RESULT_PATH"])
+          report = json.loads(path.read_text(encoding="utf-8"))
+          expected = (
+              report["schema_version"] == 1
+              and report["benchmark"] == "searxng-engine-calibration-v1"
+              and report["suite"]["count"] == 12
+              and report["protocol"]["request_count"] == 96
+              and report["protocol"]["retry_policy"] == "none"
+              and len(report["metrics"]) == 8
+              and len(report["outcomes"]) == 96
+              and report["provider"]["config_sha256"]
+                  == "856ce08d2bf0c3512cb5a40f91aa54fde1860cad827bd8208fc09059c47d1584"
+              and "@sha256:" in report["provider"]["image"]
+          )
+          if not expected:
+              raise AssertionError(json.dumps(report, indent=2, sort_keys=True))
+
+          summary = [
+              "## Phase 5 SearXNG engine calibration",
+              "",
+              "| Engine | Response | Availability | Target @10 | Unresponsive | p95 ms | Eligible |",
+              "|---|---:|---:|---:|---:|---:|:---:|",
+          ]
+          for engine, metrics in report["metrics"].items():
+              summary.append(
+                  f"| {engine} | {metrics['response_success']['rate']} | "
+                  f"{metrics['availability']['rate']} | "
+                  f"{metrics['target_domain_hit_at_10']['rate']} | "
+                  f"{metrics['unresponsive']['rate']} | "
+                  f"{metrics['latency_ms']['p95']} | "
+                  f"{'yes' if metrics['eligible'] else 'no'} |"
+              )
+          selection = report["selection"]
+          summary.extend(
+              [
+                  "",
+                  f"Eligible engines: `{selection['eligible_engines']}`",
+                  "",
+                  f"200-case gate open: `{selection['full_200_case_run_allowed']}`",
+              ]
+          )
+          Path("/tmp/phase5-calibration-summary.md").write_text(
+              "\n".join(summary) + "\n",
+              encoding="utf-8",
+          )
+          PY
+          cat /tmp/phase5-calibration-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Show SearXNG logs on failure
+        if: failure() && steps.benchmark-state.outputs.run == 'true'
+        run: docker logs evidencemesh-searxng-calibration
+
+      - name: Stop calibration service
+        if: always() && steps.benchmark-state.outputs.run == 'true'
+        run: docker rm --force evidencemesh-searxng-calibration
+
+      - name: Upload raw report
+        if: always() && steps.benchmark-state.outputs.run == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: phase5-calibration-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ env.RESULT_PATH }}
+          if-no-files-found: warn
+          retention-days: 14

@@ -25,6 +25,25 @@ def test_phase4_workflow_locks_benchmark_scale_and_provenance() -> None:
     assert "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a" in workflow
 
 
+def test_phase5_calibration_locks_inputs_and_request_budget() -> None:
+    root = Path(__file__).parents[1]
+    workflow = (root / ".github" / "workflows" / "phase5-calibration.yml").read_text(
+        encoding="utf-8"
+    )
+    settings = yaml.safe_load(
+        (root / "docker" / "searxng" / "calibration-settings.yml").read_text(encoding="utf-8")
+    )
+    assert "run_searxng_calibration.py" in workflow
+    assert 'request_count"] == 96' in workflow
+    assert "--pause-seconds 0.25" in workflow
+    assert "--request-timeout 12" in workflow
+    assert "searxng/searxng:2026.7.26-b060c780d@sha256:" in workflow
+    assert settings["search"]["formats"] == ["html", "json"]
+    assert len(settings["use_default_settings"]["engines"]["keep_only"]) == 8
+    assert "secret_key" not in settings["server"]
+    assert "--env SEARXNG_SECRET" in workflow
+
+
 def test_committed_phase4_result_matches_locked_protocol() -> None:
     root = Path(__file__).parents[1]
     result_path = root / "benchmarks" / "results" / "simpleqa_retrieval_phase4_2026-07-28.json"

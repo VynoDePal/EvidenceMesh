@@ -29,3 +29,7 @@ All notable changes to EvidenceMesh are documented here.
 - Published the Phase 4 retrieval result: SearXNG completed four of ten network
   attempts before 190 circuit skips; the overall release decision remains
   no-go.
+- Locked the Phase 5 provider-selection protocol, independent 12-query
+  calibration suite and 96-request GitHub workflow for eight keyless SearXNG
+  engines. The workflow blocks a tuned 200-case run unless at least two
+  engines pass every pre-registered gate.

@@ -194,6 +194,7 @@ results must record provider configuration, date, dataset sample and hardware.
 See the [benchmark methodology](docs/benchmarking.md), the
 [Phase 2/3 protocol](docs/benchmark-protocol-v1.md), the
 [locked Phase 4 protocol](docs/benchmark-protocol-v2.md), the
+[locked Phase 5 protocol](docs/benchmark-protocol-v3.md), the
 [end-to-end guide](docs/end-to-end-benchmark.md), the
 [competitive snapshot](docs/competitive-benchmark.md) and the committed
 [offline v1 result](benchmarks/results/offline_v1.md). A
@@ -213,7 +214,10 @@ controlled end-to-end generation runner. The
 found only 71.5% federated availability and a 98.0% partial-query failure rate
 because the SearXNG upstream path became unavailable. The release decision
 therefore remains no-go. No answer-quality score is claimed until the separate
-official evaluator is run.
+official evaluator is run. Phase 5 first calibrates eight keyless SearXNG
+engines on a separate 12-query suite. Its pre-registered gate prevents tuning
+and evaluating on the same SimpleQA questions: a new 200-case run is allowed
+only if at least two engines pass every reliability and relevance threshold.
 
 ## Security
 
@@ -241,7 +245,7 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current suite contains 156 tests and reports over 90% branch-aware coverage
+The current suite contains 163 tests and reports over 90% branch-aware coverage
 locally. CI repeats the suite on Python 3.11, 3.12 and 3.13.
 
 ## License
