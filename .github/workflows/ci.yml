@@ -106,9 +106,13 @@ jobs:
               Path("/tmp/evidencemesh-searxng-smoke.json").read_text(encoding="utf-8")
           )
           metadata = response["metadata"]
-          assert metadata["providers_requested"] == ["searxng"]
-          assert metadata["providers_succeeded"] == ["searxng"]
-          assert metadata["provider_failures"] == {}
+          expected = (
+              metadata["providers_requested"] == ["searxng"]
+              and metadata["providers_succeeded"] == ["searxng"]
+              and metadata["provider_failures"] == {}
+          )
+          if not expected:
+              raise AssertionError(json.dumps(metadata, indent=2, sort_keys=True))
           PY
       - name: Show SearXNG logs on failure
         if: failure()
