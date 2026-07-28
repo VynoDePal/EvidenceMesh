@@ -66,6 +66,7 @@ packages = ["src/evidencemesh"]
 [tool.pytest.ini_options]
 addopts = "-ra --strict-config --strict-markers"
 asyncio_mode = "auto"
+pythonpath = ["."]
 testpaths = ["tests"]
 
 [tool.coverage.run]

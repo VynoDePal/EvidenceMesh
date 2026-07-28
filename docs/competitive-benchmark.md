@@ -2,6 +2,9 @@
 
 Snapshot date: **2026-07-28**.
 
+Repository revisions and the exact fairness rules are pinned in
+[benchmark protocol v1](benchmark-protocol-v1.md).
+
 ## Scope
 
 EvidenceMesh is retrieval infrastructure for an external model. GPT Researcher,
@@ -57,6 +60,10 @@ SimpleQA Verified or another shared live benchmark. Those comparisons require
 the same client model, prompts, provider access, tool-call budget, date and
 hardware. Until raw comparable runs exist, “best” is a product goal, not a
 result.
+
+The Phase 2 retrieval pilot compares EvidenceMesh provider compositions only.
+It must not be presented as a leaderboard against the complete products in this
+table.
 
 ## Fair next comparison
 

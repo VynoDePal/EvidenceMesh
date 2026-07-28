@@ -173,15 +173,19 @@ uv run pytest
 # Deterministic RRF/dedup regression benchmark.
 uv run evidencemesh benchmark-offline
 
-# Live retrieval evaluation using a local JSONL dataset.
+# Interleaved zero-key retrieval pilot on checksum-pinned SimpleQA.
 uv run python benchmarks/run_live_retrieval.py \
-  --dataset path/to/questions.jsonl \
-  --limit 100
+  --simpleqa \
+  --sample-size 30 \
+  --seed 0 \
+  --max-results 10 \
+  --output benchmarks/results/simpleqa_retrieval_pilot_2026-07-28.json
 ```
 
 The offline benchmark tests algorithms, not real-world search quality. Live
 results must record provider configuration, date, dataset sample and hardware.
 See the [benchmark methodology](docs/benchmarking.md), the
+[locked protocol](docs/benchmark-protocol-v1.md), the
 [competitive snapshot](docs/competitive-benchmark.md) and the committed
 [offline v1 result](benchmarks/results/offline_v1.md). A
 [zero-key live smoke test](benchmarks/results/live_smoke_2026-07-28.md) records

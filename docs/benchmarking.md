@@ -14,7 +14,8 @@ suite cannot be bit-for-bit deterministic because the web changes.
 
 A one-question [zero-key smoke run](../benchmarks/results/live_smoke_2026-07-28.md)
 is committed only as an interface/connectivity check; it is not included in any
-quality claim.
+quality claim. The locked [benchmark protocol v1](benchmark-protocol-v1.md)
+defines the comparative Phase 2 pilot and the publication rules.
 
 ## Offline federation benchmark
 
@@ -33,30 +34,48 @@ The fixture is synthetic and is only a regression gate.
 
 ## Live retrieval benchmark
 
-`benchmarks/run_live_retrieval.py` accepts JSONL objects:
+`benchmarks/run_live_retrieval.py` can download the checksum-pinned official
+SimpleQA dataset or accept local JSONL objects:
 
 ```json
-{"id":"q1","question":"...","answer":"..."}
+{"id":"q1","question":"...","answer":"...","gold_urls":["https://example.org/source"]}
 ```
 
-It checks whether the normalised expected answer appears in a result title,
-snippet or extracted evidence quotation. This is retrieval answer coverage, not
-end-to-end QA accuracy.
+It interleaves named provider profiles on the same sample. It measures curated
+source URL/domain recall, lexical answer coverage in titles/snippets,
+availability, provider failures, diversity and latency. This is retrieval
+measurement, not end-to-end QA accuracy.
 
 Every published result must include:
 
 - EvidenceMesh commit SHA and configuration;
 - provider endpoints and enabled providers;
-- dataset name, revision, sample IDs and sampling seed;
+- dataset name, byte-level SHA-256, sample IDs, manifest SHA-256 and sampling
+  seed;
 - UTC start/end time;
 - machine and network region;
 - cache state;
-- hit metrics, latency percentiles and failure rate;
+- hit metrics with 95% Wilson intervals, latency percentiles and failure rates;
 - raw machine-readable output.
+
+The default zero-key pilot is:
+
+```bash
+uv run python benchmarks/run_live_retrieval.py \
+  --simpleqa \
+  --sample-size 30 \
+  --seed 0 \
+  --max-results 10 \
+  --concurrency 3 \
+  --request-timeout 15 \
+  --progress \
+  --output benchmarks/results/simpleqa_retrieval_pilot_2026-07-28.json
+```
 
 ## Planned standard evaluations
 
-- SimpleQA Verified for factual retrieval coverage.
+- SimpleQA for checksum-pinned source recall and, separately, answer accuracy
+  with the official judge.
 - BrowseComp for hard, multi-hop browsing with a fixed client model.
 - DeepResearch Bench FACT/RACE for citation and report quality.
 
