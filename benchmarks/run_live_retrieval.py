@@ -26,6 +26,7 @@ import unicodedata
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
@@ -121,6 +122,30 @@ def percentile(values: list[float], fraction: float) -> float:
 
 def commit_sha() -> str | None:
     return os.getenv("EVIDENCEMESH_BENCHMARK_COMMIT") or os.getenv("GITHUB_SHA")
+
+
+def package_version(name: str) -> str:
+    try:
+        return version(name)
+    except PackageNotFoundError:
+        return "not-installed"
+
+
+def provider_endpoint_manifest(
+    settings: Settings,
+    provider_names: tuple[str, ...],
+) -> dict[str, str]:
+    known = {
+        "brave": "https://api.search.brave.com/res/v1/{vertical}/search",
+        "crossref": settings.crossref_url,
+        "ddgs": "backend selected at runtime by the ddgs package",
+        "exa": "https://api.exa.ai/search",
+        "firecrawl": settings.firecrawl_url,
+        "searxng": settings.searxng_url,
+        "tavily": "https://api.tavily.com/search",
+        "wikipedia": settings.wikipedia_url_template,
+    }
+    return {name: known[name] for name in provider_names}
 
 
 def stable_row_id(question: str) -> str:
@@ -639,6 +664,7 @@ async def evaluate(
     concurrency: int,
     request_timeout: float,
     language: str,
+    network_region: str,
     progress: bool,
 ) -> dict[str, Any]:
     started_at = datetime.now(UTC)
@@ -748,6 +774,7 @@ async def evaluate(
             ),
             "provider_call_order": "interleaved question-major",
             "live_provider_call_count": len(snapshots),
+            "provider_endpoints": provider_endpoint_manifest(settings, provider_names),
             "max_results": max_results,
             "language": language,
             "cache": False,
@@ -761,6 +788,11 @@ async def evaluate(
             "commit_sha": commit_sha(),
             "python": platform.python_version(),
             "platform": platform.platform(),
+            "network_region": network_region,
+            "dependency_versions": {
+                package: package_version(package)
+                for package in ("ddgs", "fastmcp", "httpx", "pydantic")
+            },
         },
         "health": health,
         "metrics": {
@@ -844,6 +876,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--concurrency", type=int, default=3, choices=range(1, 17))
     parser.add_argument("--request-timeout", type=float, default=15.0)
     parser.add_argument("--language", default="en")
+    parser.add_argument(
+        "--network-region",
+        default=os.getenv(
+            "EVIDENCEMESH_BENCHMARK_REGION",
+            "not exposed by execution environment",
+        ),
+    )
     parser.add_argument("--output", type=Path)
     parser.add_argument("--progress", action="store_true")
     return parser
@@ -866,6 +905,7 @@ def main() -> None:
                 concurrency=arguments.concurrency,
                 request_timeout=arguments.request_timeout,
                 language=arguments.language,
+                network_region=arguments.network_region,
                 progress=arguments.progress,
             )
         )

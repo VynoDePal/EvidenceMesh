@@ -21,11 +21,13 @@ from benchmarks.run_live_retrieval import (
     parse_jsonl,
     parse_profiles,
     parse_simpleqa,
+    provider_endpoint_manifest,
     rate_metric,
     select_sample,
     stable_row_id,
     url_identity,
 )
+from evidencemesh.config import Settings
 from evidencemesh.models import ProviderResult, SearchHit, SourceType
 
 
@@ -153,6 +155,16 @@ def test_profile_parser_defaults_and_rejects_duplicates() -> None:
         parse_profiles(["same=ddgs", "same=wikipedia"])
     with pytest.raises(ValueError, match="syntax"):
         parse_profiles(["broken"])
+
+
+def test_provider_endpoint_manifest_is_explicit_and_secret_free() -> None:
+    settings = Settings(
+        enabled_providers=["ddgs", "wikipedia"],
+        wikipedia_url_template="https://{language}.wikipedia.test/w/api.php",
+    )
+    manifest = provider_endpoint_manifest(settings, ("ddgs", "wikipedia"))
+    assert manifest["wikipedia"] == "https://{language}.wikipedia.test/w/api.php"
+    assert "runtime" in manifest["ddgs"]
 
 
 def test_rank_metrics() -> None:

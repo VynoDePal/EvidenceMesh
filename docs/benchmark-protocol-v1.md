@@ -89,6 +89,7 @@ EVIDENCEMESH_BENCHMARK_COMMIT="$(git rev-parse HEAD)" \
   --max-results 10 \
   --concurrency 3 \
   --request-timeout 15 \
+  --network-region not-exposed-by-managed-runtime \
   --progress \
   --output benchmarks/results/simpleqa_retrieval_pilot_2026-07-28.json
 ```
