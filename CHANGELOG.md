@@ -26,3 +26,6 @@ All notable changes to EvidenceMesh are documented here.
   SearXNG path and added explicit upstream-engine failure accounting.
 - Added a 200-case SearXNG GitHub Actions benchmark with image/config
   provenance and a privacy-separated end-to-end answer-generation harness.
+- Published the Phase 4 retrieval result: SearXNG completed four of ten network
+  attempts before 190 circuit skips; the overall release decision remains
+  no-go.

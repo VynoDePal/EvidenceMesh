@@ -53,8 +53,12 @@ or a formal security certification.
 
 ## Release gate
 
-Status: **conditional pass for an alpha release**.
+Status: **conditional security pass; overall release remains no-go**.
 
-The branch may proceed to merge only after the complete GitHub Actions matrix,
-including the container build and dependency audit, succeeds on the audit
-commit. The remaining risks prevent a high-assurance or `1.0` security claim.
+The complete GitHub Actions matrix, including the container build and dependency
+audit, passed on the Phase 4 source commit. This only satisfies the
+maintainer-side security gate. The
+[Phase 4 retrieval run](../benchmarks/results/simpleqa_retrieval_phase4_2026-07-28.md)
+failed the availability, partial-failure and cross-network gates, so the PR must
+remain a draft and must not be merged or released. The residual risks also
+prevent a high-assurance or `1.0` security claim.

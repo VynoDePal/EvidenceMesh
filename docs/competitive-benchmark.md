@@ -75,7 +75,11 @@ superiority.
 Phase 4 removes DDGS from the recommended default, promotes the pinned private
 SearXNG path and adds a controlled model-generation harness. Those are product
 and evaluation improvements, not evidence that EvidenceMesh already beats the
-complete agents in this table.
+complete agents in this table. The
+[200-row SearXNG result](../benchmarks/results/simpleqa_retrieval_phase4_2026-07-28.md)
+also found only 71.5% federated availability and 98.0% partial-query failure in
+the measured GitHub environment. It is evidence against a best-in-class or
+release claim, not evidence for one.
 
 ## Fair next comparison
 

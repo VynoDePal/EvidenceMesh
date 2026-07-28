@@ -32,6 +32,13 @@ latency to 888 ms by skipping 195 repeated DDGS attempts, while availability
 remained 70.5%. The raw report preserves both logical failures and actual
 network-attempt accounting.
 
+The
+[200-row Phase 4 SearXNG run](../benchmarks/results/simpleqa_retrieval_phase4_2026-07-28.md)
+used the unchanged sample on a GitHub-hosted runner. SearXNG completed four of
+ten actual attempts before its circuit opened; 190 later calls were skipped.
+Federated availability was 71.5%, partial-query failure was 98.0%, and the
+release decision remained no-go.
+
 ## Offline federation benchmark
 
 `src/evidencemesh/data/federation_v1.json` is a packaged fixture containing
@@ -98,8 +105,9 @@ uv run python benchmarks/run_live_retrieval.py \
   --output benchmarks/results/simpleqa_retrieval_pilot_2026-07-28.json
 ```
 
-The dedicated Phase 4 workflow runs the same profile over 200 rows on a
-GitHub-hosted runner, verifies the image digest and uploads the raw report.
+The dedicated Phase 4 workflow ran the same profile over 200 rows on a
+GitHub-hosted runner, verified the image digest and uploaded the
+[raw report](../benchmarks/results/simpleqa_retrieval_phase4_2026-07-28.json).
 
 For the Phase 3 reliability run:
 

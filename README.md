@@ -208,8 +208,12 @@ shows the circuit breaker reducing sustained federated p95 latency to 888 ms,
 but only 70.5% availability; the release decision therefore remains no-go.
 Phase 4 replaces that measured DDGS dependency with the private SearXNG
 default, adds a provenance-locked 200-case GitHub benchmark, and introduces a
-controlled end-to-end generation runner. No answer-quality score is claimed
-until the separate official evaluator is run.
+controlled end-to-end generation runner. The
+[Phase 4 result](benchmarks/results/simpleqa_retrieval_phase4_2026-07-28.md)
+found only 71.5% federated availability and a 98.0% partial-query failure rate
+because the SearXNG upstream path became unavailable. The release decision
+therefore remains no-go. No answer-quality score is claimed until the separate
+official evaluator is run.
 
 ## Security
 
@@ -237,7 +241,7 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current suite contains 155 tests and reports over 90% branch-aware coverage
+The current suite contains 156 tests and reports over 90% branch-aware coverage
 locally. CI repeats the suite on Python 3.11, 3.12 and 3.13.
 
 ## License

@@ -1,3 +1,5 @@
+import hashlib
+import json
 from pathlib import Path
 
 import yaml
@@ -21,3 +23,32 @@ def test_phase4_workflow_locks_benchmark_scale_and_provenance() -> None:
     assert "--provider-config searxng=docker/searxng/settings.yml" in workflow
     assert "searxng/searxng:2026.7.26-b060c780d@sha256:" in workflow
     assert "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a" in workflow
+
+
+def test_committed_phase4_result_matches_locked_protocol() -> None:
+    root = Path(__file__).parents[1]
+    result_path = root / "benchmarks" / "results" / "simpleqa_retrieval_phase4_2026-07-28.json"
+    result_bytes = result_path.read_bytes()
+    assert hashlib.sha256(result_bytes).hexdigest() == (
+        "97742a6ceff0b9943ad9dfbb9a94fb36de36f05f38a7d82ea72dc34168f3a48b"
+    )
+    report = json.loads(result_bytes)
+    config_bytes = (root / "docker" / "searxng" / "settings.yml").read_bytes()
+
+    assert report["schema_version"] == 4
+    assert report["environment"]["commit_sha"] == ("f78ce4bf53f1e167ea7a2b849e91f5543ba321e2")
+    assert report["dataset"]["sha256"] == (
+        "feee3f7e7db3617e94e8fcf1977b756ec420ef8568f4e0fcbbe0e92e9d5fc032"
+    )
+    assert report["sample"]["count"] == 200
+    assert report["sample"]["manifest_sha256"] == (
+        "d41ec6c806792f4dc0730b6dd1bad0fe30310a7d3ca0b703bcfcd5cd7f580333"
+    )
+    assert (
+        report["protocol"]["provider_configuration"]["searxng"]["config_sha256"]
+        == hashlib.sha256(config_bytes).hexdigest()
+    )
+    assert set(report["metrics"]) == {"federated", "searxng", "wikipedia"}
+    assert len(report["outcomes"]) == 600
+    private_fields = {"question", "answer", "reference_answer", "evidence"}
+    assert all(not private_fields & set(outcome) for outcome in report["outcomes"])
