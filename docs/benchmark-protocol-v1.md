@@ -63,13 +63,18 @@ must be inspected before publication.
 
 ### Execution controls
 
-- Profiles are interleaved question-first to reduce temporal ordering bias.
+- Each provider is called exactly once per question. All profiles are ranked
+  from those shared raw provider snapshots, preventing duplicate traffic and
+  guaranteeing an identical live input for every ablation.
+- Provider calls are scheduled question-first to reduce temporal ordering bias.
 - The same query, language, maximum result count and deadline apply to all
   profiles.
 - Search and document caches are disabled.
 - Content fetching is disabled in the primary retrieval track.
 - A single global concurrency cap applies across profiles.
 - Raw query exceptions and provider-level partial failures are separate fields.
+- Profile latency is the maximum measured latency of its component provider
+  calls, modelling concurrent federation without including scheduler queue time.
 - The report includes the dataset and sample hashes, UTC interval, platform,
   Python version, EvidenceMesh commit, provider configuration and health data.
 

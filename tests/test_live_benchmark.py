@@ -8,6 +8,7 @@ import pytest
 from benchmarks.run_live_retrieval import (
     BenchmarkRow,
     Profile,
+    ProviderSnapshot,
     aggregate_profile,
     answer_covered,
     extract_source_urls,
@@ -15,6 +16,7 @@ from benchmarks.run_live_retrieval import (
     first_gold_domain_rank,
     first_gold_url_rank,
     normalise,
+    outcome_from_snapshots,
     paired_comparisons,
     parse_jsonl,
     parse_profiles,
@@ -24,7 +26,7 @@ from benchmarks.run_live_retrieval import (
     stable_row_id,
     url_identity,
 )
-from evidencemesh.models import SearchHit, SourceType
+from evidencemesh.models import ProviderResult, SearchHit, SourceType
 
 
 def hit(rank: int, url: str, title: str = "", snippet: str = "") -> SearchHit:
@@ -161,6 +163,40 @@ def test_rank_metrics() -> None:
     assert first_answer_rank(("evidence",), hits) == 2
     assert first_gold_url_rank(("http://example.com/a",), hits) == 2
     assert first_gold_domain_rank(("example.com",), hits) == 2
+
+
+def test_profiles_share_provider_snapshots() -> None:
+    row = BenchmarkRow(
+        id="q1",
+        question="What is the answer?",
+        answers=("Alpha",),
+        gold_urls=("https://example.com/a",),
+    )
+    raw = ProviderResult(
+        title="Alpha",
+        url="https://example.com/a",
+        snippet="The answer is Alpha.",
+        provider="stub",
+        rank=1,
+        query=row.question,
+    )
+    snapshot = ProviderSnapshot(
+        row_id=row.id,
+        provider="stub",
+        latency_ms=12.0,
+        results=(raw,),
+        error=None,
+    )
+    result = outcome_from_snapshots(
+        row,
+        Profile("only-stub", ("stub",)),
+        {"stub": snapshot},
+        max_results=10,
+    )
+    assert result["answer_rank"] == 1
+    assert result["gold_url_rank"] == 1
+    assert result["provider_call_count"] == 1
+    assert result["latency_ms"] == 12.0
 
 
 def test_rate_and_profile_aggregation() -> None:
