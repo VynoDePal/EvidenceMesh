@@ -37,6 +37,7 @@ def outcome(
     target: bool = True,
     available: bool = True,
     unresponsive: bool = False,
+    isolated: bool = True,
     latency_ms: float = 100.0,
 ) -> dict[str, object]:
     return {
@@ -47,6 +48,11 @@ def outcome(
         "result_count": 1 if available else 0,
         "unique_domains": 1 if available else 0,
         "target_domain_rank": 1 if target else None,
+        "observed_result_engines": ([engine] if isolated else [engine, "unexpected"])
+        if available
+        else [],
+        "unexpected_result_engines": [] if isolated else ["unexpected"],
+        "engine_isolation_ok": isolated,
         "unresponsive_engines": [engine] if unresponsive else [],
         "latency_ms": latency_ms,
         "error_kind": None,
@@ -115,10 +121,16 @@ def test_schedule_covers_every_pair_once_with_rotated_first_engine() -> None:
 async def test_calibration_request_records_target_and_unresponsive_engine() -> None:
     async def handler(request: httpx.Request) -> httpx.Response:
         assert request.url.params["engines"] == "brave"
+        assert "categories" not in request.url.params
         return httpx.Response(
             200,
             json={
-                "results": [{"url": "https://docs.example.com/guide"}],
+                "results": [
+                    {
+                        "url": "https://docs.example.com/guide",
+                        "engines": ["brave"],
+                    }
+                ],
                 "unresponsive_engines": [["brave", "timeout"]],
             },
         )
@@ -134,11 +146,14 @@ async def test_calibration_request_records_target_and_unresponsive_engine() -> N
         )
     assert result["response_ok"] is True
     assert result["target_domain_rank"] == 1
+    assert result["observed_result_engines"] == ["brave"]
+    assert result["unexpected_result_engines"] == []
+    assert result["engine_isolation_ok"] is True
     assert result["unresponsive_engines"] == ["brave"]
 
 
 def test_metrics_enforce_all_gates_and_rank_eligible_engines() -> None:
-    engines = ("fast", "relevant", "unreliable")
+    engines = ("fast", "relevant", "unreliable", "contaminated")
     outcomes = []
     for _ in range(12):
         outcomes.extend(
@@ -146,17 +161,20 @@ def test_metrics_enforce_all_gates_and_rank_eligible_engines() -> None:
                 outcome("fast", target=True, latency_ms=50),
                 outcome("relevant", target=True, latency_ms=100),
                 outcome("unreliable", target=False, available=False, unresponsive=True),
+                outcome("contaminated", isolated=False),
             ]
         )
     metrics = engine_metrics(outcomes, engines=engines, max_results=10)
     assert metrics["fast"]["eligible"] is True
     assert metrics["relevant"]["eligible"] is True
     assert metrics["unreliable"]["eligible"] is False
+    assert metrics["contaminated"]["eligible"] is False
     assert set(metrics["unreliable"]["failed_gates"]) == {
         "availability_rate",
         "target_domain_hit_at_10",
         "unresponsive_rate",
     }
+    assert metrics["contaminated"]["failed_gates"] == ["engine_isolation_rate"]
     assert rank_eligible_engines(metrics) == ["fast", "relevant"]
 
 

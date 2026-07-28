@@ -129,6 +129,10 @@ jobs:
               and report["protocol"]["retry_policy"] == "none"
               and len(report["metrics"]) == 8
               and len(report["outcomes"]) == 96
+              and all(
+                  "engine_isolation_ok" in outcome
+                  for outcome in report["outcomes"]
+              )
               and report["provider"]["config_sha256"]
                   == "856ce08d2bf0c3512cb5a40f91aa54fde1860cad827bd8208fc09059c47d1584"
               and "@sha256:" in report["provider"]["image"]
@@ -139,8 +143,11 @@ jobs:
           summary = [
               "## Phase 5 SearXNG engine calibration",
               "",
-              "| Engine | Response | Availability | Target @10 | Unresponsive | p95 ms | Eligible |",
-              "|---|---:|---:|---:|---:|---:|:---:|",
+              (
+                  "| Engine | Response | Availability | Target @10 | "
+                  "Unresponsive | Isolation | p95 ms | Eligible |"
+              ),
+              "|---|---:|---:|---:|---:|---:|---:|:---:|",
           ]
           for engine, metrics in report["metrics"].items():
               summary.append(
@@ -148,6 +155,7 @@ jobs:
                   f"{metrics['availability']['rate']} | "
                   f"{metrics['target_domain_hit_at_10']['rate']} | "
                   f"{metrics['unresponsive']['rate']} | "
+                  f"{metrics['engine_isolation']['rate']} | "
                   f"{metrics['latency_ms']['p95']} | "
                   f"{'yes' if metrics['eligible'] else 'no'} |"
               )

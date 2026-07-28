@@ -49,6 +49,7 @@ SELECTION_GATES: dict[str, float] = {
     "minimum_target_domain_hit_at_10": 0.50,
     "maximum_unresponsive_rate": 0.20,
     "maximum_p95_latency_ms": 10_000.0,
+    "minimum_engine_isolation_rate": 1.0,
 }
 
 
@@ -186,6 +187,32 @@ def ranked_domains(payload: dict[str, Any], *, max_results: int) -> list[str]:
     return domains
 
 
+def observed_result_engines(payload: dict[str, Any], *, max_results: int) -> list[str]:
+    values = payload.get("results", [])
+    if not isinstance(values, list):
+        raise ValueError("SearXNG response has an invalid results field")
+    observed: set[str] = set()
+    accepted_results = 0
+    for value in values:
+        if not isinstance(value, dict) or not isinstance(value.get("url"), str):
+            continue
+        if domain_from_url(value["url"]) is None:
+            continue
+        engine_values = value.get("engines", [])
+        if isinstance(engine_values, list):
+            observed.update(
+                engine.strip()
+                for engine in engine_values
+                if isinstance(engine, str) and engine.strip()
+            )
+        elif isinstance(value.get("engine"), str) and value["engine"].strip():
+            observed.add(value["engine"].strip())
+        accepted_results += 1
+        if accepted_results >= max_results:
+            break
+    return sorted(observed)
+
+
 def first_target_rank(domains: list[str], targets: tuple[str, ...]) -> int | None:
     for rank, domain in enumerate(domains, start=1):
         if any(domain_matches(domain, target) for target in targets):
@@ -212,17 +239,20 @@ async def calibrate_request(
             params={
                 "q": case.query,
                 "format": "json",
-                "categories": "general",
                 "engines": engine,
                 "language": language,
                 "safesearch": 1,
             },
         )
         domains = ranked_domains(payload, max_results=max_results)
+        observed_engines = observed_result_engines(payload, max_results=max_results)
+        unexpected_engines = sorted(set(observed_engines) - {engine})
         unresponsive = parse_unresponsive(payload)
         error_kind = None
     except (httpx.HTTPError, ValueError) as exc:
         domains = []
+        observed_engines = []
+        unexpected_engines = []
         unresponsive = []
         error_kind = type(exc).__name__
     return {
@@ -233,6 +263,9 @@ async def calibrate_request(
         "result_count": len(domains),
         "unique_domains": len(set(domains)),
         "target_domain_rank": first_target_rank(domains, case.target_domains),
+        "observed_result_engines": observed_engines,
+        "unexpected_result_engines": unexpected_engines,
+        "engine_isolation_ok": error_kind is None and not unexpected_engines,
         "unresponsive_engines": unresponsive,
         "latency_ms": round((time.perf_counter() - started) * 1_000, 3),
         "error_kind": error_kind,
@@ -263,11 +296,13 @@ def engine_metrics(
             for outcome in values
         ]
         unresponsive_values = [engine in set(outcome["unresponsive_engines"]) for outcome in values]
+        isolation_values = [bool(outcome["engine_isolation_ok"]) for outcome in values]
         latencies = [float(outcome["latency_ms"]) for outcome in values]
         response_rate = rate_metric(response_values)
         availability_rate = rate_metric(availability_values)
         target_rate = rate_metric(target_values)
         unresponsive_rate = rate_metric(unresponsive_values)
+        isolation_rate = rate_metric(isolation_values)
         p95 = percentile(latencies, 0.95)
         failed_gates: list[str] = []
         if (response_rate["rate"] or 0.0) < SELECTION_GATES["minimum_response_success_rate"]:
@@ -280,12 +315,15 @@ def engine_metrics(
             failed_gates.append("unresponsive_rate")
         if p95 > SELECTION_GATES["maximum_p95_latency_ms"]:
             failed_gates.append("p95_latency_ms")
+        if (isolation_rate["rate"] or 0.0) < SELECTION_GATES["minimum_engine_isolation_rate"]:
+            failed_gates.append("engine_isolation_rate")
         metrics[engine] = {
             "request_count": len(values),
             "response_success": response_rate,
             "availability": availability_rate,
             f"target_domain_hit_at_{max_results}": target_rate,
             "unresponsive": unresponsive_rate,
+            "engine_isolation": isolation_rate,
             "mean_result_count": (
                 round(statistics.fmean(int(value["result_count"]) for value in values), 3)
                 if values
@@ -456,6 +494,10 @@ def main() -> None:
                 "safe_search": 1,
                 "max_results": arguments.max_results,
                 "retry_policy": "none",
+                "engine_selection": (
+                    "engines parameter only; categories omitted because SearXNG unions "
+                    "explicit engines with category engines"
+                ),
                 "selection_gates": SELECTION_GATES,
             },
             "provider": provider,

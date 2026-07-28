@@ -37,6 +37,11 @@ English language, safe search enabled, at most ten results, an EvidenceMesh
 12-second deadline and no retry. A private, single-purpose SearXNG container is
 used; public shared instances must not be benchmarked.
 
+The request sends only SearXNG's explicit `engines` parameter. It deliberately
+omits `categories`: the pinned SearXNG implementation unions category engines
+with explicit engines when both parameters are present. Result engine metadata
+is recorded and any unexpected engine invalidates isolation for that request.
+
 Provider envelope:
 
 - image:
@@ -64,6 +69,7 @@ An engine is eligible only if every gate passes over all 12 requests:
 | Expected authoritative domain in top 10 | at least 50% |
 | Reported unresponsive | at most 20% |
 | p95 latency | at most 10 seconds |
+| Responses isolated to requested engine | 100% |
 
 Eligible engines are ranked by expected-domain hit rate descending,
 availability descending, unresponsive rate ascending, p95 ascending, then
