@@ -47,6 +47,16 @@ keyless engines, with no retry and pre-registered response, availability,
 authoritative-domain, unresponsive and latency gates. A new 200-case run is
 blocked unless at least two engines pass all gates.
 
+The
+[valid Phase 5 calibration](../benchmarks/results/searxng_calibration_phase5_2026-07-28.md)
+completed all 96 requests with full requested-engine isolation. DuckDuckGo was
+the only eligible engine: availability was 100%, target-domain hit@10 was
+91.7%, unresponsiveness was 0% and p95 was 996.469 ms. Wiby was the next
+closest but missed both availability (75%) and target-domain hit@10 (8.3%).
+The remaining six engines failed at least three gates. The minimum-two-engine
+gate therefore closed, leaving the production configuration unchanged and
+blocking both the held-out 200-case run and local-model pilot.
+
 ## Offline federation benchmark
 
 `src/evidencemesh/data/federation_v1.json` is a packaged fixture containing

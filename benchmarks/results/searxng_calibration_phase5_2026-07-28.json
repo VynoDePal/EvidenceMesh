@@ -1,0 +1,2205 @@
+{
+  "schema_version": 1,
+  "benchmark": "searxng-engine-calibration-v1",
+  "task_type": "provider_selection",
+  "suite": {
+    "file": "searxng_calibration_v1.json",
+    "sha256": "06a5d97980063999768127439f594090007dff7e793ad61567d248e134779dce",
+    "count": 12,
+    "ids": [
+      "python-taskgroup",
+      "searxng-settings",
+      "who-malaria-report",
+      "nasa-artemis-two",
+      "attention-paper",
+      "git-interactive-rebase",
+      "eu-ai-act",
+      "linux-admin-guide",
+      "nobel-physics-2024",
+      "openai-simple-evals",
+      "wcag-22",
+      "world-bank-benin"
+    ],
+    "manifest_sha256": "4e96fe1ea624fcaa868c8bc8162b116bffbabadbae649c5997ef4af9087c4f17",
+    "topic_distribution": {
+      "africa": 1,
+      "ai": 1,
+      "health": 1,
+      "law": 1,
+      "research": 1,
+      "science": 2,
+      "software": 4,
+      "standards": 1
+    }
+  },
+  "protocol": {
+    "engines": [
+      "brave",
+      "duckduckgo",
+      "startpage",
+      "qwant",
+      "mojeek",
+      "wiby",
+      "mwmbl",
+      "yep"
+    ],
+    "ordering": "query-major deterministic rotation",
+    "request_count": 96,
+    "request_timeout_seconds": 12.0,
+    "pause_seconds": 0.25,
+    "language": "en",
+    "safe_search": 1,
+    "max_results": 10,
+    "retry_policy": "none",
+    "engine_selection": "engines parameter only; categories omitted because SearXNG unions explicit engines with category engines",
+    "selection_gates": {
+      "minimum_response_success_rate": 0.9,
+      "minimum_availability_rate": 0.8,
+      "minimum_target_domain_hit_at_10": 0.5,
+      "maximum_unresponsive_rate": 0.2,
+      "maximum_p95_latency_ms": 10000.0,
+      "minimum_engine_isolation_rate": 1.0
+    }
+  },
+  "provider": {
+    "config_file": "calibration-settings.yml",
+    "config_sha256": "856ce08d2bf0c3512cb5a40f91aa54fde1860cad827bd8208fc09059c47d1584",
+    "image": "searxng/searxng:2026.7.26-b060c780d@sha256:d0aaeb14880e6e92bde1518fcc7261e995783367d63d95203383607bef9c6516"
+  },
+  "environment": {
+    "started_at": "2026-07-28T21:06:52.557196+00:00",
+    "finished_at": "2026-07-28T21:08:06.613350+00:00",
+    "commit_sha": "216e99fda3d7eecfb25e25e51d65395ec86539c6",
+    "python": "3.11.15",
+    "platform": "Linux-6.17.0-1020-azure-x86_64-with-glibc2.39",
+    "network_region": "GitHub-hosted ubuntu-latest; physical region not exposed"
+  },
+  "metrics": {
+    "brave": {
+      "request_count": 12,
+      "response_success": {
+        "numerator": 12,
+        "denominator": 12,
+        "rate": 1.0,
+        "wilson_95": [
+          0.757506,
+          1.0
+        ]
+      },
+      "availability": {
+        "numerator": 0,
+        "denominator": 12,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.242494
+        ]
+      },
+      "target_domain_hit_at_10": {
+        "numerator": 0,
+        "denominator": 12,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.242494
+        ]
+      },
+      "unresponsive": {
+        "numerator": 12,
+        "denominator": 12,
+        "rate": 1.0,
+        "wilson_95": [
+          0.757506,
+          1.0
+        ]
+      },
+      "engine_isolation": {
+        "numerator": 12,
+        "denominator": 12,
+        "rate": 1.0,
+        "wilson_95": [
+          0.757506,
+          1.0
+        ]
+      },
+      "mean_result_count": 0.0,
+      "mean_unique_domains": 0.0,
+      "latency_ms": {
+        "p50": 3.206,
+        "p95": 5.071
+      },
+      "error_kinds": {},
+      "eligible": false,
+      "failed_gates": [
+        "availability_rate",
+        "target_domain_hit_at_10",
+        "unresponsive_rate"
+      ]
+    },
+    "duckduckgo": {
+      "request_count": 12,
+      "response_success": {
+        "numerator": 12,
+        "denominator": 12,
+        "rate": 1.0,
+        "wilson_95": [
+          0.757506,
+          1.0
+        ]
+      },
+      "availability": {
+        "numerator": 12,
+        "denominator": 12,
+        "rate": 1.0,
+        "wilson_95": [
+          0.757506,
+          1.0
+        ]
+      },
+      "target_domain_hit_at_10": {
+        "numerator": 11,
+        "denominator": 12,
+        "rate": 0.916667,
+        "wilson_95": [
+          0.64612,
+          0.985135
+        ]
+      },
+      "unresponsive": {
+        "numerator": 0,
+        "denominator": 12,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.242494
+        ]
+      },
+      "engine_isolation": {
+        "numerator": 12,
+        "denominator": 12,
+        "rate": 1.0,
+        "wilson_95": [
+          0.757506,
+          1.0
+        ]
+      },
+      "mean_result_count": 10.0,
+      "mean_unique_domains": 7.833,
+      "latency_ms": {
+        "p50": 906.683,
+        "p95": 996.469
+      },
+      "error_kinds": {},
+      "eligible": true,
+      "failed_gates": []
+    },
+    "startpage": {
+      "request_count": 12,
+      "response_success": {
+        "numerator": 12,
+        "denominator": 12,
+        "rate": 1.0,
+        "wilson_95": [
+          0.757506,
+          1.0
+        ]
+      },
+      "availability": {
+        "numerator": 0,
+        "denominator": 12,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.242494
+        ]
+      },
+      "target_domain_hit_at_10": {
+        "numerator": 0,
+        "denominator": 12,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.242494
+        ]
+      },
+      "unresponsive": {
+        "numerator": 12,
+        "denominator": 12,
+        "rate": 1.0,
+        "wilson_95": [
+          0.757506,
+          1.0
+        ]
+      },
+      "engine_isolation": {
+        "numerator": 12,
+        "denominator": 12,
+        "rate": 1.0,
+        "wilson_95": [
+          0.757506,
+          1.0
+        ]
+      },
+      "mean_result_count": 0.0,
+      "mean_unique_domains": 0.0,
+      "latency_ms": {
+        "p50": 3.246,
+        "p95": 4.097
+      },
+      "error_kinds": {},
+      "eligible": false,
+      "failed_gates": [
+        "availability_rate",
+        "target_domain_hit_at_10",
+        "unresponsive_rate"
+      ]
+    },
+    "qwant": {
+      "request_count": 12,
+      "response_success": {
+        "numerator": 12,
+        "denominator": 12,
+        "rate": 1.0,
+        "wilson_95": [
+          0.757506,
+          1.0
+        ]
+      },
+      "availability": {
+        "numerator": 0,
+        "denominator": 12,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.242494
+        ]
+      },
+      "target_domain_hit_at_10": {
+        "numerator": 0,
+        "denominator": 12,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.242494
+        ]
+      },
+      "unresponsive": {
+        "numerator": 12,
+        "denominator": 12,
+        "rate": 1.0,
+        "wilson_95": [
+          0.757506,
+          1.0
+        ]
+      },
+      "engine_isolation": {
+        "numerator": 12,
+        "denominator": 12,
+        "rate": 1.0,
+        "wilson_95": [
+          0.757506,
+          1.0
+        ]
+      },
+      "mean_result_count": 0.0,
+      "mean_unique_domains": 0.0,
+      "latency_ms": {
+        "p50": 418.302,
+        "p95": 458.181
+      },
+      "error_kinds": {},
+      "eligible": false,
+      "failed_gates": [
+        "availability_rate",
+        "target_domain_hit_at_10",
+        "unresponsive_rate"
+      ]
+    },
+    "mojeek": {
+      "request_count": 12,
+      "response_success": {
+        "numerator": 12,
+        "denominator": 12,
+        "rate": 1.0,
+        "wilson_95": [
+          0.757506,
+          1.0
+        ]
+      },
+      "availability": {
+        "numerator": 0,
+        "denominator": 12,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.242494
+        ]
+      },
+      "target_domain_hit_at_10": {
+        "numerator": 0,
+        "denominator": 12,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.242494
+        ]
+      },
+      "unresponsive": {
+        "numerator": 12,
+        "denominator": 12,
+        "rate": 1.0,
+        "wilson_95": [
+          0.757506,
+          1.0
+        ]
+      },
+      "engine_isolation": {
+        "numerator": 12,
+        "denominator": 12,
+        "rate": 1.0,
+        "wilson_95": [
+          0.757506,
+          1.0
+        ]
+      },
+      "mean_result_count": 0.0,
+      "mean_unique_domains": 0.0,
+      "latency_ms": {
+        "p50": 3.261,
+        "p95": 3.539
+      },
+      "error_kinds": {},
+      "eligible": false,
+      "failed_gates": [
+        "availability_rate",
+        "target_domain_hit_at_10",
+        "unresponsive_rate"
+      ]
+    },
+    "wiby": {
+      "request_count": 12,
+      "response_success": {
+        "numerator": 12,
+        "denominator": 12,
+        "rate": 1.0,
+        "wilson_95": [
+          0.757506,
+          1.0
+        ]
+      },
+      "availability": {
+        "numerator": 9,
+        "denominator": 12,
+        "rate": 0.75,
+        "wilson_95": [
+          0.467695,
+          0.911058
+        ]
+      },
+      "target_domain_hit_at_10": {
+        "numerator": 1,
+        "denominator": 12,
+        "rate": 0.083333,
+        "wilson_95": [
+          0.014865,
+          0.35388
+        ]
+      },
+      "unresponsive": {
+        "numerator": 0,
+        "denominator": 12,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.242494
+        ]
+      },
+      "engine_isolation": {
+        "numerator": 12,
+        "denominator": 12,
+        "rate": 1.0,
+        "wilson_95": [
+          0.757506,
+          1.0
+        ]
+      },
+      "mean_result_count": 5.583,
+      "mean_unique_domains": 5.5,
+      "latency_ms": {
+        "p50": 320.462,
+        "p95": 1999.166
+      },
+      "error_kinds": {},
+      "eligible": false,
+      "failed_gates": [
+        "availability_rate",
+        "target_domain_hit_at_10"
+      ]
+    },
+    "mwmbl": {
+      "request_count": 12,
+      "response_success": {
+        "numerator": 12,
+        "denominator": 12,
+        "rate": 1.0,
+        "wilson_95": [
+          0.757506,
+          1.0
+        ]
+      },
+      "availability": {
+        "numerator": 2,
+        "denominator": 12,
+        "rate": 0.166667,
+        "wilson_95": [
+          0.046965,
+          0.448031
+        ]
+      },
+      "target_domain_hit_at_10": {
+        "numerator": 2,
+        "denominator": 12,
+        "rate": 0.166667,
+        "wilson_95": [
+          0.046965,
+          0.448031
+        ]
+      },
+      "unresponsive": {
+        "numerator": 10,
+        "denominator": 12,
+        "rate": 0.833333,
+        "wilson_95": [
+          0.551969,
+          0.953035
+        ]
+      },
+      "engine_isolation": {
+        "numerator": 12,
+        "denominator": 12,
+        "rate": 1.0,
+        "wilson_95": [
+          0.757506,
+          1.0
+        ]
+      },
+      "mean_result_count": 0.917,
+      "mean_unique_domains": 0.25,
+      "latency_ms": {
+        "p50": 4004.207,
+        "p95": 4004.238
+      },
+      "error_kinds": {},
+      "eligible": false,
+      "failed_gates": [
+        "availability_rate",
+        "target_domain_hit_at_10",
+        "unresponsive_rate"
+      ]
+    },
+    "yep": {
+      "request_count": 12,
+      "response_success": {
+        "numerator": 12,
+        "denominator": 12,
+        "rate": 1.0,
+        "wilson_95": [
+          0.757506,
+          1.0
+        ]
+      },
+      "availability": {
+        "numerator": 0,
+        "denominator": 12,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.242494
+        ]
+      },
+      "target_domain_hit_at_10": {
+        "numerator": 0,
+        "denominator": 12,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.242494
+        ]
+      },
+      "unresponsive": {
+        "numerator": 12,
+        "denominator": 12,
+        "rate": 1.0,
+        "wilson_95": [
+          0.757506,
+          1.0
+        ]
+      },
+      "engine_isolation": {
+        "numerator": 12,
+        "denominator": 12,
+        "rate": 1.0,
+        "wilson_95": [
+          0.757506,
+          1.0
+        ]
+      },
+      "mean_result_count": 0.0,
+      "mean_unique_domains": 0.0,
+      "latency_ms": {
+        "p50": 3.276,
+        "p95": 3.49
+      },
+      "error_kinds": {},
+      "eligible": false,
+      "failed_gates": [
+        "availability_rate",
+        "target_domain_hit_at_10",
+        "unresponsive_rate"
+      ]
+    }
+  },
+  "selection": {
+    "eligible_engines": [
+      "duckduckgo"
+    ],
+    "eligible_count": 1,
+    "full_200_case_run_allowed": false,
+    "promotion_limit": 3,
+    "promoted_engines": [],
+    "ranking": "target hit descending, availability descending, unresponsive rate ascending, p95 ascending, engine name ascending"
+  },
+  "outcomes": [
+    {
+      "id": "python-taskgroup",
+      "engine": "brave",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "brave"
+      ],
+      "latency_ms": 223.005,
+      "error_kind": null
+    },
+    {
+      "id": "python-taskgroup",
+      "engine": "duckduckgo",
+      "response_ok": true,
+      "available": true,
+      "result_count": 10,
+      "unique_domains": 9,
+      "target_domain_rank": 1,
+      "observed_result_engines": [
+        "duckduckgo"
+      ],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 961.171,
+      "error_kind": null
+    },
+    {
+      "id": "python-taskgroup",
+      "engine": "startpage",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "startpage"
+      ],
+      "latency_ms": 317.058,
+      "error_kind": null
+    },
+    {
+      "id": "python-taskgroup",
+      "engine": "qwant",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "qwant"
+      ],
+      "latency_ms": 424.118,
+      "error_kind": null
+    },
+    {
+      "id": "python-taskgroup",
+      "engine": "mojeek",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "mojeek"
+      ],
+      "latency_ms": 412.607,
+      "error_kind": null
+    },
+    {
+      "id": "python-taskgroup",
+      "engine": "wiby",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 1777.494,
+      "error_kind": null
+    },
+    {
+      "id": "python-taskgroup",
+      "engine": "mwmbl",
+      "response_ok": true,
+      "available": true,
+      "result_count": 10,
+      "unique_domains": 2,
+      "target_domain_rank": 1,
+      "observed_result_engines": [
+        "mwmbl"
+      ],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 579.877,
+      "error_kind": null
+    },
+    {
+      "id": "python-taskgroup",
+      "engine": "yep",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "yep"
+      ],
+      "latency_ms": 87.642,
+      "error_kind": null
+    },
+    {
+      "id": "searxng-settings",
+      "engine": "duckduckgo",
+      "response_ok": true,
+      "available": true,
+      "result_count": 10,
+      "unique_domains": 7,
+      "target_domain_rank": 1,
+      "observed_result_engines": [
+        "duckduckgo"
+      ],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 740.868,
+      "error_kind": null
+    },
+    {
+      "id": "searxng-settings",
+      "engine": "startpage",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "startpage"
+      ],
+      "latency_ms": 3.184,
+      "error_kind": null
+    },
+    {
+      "id": "searxng-settings",
+      "engine": "qwant",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "qwant"
+      ],
+      "latency_ms": 434.833,
+      "error_kind": null
+    },
+    {
+      "id": "searxng-settings",
+      "engine": "mojeek",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "mojeek"
+      ],
+      "latency_ms": 3.215,
+      "error_kind": null
+    },
+    {
+      "id": "searxng-settings",
+      "engine": "wiby",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 189.626,
+      "error_kind": null
+    },
+    {
+      "id": "searxng-settings",
+      "engine": "mwmbl",
+      "response_ok": true,
+      "available": true,
+      "result_count": 1,
+      "unique_domains": 1,
+      "target_domain_rank": 1,
+      "observed_result_engines": [
+        "mwmbl"
+      ],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 138.263,
+      "error_kind": null
+    },
+    {
+      "id": "searxng-settings",
+      "engine": "yep",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "yep"
+      ],
+      "latency_ms": 3.174,
+      "error_kind": null
+    },
+    {
+      "id": "searxng-settings",
+      "engine": "brave",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "brave"
+      ],
+      "latency_ms": 3.196,
+      "error_kind": null
+    },
+    {
+      "id": "who-malaria-report",
+      "engine": "startpage",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "startpage"
+      ],
+      "latency_ms": 3.228,
+      "error_kind": null
+    },
+    {
+      "id": "who-malaria-report",
+      "engine": "qwant",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "qwant"
+      ],
+      "latency_ms": 159.034,
+      "error_kind": null
+    },
+    {
+      "id": "who-malaria-report",
+      "engine": "mojeek",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "mojeek"
+      ],
+      "latency_ms": 3.539,
+      "error_kind": null
+    },
+    {
+      "id": "who-malaria-report",
+      "engine": "wiby",
+      "response_ok": true,
+      "available": true,
+      "result_count": 6,
+      "unique_domains": 5,
+      "target_domain_rank": null,
+      "observed_result_engines": [
+        "wiby"
+      ],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 310.257,
+      "error_kind": null
+    },
+    {
+      "id": "who-malaria-report",
+      "engine": "mwmbl",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "mwmbl"
+      ],
+      "latency_ms": 4004.218,
+      "error_kind": null
+    },
+    {
+      "id": "who-malaria-report",
+      "engine": "yep",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "yep"
+      ],
+      "latency_ms": 3.277,
+      "error_kind": null
+    },
+    {
+      "id": "who-malaria-report",
+      "engine": "brave",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "brave"
+      ],
+      "latency_ms": 3.206,
+      "error_kind": null
+    },
+    {
+      "id": "who-malaria-report",
+      "engine": "duckduckgo",
+      "response_ok": true,
+      "available": true,
+      "result_count": 10,
+      "unique_domains": 7,
+      "target_domain_rank": 1,
+      "observed_result_engines": [
+        "duckduckgo"
+      ],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 911.454,
+      "error_kind": null
+    },
+    {
+      "id": "nasa-artemis-two",
+      "engine": "qwant",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "qwant"
+      ],
+      "latency_ms": 421.308,
+      "error_kind": null
+    },
+    {
+      "id": "nasa-artemis-two",
+      "engine": "mojeek",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "mojeek"
+      ],
+      "latency_ms": 3.22,
+      "error_kind": null
+    },
+    {
+      "id": "nasa-artemis-two",
+      "engine": "wiby",
+      "response_ok": true,
+      "available": true,
+      "result_count": 10,
+      "unique_domains": 10,
+      "target_domain_rank": 1,
+      "observed_result_engines": [
+        "wiby"
+      ],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 1999.166,
+      "error_kind": null
+    },
+    {
+      "id": "nasa-artemis-two",
+      "engine": "mwmbl",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "mwmbl"
+      ],
+      "latency_ms": 4004.238,
+      "error_kind": null
+    },
+    {
+      "id": "nasa-artemis-two",
+      "engine": "yep",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "yep"
+      ],
+      "latency_ms": 3.276,
+      "error_kind": null
+    },
+    {
+      "id": "nasa-artemis-two",
+      "engine": "brave",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "brave"
+      ],
+      "latency_ms": 3.198,
+      "error_kind": null
+    },
+    {
+      "id": "nasa-artemis-two",
+      "engine": "duckduckgo",
+      "response_ok": true,
+      "available": true,
+      "result_count": 10,
+      "unique_domains": 9,
+      "target_domain_rank": 1,
+      "observed_result_engines": [
+        "duckduckgo"
+      ],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 996.469,
+      "error_kind": null
+    },
+    {
+      "id": "nasa-artemis-two",
+      "engine": "startpage",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "startpage"
+      ],
+      "latency_ms": 3.309,
+      "error_kind": null
+    },
+    {
+      "id": "attention-paper",
+      "engine": "mojeek",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "mojeek"
+      ],
+      "latency_ms": 3.222,
+      "error_kind": null
+    },
+    {
+      "id": "attention-paper",
+      "engine": "wiby",
+      "response_ok": true,
+      "available": true,
+      "result_count": 10,
+      "unique_domains": 10,
+      "target_domain_rank": null,
+      "observed_result_engines": [
+        "wiby"
+      ],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 2009.229,
+      "error_kind": null
+    },
+    {
+      "id": "attention-paper",
+      "engine": "mwmbl",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "mwmbl"
+      ],
+      "latency_ms": 3.217,
+      "error_kind": null
+    },
+    {
+      "id": "attention-paper",
+      "engine": "yep",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "yep"
+      ],
+      "latency_ms": 3.268,
+      "error_kind": null
+    },
+    {
+      "id": "attention-paper",
+      "engine": "brave",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "brave"
+      ],
+      "latency_ms": 3.149,
+      "error_kind": null
+    },
+    {
+      "id": "attention-paper",
+      "engine": "duckduckgo",
+      "response_ok": true,
+      "available": true,
+      "result_count": 10,
+      "unique_domains": 9,
+      "target_domain_rank": 1,
+      "observed_result_engines": [
+        "duckduckgo"
+      ],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 771.796,
+      "error_kind": null
+    },
+    {
+      "id": "attention-paper",
+      "engine": "startpage",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "startpage"
+      ],
+      "latency_ms": 3.264,
+      "error_kind": null
+    },
+    {
+      "id": "attention-paper",
+      "engine": "qwant",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "qwant"
+      ],
+      "latency_ms": 418.302,
+      "error_kind": null
+    },
+    {
+      "id": "git-interactive-rebase",
+      "engine": "wiby",
+      "response_ok": true,
+      "available": true,
+      "result_count": 3,
+      "unique_domains": 3,
+      "target_domain_rank": null,
+      "observed_result_engines": [
+        "wiby"
+      ],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 212.739,
+      "error_kind": null
+    },
+    {
+      "id": "git-interactive-rebase",
+      "engine": "mwmbl",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "mwmbl"
+      ],
+      "latency_ms": 4004.207,
+      "error_kind": null
+    },
+    {
+      "id": "git-interactive-rebase",
+      "engine": "yep",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "yep"
+      ],
+      "latency_ms": 3.116,
+      "error_kind": null
+    },
+    {
+      "id": "git-interactive-rebase",
+      "engine": "brave",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "brave"
+      ],
+      "latency_ms": 3.151,
+      "error_kind": null
+    },
+    {
+      "id": "git-interactive-rebase",
+      "engine": "duckduckgo",
+      "response_ok": true,
+      "available": true,
+      "result_count": 10,
+      "unique_domains": 9,
+      "target_domain_rank": 1,
+      "observed_result_engines": [
+        "duckduckgo"
+      ],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 906.683,
+      "error_kind": null
+    },
+    {
+      "id": "git-interactive-rebase",
+      "engine": "startpage",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "startpage"
+      ],
+      "latency_ms": 3.208,
+      "error_kind": null
+    },
+    {
+      "id": "git-interactive-rebase",
+      "engine": "qwant",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "qwant"
+      ],
+      "latency_ms": 458.181,
+      "error_kind": null
+    },
+    {
+      "id": "git-interactive-rebase",
+      "engine": "mojeek",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "mojeek"
+      ],
+      "latency_ms": 3.152,
+      "error_kind": null
+    },
+    {
+      "id": "eu-ai-act",
+      "engine": "mwmbl",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "mwmbl"
+      ],
+      "latency_ms": 3.141,
+      "error_kind": null
+    },
+    {
+      "id": "eu-ai-act",
+      "engine": "yep",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "yep"
+      ],
+      "latency_ms": 3.188,
+      "error_kind": null
+    },
+    {
+      "id": "eu-ai-act",
+      "engine": "brave",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "brave"
+      ],
+      "latency_ms": 3.219,
+      "error_kind": null
+    },
+    {
+      "id": "eu-ai-act",
+      "engine": "duckduckgo",
+      "response_ok": true,
+      "available": true,
+      "result_count": 10,
+      "unique_domains": 8,
+      "target_domain_rank": 1,
+      "observed_result_engines": [
+        "duckduckgo"
+      ],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 1084.678,
+      "error_kind": null
+    },
+    {
+      "id": "eu-ai-act",
+      "engine": "startpage",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "startpage"
+      ],
+      "latency_ms": 3.201,
+      "error_kind": null
+    },
+    {
+      "id": "eu-ai-act",
+      "engine": "qwant",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "qwant"
+      ],
+      "latency_ms": 163.23,
+      "error_kind": null
+    },
+    {
+      "id": "eu-ai-act",
+      "engine": "mojeek",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "mojeek"
+      ],
+      "latency_ms": 3.261,
+      "error_kind": null
+    },
+    {
+      "id": "eu-ai-act",
+      "engine": "wiby",
+      "response_ok": true,
+      "available": true,
+      "result_count": 9,
+      "unique_domains": 9,
+      "target_domain_rank": null,
+      "observed_result_engines": [
+        "wiby"
+      ],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 1905.801,
+      "error_kind": null
+    },
+    {
+      "id": "linux-admin-guide",
+      "engine": "yep",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "yep"
+      ],
+      "latency_ms": 3.356,
+      "error_kind": null
+    },
+    {
+      "id": "linux-admin-guide",
+      "engine": "brave",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "brave"
+      ],
+      "latency_ms": 3.249,
+      "error_kind": null
+    },
+    {
+      "id": "linux-admin-guide",
+      "engine": "duckduckgo",
+      "response_ok": true,
+      "available": true,
+      "result_count": 10,
+      "unique_domains": 6,
+      "target_domain_rank": null,
+      "observed_result_engines": [
+        "duckduckgo"
+      ],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 791.836,
+      "error_kind": null
+    },
+    {
+      "id": "linux-admin-guide",
+      "engine": "startpage",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "startpage"
+      ],
+      "latency_ms": 3.246,
+      "error_kind": null
+    },
+    {
+      "id": "linux-admin-guide",
+      "engine": "qwant",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "qwant"
+      ],
+      "latency_ms": 143.194,
+      "error_kind": null
+    },
+    {
+      "id": "linux-admin-guide",
+      "engine": "mojeek",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "mojeek"
+      ],
+      "latency_ms": 3.279,
+      "error_kind": null
+    },
+    {
+      "id": "linux-admin-guide",
+      "engine": "wiby",
+      "response_ok": true,
+      "available": true,
+      "result_count": 10,
+      "unique_domains": 10,
+      "target_domain_rank": null,
+      "observed_result_engines": [
+        "wiby"
+      ],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 320.276,
+      "error_kind": null
+    },
+    {
+      "id": "linux-admin-guide",
+      "engine": "mwmbl",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "mwmbl"
+      ],
+      "latency_ms": 4004.238,
+      "error_kind": null
+    },
+    {
+      "id": "nobel-physics-2024",
+      "engine": "brave",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "brave"
+      ],
+      "latency_ms": 5.071,
+      "error_kind": null
+    },
+    {
+      "id": "nobel-physics-2024",
+      "engine": "duckduckgo",
+      "response_ok": true,
+      "available": true,
+      "result_count": 10,
+      "unique_domains": 8,
+      "target_domain_rank": 1,
+      "observed_result_engines": [
+        "duckduckgo"
+      ],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 730.713,
+      "error_kind": null
+    },
+    {
+      "id": "nobel-physics-2024",
+      "engine": "startpage",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "startpage"
+      ],
+      "latency_ms": 3.54,
+      "error_kind": null
+    },
+    {
+      "id": "nobel-physics-2024",
+      "engine": "qwant",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "qwant"
+      ],
+      "latency_ms": 361.852,
+      "error_kind": null
+    },
+    {
+      "id": "nobel-physics-2024",
+      "engine": "mojeek",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "mojeek"
+      ],
+      "latency_ms": 3.496,
+      "error_kind": null
+    },
+    {
+      "id": "nobel-physics-2024",
+      "engine": "wiby",
+      "response_ok": true,
+      "available": true,
+      "result_count": 6,
+      "unique_domains": 6,
+      "target_domain_rank": null,
+      "observed_result_engines": [
+        "wiby"
+      ],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 473.35,
+      "error_kind": null
+    },
+    {
+      "id": "nobel-physics-2024",
+      "engine": "mwmbl",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "mwmbl"
+      ],
+      "latency_ms": 3.494,
+      "error_kind": null
+    },
+    {
+      "id": "nobel-physics-2024",
+      "engine": "yep",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "yep"
+      ],
+      "latency_ms": 3.49,
+      "error_kind": null
+    },
+    {
+      "id": "openai-simple-evals",
+      "engine": "duckduckgo",
+      "response_ok": true,
+      "available": true,
+      "result_count": 10,
+      "unique_domains": 5,
+      "target_domain_rank": 1,
+      "observed_result_engines": [
+        "duckduckgo"
+      ],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 644.417,
+      "error_kind": null
+    },
+    {
+      "id": "openai-simple-evals",
+      "engine": "startpage",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "startpage"
+      ],
+      "latency_ms": 3.199,
+      "error_kind": null
+    },
+    {
+      "id": "openai-simple-evals",
+      "engine": "qwant",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "qwant"
+      ],
+      "latency_ms": 165.228,
+      "error_kind": null
+    },
+    {
+      "id": "openai-simple-evals",
+      "engine": "mojeek",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "mojeek"
+      ],
+      "latency_ms": 3.173,
+      "error_kind": null
+    },
+    {
+      "id": "openai-simple-evals",
+      "engine": "wiby",
+      "response_ok": true,
+      "available": true,
+      "result_count": 10,
+      "unique_domains": 10,
+      "target_domain_rank": null,
+      "observed_result_engines": [
+        "wiby"
+      ],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 275.54,
+      "error_kind": null
+    },
+    {
+      "id": "openai-simple-evals",
+      "engine": "mwmbl",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "mwmbl"
+      ],
+      "latency_ms": 4004.228,
+      "error_kind": null
+    },
+    {
+      "id": "openai-simple-evals",
+      "engine": "yep",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "yep"
+      ],
+      "latency_ms": 3.109,
+      "error_kind": null
+    },
+    {
+      "id": "openai-simple-evals",
+      "engine": "brave",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "brave"
+      ],
+      "latency_ms": 3.156,
+      "error_kind": null
+    },
+    {
+      "id": "wcag-22",
+      "engine": "startpage",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "startpage"
+      ],
+      "latency_ms": 4.097,
+      "error_kind": null
+    },
+    {
+      "id": "wcag-22",
+      "engine": "qwant",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "qwant"
+      ],
+      "latency_ms": 466.473,
+      "error_kind": null
+    },
+    {
+      "id": "wcag-22",
+      "engine": "mojeek",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "mojeek"
+      ],
+      "latency_ms": 3.215,
+      "error_kind": null
+    },
+    {
+      "id": "wcag-22",
+      "engine": "wiby",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 320.462,
+      "error_kind": null
+    },
+    {
+      "id": "wcag-22",
+      "engine": "mwmbl",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "mwmbl"
+      ],
+      "latency_ms": 3.271,
+      "error_kind": null
+    },
+    {
+      "id": "wcag-22",
+      "engine": "yep",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "yep"
+      ],
+      "latency_ms": 3.279,
+      "error_kind": null
+    },
+    {
+      "id": "wcag-22",
+      "engine": "brave",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "brave"
+      ],
+      "latency_ms": 3.187,
+      "error_kind": null
+    },
+    {
+      "id": "wcag-22",
+      "engine": "duckduckgo",
+      "response_ok": true,
+      "available": true,
+      "result_count": 10,
+      "unique_domains": 9,
+      "target_domain_rank": 1,
+      "observed_result_engines": [
+        "duckduckgo"
+      ],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 982.295,
+      "error_kind": null
+    },
+    {
+      "id": "world-bank-benin",
+      "engine": "qwant",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "qwant"
+      ],
+      "latency_ms": 137.579,
+      "error_kind": null
+    },
+    {
+      "id": "world-bank-benin",
+      "engine": "mojeek",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "mojeek"
+      ],
+      "latency_ms": 3.277,
+      "error_kind": null
+    },
+    {
+      "id": "world-bank-benin",
+      "engine": "wiby",
+      "response_ok": true,
+      "available": true,
+      "result_count": 3,
+      "unique_domains": 3,
+      "target_domain_rank": null,
+      "observed_result_engines": [
+        "wiby"
+      ],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 279.585,
+      "error_kind": null
+    },
+    {
+      "id": "world-bank-benin",
+      "engine": "mwmbl",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "mwmbl"
+      ],
+      "latency_ms": 4004.217,
+      "error_kind": null
+    },
+    {
+      "id": "world-bank-benin",
+      "engine": "yep",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "yep"
+      ],
+      "latency_ms": 3.17,
+      "error_kind": null
+    },
+    {
+      "id": "world-bank-benin",
+      "engine": "brave",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "brave"
+      ],
+      "latency_ms": 3.232,
+      "error_kind": null
+    },
+    {
+      "id": "world-bank-benin",
+      "engine": "duckduckgo",
+      "response_ok": true,
+      "available": true,
+      "result_count": 10,
+      "unique_domains": 8,
+      "target_domain_rank": 1,
+      "observed_result_engines": [
+        "duckduckgo"
+      ],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [],
+      "latency_ms": 774.325,
+      "error_kind": null
+    },
+    {
+      "id": "world-bank-benin",
+      "engine": "startpage",
+      "response_ok": true,
+      "available": false,
+      "result_count": 0,
+      "unique_domains": 0,
+      "target_domain_rank": null,
+      "observed_result_engines": [],
+      "unexpected_result_engines": [],
+      "engine_isolation_ok": true,
+      "unresponsive_engines": [
+        "startpage"
+      ],
+      "latency_ms": 3.219,
+      "error_kind": null
+    }
+  ],
+  "warnings": [
+    "This small authored suite selects reliable engine candidates; it is not a general search-quality leaderboard.",
+    "A 200-case SimpleQA run is allowed only when at least two engines pass every pre-registered gate.",
+    "Live engine behavior depends on date and network egress. Results do not generalize to every SearXNG deployment."
+  ]
+}

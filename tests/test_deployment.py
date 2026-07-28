@@ -41,7 +41,9 @@ def test_phase5_calibration_locks_inputs_and_request_budget() -> None:
     assert settings["search"]["formats"] == ["html", "json"]
     assert len(settings["use_default_settings"]["engines"]["keep_only"]) == 8
     assert "secret_key" not in settings["server"]
-    assert "--env SEARXNG_SECRET" in workflow
+    assert '--env "SEARXNG_SECRET=$(openssl rand -hex 32)"' in workflow
+    assert "Generate an ephemeral SearXNG secret" not in workflow
+    assert "$GITHUB_ENV" not in workflow
 
 
 def test_committed_phase4_result_matches_locked_protocol() -> None:
@@ -70,4 +72,48 @@ def test_committed_phase4_result_matches_locked_protocol() -> None:
     assert set(report["metrics"]) == {"federated", "searxng", "wikipedia"}
     assert len(report["outcomes"]) == 600
     private_fields = {"question", "answer", "reference_answer", "evidence"}
+    assert all(not private_fields & set(outcome) for outcome in report["outcomes"])
+
+
+def test_committed_phase5_result_matches_locked_protocol() -> None:
+    root = Path(__file__).parents[1]
+    result_path = root / "benchmarks" / "results" / "searxng_calibration_phase5_2026-07-28.json"
+    result_bytes = result_path.read_bytes()
+    assert hashlib.sha256(result_bytes).hexdigest() == (
+        "140f5c1804ab5b29ea2c83a0018364ddd0335a5d4221ea88ebe1bfb9be7bfd53"
+    )
+    report = json.loads(result_bytes)
+
+    assert report["schema_version"] == 1
+    assert report["environment"]["commit_sha"] == ("216e99fda3d7eecfb25e25e51d65395ec86539c6")
+    assert report["suite"]["sha256"] == (
+        "06a5d97980063999768127439f594090007dff7e793ad61567d248e134779dce"
+    )
+    assert report["provider"]["config_sha256"] == (
+        "856ce08d2bf0c3512cb5a40f91aa54fde1860cad827bd8208fc09059c47d1584"
+    )
+    assert report["protocol"]["request_count"] == 96
+    assert len(report["outcomes"]) == 96
+    assert all(outcome["engine_isolation_ok"] for outcome in report["outcomes"])
+    assert report["selection"] == {
+        "eligible_engines": ["duckduckgo"],
+        "eligible_count": 1,
+        "full_200_case_run_allowed": False,
+        "promotion_limit": 3,
+        "promoted_engines": [],
+        "ranking": (
+            "target hit descending, availability descending, unresponsive rate "
+            "ascending, p95 ascending, engine name ascending"
+        ),
+    }
+    private_fields = {
+        "question",
+        "answer",
+        "reference_answer",
+        "evidence",
+        "title",
+        "snippet",
+        "url",
+        "content",
+    }
     assert all(not private_fields & set(outcome) for outcome in report["outcomes"])

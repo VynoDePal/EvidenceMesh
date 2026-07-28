@@ -33,3 +33,10 @@ All notable changes to EvidenceMesh are documented here.
   calibration suite and 96-request GitHub workflow for eight keyless SearXNG
   engines. The workflow blocks a tuned 200-case run unless at least two
   engines pass every pre-registered gate.
+- Published the valid Phase 5 calibration: DuckDuckGo was the sole eligible
+  engine, so the minimum-two-engine gate closed, production configuration
+  remained unchanged and the held-out retrieval and local-model stages were
+  not run.
+- Added result-engine isolation telemetry after invalidating an initial mixed-
+  engine run, and confined the ephemeral calibration secret to the container
+  launch command so it is not persisted in the GitHub Actions job environment.

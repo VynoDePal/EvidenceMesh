@@ -1,6 +1,6 @@
 # Benchmark protocol v3
 
-Status: **locked for Phase 5 before execution**
+Status: **executed; valid Stage A; Stage B/C blocked**
 
 Snapshot date: **2026-07-28**
 
@@ -50,8 +50,9 @@ Provider envelope:
   [`docker/searxng/calibration-settings.yml`](../docker/searxng/calibration-settings.yml);
 - configuration byte SHA-256:
   `856ce08d2bf0c3512cb5a40f91aa54fde1860cad827bd8208fc09059c47d1584`;
-- secret: generated randomly at job runtime and passed through
-  `SEARXNG_SECRET`; never committed;
+- secret: generated randomly inside the container-launch command and passed
+  through `SEARXNG_SECRET`; neither committed nor persisted to the job
+  environment;
 - SearXNG upstream timeout: 4 seconds, bounded at 8 seconds.
 
 The public report records case IDs, result/domain counts, authoritative-domain
@@ -78,6 +79,22 @@ engine name. At most three are promoted.
 Stage B is allowed only if at least two engines pass every gate. If fewer pass,
 the Phase 5 result is a measured blocker: the production configuration remains
 unchanged and no new 200-case run is made.
+
+### Recorded Stage A result
+
+The valid
+[96-request run](https://github.com/VynoDePal/EvidenceMesh/actions/runs/30399260090)
+found one eligible engine: `duckduckgo`. It returned results on 12/12 requests,
+found the expected authoritative domain on 11/12 and had a 996.469 ms p95.
+No other engine passed every gate. Because `1 < 2`, the gate is closed and no
+engines are promoted. See the
+[raw and interpreted result](../benchmarks/results/searxng_calibration_phase5_2026-07-28.md).
+
+An earlier run was invalidated because supplying `categories=general` together
+with `engines` caused the pinned SearXNG adapter to union engine selections.
+The valid run sends only `engines` and records result-engine isolation. The
+suite and pre-existing thresholds were not changed after observing the invalid
+run.
 
 ## Stage B: held-out 200-case retrieval
 

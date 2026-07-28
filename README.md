@@ -214,10 +214,16 @@ controlled end-to-end generation runner. The
 found only 71.5% federated availability and a 98.0% partial-query failure rate
 because the SearXNG upstream path became unavailable. The release decision
 therefore remains no-go. No answer-quality score is claimed until the separate
-official evaluator is run. Phase 5 first calibrates eight keyless SearXNG
-engines on a separate 12-query suite. Its pre-registered gate prevents tuning
-and evaluating on the same SimpleQA questions: a new 200-case run is allowed
-only if at least two engines pass every reliability and relevance threshold.
+official evaluator is run. Phase 5 calibrates eight keyless SearXNG engines on
+a separate 12-query suite. Its pre-registered gate prevents tuning and
+evaluating on the same SimpleQA questions: a new 200-case run is allowed only
+if at least two engines pass every reliability and relevance threshold. The
+valid
+[Phase 5 calibration](benchmarks/results/searxng_calibration_phase5_2026-07-28.md)
+found only one eligible engine: DuckDuckGo returned results for 12/12 cases and
+found the target domain for 11/12, while every other candidate failed at least
+one gate. Because `1 < 2`, production configuration is unchanged and the
+200-case retrieval and local-model stages were not run.
 
 ## Security
 
@@ -245,7 +251,7 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current suite contains 163 tests and reports over 90% branch-aware coverage
+The current suite contains 164 tests and reports over 90% branch-aware coverage
 locally. CI repeats the suite on Python 3.11, 3.12 and 3.13.
 
 ## License

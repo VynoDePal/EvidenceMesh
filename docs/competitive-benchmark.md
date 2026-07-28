@@ -81,6 +81,14 @@ also found only 71.5% federated availability and 98.0% partial-query failure in
 the measured GitHub environment. It is evidence against a best-in-class or
 release claim, not evidence for one.
 
+The subsequent
+[Phase 5 engine calibration](../benchmarks/results/searxng_calibration_phase5_2026-07-28.md)
+found DuckDuckGo reliable and relevant on the small provider-selection suite,
+but only one of eight candidates passed every pre-registered gate. The
+minimum-two-engine requirement prevented promotion and any tuned SimpleQA
+rerun. This preserves evaluation independence; it does not establish a
+competitive quality result.
+
 ## Fair next comparison
 
 Use EvidenceMesh as the retrieval MCP for a fixed external model, then compare

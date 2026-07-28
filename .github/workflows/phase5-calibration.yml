@@ -62,10 +62,6 @@ jobs:
             "856ce08d2bf0c3512cb5a40f91aa54fde1860cad827bd8208fc09059c47d1584  docker/searxng/calibration-settings.yml" \
             | sha256sum --check
 
-      - name: Generate an ephemeral SearXNG secret
-        if: steps.benchmark-state.outputs.run == 'true'
-        run: echo "SEARXNG_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
-
       - name: Start checksum-pinned calibration service
         if: steps.benchmark-state.outputs.run == 'true'
         run: |
@@ -75,7 +71,7 @@ jobs:
             --volume \
               "$GITHUB_WORKSPACE/docker/searxng/calibration-settings.yml:/etc/searxng/settings.yml:ro" \
             --env SEARXNG_BASE_URL=http://localhost:8889/ \
-            --env SEARXNG_SECRET \
+            --env "SEARXNG_SECRET=$(openssl rand -hex 32)" \
             --env FORCE_OWNERSHIP=false \
             "$SEARXNG_IMAGE"
           for attempt in {1..60}; do

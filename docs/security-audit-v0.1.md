@@ -35,6 +35,7 @@ or a formal security certification.
 | Medium | The built virtual environment was copied to a different path, invalidating absolute console-script shebangs | Build it at its final runtime path and execute the installed CLI in the container CI job |
 | Low | MCP progress logs included the raw user query | Log the operation and profile without query contents |
 | Low | Invalid boolean environment values silently became false | Reject unknown boolean spellings during configuration |
+| Low | The calibration secret was persisted to the Actions job environment and displayed in later step metadata | Generate the random value only inside the loopback container-launch command; never persist it to the job environment |
 
 ## Residual risks
 
@@ -61,4 +62,8 @@ maintainer-side security gate. The
 [Phase 4 retrieval run](../benchmarks/results/simpleqa_retrieval_phase4_2026-07-28.md)
 failed the availability, partial-failure and cross-network gates, so the PR must
 remain a draft and must not be merged or released. The residual risks also
-prevent a high-assurance or `1.0` security claim.
+prevent a high-assurance or `1.0` security claim. The subsequent
+[Phase 5 calibration](../benchmarks/results/searxng_calibration_phase5_2026-07-28.md)
+found only one eligible engine where the locked protocol required at least two.
+It therefore left the failing production configuration unchanged and did not
+alter the release decision.
