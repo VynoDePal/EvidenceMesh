@@ -1,0 +1,39 @@
+name: Bug report
+description: Report a reproducible defect.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Do not include API keys, tokens, private URLs or sensitive retrieved content.
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Include sanitized commands, inputs and provider configuration.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: EvidenceMesh version or commit
+    validations:
+      required: true
+  - type: dropdown
+    id: network
+    attributes:
+      label: Provider profile
+      options:
+        - Zero-key default
+        - Self-hosted SearXNG
+        - Optional paid provider
+        - Other
+    validations:
+      required: true

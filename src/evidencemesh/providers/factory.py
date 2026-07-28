@@ -1,0 +1,61 @@
+from __future__ import annotations
+
+import httpx
+
+from evidencemesh.config import Settings
+from evidencemesh.providers.base import SearchProvider
+from evidencemesh.providers.brave import BraveProvider
+from evidencemesh.providers.crossref import CrossrefProvider
+from evidencemesh.providers.ddgs import DDGSProvider
+from evidencemesh.providers.exa import ExaProvider
+from evidencemesh.providers.firecrawl import FirecrawlProvider
+from evidencemesh.providers.searxng import SearxngProvider
+from evidencemesh.providers.tavily import TavilyProvider
+from evidencemesh.providers.wikipedia import WikipediaProvider
+
+
+def build_providers(
+    settings: Settings,
+    client: httpx.AsyncClient,
+) -> tuple[list[SearchProvider], list[str]]:
+    providers: list[SearchProvider] = []
+    warnings: list[str] = []
+    for name in settings.enabled_providers:
+        if name == "searxng":
+            providers.append(SearxngProvider(settings.searxng_url, client))
+        elif name == "ddgs":
+            providers.append(DDGSProvider())
+        elif name == "wikipedia":
+            providers.append(WikipediaProvider(settings.wikipedia_url_template, client))
+        elif name == "crossref":
+            providers.append(
+                CrossrefProvider(settings.crossref_url, client, settings.crossref_mailto)
+            )
+        elif name == "brave":
+            if settings.brave_api_key:
+                providers.append(BraveProvider(settings.brave_api_key, client))
+            else:
+                warnings.append("brave disabled: BRAVE_API_KEY is not configured")
+        elif name == "tavily":
+            if settings.tavily_api_key:
+                providers.append(TavilyProvider(settings.tavily_api_key, client))
+            else:
+                warnings.append("tavily disabled: TAVILY_API_KEY is not configured")
+        elif name == "exa":
+            if settings.exa_api_key:
+                providers.append(ExaProvider(settings.exa_api_key, client))
+            else:
+                warnings.append("exa disabled: EXA_API_KEY is not configured")
+        elif name == "firecrawl":
+            cloud_url = settings.firecrawl_url.rstrip("/") == "https://api.firecrawl.dev"
+            if cloud_url and not settings.firecrawl_api_key:
+                warnings.append("firecrawl disabled: FIRECRAWL_API_KEY is not configured")
+            else:
+                providers.append(
+                    FirecrawlProvider(
+                        settings.firecrawl_url,
+                        client,
+                        settings.firecrawl_api_key,
+                    )
+                )
+    return providers, warnings

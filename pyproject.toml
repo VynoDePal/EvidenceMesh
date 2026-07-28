@@ -1,0 +1,110 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "evidencemesh"
+version = "0.1.0"
+description = "Evidence-first, provider-neutral web search and deep-research infrastructure for AI agents."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Kévyn ODJO" }]
+keywords = [
+  "ai-agents",
+  "deep-research",
+  "fastmcp",
+  "mcp",
+  "search",
+  "searxng",
+  "web-research",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
+]
+dependencies = [
+  "ddgs>=9.5,<10",
+  "fastmcp>=3.0,<4",
+  "httpx>=0.28,<1",
+  "pydantic>=2.11,<3",
+  "pypdf>=5.9,<7",
+  "rich>=14.0,<15",
+  "trafilatura>=2.0,<3",
+  "typer>=0.16,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "hatch>=1.14,<2",
+  "mypy>=1.17,<2",
+  "pytest>=8.4,<10",
+  "pytest-asyncio>=1.1,<2",
+  "pytest-cov>=6.2,<8",
+  "respx>=0.22,<1",
+  "ruff>=0.12,<1",
+]
+
+[project.urls]
+Homepage = "https://github.com/VynoDePal/EvidenceMesh"
+Documentation = "https://github.com/VynoDePal/EvidenceMesh#readme"
+Issues = "https://github.com/VynoDePal/EvidenceMesh/issues"
+Source = "https://github.com/VynoDePal/EvidenceMesh"
+
+[project.scripts]
+evidencemesh = "evidencemesh.cli:app"
+evidencemesh-mcp = "evidencemesh.mcp_server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/evidencemesh"]
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-config --strict-markers"
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["evidencemesh"]
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+  "A",
+  "ASYNC",
+  "B",
+  "C4",
+  "DTZ",
+  "E",
+  "F",
+  "I",
+  "N",
+  "PIE",
+  "RUF",
+  "S",
+  "SIM",
+  "UP",
+]
+ignore = ["B008"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+packages = ["evidencemesh"]
+warn_unused_ignores = true

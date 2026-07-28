@@ -1,0 +1,240 @@
+{
+  "name": "EvidenceMesh offline federation benchmark",
+  "version": 1,
+  "description": "Synthetic provider lists for deterministic RRF, canonicalisation and diversity regression testing.",
+  "cases": [
+    {
+      "id": "fastmcp-http",
+      "query": "FastMCP HTTP transport",
+      "relevant_urls": ["https://gofastmcp.com/deployment/http"],
+      "providers": [
+        {"name": "searxng", "results": [
+          {"title": "FastMCP HTTP tutorial recap", "url": "https://blog-a.example/fastmcp-http", "snippet": "Community recap."},
+          {"title": "HTTP Deployment - FastMCP", "url": "https://gofastmcp.com/deployment/http?utm_source=test", "snippet": "Official FastMCP HTTP transport documentation."},
+          {"title": "Generic HTTP servers", "url": "https://web.example/http", "snippet": "General HTTP servers."}
+        ]},
+        {"name": "ddgs", "results": [
+          {"title": "HTTP Deployment - FastMCP", "url": "https://gofastmcp.com/deployment/http", "snippet": "Run FastMCP over streamable HTTP."},
+          {"title": "MCP hosting notes", "url": "https://notes.example/mcp-hosting", "snippet": "Unofficial notes."}
+        ]},
+        {"name": "wikipedia", "results": [
+          {"title": "Model Context Protocol", "url": "https://en.wikipedia.org/wiki/Model_Context_Protocol", "snippet": "Protocol overview."},
+          {"title": "HTTP Deployment - FastMCP", "url": "https://gofastmcp.com/deployment/http#server", "snippet": "FastMCP deployment reference."}
+        ]}
+      ]
+    },
+    {
+      "id": "python-pyproject",
+      "query": "Python pyproject.toml packaging specification",
+      "relevant_urls": ["https://packaging.python.org/en/latest/specifications/pyproject-toml/"],
+      "providers": [
+        {"name": "ddgs", "results": [
+          {"title": "A personal pyproject.toml guide", "url": "https://blog-b.example/pyproject", "snippet": "Packaging opinions."},
+          {"title": "pyproject.toml specification", "url": "https://packaging.python.org/en/latest/specifications/pyproject-toml/?utm_medium=search", "snippet": "Python Packaging Authority specification."}
+        ]},
+        {"name": "searxng", "results": [
+          {"title": "pyproject.toml specification", "url": "https://packaging.python.org/en/latest/specifications/pyproject-toml/", "snippet": "Canonical packaging specification."},
+          {"title": "Build backend comparison", "url": "https://tools.example/build-backends", "snippet": "Tool comparison."}
+        ]},
+        {"name": "brave", "results": [
+          {"title": "Python packaging overview", "url": "https://packaging.python.org/en/latest/overview/", "snippet": "Packaging overview."},
+          {"title": "pyproject.toml specification", "url": "https://packaging.python.org/en/latest/specifications/pyproject-toml/#pyproject-toml-spec", "snippet": "Specification details."}
+        ]}
+      ]
+    },
+    {
+      "id": "mcp-authorization",
+      "query": "Model Context Protocol authorization specification",
+      "relevant_urls": ["https://modelcontextprotocol.io/specification/latest/basic/authorization"],
+      "providers": [
+        {"name": "searxng", "results": [
+          {"title": "Adding login to an MCP demo", "url": "https://blog-c.example/mcp-login", "snippet": "Demo authentication."},
+          {"title": "OAuth terminology", "url": "https://auth.example/oauth", "snippet": "OAuth overview."},
+          {"title": "Authorization - Model Context Protocol", "url": "https://modelcontextprotocol.io/specification/latest/basic/authorization", "snippet": "Normative MCP authorization specification."}
+        ]},
+        {"name": "ddgs", "results": [
+          {"title": "Authorization - Model Context Protocol", "url": "https://modelcontextprotocol.io/specification/latest/basic/authorization?utm_campaign=docs", "snippet": "Official authorization requirements."},
+          {"title": "MCP security checklist", "url": "https://security.example/mcp", "snippet": "Community checklist."}
+        ]},
+        {"name": "tavily", "results": [
+          {"title": "Authorization - Model Context Protocol", "url": "https://modelcontextprotocol.io/specification/latest/basic/authorization#overview", "snippet": "MCP authorization."},
+          {"title": "Protocol introduction", "url": "https://modelcontextprotocol.io/introduction", "snippet": "MCP introduction."}
+        ]}
+      ]
+    },
+    {
+      "id": "searxng-api",
+      "query": "SearXNG search API JSON format",
+      "relevant_urls": ["https://docs.searxng.org/dev/search_api.html"],
+      "providers": [
+        {"name": "ddgs", "results": [
+          {"title": "SearXNG instance list", "url": "https://instances.example/searxng", "snippet": "Public instances."},
+          {"title": "Search API - SearXNG", "url": "https://docs.searxng.org/dev/search_api.html?utm_source=fixture", "snippet": "Official JSON API format."}
+        ]},
+        {"name": "searxng", "results": [
+          {"title": "Search API - SearXNG", "url": "https://docs.searxng.org/dev/search_api.html", "snippet": "Parameters and output formats."},
+          {"title": "SearXNG settings", "url": "https://docs.searxng.org/admin/settings/index.html", "snippet": "Configuration."}
+        ]},
+        {"name": "brave", "results": [
+          {"title": "Search API - SearXNG", "url": "https://docs.searxng.org/dev/search_api.html#parameters", "snippet": "SearXNG search endpoint."},
+          {"title": "Metasearch engines", "url": "https://search.example/meta", "snippet": "General comparison."}
+        ]}
+      ]
+    },
+    {
+      "id": "crossref-rest",
+      "query": "Crossref REST API filters documentation",
+      "profile": "academic",
+      "relevant_urls": ["https://api.crossref.org/swagger-ui/index.html"],
+      "providers": [
+        {"name": "ddgs", "results": [
+          {"title": "Crossref API examples", "url": "https://blog-d.example/crossref", "snippet": "Unofficial examples."},
+          {"title": "Crossref REST API", "url": "https://api.crossref.org/swagger-ui/index.html", "snippet": "Official filters and query parameters."}
+        ]},
+        {"name": "crossref", "results": [
+          {"title": "Crossref REST API", "url": "https://api.crossref.org/swagger-ui/index.html#/", "snippet": "Crossref API reference."},
+          {"title": "Crossref home", "url": "https://www.crossref.org/", "snippet": "Crossref home page."}
+        ]},
+        {"name": "searxng", "results": [
+          {"title": "REST API tips", "url": "https://community.example/crossref-tips", "snippet": "Community tips."},
+          {"title": "Crossref REST API", "url": "https://api.crossref.org/swagger-ui/index.html?utm_source=search", "snippet": "Filter reference."}
+        ]}
+      ]
+    },
+    {
+      "id": "robots-rfc",
+      "query": "robots exclusion protocol RFC 9309",
+      "relevant_urls": ["https://www.rfc-editor.org/rfc/rfc9309"],
+      "providers": [
+        {"name": "searxng", "results": [
+          {"title": "robots.txt quick guide", "url": "https://seo.example/robots", "snippet": "SEO guide."},
+          {"title": "RFC 9309 Robots Exclusion Protocol", "url": "https://www.rfc-editor.org/rfc/rfc9309?utm_source=fixture", "snippet": "The standards-track specification."}
+        ]},
+        {"name": "ddgs", "results": [
+          {"title": "RFC 9309 Robots Exclusion Protocol", "url": "https://www.rfc-editor.org/rfc/rfc9309", "snippet": "Robots Exclusion Protocol."},
+          {"title": "Crawler etiquette", "url": "https://crawler.example/etiquette", "snippet": "Crawler advice."}
+        ]},
+        {"name": "wikipedia", "results": [
+          {"title": "Robots.txt", "url": "https://en.wikipedia.org/wiki/Robots.txt", "snippet": "History."},
+          {"title": "RFC 9309 Robots Exclusion Protocol", "url": "https://www.rfc-editor.org/rfc/rfc9309#section-2", "snippet": "Protocol rules."}
+        ]}
+      ]
+    },
+    {
+      "id": "owasp-ssrf",
+      "query": "OWASP server side request forgery prevention",
+      "relevant_urls": ["https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html"],
+      "providers": [
+        {"name": "ddgs", "results": [
+          {"title": "SSRF explained", "url": "https://security-blog.example/ssrf", "snippet": "Introductory explanation."},
+          {"title": "Web request security", "url": "https://websec.example/requests", "snippet": "General advice."},
+          {"title": "Server Side Request Forgery Prevention Cheat Sheet", "url": "https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html", "snippet": "OWASP prevention guidance."}
+        ]},
+        {"name": "searxng", "results": [
+          {"title": "Server Side Request Forgery Prevention Cheat Sheet", "url": "https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html?utm_medium=fixture", "snippet": "SSRF prevention."},
+          {"title": "OWASP cheat sheets", "url": "https://cheatsheetseries.owasp.org/", "snippet": "Cheat sheet index."}
+        ]},
+        {"name": "brave", "results": [
+          {"title": "Server Side Request Forgery Prevention Cheat Sheet", "url": "https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html#introduction", "snippet": "Defensive controls."},
+          {"title": "SSRF lab", "url": "https://training.example/ssrf", "snippet": "Training page."}
+        ]}
+      ]
+    },
+    {
+      "id": "rrf-paper",
+      "query": "reciprocal rank fusion research paper",
+      "profile": "academic",
+      "relevant_urls": ["https://dl.acm.org/doi/10.1145/1571941.1572114"],
+      "providers": [
+        {"name": "searxng", "results": [
+          {"title": "RRF in a search product", "url": "https://vendor.example/rrf", "snippet": "Product tutorial."},
+          {"title": "Reciprocal Rank Fusion outperforms Condorcet", "url": "https://dl.acm.org/doi/10.1145/1571941.1572114", "snippet": "Original information retrieval paper."}
+        ]},
+        {"name": "crossref", "results": [
+          {"title": "Reciprocal Rank Fusion outperforms Condorcet", "url": "https://dl.acm.org/doi/10.1145/1571941.1572114?utm_source=crossref", "snippet": "Research article metadata."},
+          {"title": "Rank aggregation survey", "url": "https://papers.example/rank-survey", "snippet": "Survey paper."}
+        ]},
+        {"name": "ddgs", "results": [
+          {"title": "RRF implementation", "url": "https://code.example/rrf", "snippet": "Sample implementation."},
+          {"title": "Reciprocal Rank Fusion outperforms Condorcet", "url": "https://dl.acm.org/doi/10.1145/1571941.1572114#abstract", "snippet": "Original paper abstract."}
+        ]}
+      ]
+    },
+    {
+      "id": "pydantic-validators",
+      "query": "Pydantic field validators documentation",
+      "relevant_urls": ["https://docs.pydantic.dev/latest/concepts/validators/"],
+      "providers": [
+        {"name": "ddgs", "results": [
+          {"title": "Validator patterns blog", "url": "https://python.example/validators", "snippet": "Code patterns."},
+          {"title": "Validators - Pydantic", "url": "https://docs.pydantic.dev/latest/concepts/validators/?utm_source=fixture", "snippet": "Official field and model validators."}
+        ]},
+        {"name": "searxng", "results": [
+          {"title": "Validators - Pydantic", "url": "https://docs.pydantic.dev/latest/concepts/validators/", "snippet": "Pydantic validation concepts."},
+          {"title": "Pydantic models", "url": "https://docs.pydantic.dev/latest/concepts/models/", "snippet": "Model concepts."}
+        ]},
+        {"name": "tavily", "results": [
+          {"title": "Pydantic API", "url": "https://docs.pydantic.dev/latest/api/base_model/", "snippet": "API reference."},
+          {"title": "Validators - Pydantic", "url": "https://docs.pydantic.dev/latest/concepts/validators/#field-validators", "snippet": "Field validators."}
+        ]}
+      ]
+    },
+    {
+      "id": "httpx-streaming",
+      "query": "HTTPX async response streaming documentation",
+      "relevant_urls": ["https://www.python-httpx.org/async/"],
+      "providers": [
+        {"name": "searxng", "results": [
+          {"title": "Streaming downloads in Python", "url": "https://blog-e.example/streaming", "snippet": "Unofficial examples."},
+          {"title": "Async Support - HTTPX", "url": "https://www.python-httpx.org/async/", "snippet": "Official asynchronous streaming API."}
+        ]},
+        {"name": "ddgs", "results": [
+          {"title": "Async Support - HTTPX", "url": "https://www.python-httpx.org/async/?utm_campaign=fixture", "snippet": "HTTPX async client and streaming."},
+          {"title": "HTTPX quickstart", "url": "https://www.python-httpx.org/quickstart/", "snippet": "Quickstart."}
+        ]},
+        {"name": "brave", "results": [
+          {"title": "HTTP client comparison", "url": "https://python.example/http-clients", "snippet": "Comparison."},
+          {"title": "Async Support - HTTPX", "url": "https://www.python-httpx.org/async/#streaming-responses", "snippet": "Streaming responses."}
+        ]}
+      ]
+    },
+    {
+      "id": "trafilatura-extraction",
+      "query": "Trafilatura text extraction documentation",
+      "relevant_urls": ["https://trafilatura.readthedocs.io/en/latest/corefunctions.html"],
+      "providers": [
+        {"name": "ddgs", "results": [
+          {"title": "HTML extraction comparison", "url": "https://scraping.example/extractors", "snippet": "Tool comparison."},
+          {"title": "Core functions - Trafilatura", "url": "https://trafilatura.readthedocs.io/en/latest/corefunctions.html", "snippet": "Official extraction functions."}
+        ]},
+        {"name": "searxng", "results": [
+          {"title": "Core functions - Trafilatura", "url": "https://trafilatura.readthedocs.io/en/latest/corefunctions.html?utm_source=fixture", "snippet": "Trafilatura extraction documentation."},
+          {"title": "Trafilatura usage", "url": "https://trafilatura.readthedocs.io/en/latest/usage-python.html", "snippet": "Python usage."}
+        ]},
+        {"name": "tavily", "results": [
+          {"title": "Trafilatura package", "url": "https://pypi.org/project/trafilatura/", "snippet": "Package metadata."},
+          {"title": "Core functions - Trafilatura", "url": "https://trafilatura.readthedocs.io/en/latest/corefunctions.html#extract", "snippet": "Core extract function."}
+        ]}
+      ]
+    },
+    {
+      "id": "apache-license",
+      "query": "Apache License version 2.0 official",
+      "relevant_urls": ["https://www.apache.org/licenses/LICENSE-2.0"],
+      "providers": [
+        {"name": "searxng", "results": [
+          {"title": "Choosing an open source license", "url": "https://licenses.example/choose", "snippet": "License comparison."},
+          {"title": "Apache License, Version 2.0", "url": "https://www.apache.org/licenses/LICENSE-2.0", "snippet": "Official Apache license text."}
+        ]},
+        {"name": "ddgs", "results": [
+          {"title": "Apache License, Version 2.0", "url": "https://www.apache.org/licenses/LICENSE-2.0?utm_source=fixture", "snippet": "Apache Software Foundation license."},
+          {"title": "OSI Apache-2.0", "url": "https://opensource.org/license/apache-2-0", "snippet": "OSI license page."}
+        ]},
+        {"name": "brave", "results": [
+          {"title": "Open source licensing", "url": "https://opensource.example/licensing", "snippet": "General licensing."},
+          {"title": "Apache License, Version 2.0", "url": "https://www.apache.org/licenses/LICENSE-2.0#terms", "snippet": "Official terms."}
+        ]}
+      ]
+    }
+  ]
+}
