@@ -25,6 +25,19 @@ EXPECTED_DEPENDENCIES = {
     "trafilatura",
     "typer",
 }
+EXPECTED_BUNDLE_FILES = frozenset(
+    {
+        "SHA256SUMS",
+        "alpha-rc-manifest.json",
+        "dist/evidencemesh-0.1.0-py3-none-any.whl",
+        "dist/evidencemesh-0.1.0.tar.gz",
+        "evidencemesh-0.1.0.cdx.json",
+        "installed-wheel-mcp-stdio.json",
+        "installed-wheel-offline-benchmark.json",
+    }
+)
+GENERATED_BUNDLE_FILES = frozenset({"SHA256SUMS", "alpha-rc-manifest.json"})
+EXPECTED_BUNDLE_DIRECTORIES = frozenset({"dist"})
 
 
 def sha256_file(path: Path) -> str:
@@ -59,6 +72,47 @@ def _single(directory: Path, pattern: str) -> Path:
 
 def _normalise_name(value: str) -> str:
     return re.sub(r"[-_.]+", "-", value).lower()
+
+
+def validate_bundle_inventory(
+    bundle_dir: Path,
+    *,
+    allow_generated_missing: bool,
+) -> list[str]:
+    if not bundle_dir.is_dir():
+        raise ValueError(f"Candidate bundle directory does not exist: {bundle_dir}")
+
+    entries = list(bundle_dir.rglob("*"))
+    symlinks = sorted(
+        path.relative_to(bundle_dir).as_posix() for path in entries if path.is_symlink()
+    )
+    directories = {
+        path.relative_to(bundle_dir).as_posix()
+        for path in entries
+        if path.is_dir() and not path.is_symlink()
+    }
+    files = {
+        path.relative_to(bundle_dir).as_posix()
+        for path in entries
+        if path.is_file() and not path.is_symlink()
+    }
+    allowed_missing = GENERATED_BUNDLE_FILES if allow_generated_missing else frozenset()
+    missing = sorted(EXPECTED_BUNDLE_FILES - files - allowed_missing)
+    unexpected_files = sorted(files - EXPECTED_BUNDLE_FILES)
+    unexpected_directories = sorted(directories - EXPECTED_BUNDLE_DIRECTORIES)
+
+    violations = []
+    if symlinks:
+        violations.append(f"symbolic links are forbidden: {symlinks}")
+    if missing:
+        violations.append(f"required files are missing: {missing}")
+    if unexpected_files:
+        violations.append(f"unexpected files: {unexpected_files}")
+    if unexpected_directories:
+        violations.append(f"unexpected directories: {unexpected_directories}")
+    if violations:
+        raise ValueError("Invalid candidate bundle inventory; " + "; ".join(violations))
+    return sorted(files)
 
 
 def validate_wheel(path: Path, bundle_dir: Path) -> dict[str, Any]:
@@ -264,6 +318,7 @@ def build_bundle_manifest(
         raise ValueError("protocol_sha256 must be a lowercase SHA-256 digest")
     if bundle_dir.name != RC_NAME:
         raise ValueError(f"Bundle directory must be named {RC_NAME}")
+    validate_bundle_inventory(bundle_dir, allow_generated_missing=True)
 
     dist_dir = bundle_dir / "dist"
     wheel = _single(dist_dir, f"{PROJECT}-{VERSION}-*.whl")
@@ -293,6 +348,7 @@ def build_bundle_manifest(
         "mcp_inventory": True,
         "mcp_health_without_network": True,
         "cyclonedx_1_7_sbom": True,
+        "exact_candidate_inventory": True,
     }
     manifest: dict[str, Any] = {
         "schema_version": 1,
@@ -309,6 +365,11 @@ def build_bundle_manifest(
             "sha256": protocol_sha256,
         },
         "artifacts": artifacts,
+        "inventory": {
+            "file_count": len(EXPECTED_BUNDLE_FILES),
+            "files": sorted(EXPECTED_BUNDLE_FILES),
+            "unexpected_files": [],
+        },
         "gates": gates,
         "attestations": {
             "github_keyless_provenance_required": True,
@@ -348,6 +409,7 @@ def build_bundle_manifest(
         ),
         encoding="utf-8",
     )
+    validate_bundle_inventory(bundle_dir, allow_generated_missing=False)
     return manifest
 
 

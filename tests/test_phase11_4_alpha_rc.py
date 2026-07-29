@@ -7,7 +7,10 @@ import tarfile
 import zipfile
 from pathlib import Path
 
+import pytest
+
 from scripts.build_alpha_rc_bundle import (
+    EXPECTED_BUNDLE_FILES,
     EXPECTED_DEPENDENCIES,
     RC_NAME,
     build_bundle_manifest,
@@ -165,6 +168,11 @@ def test_phase11_4_bundle_manifest_and_final_decision_are_separate(tmp_path: Pat
     assert manifest["decision"]["build_candidate_created"] is True
     assert manifest["decision"]["alpha_technical_candidate_passed"] is False
     assert manifest["decision"]["public_distribution_allowed"] is False
+    assert manifest["inventory"]["files"] == sorted(EXPECTED_BUNDLE_FILES)
+    assert manifest["inventory"]["file_count"] == 7
+    assert {
+        path.relative_to(bundle).as_posix() for path in bundle.rglob("*") if path.is_file()
+    } == EXPECTED_BUNDLE_FILES
     checksum_lines = (bundle / "SHA256SUMS").read_text(encoding="utf-8").splitlines()
     assert len(checksum_lines) == 6
     assert all(" *" in line for line in checksum_lines)
@@ -189,6 +197,20 @@ def test_phase11_4_bundle_manifest_and_final_decision_are_separate(tmp_path: Pat
     assert result["decision"]["release_decision"] == "no-go"
     assert result["supply_chain"]["provenance"]["verified_by_github_cli"] is True
     assert result["supply_chain"]["sbom"]["predicate_type"] == "https://cyclonedx.org/bom"
+
+
+def test_phase11_4_bundle_rejects_unchecksummed_extra_file(tmp_path: Path) -> None:
+    bundle = _synthetic_bundle(tmp_path)
+    (bundle / "installed-wheel-mcp-stdio.server.log").write_text(
+        "server log must remain outside the candidate\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="unexpected files"):
+        build_bundle_manifest(
+            bundle_dir=bundle,
+            protocol_sha256=PROTOCOL_SHA256,
+            commit_sha="a" * 40,
+        )
 
 
 def test_installed_mcp_validation_rejects_source_or_contract_drift() -> None:
@@ -238,7 +260,13 @@ def test_phase11_4_workflow_locks_supply_chain_and_zero_research_traffic() -> No
     assert "persist-credentials: false" in workflow
     assert "--from cyclonedx-bom==7.3.0" in workflow
     assert "--predicate-type https://cyclonedx.org/bom" in workflow
+    assert 'rm --force -- "$RC_BUNDLE/dist/.gitignore"' in workflow
     assert "scripts/smoke_installed_mcp.py" in workflow
+    assert '--server-log "$RC_ROOT/installed-wheel-mcp-stdio.server.log"' in workflow
+    assert '--server-log "$RC_BUNDLE/' not in workflow
+    for path in sorted(EXPECTED_BUNDLE_FILES):
+        assert f"${{{{ env.RC_BUNDLE }}}}/{path}" in workflow
+    assert "            ${{ env.RC_BUNDLE }}\n" not in workflow
     assert "EVIDENCE_MESH_TAVILY_KEY" not in workflow
     assert "EVIDENCE_MESH_GEMINI_KEY" not in workflow
     assert "TAVILY_API_KEY" not in workflow
@@ -254,6 +282,7 @@ def test_permanent_ci_installs_wheel_and_runs_real_stdio_smoke() -> None:
     assert '"$install_env/bin/evidencemesh" benchmark-offline' in workflow
     assert '--command "$install_env/bin/evidencemesh-mcp"' in workflow
     assert "--output /tmp/evidencemesh-installed-wheel-mcp.json" in workflow
+    assert "--server-log /tmp/evidencemesh-installed-wheel-mcp.server.log" in workflow
 
 
 def test_alpha_distribution_guide_does_not_imply_publication() -> None:

@@ -82,7 +82,8 @@ jobs:
             --command "$install_env/bin/evidencemesh-mcp" \
             --cache-path /tmp/evidencemesh-installed-wheel-mcp.sqlite3 \
             --expected-version 0.1.0 \
-            --output /tmp/evidencemesh-installed-wheel-mcp.json
+            --output /tmp/evidencemesh-installed-wheel-mcp.json \
+            --server-log /tmp/evidencemesh-installed-wheel-mcp.server.log
 
   container:
     runs-on: ubuntu-latest

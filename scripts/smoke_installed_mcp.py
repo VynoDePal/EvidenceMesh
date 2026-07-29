@@ -136,13 +136,15 @@ def run_smoke(
     cache_path: Path,
     expected_version: str,
     output: Path,
+    server_log: Path,
 ) -> dict[str, Any]:
     command = command.resolve()
     if not command.is_file() or not os.access(command, os.X_OK):
         raise ValueError("The MCP command must be an executable file")
 
     package_origin = Path(evidencemesh.__file__).resolve()
-    server_log = output.with_suffix(".server.log")
+    server_log = server_log.resolve()
+    server_log.parent.mkdir(parents=True, exist_ok=True)
     server_env = {
         "EVIDENCEMESH_CACHE_PATH": str(cache_path.resolve()),
         "EVIDENCEMESH_PROVIDERS": "wikipedia",
@@ -231,6 +233,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--cache-path", type=Path, required=True)
     parser.add_argument("--expected-version", default="0.1.0")
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--server-log", type=Path, required=True)
     return parser.parse_args()
 
 
@@ -241,6 +244,7 @@ def main() -> None:
         cache_path=args.cache_path,
         expected_version=args.expected_version,
         output=args.output,
+        server_log=args.server_log,
     )
 
 

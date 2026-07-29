@@ -90,6 +90,7 @@ jobs:
         run: |
           mkdir --parents "$RC_BUNDLE/dist"
           uv build --out-dir "$RC_BUNDLE/dist"
+          rm --force -- "$RC_BUNDLE/dist/.gitignore"
           uvx twine==7.0.0 check "$RC_BUNDLE"/dist/*
 
       - name: Install and exercise the wheel outside the source environment
@@ -110,7 +111,8 @@ jobs:
             --command "$install_env/bin/evidencemesh-mcp" \
             --cache-path "$RC_ROOT/mcp-smoke-cache.sqlite3" \
             --expected-version 0.1.0 \
-            --output "$RC_BUNDLE/installed-wheel-mcp-stdio.json"
+            --output "$RC_BUNDLE/installed-wheel-mcp-stdio.json" \
+            --server-log "$RC_ROOT/installed-wheel-mcp-stdio.server.log"
 
       - name: Generate and validate the CycloneDX 1.7 SBOM
         if: steps.candidate-state.outputs.run == 'true'
@@ -217,7 +219,13 @@ jobs:
         with:
           name: phase11-4-alpha-rc-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
-            ${{ env.RC_BUNDLE }}
+            ${{ env.RC_BUNDLE }}/SHA256SUMS
+            ${{ env.RC_BUNDLE }}/alpha-rc-manifest.json
+            ${{ env.RC_BUNDLE }}/dist/evidencemesh-0.1.0-py3-none-any.whl
+            ${{ env.RC_BUNDLE }}/dist/evidencemesh-0.1.0.tar.gz
+            ${{ env.RC_BUNDLE }}/evidencemesh-0.1.0.cdx.json
+            ${{ env.RC_BUNDLE }}/installed-wheel-mcp-stdio.json
+            ${{ env.RC_BUNDLE }}/installed-wheel-offline-benchmark.json
             ${{ env.RESULT_PATH }}
           if-no-files-found: error
           retention-days: 30
