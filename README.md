@@ -24,8 +24,8 @@ projects bundle a particular model, search service and report writer.
 EvidenceMesh separates those concerns:
 
 - **Free core:** self-hosted SearXNG, bounded DDGS fallback and direct
-  Wikipedia, Crossref, arXiv and GitHub repository adapters; Wiby's
-  independently crawled index is available as an explicit opt-in.
+  Wikipedia, Crossref, arXiv and GitHub repository adapters; Mwmbl, Wiby and
+  self-hosted YaCy independent indexes are available as explicit opt-ins.
 - **Deterministic routing:** web, reference, academic and code sources receive
   only compatible queries, with conservative budgets for rate-limited APIs and
   profile-aware domain diversity.
@@ -128,7 +128,9 @@ research workflow.
 | Provider | Key required | `community` | `quality` | Profiles |
 |---|---:|---:|---:|---|
 | SearXNG | No | Yes | Yes | Web, news |
+| Mwmbl | No | Explicit opt-in | Explicit opt-in | Web |
 | Wiby | No | Explicit opt-in | Explicit opt-in | Web |
+| YaCy | No; self-hosted | Explicit opt-in | Explicit opt-in | Web |
 | Wikipedia | No | Yes | Yes | Web, reference, academic |
 | Crossref | No | Yes | Yes | Academic |
 | arXiv | No | Yes | Yes | Academic |
@@ -141,12 +143,13 @@ research workflow.
 | DDGS | No | Yes | Yes | Web, news |
 
 The default `community` profile requires no API key and remains a best-effort
-self-hosted route. Wiby remains an explicit opt-in after its Phase 11.1
-candidate gates failed. The recommended `quality` profile adds Tavily when
-`TAVILY_API_KEY` is configured; a missing key produces a visible configuration
-warning and a degraded health status. Other keyed adapters remain available
-through an explicit provider list, but are not silently added to the
-recommended quality bundle.
+self-hosted route. Mwmbl, Wiby and YaCy remain explicit opt-ins: Mwmbl search
+results carry a CC BY-NC-SA 4.0 notice, Wiby failed its Phase 11.1 candidate
+gates, and YaCy quality depends on the operator's populated index. The
+recommended `quality` profile adds Tavily when `TAVILY_API_KEY` is configured;
+a missing key produces a visible configuration warning and a degraded health
+status. Other keyed adapters remain available through an explicit provider
+list, but are not silently added to the recommended quality bundle.
 
 ```bash
 # Named bundles.
@@ -160,6 +163,9 @@ export EVIDENCEMESH_PROVIDERS=searxng,ddgs,wiby,wikipedia,crossref,arxiv,github
 export EVIDENCEMESH_SEARXNG_URL=http://127.0.0.1:8888
 export EVIDENCEMESH_SEARXNG_FALLBACK_URLS=https://search-2.example
 export EVIDENCEMESH_WIBY_URL=https://wiby.me/json/
+export EVIDENCEMESH_MWMBL_URL=https://api.mwmbl.org/api/v2/search/
+export EVIDENCEMESH_YACY_URL=http://127.0.0.1:8090
+export EVIDENCEMESH_YACY_RESOURCE=local
 export EVIDENCEMESH_PROVIDER_FAILURE_THRESHOLD=3
 export EVIDENCEMESH_PROVIDER_RECOVERY_SECONDS=60
 
@@ -376,6 +382,17 @@ results in 4/12 cases and none survived community top-10 selection. The adapter
 therefore remains available by explicit provider configuration but is not
 promoted into the default bundles. Phase 12 remains blocked.
 
+The [Phase 11.2 protocol](docs/benchmark-protocol-v11.md) evaluates a larger
+independent public index without a paid API or model call. It freezes a new
+16-case broad-Web/long-tail suite and compares legacy community, complete
+candidate, Mwmbl direct, Wiby direct and independent fused arms from one raw
+pool. Mwmbl is integrated with explicit result-license metadata, while an
+optional checksum-pinned YaCy service provides the operator-controlled path.
+The [architecture assessment](docs/independent-index-assessment-v1.md) records
+the alternatives and rejection reasons. Both providers stay outside named
+defaults, Phase 12 stays blocked, and release remains no-go regardless of this
+calibration's retrieval score.
+
 ## Security
 
 EvidenceMesh blocks private, loopback, link-local and reserved fetch targets by
@@ -402,11 +419,12 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current suite contains 274 tests and reports 91.71% branch-aware coverage
+The current suite contains 286 tests and reports 91.69% branch-aware coverage
 locally. CI repeats the suite on Python 3.11, 3.12 and 3.13.
 
 ## License
 
-EvidenceMesh is released under the [Apache License 2.0](LICENSE). SearXNG is a
-separate service distributed under its own AGPL-3.0 license; EvidenceMesh only
-communicates with it through its documented HTTP API.
+EvidenceMesh is released under the [Apache License 2.0](LICENSE). SearXNG,
+Mwmbl and YaCy are separate projects distributed under their own licenses;
+EvidenceMesh only communicates with them through documented HTTP APIs. Mwmbl
+result-license metadata is preserved in every applicable search response.
