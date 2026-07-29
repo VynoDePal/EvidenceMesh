@@ -190,6 +190,15 @@ recovered to 94.1%, identifier validity to 100% and support proxy to 76.5%.
 The candidate is therefore a no-go; Phase 12 and an external-agent comparison
 remain blocked, and no competitive superiority follows.
 
+Phase 11.6 is the next disclosed calibration, still on the observed cases and
+therefore still unsuitable for a competitive claim. Its
+[frozen protocol](benchmark-protocol-v14.md) compares only legacy versus
+strict citation instructions while sharing byte-identical Tavily evidence.
+It includes blocking Gemma 26B and Gemini 3.5 Flash Lite. A passing result can
+change the paid quality default and unblock a separately authorized untouched
+evaluation; it cannot itself authorize Phase 12 or an external-agent
+comparison. The free community profile is unchanged.
+
 ## Fair next comparison
 
 Use EvidenceMesh as the retrieval MCP for a fixed external model, then compare

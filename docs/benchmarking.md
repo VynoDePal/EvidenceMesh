@@ -311,6 +311,25 @@ candidate net of `-3`. Gemma 26B also missed the 11/12 completion floor on all
 three arms. The candidate failed, Phase 12 remains blocked and release remains
 no-go.
 
+## Phase 11.6 Tavily citation isolation
+
+`benchmarks/run_phase11_6_tavily_citation_isolation.py` removes retrieval
+composition as a variable. It retrieves Tavily once for each already-observed
+Phase 10 case, then sends the exact same selected and projected packet to a
+legacy prompt and the strict Phase 11.5 citation contract.
+
+The [frozen protocol](benchmark-protocol-v14.md) fixes all 12 retrieval
+operations, 12 Tavily requests and 72 generations across
+`gemma-4-31b-it`, blocking `gemma-4-26b-a4b-it` and
+`gemini-3.5-flash-lite`. There are no retries, fallbacks or repair calls. Ten
+pre-registered gates cover accounting, packet identity, retrieval coverage,
+per-model completion, answer non-regression and citation quality.
+
+A pass may promote the paid `quality` profile to Tavily only in a separate
+result commit and may unblock a separately authorized untouched Phase 12 run.
+It does not execute Phase 12. The zero-key `community` profile remains
+unchanged regardless of the result.
+
 ## Planned standard evaluations
 
 - SimpleQA answer accuracy with the official judge over the new generation

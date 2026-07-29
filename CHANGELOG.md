@@ -184,3 +184,10 @@ All notable changes to EvidenceMesh are documented here.
   support proxy. Candidate answer-key coverage remained 25/36 versus 28/36
   for Tavily direct, while Gemma 26B missed the completion floor on every arm.
   Phase 12, merge, publication and superiority claims remain blocked.
+- Locked Phase 11.6 before its first scored request as a two-arm Tavily
+  citation-contract isolation calibration. Both prompts receive byte-identical
+  evidence across the three exact Gemini API models, including blocking Gemma
+  26B and Gemini 3.5 Flash Lite. The budget is exactly 12 Tavily and 72 model
+  requests with no retry, fallback or repair. A ten-gate pass may promote only
+  the paid quality default in a separate commit; the free community profile
+  remains unchanged and Phase 12 is not executed.

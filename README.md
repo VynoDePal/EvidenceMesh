@@ -455,6 +455,16 @@ proxy, while answer-key hits remained 25/36 versus 28/36 for Tavily direct.
 Community retrieval remains visible but non-blocking; Phase 12, merge,
 publication and superiority claims remain blocked.
 
+The [Phase 11.6 protocol](docs/benchmark-protocol-v14.md) freezes a narrower
+causal calibration before any scored request. It retrieves one Tavily packet
+per reused case, then gives the byte-identical selected and projected evidence
+to legacy and strict citation prompts. The matrix includes
+`gemma-4-31b-it`, blocking `gemma-4-26b-a4b-it` and
+`gemini-3.5-flash-lite`: exactly 12 Tavily and 72 model requests, with no
+retry, fallback or repair. Only a ten-gate pass may promote the paid `quality`
+default to Tavily only in a separate result commit. The free `community`
+profile remains unchanged, and Phase 12 is not executed.
+
 ## Security
 
 EvidenceMesh blocks private, loopback, link-local and reserved fetch targets by
@@ -481,7 +491,7 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current suite contains 327 tests and reports 91.55% branch-aware coverage
+The current suite contains 335 tests and reports 91.55% branch-aware coverage
 locally. CI repeats the suite on Python 3.11, 3.12 and 3.13 and installs the
 built wheel before exercising its CLI and real MCP STDIO entry point.
 

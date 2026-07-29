@@ -1,0 +1,320 @@
+name: Phase 11.6 Tavily Citation Isolation
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/phase11-6-tavily-citation-isolation.yml
+      - benchmarks/data/end_to_end_phase10_v1.json
+      - benchmarks/run_phase11_6_tavily_citation_isolation.py
+      - benchmarks/results/phase11_6_tavily_citation_isolation_2026-07-29.json
+      - docs/benchmark-protocol-v14.md
+      - src/evidencemesh/config.py
+      - tests/test_phase11_6_tavily_citation_isolation.py
+      - tests/test_deployment.py
+      - tests/test_models_config.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase11-6-tavily-citation-isolation-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DATASET_PATH: /tmp/simple_qa_test_set_phase11_6.csv
+  RESULT_PATH: /tmp/phase11_6_tavily_citation_isolation_2026-07-29.json
+  CACHE_ROOT: /tmp/evidencemesh-phase11-6-cache
+
+jobs:
+  citation-isolation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6.0.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Detect an already committed result
+        id: benchmark-state
+        shell: bash
+        run: |
+          if [[ -f benchmarks/results/phase11_6_tavily_citation_isolation_2026-07-29.json ]]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        if: steps.benchmark-state.outputs.run == 'true'
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install locked benchmark environment
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Verify protocol-locked inputs
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          echo \
+            "d72aa29b989d74cff09ca211e291b5d2d58d86d684fe6bca5f75a0dac429c4e8  docs/benchmark-protocol-v14.md" \
+            | sha256sum --check
+          echo \
+            "b38b89d316219be7dbd249f4365e0801330eb469ff6cc9b4fdaffebe6510134f  benchmarks/data/end_to_end_phase10_v1.json" \
+            | sha256sum --check
+
+      - name: Verify benchmark credentials are available
+        if: steps.benchmark-state.outputs.run == 'true'
+        env:
+          GEMINI_API_KEY: ${{ secrets.EVIDENCE_MESH_GEMINI_KEY }}
+          TAVILY_API_KEY: ${{ secrets.EVIDENCE_MESH_TAVILY_KEY }}
+        run: |
+          if [[ -z "${GEMINI_API_KEY:-}" ]]; then
+            echo "::error::EVIDENCE_MESH_GEMINI_KEY is not configured"
+            exit 1
+          fi
+          if [[ -z "${TAVILY_API_KEY:-}" ]]; then
+            echo "::error::EVIDENCE_MESH_TAVILY_KEY is not configured"
+            exit 1
+          fi
+
+      - name: Download checksum-pinned SimpleQA
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          curl \
+            --fail \
+            --location \
+            --silent \
+            --show-error \
+            --output "$DATASET_PATH" \
+            https://openaipublic.blob.core.windows.net/simple-evals/simple_qa_test_set.csv
+          echo \
+            "feee3f7e7db3617e94e8fcf1977b756ec420ef8568f4e0fcbbe0e92e9d5fc032  $DATASET_PATH" \
+            | sha256sum --check
+
+      - name: Run locked 12-case two-arm citation isolation
+        if: steps.benchmark-state.outputs.run == 'true'
+        env:
+          EVIDENCEMESH_BENCHMARK_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+          GEMINI_API_KEY: ${{ secrets.EVIDENCE_MESH_GEMINI_KEY }}
+          TAVILY_API_KEY: ${{ secrets.EVIDENCE_MESH_TAVILY_KEY }}
+        run: |
+          uv run python benchmarks/run_phase11_6_tavily_citation_isolation.py \
+            --dataset "$DATASET_PATH" \
+            --manifest benchmarks/data/end_to_end_phase10_v1.json \
+            --excluded-sample-result \
+              benchmarks/results/simpleqa_retrieval_phase3_2026-07-28.json \
+            --protocol docs/benchmark-protocol-v14.md \
+            --models \
+              gemma-4-31b-it \
+              gemma-4-26b-a4b-it \
+              gemini-3.5-flash-lite \
+            --cache-root "$CACHE_ROOT" \
+            --max-results 10 \
+            --max-per-domain 3 \
+            --evidence-budget-chars 12000 \
+            --max-output-tokens 2048 \
+            --retrieval-wall-time-seconds 30 \
+            --generation-wall-time-seconds 60 \
+            --retrieval-pause-seconds 0.5 \
+            --model-pause-seconds 2.0 \
+            --request-timeout-seconds 20 \
+            --network-region "${EVIDENCEMESH_BENCHMARK_REGION:-GitHub-hosted runner}" \
+            --output "$RESULT_PATH" \
+            --progress
+
+      - name: Validate privacy, accounting and decision boundaries
+        if: steps.benchmark-state.outputs.run == 'true'
+        env:
+          GEMINI_API_KEY: ${{ secrets.EVIDENCE_MESH_GEMINI_KEY }}
+          TAVILY_API_KEY: ${{ secrets.EVIDENCE_MESH_TAVILY_KEY }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from collections import defaultdict
+          from pathlib import Path
+
+          path = Path(os.environ["RESULT_PATH"])
+          report = json.loads(path.read_bytes())
+          assert report["benchmark"] == (
+              "evidencemesh-phase11-6-tavily-citation-isolation-v1"
+          )
+          assert report["suite"]["sample_count"] == 12
+          assert report["suite"]["phase12_cases_used"] is False
+          assert report["protocol"]["models"] == [
+              "gemma-4-31b-it",
+              "gemma-4-26b-a4b-it",
+              "gemini-3.5-flash-lite",
+          ]
+          assert report["protocol"]["generation_arms"] == [
+              "tavily_legacy",
+              "tavily_strict",
+          ]
+          assert report["protocol"]["provider_bundle"] == ["tavily"]
+          assert report["protocol"]["shared_tavily_packet_per_case"] is True
+          assert report["protocol"]["provider_request_repeated_per_arm"] is False
+          assert report["protocol"]["gemma_4_26b_blocking"] is True
+          assert report["protocol"]["gemini_3_5_flash_lite_tested"] is True
+
+          traffic = report["traffic"]
+          assert traffic["case_retrieval_operations"] == 12
+          assert traffic["provider_query_calls"] == 12
+          assert traffic["tavily_requests"] == 12
+          assert traffic["generation_requests"] == 72
+          assert traffic["expected_generation_requests"] == 72
+          assert traffic["retries"] == 0
+          assert traffic["repair_requests"] == 0
+          assert len(report["retrieval_outcomes"]) == 24
+          assert len(report["generation_outcomes"]) == 72
+
+          retrieval = defaultdict(dict)
+          for outcome in report["retrieval_outcomes"]:
+              retrieval[outcome["case_id"]][outcome["arm"]] = outcome
+          assert len(retrieval) == 12
+          assert all(
+              arms["tavily_legacy"]["selected_packet_sha256"]
+              == arms["tavily_strict"]["selected_packet_sha256"]
+              and arms["tavily_legacy"]["prompt_packet_sha256"]
+              == arms["tavily_strict"]["prompt_packet_sha256"]
+              and arms["tavily_legacy"]["prompt_result_count"]
+              == arms["tavily_strict"]["prompt_result_count"]
+              for arms in retrieval.values()
+          )
+          assert report["packet_identity"]["passed"] is True
+
+          prompts = defaultdict(set)
+          packets = defaultdict(set)
+          for outcome in report["generation_outcomes"]:
+              key = (outcome["case_id"], outcome["arm"])
+              prompts[key].add(outcome["prompt_sha256"])
+              packets[outcome["case_id"]].add(outcome["prompt_packet_sha256"])
+          assert len(prompts) == 24
+          assert all(len(values) == 1 for values in prompts.values())
+          assert len(packets) == 12
+          assert all(len(values) == 1 for values in packets.values())
+
+          decision = report["decision"]
+          gates_passed = all(
+              gate["passed"] for gate in decision["gates"].values()
+          )
+          assert decision["phase11_6_candidate_passed"] == gates_passed
+          assert decision["quality_profile_promotion_allowed"] == gates_passed
+          assert decision["quality_profile_promoted"] is False
+          assert decision["phase12_untouched_evaluation_allowed"] == gates_passed
+          assert decision["phase12_executed"] is False
+          assert decision["gemma_4_26b_blocking"] is True
+          assert decision["gemini_3_5_flash_lite_tested"] is True
+          assert decision["community_profile_unchanged"] is True
+          assert decision["external_competitor_benchmark_allowed"] is False
+          assert decision["public_alpha_allowed"] is False
+          assert decision["superiority_claim_allowed"] is False
+          assert decision["merge_allowed"] is False
+          assert decision["release_ready"] is False
+          assert decision["release_decision"] == "no-go"
+
+          private_fields = {
+              "question",
+              "answer",
+              "reference_answer",
+              "title",
+              "url",
+              "snippet",
+              "content",
+              "evidence",
+              "system_prompt",
+              "user_prompt",
+              "generated_answer",
+          }
+          assert all(
+              not private_fields & set(outcome)
+              for outcome in report["retrieval_outcomes"]
+          )
+          assert all(
+              not private_fields & set(outcome)
+              for outcome in report["generation_outcomes"]
+          )
+          assert report["privacy"]["generated_answers_in_report"] is False
+          assert report["privacy"]["source_snippets_or_evidence_in_report"] is False
+          assert report["privacy"]["system_or_user_prompts_in_report"] is False
+
+          raw = path.read_text(encoding="utf-8")
+          for name in ("GEMINI_API_KEY", "TAVILY_API_KEY"):
+              secret = os.environ.get(name)
+              assert secret and secret not in raw
+          PY
+
+      - name: Validate committed result boundary
+        if: steps.benchmark-state.outputs.run == 'false'
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path(
+              "benchmarks/results/"
+              "phase11_6_tavily_citation_isolation_2026-07-29.json"
+          )
+          report = json.loads(path.read_bytes())
+          assert report["benchmark"] == (
+              "evidencemesh-phase11-6-tavily-citation-isolation-v1"
+          )
+          assert report["suite"]["phase12_cases_used"] is False
+          assert report["decision"]["phase12_executed"] is False
+          assert report["decision"]["merge_allowed"] is False
+          assert report["decision"]["release_decision"] == "no-go"
+          PY
+
+      - name: Write benchmark summary
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          path = Path(os.environ["RESULT_PATH"])
+          raw = path.read_bytes()
+          report = json.loads(raw)
+          generated = report["generation_metrics"]["aggregate"]
+          candidate = report["decision"]["phase11_6_candidate_passed"]
+          print("## Phase 11.6 Tavily citation isolation")
+          print()
+          print("| Arm | Answer-key proxy | Citation presence | Support proxy |")
+          print("|---|---:|---:|---:|")
+          for arm in ("tavily_legacy", "tavily_strict"):
+              print(
+                  f"| `{arm}` | "
+                  f"{generated[arm]['answer_key_covered']['numerator']}/36 | "
+                  f"{generated[arm]['citation_presence']['rate']} | "
+                  f"{generated[arm]['citation_support_proxy']['rate']} |"
+              )
+          print()
+          print(f"Candidate gate: `{'pass' if candidate else 'fail'}`")
+          print(
+              "Quality promotion allowed: "
+              f"`{report['decision']['quality_profile_promotion_allowed']}`"
+          )
+          print(
+              "Phase 12 allowed: "
+              f"`{report['decision']['phase12_untouched_evaluation_allowed']}`"
+          )
+          print("Release decision: `no-go`")
+          print()
+          print(f"Raw SHA-256: `{hashlib.sha256(raw).hexdigest()}`")
+          PY
+
+      - name: Upload privacy-safe raw report
+        if: always() && steps.benchmark-state.outputs.run == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: phase11-6-tavily-citation-isolation-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ env.RESULT_PATH }}
+          if-no-files-found: warn
+          retention-days: 14
