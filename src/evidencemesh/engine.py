@@ -372,6 +372,15 @@ class EvidenceMesh:
             )
             and attribution
         }
+        provider_result_licenses = {
+            result.provider: result_license
+            for result in raw_results
+            if isinstance(
+                result_license := result.metadata.get("result_license_url"),
+                str,
+            )
+            and result_license
+        }
 
         metadata = SearchMetadata(
             query=request.query,
@@ -413,6 +422,7 @@ class EvidenceMesh:
                 if counts
             },
             provider_attributions=dict(sorted(provider_attributions.items())),
+            provider_result_licenses=dict(sorted(provider_result_licenses.items())),
             ranking_reservation_policy=ranking_diagnostics.reservation_policy,
             ranking_reservation_requested=ranking_diagnostics.reservation_requested,
             ranking_reservation_eligible=ranking_diagnostics.reservation_eligible,
