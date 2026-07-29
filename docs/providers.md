@@ -6,7 +6,7 @@
 `wikipedia`, `crossref`, `arxiv` and `github`. It requires no key, but internet
 access, compute and storage are not cost-free infrastructure. The independently
 crawled Mwmbl and Wiby adapters and the self-hosted YaCy adapter are explicit
-opt-ins. None is silently promoted by Phase 11.2.
+opt-ins. None is silently promoted by Phase 11.2 or its Phase 11.3 diagnostic.
 
 `quality` includes the community set plus Tavily, the current recommended
 general-web candidate. Tavily is enabled only when `TAVILY_API_KEY` is
@@ -87,6 +87,13 @@ Because the report counted routed calls rather than separating HTTP attempts
 and circuit skips, that diagnosis remains an inference and the traffic field
 must not be presented as confirmed network attempts.
 
+The [Phase 11.3 protocol](benchmark-protocol-v12.md) fixes this limitation in
+the core engine before sending any new diagnostic traffic. Search metadata now
+separates logical calls, cache hits, circuit skips, adapter invocations,
+shared-client HTTP attempts and responses. It publishes only bounded failure
+classes and latency/status counts. The four fixed Mwmbl probes are non-scored:
+they cannot change bundles, unlock Phase 12 or support a quality claim.
+
 ## Zero-key community providers
 
 ### SearXNG
@@ -160,9 +167,10 @@ application. Mwmbl is therefore absent from named bundles. Opt in with
 
 In the Phase 11.2 GitHub-hosted run, the public endpoint did not return a usable
 response through the adapter. This is a measured deployment-reliability failure,
-not evidence that the underlying index contains no useful pages. Do not promote
-the public endpoint without new, pre-registered calibration and corrected
-network-attempt telemetry.
+not evidence that the underlying index contains no useful pages. Under the
+current CC BY-NC-SA result boundary, Mwmbl is not eligible for named defaults
+even if the Phase 11.3 connectivity diagnostic succeeds. A later change would
+require clarified downstream terms and a new pre-registered quality evaluation.
 
 ### YaCy
 
@@ -177,6 +185,10 @@ administer its index according to YaCy's documentation. Adapter correctness
 does not imply useful coverage: storage, bandwidth, crawl policy and ranking
 quality remain operator responsibilities. Configure
 `EVIDENCEMESH_PROVIDERS=yacy` and `EVIDENCEMESH_YACY_URL`.
+
+EvidenceMesh does not currently have a persistent, reproducibly populated YaCy
+index. Phase 11.3 therefore does not start an empty ephemeral node or present
+adapter output as broad-Web quality evidence.
 
 ### Wikipedia
 
