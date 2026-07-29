@@ -36,11 +36,13 @@ from evidencemesh.providers.github import (
     RepositoryQueryStrategy,
     normalize_repository_query,
 )
+from evidencemesh.providers.mwmbl import MWMBL_RESULTS_LICENSE_URL, MwmblProvider
 from evidencemesh.providers.openalex import OpenAlexProvider, reconstruct_abstract
 from evidencemesh.providers.searxng import SearxngProvider
 from evidencemesh.providers.tavily import TavilyProvider
 from evidencemesh.providers.wiby import WIBY_ATTRIBUTION_URL, WibyProvider
 from evidencemesh.providers.wikipedia import WikipediaProvider
+from evidencemesh.providers.yacy import YaCyProvider
 
 
 def json_client(
@@ -258,6 +260,100 @@ async def test_wiby_provider_rejects_non_array_response() -> None:
     provider = WibyProvider("https://wiby.example/json/", client)
     with pytest.raises(ProviderError, match="JSON array"):
         await provider.search("small web", SearchRequest(query="small web"))
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_mwmbl_provider_maps_independent_results_and_license() -> None:
+    captured: list[httpx.Request] = []
+    client = json_client(
+        {
+            "results": [
+                {
+                    "url": "https://independent.example/page",
+                    "title": "<b>Independent result</b>",
+                    "content": "Community <em>crawl</em>",
+                    "engine": "mwmbl",
+                    "score": 0.75,
+                },
+                {"title": "missing URL"},
+            ]
+        },
+        captured,
+    )
+    provider = MwmblProvider("https://api.mwmbl.example/api/v2/search/", client)
+    results = await provider.search("independent index", SearchRequest(query="independent index"))
+    assert provider.query_budget == 1
+    assert provider.minimum_cache_ttl_seconds == 86_400
+    assert provider.supported_profiles == frozenset({SearchProfile.WEB})
+    assert len(results) == 1
+    assert results[0].title == "Independent result"
+    assert results[0].snippet == "Community crawl"
+    assert results[0].provider_score == 0.75
+    assert results[0].metadata == {
+        "index_kind": "independent_community_crawl",
+        "origin_engine": "mwmbl",
+        "result_license_url": MWMBL_RESULTS_LICENSE_URL,
+    }
+    assert captured[0].url.params["q"] == "independent index"
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_mwmbl_provider_rejects_missing_results_array() -> None:
+    client = json_client({"items": []})
+    provider = MwmblProvider("https://api.mwmbl.example/api/v2/search/", client)
+    with pytest.raises(ProviderError, match="results array"):
+        await provider.search("independent index", SearchRequest(query="independent index"))
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_yacy_provider_maps_local_index_request() -> None:
+    captured: list[httpx.Request] = []
+    client = json_client(
+        {
+            "channels": [
+                {
+                    "items": [
+                        {
+                            "title": "<b>Local result</b>",
+                            "link": "https://local.example/page",
+                            "description": "Operator-controlled <em>index</em>",
+                            "pubDate": "Wed, 29 Jul 2026 12:00:00 GMT",
+                            "host": "local.example",
+                            "ranking": "0.91",
+                        }
+                    ]
+                }
+            ]
+        },
+        captured,
+    )
+    provider = YaCyProvider("http://yacy.example:8090/", client, resource="local")
+    results = await provider.search("local index", SearchRequest(query="local index"))
+    assert provider.endpoint == "http://yacy.example:8090/yacysearch.json"
+    assert provider.query_budget == 1
+    assert provider.minimum_cache_ttl_seconds == 3_600
+    assert len(results) == 1
+    assert results[0].title == "Local result"
+    assert results[0].snippet == "Operator-controlled index"
+    assert results[0].published_at is not None
+    assert results[0].metadata["index_scope"] == "local"
+    params = captured[0].url.params
+    assert params["query"] == "local index"
+    assert params["maximumRecords"] == "30"
+    assert params["resource"] == "local"
+    assert params["verify"] == "false"
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_yacy_provider_rejects_invalid_channels() -> None:
+    client = json_client({"channels": []})
+    provider = YaCyProvider("http://yacy.example:8090", client)
+    with pytest.raises(ProviderError, match="channels array"):
+        await provider.search("local index", SearchRequest(query="local index"))
     await client.aclose()
 
 
@@ -722,6 +818,8 @@ async def test_provider_factory_keys_and_self_hosted_firecrawl(tmp_path: Path) -
             "searxng",
             "ddgs",
             "wiby",
+            "mwmbl",
+            "yacy",
             "wikipedia",
             "crossref",
             "github",
