@@ -235,6 +235,41 @@ class EvidenceItem(StrictModel):
     risk_flags: list[str] = Field(default_factory=list)
 
 
+class ProviderNetworkTelemetry(StrictModel):
+    """Privacy-safe counts for one provider within a search operation."""
+
+    logical_calls: int = Field(ge=0)
+    cache_hits: int = Field(ge=0)
+    circuit_skips: int = Field(ge=0)
+    adapter_invocations: int = Field(ge=0)
+    http_attempts: int = Field(ge=0)
+    http_responses: int = Field(ge=0)
+    http_failures_without_response: int = Field(ge=0)
+    http_status_counts: dict[str, int] = Field(default_factory=dict)
+    adapter_latency_ms: list[Annotated[float, Field(ge=0)]] = Field(default_factory=list)
+    http_attempt_latency_ms: list[Annotated[float, Field(ge=0)]] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def validate_accounting(self) -> ProviderNetworkTelemetry:
+        if self.cache_hits > self.logical_calls:
+            raise ValueError("cache_hits cannot exceed logical_calls")
+        if self.circuit_skips > self.logical_calls:
+            raise ValueError("circuit_skips cannot exceed logical_calls")
+        if self.adapter_invocations > self.logical_calls:
+            raise ValueError("adapter_invocations cannot exceed logical_calls")
+        if self.http_responses > self.http_attempts:
+            raise ValueError("http_responses cannot exceed http_attempts")
+        if self.http_failures_without_response != self.http_attempts - self.http_responses:
+            raise ValueError("http failure accounting is inconsistent")
+        if sum(self.http_status_counts.values()) != self.http_responses:
+            raise ValueError("HTTP status accounting is inconsistent")
+        if len(self.adapter_latency_ms) != self.adapter_invocations:
+            raise ValueError("adapter latency accounting is inconsistent")
+        if len(self.http_attempt_latency_ms) != self.http_attempts:
+            raise ValueError("HTTP attempt latency accounting is inconsistent")
+        return self
+
+
 class SearchMetadata(StrictModel):
     query: str
     queries_executed: list[str]
@@ -260,6 +295,8 @@ class SearchMetadata(StrictModel):
         default_factory=dict
     )
     provider_failure_kind_counts: dict[str, dict[str, int]] = Field(default_factory=dict)
+    provider_network_telemetry_scope: str = "shared_httpx_client_event_hooks"
+    provider_network_telemetry: dict[str, ProviderNetworkTelemetry] = Field(default_factory=dict)
     provider_attributions: dict[str, str] = Field(default_factory=dict)
     provider_result_licenses: dict[str, str] = Field(default_factory=dict)
     ranking_reservation_policy: str = "none"
