@@ -152,3 +152,8 @@ All notable changes to EvidenceMesh are documented here.
   Tavily, Gemini, paid-provider or retry traffic. Mwmbl remains outside named
   defaults under its current result-license boundary, no unpopulated YaCy node
   is benchmarked, Phase 12 stays blocked and release remains no-go.
+- Published the Phase 11.3 result: all four logical calls reached the adapter
+  and HTTP transport, three received HTTP 200 responses with results and one
+  timed out without a response at the 15-second deadline. The diagnostic
+  validates the observability contract and identifies intermittent endpoint
+  reliability without scoring retrieval quality or changing any release gate.
