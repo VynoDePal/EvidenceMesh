@@ -242,6 +242,28 @@ async def test_search_surfaces_provider_attribution(settings) -> None:
 
 
 @pytest.mark.asyncio
+async def test_search_surfaces_provider_result_license(settings) -> None:
+    result = ProviderResult(
+        title="Independent result",
+        url="https://independent.example/page",
+        snippet="Independently crawled evidence.",
+        provider="mwmbl",
+        rank=1,
+        query="independent search",
+        metadata={"result_license_url": "https://creativecommons.org/licenses/by-nc-sa/4.0/"},
+    )
+    engine = EvidenceMesh(
+        settings,
+        providers=[StaticProvider("mwmbl", [result])],
+    )
+    response = await engine.search(SearchRequest(query="independent search", use_cache=False))
+    assert response.metadata.provider_result_licenses == {
+        "mwmbl": "https://creativecommons.org/licenses/by-nc-sa/4.0/"
+    }
+    await engine.aclose()
+
+
+@pytest.mark.asyncio
 async def test_search_opens_provider_circuit_after_repeated_failures(settings) -> None:
     protected_settings = settings.model_copy(
         update={
