@@ -18,6 +18,9 @@ contributed in 8/8 web cases, and every web target was retrieved. The complete
 quality candidate still failed its functional gate because exact academic and
 repository targets underperformed. See the
 [raw and interpreted result](../benchmarks/results/quality_calibration_phase7_2026-07-29.md).
+The separate [Phase 8 protocol](benchmark-protocol-v6.md) preserves that result
+and pre-registers profile-aware diversity and target-rank diagnostics on a new
+suite.
 
 ## Zero-key community providers
 
@@ -73,8 +76,10 @@ responsible for the [arXiv API terms](https://info.arxiv.org/help/api/tou.html).
 
 The code profile uses public repository search. EvidenceMesh deliberately does
 not treat anonymous GitHub code-content search as a dependable zero-key API. It
-routes only the base query. Anonymous public repository search has a low rate
-limit; `GITHUB_TOKEN` is optional and raises the applicable quota.
+routes only the base query. Natural-language repository suffixes are removed
+conservatively and `in:name,description` is added before the query is bounded
+to GitHub's 256-character search limit. Anonymous public repository search has
+a low rate limit; `GITHUB_TOKEN` is optional and raises the applicable quota.
 
 ## Optional API providers
 
@@ -113,20 +118,22 @@ it were a general search engine.
 
 The public search profile selects compatible source types:
 
-| Profile | Community route | Maximum query variants per provider |
-|---|---|---|
-| Web | SearXNG, Wikipedia; quality adds Tavily | unlimited, 2 and 1 |
-| Reference | Wikipedia | 2 |
-| News | SearXNG | unlimited |
-| Academic | Crossref, arXiv, Wikipedia | 2, 1 and 2 |
-| Code | GitHub repositories | 1 |
+| Profile | Community route | Maximum query variants per provider | Default maximum per domain |
+|---|---|---|---:|
+| Web | SearXNG, Wikipedia; quality adds Tavily | unlimited, 2 and 1 | 3 |
+| Reference | Wikipedia | 2 | 10 |
+| News | SearXNG | unlimited | 3 |
+| Academic | Crossref, arXiv, Wikipedia | 2, 1 and 2 | 10 |
+| Code | GitHub repositories | 1 | 10 |
 
 Quality adapters join only the profiles they support. Search metadata records
 the deployment profile, routed query count and source family for every requested
 provider. It also keeps per-family call, success, failure and result counts,
 lists degraded and fully failed families, and reports the required family as
 `satisfied`, `empty`, `failed` or `not_configured`. Raw provider failures remain
-available even when another route satisfies the request.
+available even when another route satisfies the request. The effective
+per-domain maximum and whether it came from the profile default or an explicit
+request override are also reported.
 
 ## Runtime reliability
 

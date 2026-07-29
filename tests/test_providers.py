@@ -31,7 +31,7 @@ from evidencemesh.providers.ddgs import DDGSProvider
 from evidencemesh.providers.exa import ExaProvider
 from evidencemesh.providers.factory import build_providers
 from evidencemesh.providers.firecrawl import FirecrawlProvider
-from evidencemesh.providers.github import GitHubProvider
+from evidencemesh.providers.github import GitHubProvider, normalize_repository_query
 from evidencemesh.providers.openalex import OpenAlexProvider, reconstruct_abstract
 from evidencemesh.providers.searxng import SearxngProvider
 from evidencemesh.providers.tavily import TavilyProvider
@@ -390,8 +390,30 @@ async def test_github_provider_searches_public_repositories() -> None:
     assert result.source_type.value == "code"
     assert result.metadata["stars"] == 1234
     assert captured[0].headers["authorization"] == "Bearer token"
-    assert captured[0].url.params["q"] == "model context protocol sdk"
+    assert captured[0].url.params["q"] == "model context protocol sdk in:name,description"
     await client.aclose()
+
+
+@pytest.mark.parametrize(
+    ("query", "expected"),
+    [
+        (
+            "FastAPI Python framework official GitHub repository",
+            "FastAPI Python framework in:name,description",
+        ),
+        ("Astral uv source code", "Astral uv in:name,description"),
+        ("evidence in:readme", "evidence in:readme"),
+        ("repository", "repository in:name,description"),
+    ],
+)
+def test_github_query_normalisation(query: str, expected: str) -> None:
+    assert normalize_repository_query(query) == expected
+
+
+def test_github_query_normalisation_enforces_api_length_limit() -> None:
+    normalised = normalize_repository_query("a" * 512)
+    assert len(normalised) == 256
+    assert normalised.endswith(" in:name,description")
 
 
 @pytest.mark.asyncio

@@ -63,3 +63,12 @@ All notable changes to EvidenceMesh are documented here.
   contributing gates and web hit 8/8 targets, but the complete candidate hit
   only 18/32 exact targets because academic reached 2/8 and code reached 0/8.
   The functional gate failed, Stage B was not run and release remains no-go.
+- Added profile-aware source diversity: web/news retain a three-result
+  per-domain default while reference, academic and code can fill ten result
+  slots; explicit request overrides and the effective policy are reported.
+- Normalized natural-language GitHub repository queries into bounded
+  name/description search without increasing the one-query provider budget.
+- Locked the Phase 8 protocol and untouched 32-case suite with canonical target
+  identities, provider-native target-rank diagnostics, unchanged functional
+  thresholds and the same eight-credit Tavily ceiling. The independent-network
+  and release gates remain closed.

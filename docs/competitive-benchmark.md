@@ -115,6 +115,14 @@ network gate was considered. This is evidence that adding a strong general-web
 provider is insufficient without improving vertical target ranking and its
 profile-aware diversity policy.
 
+Phase 8 addresses those measured defects without rewriting the Phase 7 result.
+Its [locked protocol](benchmark-protocol-v6.md) uses a new 32-case suite,
+profile-aware domain caps, conservative GitHub repository-query normalization,
+canonical target identities and provider-native target-rank diagnostics. The
+Tavily budget and all functional thresholds are unchanged. The experiment is
+still retrieval-only and single-network, so even a functional pass cannot
+support a best-in-class or release claim.
+
 ## Fair next comparison
 
 Use EvidenceMesh as the retrieval MCP for a fixed external model, then compare

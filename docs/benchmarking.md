@@ -183,6 +183,25 @@ default three-results-per-domain diversity cap makes single-domain verticals
 effectively `@3` despite the `@10` metric name. The frozen result is preserved;
 any correction requires a new protocol and untouched suite.
 
+## Profile-aware quality calibration
+
+`benchmarks/run_quality_calibration_v2.py` implements the locked Phase 8
+follow-up on `quality_calibration_v3.json`. It keeps the provider bundle,
+thresholds, Tavily eight-credit ceiling and single-network release block
+unchanged. It changes only pre-registered candidate behavior and measurement:
+
+- web/news retain three results per domain, while reference, academic and code
+  can use all ten result slots;
+- GitHub repository intent is normalized to name/description search;
+- authored targets use canonical domain, Wikipedia, arXiv and GitHub
+  identities rather than URL prefixes;
+- an in-memory provider wrapper records raw target ranks without issuing extra
+  calls, so upstream misses can be separated from ranking losses.
+
+Inputs, privacy rules and traffic limits are frozen in
+[benchmark protocol v6](benchmark-protocol-v6.md). A result from the one
+available GitHub-hosted environment cannot authorize Stage B or release.
+
 ## End-to-end generation
 
 `benchmarks/run_end_to_end.py` now fixes the evidence-to-answer prompt and

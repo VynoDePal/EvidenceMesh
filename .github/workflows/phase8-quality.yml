@@ -1,0 +1,300 @@
+name: Phase 8 Profile-aware Quality Calibration
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/phase8-quality.yml
+      - benchmarks/data/quality_calibration_v3.json
+      - benchmarks/run_quality_calibration_v2.py
+      - benchmarks/target_identity.py
+      - benchmarks/results/quality_calibration_phase8_2026-07-29.json
+      - docker/searxng/community-calibration-settings.yml
+      - docs/benchmark-protocol-v6.md
+      - src/evidencemesh/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase8-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SEARXNG_IMAGE: searxng/searxng:2026.7.26-b060c780d@sha256:d0aaeb14880e6e92bde1518fcc7261e995783367d63d95203383607bef9c6516
+  RESULT_PATH: /tmp/quality_calibration_phase8_2026-07-29.json
+  CACHE_PATH: /tmp/evidencemesh-phase8-cache.sqlite3
+
+jobs:
+  quality-calibration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Detect an already committed result
+        id: benchmark-state
+        shell: bash
+        run: |
+          if [[ -f benchmarks/results/quality_calibration_phase8_2026-07-29.json ]]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        if: steps.benchmark-state.outputs.run == 'true'
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install benchmark environment
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Verify protocol-locked inputs
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          echo \
+            "4a080230b0fe4590f1ef1af9087c7dbfaa05910bdcbd9c43a197cf87c5e44dc4  benchmarks/data/quality_calibration_v3.json" \
+            | sha256sum --check
+          echo \
+            "26a74f699515539fdb9bed3f1d3bda57ef908e1111d5393b4af2009fd7069645  docker/searxng/community-calibration-settings.yml" \
+            | sha256sum --check
+
+      - name: Verify Tavily credential is available
+        if: steps.benchmark-state.outputs.run == 'true'
+        env:
+          TAVILY_API_KEY: ${{ secrets.EVIDENCE_MESH_TAVILY_KEY }}
+        run: |
+          if [[ -z "${TAVILY_API_KEY:-}" ]]; then
+            echo "::error::EVIDENCE_MESH_TAVILY_KEY is not configured"
+            exit 1
+          fi
+
+      - name: Start checksum-pinned community SearXNG
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          docker run --detach \
+            --name evidencemesh-searxng-phase8 \
+            --publish 127.0.0.1:8891:8080 \
+            --volume \
+              "$GITHUB_WORKSPACE/docker/searxng/community-calibration-settings.yml:/etc/searxng/settings.yml:ro" \
+            --env SEARXNG_BASE_URL=http://localhost:8891/ \
+            --env "SEARXNG_SECRET=$(openssl rand -hex 32)" \
+            --env FORCE_OWNERSHIP=false \
+            "$SEARXNG_IMAGE"
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:8891/ > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs evidencemesh-searxng-phase8
+          exit 1
+
+      - name: Verify SearXNG image digest
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          docker image inspect "$SEARXNG_IMAGE" --format '{{json .RepoDigests}}' |
+            grep --fixed-strings \
+              "sha256:d0aaeb14880e6e92bde1518fcc7261e995783367d63d95203383607bef9c6516"
+
+      - name: Run locked 32-case profile-aware calibration
+        if: steps.benchmark-state.outputs.run == 'true'
+        env:
+          EVIDENCEMESH_BENCHMARK_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+          TAVILY_API_KEY: ${{ secrets.EVIDENCE_MESH_TAVILY_KEY }}
+        run: |
+          uv run python benchmarks/run_quality_calibration_v2.py \
+            --suite benchmarks/data/quality_calibration_v3.json \
+            --searxng-config docker/searxng/community-calibration-settings.yml \
+            --searxng-image "$SEARXNG_IMAGE" \
+            --searxng-url http://127.0.0.1:8891 \
+            --cache-path "$CACHE_PATH" \
+            --max-results 10 \
+            --request-timeout 20 \
+            --pause-seconds 0.5 \
+            --network-region "GitHub-hosted ubuntu-latest; physical region not exposed" \
+            --progress \
+            --output "$RESULT_PATH"
+
+      - name: Validate provenance, privacy and publish summary
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          uv run python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          path = Path(os.environ["RESULT_PATH"])
+          raw = path.read_bytes()
+          report = json.loads(raw)
+          forbidden = {
+              "query",
+              "title",
+              "snippet",
+              "content",
+              "url",
+              "results",
+              "target_domains",
+              "target_url_prefixes",
+              "target_identities",
+          }
+          outcomes = report["outcomes"]
+          reference = [
+              outcome for outcome in outcomes
+              if outcome["topic"] == "reference"
+          ]
+          web = [
+              outcome for outcome in outcomes
+              if outcome["topic"] == "web"
+          ]
+          specialized = [
+              outcome for outcome in outcomes
+              if outcome["topic"] != "web"
+          ]
+          diagnostic_fields = {
+              "target_rank",
+              "raw_target_seen",
+              "raw_target_provider_ranks",
+              "target_dropped_by_ranking",
+          }
+          expected = (
+              report["schema_version"] == 3
+              and report["benchmark"]
+                  == "evidencemesh-quality-calibration-v3"
+              and report["suite"]["count"] == 32
+              and report["suite"]["target_identity_schema"] == 1
+              and report["protocol"]["version"] == 6
+              and report["protocol"]["request_count"] == 32
+              and report["protocol"]["maximum_tavily_requests"] == 8
+              and report["protocol"]["maximum_tavily_credits"] == 8
+              and report["protocol"]["retry_policy"] == "none"
+              and report["protocol"]["profile_default_max_per_domain"]
+                  == {
+                      "web": 3,
+                      "news": 3,
+                      "reference": 10,
+                      "academic": 10,
+                      "code": 10,
+                  }
+              and report["provider_configuration"]["deployment_profile"]
+                  == "quality"
+              and report["provider_configuration"]["tavily"]["query_budget"]
+                  == 1
+              and report["provider_configuration"]["github"]["query_budget"]
+                  == 1
+              and report["provider_configuration"]["searxng"]["sha256"]
+                  == "26a74f699515539fdb9bed3f1d3bda57ef908e1111d5393b4af2009fd7069645"
+              and "@sha256:" in
+                  report["provider_configuration"]["searxng"]["image"]
+              and len(outcomes) == 32
+              and all(not forbidden & set(outcome) for outcome in outcomes)
+              and all(diagnostic_fields <= set(outcome) for outcome in outcomes)
+              and all(
+                  all(
+                      isinstance(rank, int) and rank >= 1
+                      for rank in outcome["raw_target_provider_ranks"].values()
+                  )
+                  for outcome in outcomes
+              )
+              and len(reference) == 8
+              and all(
+                  outcome["providers_requested"] == ["wikipedia"]
+                  for outcome in reference
+              )
+              and len(web) == 8
+              and all(
+                  outcome["provider_query_counts"].get("tavily") == 1
+                  for outcome in web
+              )
+              and all(
+                  outcome["effective_max_per_domain"] == 3
+                  for outcome in web
+              )
+              and all(
+                  outcome["effective_max_per_domain"] == 10
+                  for outcome in specialized
+              )
+              and all(
+                  outcome["max_per_domain_policy"] == "profile_default"
+                  for outcome in outcomes
+              )
+              and report["decision"]["cross_network_gate"]["status"]
+                  == "not_testable"
+              and report["decision"]["stage_b_200_case_run_allowed"] is False
+              and report["decision"]["release_ready"] is False
+          )
+          if not expected:
+              raise AssertionError(json.dumps(report, indent=2, sort_keys=True))
+
+          overall = report["metrics"]["overall"]
+          decision = report["decision"]
+          summary = [
+              "## Phase 8 profile-aware quality calibration",
+              "",
+              "| Metric | Result |",
+              "|---|---:|",
+              f"| Availability | {overall['availability']['rate']} |",
+              f"| Target @10 | {overall['target_hit_at_10']['rate']} |",
+              f"| Raw target seen | {overall['raw_target_seen']['rate']} |",
+              (
+                  "| Target dropped by ranking | "
+                  f"{overall['target_dropped_by_ranking']['rate']} |"
+              ),
+              (
+                  "| Expected family @10 | "
+                  f"{overall['expected_family_hit_at_10']['rate']} |"
+              ),
+              (
+                  "| Provider degradation | "
+                  f"{overall['provider_degradation']['rate']} |"
+              ),
+              (
+                  "| Required family unsatisfied | "
+                  f"{overall['required_family_unsatisfied']['rate']} |"
+              ),
+              f"| p95 latency ms | {overall['latency_ms']['p95']} |",
+              "",
+              (
+                  "Functional gate: "
+                  f"`{decision['functional_gate_passed']}`"
+              ),
+              "",
+              "Cross-network gate: `not_testable` (1/2 environments)",
+              "",
+              "Stage B allowed: `False`",
+              "",
+              "Release decision: `no-go`",
+              "",
+              f"Raw SHA-256: `{hashlib.sha256(raw).hexdigest()}`",
+          ]
+          Path("/tmp/phase8-summary.md").write_text(
+              "\n".join(summary) + "\n",
+              encoding="utf-8",
+          )
+          PY
+          cat /tmp/phase8-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Show SearXNG logs on failure
+        if: failure() && steps.benchmark-state.outputs.run == 'true'
+        run: docker logs evidencemesh-searxng-phase8
+
+      - name: Stop SearXNG
+        if: always() && steps.benchmark-state.outputs.run == 'true'
+        run: docker rm --force evidencemesh-searxng-phase8
+
+      - name: Upload raw report
+        if: always() && steps.benchmark-state.outputs.run == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: phase8-quality-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ env.RESULT_PATH }}
+          if-no-files-found: warn
+          retention-days: 14

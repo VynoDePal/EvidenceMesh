@@ -1,0 +1,258 @@
+[
+  {
+    "id": "p8-web-01",
+    "query": "OWASP Top 10 web application security risks official",
+    "profile": "web",
+    "expected_family": "web",
+    "target_identities": ["domain:owasp.org"],
+    "topic": "web"
+  },
+  {
+    "id": "p8-web-02",
+    "query": "CDC recommended immunization schedules official",
+    "profile": "web",
+    "expected_family": "web",
+    "target_identities": ["domain:cdc.gov"],
+    "topic": "web"
+  },
+  {
+    "id": "p8-web-03",
+    "query": "OECD artificial intelligence principles official",
+    "profile": "web",
+    "expected_family": "web",
+    "target_identities": ["domain:oecd.ai", "domain:oecd.org"],
+    "topic": "web"
+  },
+  {
+    "id": "p8-web-04",
+    "query": "NOAA climate data online official",
+    "profile": "web",
+    "expected_family": "web",
+    "target_identities": ["domain:noaa.gov"],
+    "topic": "web"
+  },
+  {
+    "id": "p8-web-05",
+    "query": "UK NCSC Cyber Essentials official guidance",
+    "profile": "web",
+    "expected_family": "web",
+    "target_identities": ["domain:ncsc.gov.uk"],
+    "topic": "web"
+  },
+  {
+    "id": "p8-web-06",
+    "query": "WebAssembly core specification official",
+    "profile": "web",
+    "expected_family": "web",
+    "target_identities": ["domain:webassembly.org"],
+    "topic": "web"
+  },
+  {
+    "id": "p8-web-07",
+    "query": "PostgreSQL current version documentation official",
+    "profile": "web",
+    "expected_family": "web",
+    "target_identities": ["domain:postgresql.org"],
+    "topic": "web"
+  },
+  {
+    "id": "p8-web-08",
+    "query": "OpenTelemetry specification official documentation",
+    "profile": "web",
+    "expected_family": "web",
+    "target_identities": ["domain:opentelemetry.io"],
+    "topic": "web"
+  },
+  {
+    "id": "p8-reference-01",
+    "query": "Katherine Johnson NASA mathematician",
+    "profile": "reference",
+    "expected_family": "reference",
+    "target_identities": ["wikipedia:en:Katherine_Johnson"],
+    "topic": "reference"
+  },
+  {
+    "id": "p8-reference-02",
+    "query": "Mali Empire West African history",
+    "profile": "reference",
+    "expected_family": "reference",
+    "target_identities": ["wikipedia:en:Mali_Empire"],
+    "topic": "reference"
+  },
+  {
+    "id": "p8-reference-03",
+    "query": "Hubble Space Telescope observatory",
+    "profile": "reference",
+    "expected_family": "reference",
+    "target_identities": ["wikipedia:en:Hubble_Space_Telescope"],
+    "topic": "reference"
+  },
+  {
+    "id": "p8-reference-04",
+    "query": "Photosynthesis biological process",
+    "profile": "reference",
+    "expected_family": "reference",
+    "target_identities": ["wikipedia:en:Photosynthesis"],
+    "topic": "reference"
+  },
+  {
+    "id": "p8-reference-05",
+    "query": "Amazon rainforest geography",
+    "profile": "reference",
+    "expected_family": "reference",
+    "target_identities": ["wikipedia:en:Amazon_rainforest"],
+    "topic": "reference"
+  },
+  {
+    "id": "p8-reference-06",
+    "query": "Magna Carta medieval charter",
+    "profile": "reference",
+    "expected_family": "reference",
+    "target_identities": ["wikipedia:en:Magna_Carta"],
+    "topic": "reference"
+  },
+  {
+    "id": "p8-reference-07",
+    "query": "FreeBSD operating system",
+    "profile": "reference",
+    "expected_family": "reference",
+    "target_identities": ["wikipedia:en:FreeBSD"],
+    "topic": "reference"
+  },
+  {
+    "id": "p8-reference-08",
+    "query": "Normal distribution probability",
+    "profile": "reference",
+    "expected_family": "reference",
+    "target_identities": ["wikipedia:en:Normal_distribution"],
+    "topic": "reference"
+  },
+  {
+    "id": "p8-academic-01",
+    "query": "Learning Transferable Visual Models From Natural Language Supervision CLIP",
+    "profile": "academic",
+    "expected_family": "academic",
+    "target_identities": ["arxiv:2103.00020"],
+    "topic": "academic"
+  },
+  {
+    "id": "p8-academic-02",
+    "query": "NeRF Representing Scenes as Neural Radiance Fields for View Synthesis",
+    "profile": "academic",
+    "expected_family": "academic",
+    "target_identities": ["arxiv:2003.08934"],
+    "topic": "academic"
+  },
+  {
+    "id": "p8-academic-03",
+    "query": "FlashAttention Fast and Memory-Efficient Exact Attention with IO-Awareness",
+    "profile": "academic",
+    "expected_family": "academic",
+    "target_identities": ["arxiv:2205.14135"],
+    "topic": "academic"
+  },
+  {
+    "id": "p8-academic-04",
+    "query": "Mamba Linear-Time Sequence Modeling with Selective State Spaces",
+    "profile": "academic",
+    "expected_family": "academic",
+    "target_identities": ["arxiv:2312.00752"],
+    "topic": "academic"
+  },
+  {
+    "id": "p8-academic-05",
+    "query": "LLaMA Open and Efficient Foundation Language Models",
+    "profile": "academic",
+    "expected_family": "academic",
+    "target_identities": ["arxiv:2302.13971"],
+    "topic": "academic"
+  },
+  {
+    "id": "p8-academic-06",
+    "query": "End-to-End Object Detection with Transformers DETR",
+    "profile": "academic",
+    "expected_family": "academic",
+    "target_identities": ["arxiv:2005.12872"],
+    "topic": "academic"
+  },
+  {
+    "id": "p8-academic-07",
+    "query": "You Only Look Once Unified Real-Time Object Detection",
+    "profile": "academic",
+    "expected_family": "academic",
+    "target_identities": ["arxiv:1506.02640"],
+    "topic": "academic"
+  },
+  {
+    "id": "p8-academic-08",
+    "query": "Semi-Supervised Classification with Graph Convolutional Networks",
+    "profile": "academic",
+    "expected_family": "academic",
+    "target_identities": ["arxiv:1609.02907"],
+    "topic": "academic"
+  },
+  {
+    "id": "p8-code-01",
+    "query": "FastAPI high performance Python API framework official repository",
+    "profile": "code",
+    "expected_family": "code",
+    "target_identities": ["github:fastapi/fastapi"],
+    "topic": "code"
+  },
+  {
+    "id": "p8-code-02",
+    "query": "Django Python web framework official GitHub repository",
+    "profile": "code",
+    "expected_family": "code",
+    "target_identities": ["github:django/django"],
+    "topic": "code"
+  },
+  {
+    "id": "p8-code-03",
+    "query": "Flask Pallets Python web framework source code",
+    "profile": "code",
+    "expected_family": "code",
+    "target_identities": ["github:pallets/flask"],
+    "topic": "code"
+  },
+  {
+    "id": "p8-code-04",
+    "query": "Requests Python HTTP library repository",
+    "profile": "code",
+    "expected_family": "code",
+    "target_identities": ["github:psf/requests"],
+    "topic": "code"
+  },
+  {
+    "id": "p8-code-05",
+    "query": "Scrapy web crawling framework GitHub repository",
+    "profile": "code",
+    "expected_family": "code",
+    "target_identities": ["github:scrapy/scrapy"],
+    "topic": "code"
+  },
+  {
+    "id": "p8-code-06",
+    "query": "NumPy numerical Python official repository",
+    "profile": "code",
+    "expected_family": "code",
+    "target_identities": ["github:numpy/numpy"],
+    "topic": "code"
+  },
+  {
+    "id": "p8-code-07",
+    "query": "pandas Python data analysis GitHub repository",
+    "profile": "code",
+    "expected_family": "code",
+    "target_identities": ["github:pandas-dev/pandas"],
+    "topic": "code"
+  },
+  {
+    "id": "p8-code-08",
+    "query": "Qdrant vector database official repository",
+    "profile": "code",
+    "expected_family": "code",
+    "target_identities": ["github:qdrant/qdrant"],
+    "topic": "code"
+  }
+]

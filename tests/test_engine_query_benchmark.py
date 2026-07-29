@@ -95,6 +95,8 @@ async def test_search_returns_ranked_snippet_evidence_and_caches(
     assert first.results[0].citation_id == "S1"
     assert first.evidence[0].quote.startswith("EvidenceMesh")
     assert first.metadata.queries_executed == ["EvidenceMesh", "federated search"]
+    assert first.metadata.effective_max_per_domain == 3
+    assert first.metadata.max_per_domain_policy == "profile_default"
     assert provider.calls == ["EvidenceMesh", "federated search"]
     assert second.metadata.cache_hits == 2
     await engine.aclose()

@@ -219,7 +219,7 @@ class EvidenceMesh:
             query=request.query,
             profile=request.profile,
             limit=request.limit,
-            max_per_domain=request.max_per_domain,
+            max_per_domain=request.effective_max_per_domain,
             domains=request.domains,
             exclude_domains=request.exclude_domains,
         )
@@ -283,6 +283,8 @@ class EvidenceMesh:
             source_family_result_counts=dict(sorted(family_result_counts.items())),
             degraded_source_families=degraded_families,
             failed_source_families=failed_families,
+            effective_max_per_domain=request.effective_max_per_domain,
+            max_per_domain_policy=request.max_per_domain_policy,
             raw_result_count=len(raw_results),
             deduplicated_result_count=deduplicated_count,
             elapsed_ms=round((time.perf_counter() - started) * 1_000),

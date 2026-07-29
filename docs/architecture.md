@@ -20,14 +20,16 @@ retrieval layer usable from MCP hosts, Python applications and shell workflows.
    or same-domain near-duplicate titles.
 6. Fuse ranks using weighted reciprocal-rank fusion.
 7. Add lexical relevance, source/provenance signals and freshness.
-8. Enforce a per-domain cap for source diversity.
+8. Enforce a profile-aware per-domain cap for source diversity: three for web
+   and news, up to ten for single-domain reference, academic and code
+   verticals, unless the caller provides an explicit override.
 9. Optionally resolve selected URLs, reject any non-public answer and connect
    to the exact validated address while preserving HTTP Host and TLS SNI.
 10. Extract main HTML/PDF text under time, byte, character and PDF-page limits;
    flag risky patterns and compute SHA-256.
 11. Return compact evidence, stable citation IDs and route telemetry, including
     raw provider degradation and the status of the profile's required source
-    family.
+    family, plus the effective diversity policy.
 
 ## Ranking
 

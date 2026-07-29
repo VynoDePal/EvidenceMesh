@@ -26,7 +26,8 @@ EvidenceMesh separates those concerns:
 - **Free core:** self-hosted SearXNG plus direct Wikipedia, Crossref, arXiv and
   GitHub repository adapters; DDGS is an environment-sensitive opt-in.
 - **Deterministic routing:** web, reference, academic and code sources receive
-  only compatible queries, with conservative budgets for rate-limited APIs.
+  only compatible queries, with conservative budgets for rate-limited APIs and
+  profile-aware domain diversity.
 - **Provider federation:** reciprocal-rank fusion across independent result lists.
 - **Evidence, not hidden answers:** quotations, retrieval time, content hash,
   provenance signals and risk flags.
@@ -215,6 +216,7 @@ See the [benchmark methodology](docs/benchmarking.md), the
 [locked Phase 5 protocol](docs/benchmark-protocol-v3.md), the
 [locked Phase 6 protocol](docs/benchmark-protocol-v4.md), the
 [locked Phase 7 protocol](docs/benchmark-protocol-v5.md), the
+[locked Phase 8 protocol](docs/benchmark-protocol-v6.md), the
 [end-to-end guide](docs/end-to-end-benchmark.md), the
 [competitive snapshot](docs/competitive-benchmark.md) and the committed
 [offline v1 result](benchmarks/results/offline_v1.md). A
@@ -264,7 +266,14 @@ found Tavily successful and contributing in 8/8 web cases, with all eight web
 targets retrieved. The complete candidate nevertheless hit only 18/32 exact
 targets because academic reached 2/8 and code reached 0/8. The functional,
 two-network and release gates therefore remain closed, and Stage B was not
-run.
+run. Phase 8 preserves that frozen result and evaluates the identified defects
+on another untouched 32-case suite. It gives single-domain verticals all ten
+result slots, normalizes natural-language repository intent for GitHub, matches
+canonical target identities instead of URL prefixes, and records whether an
+upstream target was later removed by ranking. Tavily remains capped at eight
+basic calls. The protocol is locked before the first live request; the
+two-network and release gates remain closed regardless of a one-network
+functional result.
 
 ## Security
 
@@ -292,7 +301,7 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current suite contains 193 tests and reports over 90% branch-aware coverage
+The current suite contains 225 tests and reports over 91% branch-aware coverage
 locally. CI repeats the suite on Python 3.11, 3.12 and 3.13.
 
 ## License

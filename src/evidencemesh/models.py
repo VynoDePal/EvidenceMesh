@@ -100,7 +100,7 @@ class SearchRequest(StrictModel):
     )
     fetch_content: bool = False
     content_budget_chars: Annotated[int, Field(ge=1_000, le=200_000)] = 30_000
-    max_per_domain: Annotated[int, Field(ge=1, le=10)] = 3
+    max_per_domain: Annotated[int, Field(ge=1, le=10)] | None = None
     use_cache: bool = True
 
     @field_validator("domains", "exclude_domains")
@@ -119,6 +119,19 @@ class SearchRequest(StrictModel):
         if overlap:
             raise ValueError(f"domains cannot be both included and excluded: {sorted(overlap)}")
         return self
+
+    @property
+    def effective_max_per_domain(self) -> int:
+        """Resolve an explicit cap or the profile-aware diversity default."""
+
+        if self.max_per_domain is not None:
+            return min(self.limit, self.max_per_domain)
+        profile_default = 3 if self.profile in {SearchProfile.WEB, SearchProfile.NEWS} else 10
+        return min(self.limit, profile_default)
+
+    @property
+    def max_per_domain_policy(self) -> str:
+        return "request_override" if self.max_per_domain is not None else "profile_default"
 
 
 class ResearchRequest(StrictModel):
@@ -239,6 +252,8 @@ class SearchMetadata(StrictModel):
     source_family_result_counts: dict[str, int] = Field(default_factory=dict)
     degraded_source_families: list[str] = Field(default_factory=list)
     failed_source_families: list[str] = Field(default_factory=list)
+    effective_max_per_domain: int = Field(default=3, ge=1, le=10)
+    max_per_domain_policy: str = "profile_default"
     raw_result_count: int
     deduplicated_result_count: int
     elapsed_ms: int = Field(ge=0)

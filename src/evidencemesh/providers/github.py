@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 import httpx
 
 from evidencemesh.errors import ProviderError
@@ -10,6 +12,28 @@ from evidencemesh.providers.base import (
     parse_datetime,
     strip_markup,
 )
+
+_TRAILING_REPOSITORY_INTENT = re.compile(
+    r"(?:\s+(?:official\s+)?(?:github\s+)?"
+    r"(?:repository|repo|source\s+code|open[\s-]+source\s+project|project))+\s*[.!?]*$",
+    re.IGNORECASE,
+)
+_GITHUB_IN_QUALIFIER = re.compile(r"(?:^|\s)in:(?:name|description|readme)\b", re.IGNORECASE)
+_GITHUB_QUERY_LIMIT = 256
+_REPOSITORY_FIELDS = " in:name,description"
+
+
+def normalize_repository_query(query: str) -> str:
+    """Turn natural-language repository intent into a bounded GitHub search query."""
+
+    compact = " ".join(query.split()).strip()
+    candidate = _TRAILING_REPOSITORY_INTENT.sub("", compact).strip()
+    if candidate:
+        compact = candidate
+    suffix = "" if _GITHUB_IN_QUALIFIER.search(compact) else _REPOSITORY_FIELDS
+    maximum_base_length = _GITHUB_QUERY_LIMIT - len(suffix)
+    compact = compact[:maximum_base_length].rstrip()
+    return f"{compact}{suffix}"
 
 
 class GitHubProvider(SearchProvider):
@@ -43,7 +67,7 @@ class GitHubProvider(SearchProvider):
                 "GET",
                 self.endpoint,
                 params={
-                    "q": query,
+                    "q": normalize_repository_query(query),
                     "per_page": min(max(request.limit * 2, 10), 50),
                     "page": 1,
                 },

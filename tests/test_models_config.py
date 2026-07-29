@@ -6,7 +6,12 @@ import pytest
 from pydantic import ValidationError
 
 from evidencemesh.config import DeploymentProfile, Settings
-from evidencemesh.models import FetchRequest, ResearchRequest, SearchRequest
+from evidencemesh.models import (
+    FetchRequest,
+    ResearchRequest,
+    SearchProfile,
+    SearchRequest,
+)
 
 
 def test_search_request_normalises_domains_and_variants() -> None:
@@ -17,6 +22,38 @@ def test_search_request_normalises_domains_and_variants() -> None:
     )
     assert request.domains == ["example.com", "xn--caf-dma.example"]
     assert request.query_variants == ["second query"]
+
+
+@pytest.mark.parametrize(
+    ("profile", "limit", "expected"),
+    [
+        (SearchProfile.WEB, 10, 3),
+        (SearchProfile.NEWS, 10, 3),
+        (SearchProfile.REFERENCE, 10, 10),
+        (SearchProfile.ACADEMIC, 7, 7),
+        (SearchProfile.CODE, 20, 10),
+    ],
+)
+def test_search_request_uses_profile_aware_domain_cap(
+    profile: SearchProfile,
+    limit: int,
+    expected: int,
+) -> None:
+    request = SearchRequest(query="example query", profile=profile, limit=limit)
+    assert request.max_per_domain is None
+    assert request.effective_max_per_domain == expected
+    assert request.max_per_domain_policy == "profile_default"
+
+
+def test_search_request_explicit_domain_cap_overrides_profile_default() -> None:
+    request = SearchRequest(
+        query="example query",
+        profile=SearchProfile.ACADEMIC,
+        limit=5,
+        max_per_domain=2,
+    )
+    assert request.effective_max_per_domain == 2
+    assert request.max_per_domain_policy == "request_override"
 
 
 @pytest.mark.parametrize(
