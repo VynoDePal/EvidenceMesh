@@ -417,6 +417,15 @@ or model call, emits no query or result content and cannot promote a provider
 or unlock Phase 12. A broad YaCy run is excluded because no persistent,
 reproducibly populated index is available.
 
+The published
+[Phase 11.3 result](benchmarks/results/phase11_3_network_diagnostic_2026-07-29.md)
+records four logical calls, four adapter invocations and four actual HTTP
+attempts. Three received HTTP 200 responses and returned ten rows; one failed
+without a response at the 15-second deadline and was classified directly as a
+timeout. No call came from cache or was skipped by the circuit. This validates
+the observability contract and shows intermittent Mwmbl endpoint behavior; it
+does not measure relevance or change any default, Phase 12 or release decision.
+
 ## Security
 
 EvidenceMesh blocks private, loopback, link-local and reserved fetch targets by
@@ -443,7 +452,7 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current suite contains 307 tests and reports 91.46% branch-aware coverage
+The current suite contains 308 tests and reports 91.48% branch-aware coverage
 locally. CI repeats the suite on Python 3.11, 3.12 and 3.13.
 
 ## License
