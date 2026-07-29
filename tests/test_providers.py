@@ -39,11 +39,12 @@ from evidencemesh.providers.github import (
 from evidencemesh.providers.openalex import OpenAlexProvider, reconstruct_abstract
 from evidencemesh.providers.searxng import SearxngProvider
 from evidencemesh.providers.tavily import TavilyProvider
+from evidencemesh.providers.wiby import WIBY_ATTRIBUTION_URL, WibyProvider
 from evidencemesh.providers.wikipedia import WikipediaProvider
 
 
 def json_client(
-    payload: dict[str, Any],
+    payload: object,
     captured: list[httpx.Request] | None = None,
     *,
     status: int = 200,
@@ -213,6 +214,50 @@ async def test_wikipedia_provider_builds_language_url() -> None:
     assert result.url == "https://fr.wikipedia.org/wiki/Recherche_scientifique"
     assert result.metadata["pageid"] == 12
     assert provider.supports(SearchProfile.REFERENCE)
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_wiby_provider_maps_array_and_emits_required_attribution() -> None:
+    captured: list[httpx.Request] = []
+    client = json_client(
+        [
+            {
+                "URL": "https://small.example/page",
+                "Title": "<b>Small web result</b>",
+                "Snippet": "Crawler excerpt",
+                "Description": "Human description",
+            },
+            {"Title": "missing URL"},
+            "invalid item",
+        ],
+        captured,
+    )
+    provider = WibyProvider("https://wiby.example/json/", client)
+    results = await provider.search(
+        "small web",
+        SearchRequest(query="small web", safe_search=SafeSearch.OFF),
+    )
+    assert provider.query_budget == 1
+    assert provider.supported_profiles == frozenset({SearchProfile.WEB})
+    assert len(results) == 1
+    assert results[0].title == "Small web result"
+    assert results[0].snippet == "Human description"
+    assert results[0].metadata == {
+        "attribution_url": WIBY_ATTRIBUTION_URL,
+        "index_kind": "independent_crawl",
+    }
+    assert captured[0].url.params["q"] == "small web"
+    assert "nsfw" not in captured[0].url.params
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_wiby_provider_rejects_non_array_response() -> None:
+    client = json_client({"results": []})
+    provider = WibyProvider("https://wiby.example/json/", client)
+    with pytest.raises(ProviderError, match="JSON array"):
+        await provider.search("small web", SearchRequest(query="small web"))
     await client.aclose()
 
 
@@ -676,6 +721,7 @@ async def test_provider_factory_keys_and_self_hosted_firecrawl(tmp_path: Path) -
             "arxiv",
             "searxng",
             "ddgs",
+            "wiby",
             "wikipedia",
             "crossref",
             "github",

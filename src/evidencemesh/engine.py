@@ -363,6 +363,15 @@ class EvidenceMesh:
                 )
             ),
         }
+        provider_attributions = {
+            result.provider: attribution
+            for result in raw_results
+            if isinstance(
+                attribution := result.metadata.get("attribution_url"),
+                str,
+            )
+            and attribution
+        }
 
         metadata = SearchMetadata(
             query=request.query,
@@ -403,9 +412,14 @@ class EvidenceMesh:
                 for provider, counts in sorted(provider_failure_kind_counts.items())
                 if counts
             },
+            provider_attributions=dict(sorted(provider_attributions.items())),
             ranking_reservation_policy=ranking_diagnostics.reservation_policy,
             ranking_reservation_requested=ranking_diagnostics.reservation_requested,
+            ranking_reservation_eligible=ranking_diagnostics.reservation_eligible,
+            ranking_reservation_feasible=ranking_diagnostics.reservation_feasible,
+            ranking_reservation_target=ranking_diagnostics.reservation_target,
             ranking_reservation_fulfilled=ranking_diagnostics.reservation_fulfilled,
+            ranking_reservation_shortfall_reason=(ranking_diagnostics.reservation_shortfall_reason),
             degraded_source_families=degraded_families,
             failed_source_families=failed_families,
             effective_max_per_domain=request.effective_max_per_domain,

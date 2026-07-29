@@ -59,12 +59,7 @@ except ModuleNotFoundError:
     )
 
 from evidencemesh import EvidenceMesh, ResearchRequest, SearchRequest
-from evidencemesh.config import (
-    COMMUNITY_PROVIDERS,
-    QUALITY_PROVIDERS,
-    DeploymentProfile,
-    Settings,
-)
+from evidencemesh.config import DeploymentProfile, Settings
 from evidencemesh.models import EvidenceItem, SearchDepth, SearchProfile
 from evidencemesh.providers.base import bounded_json_request
 from evidencemesh.urls import hostname_from_url, registrable_domain_hint
@@ -91,6 +86,17 @@ EXPECTED_RETRIEVAL_REQUESTS = EXPECTED_CASE_COUNT * len(RETRIEVAL_ARMS)
 EXPECTED_GENERATION_REQUESTS = EXPECTED_CASE_COUNT * len(ARMS) * len(MODELS)
 MAXIMUM_TAVILY_REQUESTS = EXPECTED_CASE_COUNT * 2
 MAXIMUM_TAVILY_CREDITS = MAXIMUM_TAVILY_REQUESTS
+PHASE10_COMMUNITY_PROVIDERS: tuple[str, ...] = (
+    "searxng",
+    "wikipedia",
+    "crossref",
+    "arxiv",
+    "github",
+)
+PHASE10_QUALITY_PROVIDERS: tuple[str, ...] = (
+    *PHASE10_COMMUNITY_PROVIDERS,
+    "tavily",
+)
 _CITATION_PATTERN = re.compile(r"\[S([1-9][0-9]*)\]")
 
 SYSTEM_PROMPT = """Answer the factual question concisely.
@@ -453,7 +459,7 @@ async def retrieve_all(
     community_engine = EvidenceMesh(
         Settings(
             deployment_profile=DeploymentProfile.COMMUNITY,
-            enabled_providers=list(COMMUNITY_PROVIDERS),
+            enabled_providers=list(PHASE10_COMMUNITY_PROVIDERS),
             cache_path=cache_root / "community.sqlite3",
             **common_settings,
         )
@@ -461,7 +467,7 @@ async def retrieve_all(
     quality_engine = EvidenceMesh(
         Settings(
             deployment_profile=DeploymentProfile.QUALITY,
-            enabled_providers=list(QUALITY_PROVIDERS),
+            enabled_providers=list(PHASE10_QUALITY_PROVIDERS),
             tavily_api_key=tavily_api_key,
             cache_path=cache_root / "quality.sqlite3",
             **common_settings,
@@ -1286,8 +1292,8 @@ async def run(arguments: argparse.Namespace) -> dict[str, Any]:
             "retry_policy": "none; no selective retry",
             "packet_reuse": "one retrieval packet per case and arm, reused across all models",
             "tavily_direct": "one basic query, snippets only, no page fetch",
-            "community": list(COMMUNITY_PROVIDERS),
-            "quality": list(QUALITY_PROVIDERS),
+            "community": list(PHASE10_COMMUNITY_PROVIDERS),
+            "quality": list(PHASE10_QUALITY_PROVIDERS),
             "scoring": {
                 "answer_key_covered": (
                     "normalized reference-answer substring in generated answer; proxy only"

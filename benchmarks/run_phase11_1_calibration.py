@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
-"""Run the locked Phase 11 retrieval-lineage and resilience calibration."""
+"""Run the locked Phase 11.1 feasibility and independent-index calibration."""
 
 from __future__ import annotations
 
 import argparse
 import asyncio
-import hashlib
-import importlib.metadata
 import json
 import os
 import platform
@@ -14,41 +12,45 @@ import sys
 import time
 from collections import Counter
 from collections.abc import Iterable
-from dataclasses import dataclass
 from datetime import UTC, datetime
 from itertools import pairwise
 from pathlib import Path
 from typing import Any
 
+from benchmarks.run_phase11_calibration import (
+    EXPECTED_CASE_COUNT,
+    LOCKED_SEARXNG_CONFIG_SHA256,
+    CalibrationCase,
+    RawResultRecorder,
+    RecordingProvider,
+    load_suite,
+    package_version,
+    percentile,
+    ratio,
+    sha256_bytes,
+)
 from evidencemesh.config import DeploymentProfile, Settings
 from evidencemesh.engine import EvidenceMesh
-from evidencemesh.models import (
-    ProviderResult,
-    SearchHit,
-    SearchProfile,
-    SearchRequest,
-    SourceType,
-)
-from evidencemesh.providers.base import SearchProvider
+from evidencemesh.models import ProviderResult, SearchHit, SearchProfile, SearchRequest
 from evidencemesh.ranking import rank_results_with_diagnostics
 from evidencemesh.urls import domain_matches, hostname_from_url
 
-BENCHMARK_NAME = "evidencemesh-phase11-retrieval-calibration-v1"
-PHASE11_QUALITY_PROVIDERS: tuple[str, ...] = (
+BENCHMARK_NAME = "evidencemesh-phase11-1-feasibility-calibration-v1"
+WIBY_ENDPOINT = "https://wiby.me/json/"
+WIBY_ATTRIBUTION = "https://wiby.me/"
+PHASE11_1_QUALITY_PROVIDERS: tuple[str, ...] = (
     "searxng",
     "ddgs",
+    "wiby",
     "wikipedia",
     "crossref",
     "arxiv",
     "github",
     "tavily",
 )
-LOCKED_SUITE_SHA256 = "23f0a3c1c6d680b0ec6bdd0964a81f28b23e5778f4965632b03ed5dc4e78c5d7"
-LOCKED_SEARXNG_CONFIG_SHA256 = "e33610cdd83c89a0fb85e687e632b179ed36057d948db102c7a6e2c33b456efb"
-EXPECTED_CASE_COUNT = 12
-MAX_INPUT_BYTES = 1_000_000
 ARMS: tuple[str, ...] = (
     "tavily_direct",
+    "wiby_direct",
     "community",
     "quality_legacy",
     "quality_safe_4_6",
@@ -60,134 +62,6 @@ ARM_SHARES: dict[str, float] = {
     "quality_safe_6_4": 0.6,
     "quality_safe_8_2": 0.8,
 }
-
-
-@dataclass(frozen=True, slots=True)
-class CalibrationCase:
-    id: str
-    query: str
-    target_domains: tuple[str, ...]
-    topic: str
-
-
-class RawResultRecorder:
-    """Capture one shared provider pool without modifying provider behavior."""
-
-    def __init__(self) -> None:
-        self._results: dict[str, list[ProviderResult]] = {}
-
-    def reset(self) -> None:
-        self._results = {}
-
-    def record(self, provider: str, results: list[ProviderResult]) -> None:
-        self._results.setdefault(provider, []).extend(results)
-
-    def all_results(self) -> list[ProviderResult]:
-        return [result for provider in sorted(self._results) for result in self._results[provider]]
-
-
-class RecordingProvider(SearchProvider):
-    """Delegate once and retain its provider-native results for deterministic replay."""
-
-    def __init__(self, provider: SearchProvider, recorder: RawResultRecorder) -> None:
-        self.provider = provider
-        self.recorder = recorder
-        self.name = provider.name
-        self.supported_profiles = provider.supported_profiles
-        self.source_type = provider.source_type
-        self.query_budget = provider.query_budget
-        self.minimum_cache_ttl_seconds = provider.minimum_cache_ttl_seconds
-
-    def source_family(self, profile: SearchProfile) -> SourceType:
-        return self.provider.source_family(profile)
-
-    async def search(self, query: str, request: SearchRequest) -> list[ProviderResult]:
-        results = await self.provider.search(query, request)
-        self.recorder.record(self.name, results)
-        return results
-
-
-def sha256_bytes(value: bytes) -> str:
-    return hashlib.sha256(value).hexdigest()
-
-
-def package_version(name: str) -> str:
-    try:
-        return importlib.metadata.version(name)
-    except importlib.metadata.PackageNotFoundError:
-        return "not-installed"
-
-
-def ratio(numerator: int, denominator: int) -> dict[str, int | float | None]:
-    return {
-        "numerator": numerator,
-        "denominator": denominator,
-        "rate": round(numerator / denominator, 6) if denominator else None,
-    }
-
-
-def percentile(values: list[float], quantile: float) -> float | None:
-    if not values:
-        return None
-    ordered = sorted(values)
-    index = (len(ordered) - 1) * quantile
-    lower = int(index)
-    upper = min(lower + 1, len(ordered) - 1)
-    fraction = index - lower
-    return round(ordered[lower] + (ordered[upper] - ordered[lower]) * fraction, 3)
-
-
-def load_suite(path: Path) -> tuple[list[CalibrationCase], bytes]:
-    raw = path.read_bytes()
-    if len(raw) > MAX_INPUT_BYTES:
-        raise ValueError("Phase 11 suite exceeds one megabyte")
-    if sha256_bytes(raw) != LOCKED_SUITE_SHA256:
-        raise ValueError("Phase 11 suite checksum does not match the locked revision")
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as exc:
-        raise ValueError("Phase 11 suite is not valid JSON") from exc
-    if not isinstance(payload, list) or len(payload) != EXPECTED_CASE_COUNT:
-        raise ValueError(f"Phase 11 suite must contain exactly {EXPECTED_CASE_COUNT} cases")
-
-    cases: list[CalibrationCase] = []
-    seen_ids: set[str] = set()
-    seen_queries: set[str] = set()
-    expected_fields = {"id", "query", "target_domains", "topic"}
-    for item in payload:
-        if not isinstance(item, dict) or set(item) != expected_fields:
-            raise ValueError("Phase 11 case fields do not match the locked schema")
-        case_id = item["id"]
-        query = item["query"]
-        topic = item["topic"]
-        targets = item["target_domains"]
-        if not isinstance(case_id, str) or not case_id or case_id in seen_ids:
-            raise ValueError("Phase 11 case IDs must be unique non-empty strings")
-        normalized_query = query.casefold().strip() if isinstance(query, str) else ""
-        if not normalized_query or normalized_query in seen_queries:
-            raise ValueError("Phase 11 queries must be unique non-empty strings")
-        if not isinstance(topic, str) or not topic.strip():
-            raise ValueError(f"Phase 11 case {case_id} has an invalid topic")
-        if (
-            not isinstance(targets, list)
-            or not targets
-            or not all(isinstance(target, str) and target for target in targets)
-        ):
-            raise ValueError(f"Phase 11 case {case_id} has invalid target domains")
-        normalized_targets = tuple(target.strip().lower().rstrip(".") for target in targets)
-        if any("://" in target or "/" in target or "@" in target for target in normalized_targets):
-            raise ValueError(f"Phase 11 case {case_id} has a non-hostname target")
-        seen_ids.add(case_id)
-        seen_queries.add(normalized_query)
-        cases.append(
-            CalibrationCase(
-                id=case_id,
-                query=query.strip(),
-                target_domains=normalized_targets,
-                topic=topic.strip(),
-            )
-        )
-    return cases, raw
 
 
 def _provider_counts(hits: Iterable[SearchHit]) -> dict[str, int]:
@@ -205,9 +79,7 @@ def _prompt_projection(hits: list[SearchHit], budget_chars: int) -> list[SearchH
     return projected
 
 
-def _stage_losses(
-    stage_counts: dict[str, dict[str, int]],
-) -> dict[str, dict[str, int]]:
+def _stage_losses(stage_counts: dict[str, dict[str, int]]) -> dict[str, dict[str, int]]:
     stages = ("raw", "fused", "eligible", "selected", "evidence", "prompt")
     losses: dict[str, dict[str, int]] = {}
     for left, right in pairwise(stages):
@@ -230,6 +102,8 @@ def _target_hit(case: CalibrationCase, hits: Iterable[SearchHit]) -> bool:
 def _arm_results(raw_results: list[ProviderResult], arm: str) -> list[ProviderResult]:
     if arm == "tavily_direct":
         return [result for result in raw_results if result.provider == "tavily"]
+    if arm == "wiby_direct":
+        return [result for result in raw_results if result.provider == "wiby"]
     if arm == "community":
         return [result for result in raw_results if result.provider != "tavily"]
     return list(raw_results)
@@ -277,14 +151,25 @@ def replay_arm(
             0,
         ),
         "eligible_tavily_result_count": diagnostics.provider_stage_counts["eligible"].get(
-            "tavily", 0
+            "tavily",
+            0,
         ),
         "selected_tavily_result_count": diagnostics.provider_stage_counts["selected"].get(
-            "tavily", 0
+            "tavily",
+            0,
+        ),
+        "raw_wiby_result_count": diagnostics.provider_stage_counts["raw"].get("wiby", 0),
+        "selected_wiby_result_count": diagnostics.provider_stage_counts["selected"].get(
+            "wiby",
+            0,
         ),
         "ranking_reservation_policy": diagnostics.reservation_policy,
         "ranking_reservation_requested": diagnostics.reservation_requested,
+        "ranking_reservation_eligible": diagnostics.reservation_eligible,
+        "ranking_reservation_feasible": diagnostics.reservation_feasible,
+        "ranking_reservation_target": diagnostics.reservation_target,
         "ranking_reservation_fulfilled": diagnostics.reservation_fulfilled,
+        "ranking_reservation_shortfall_reason": diagnostics.reservation_shortfall_reason,
         "provider_stage_counts": stage_counts,
         "provider_stage_loss_counts": _stage_losses(stage_counts),
     }
@@ -322,12 +207,21 @@ def _arm_metrics(outcomes: list[dict[str, Any]]) -> dict[str, Any]:
                 sum(bool(outcome["target_domain_hit"]) for outcome in arm_outcomes),
                 len(arm_outcomes),
             ),
+            "cases_with_selected_wiby": ratio(
+                sum(outcome["selected_wiby_result_count"] > 0 for outcome in arm_outcomes),
+                len(arm_outcomes),
+            ),
             "mean_prompt_result_count": round(
                 sum(outcome["prompt_result_count"] for outcome in arm_outcomes) / len(arm_outcomes),
                 3,
             ),
             "mean_selected_tavily_result_count": round(
                 sum(outcome["selected_tavily_result_count"] for outcome in arm_outcomes)
+                / len(arm_outcomes),
+                3,
+            ),
+            "mean_selected_wiby_result_count": round(
+                sum(outcome["selected_wiby_result_count"] for outcome in arm_outcomes)
                 / len(arm_outcomes),
                 3,
             ),
@@ -340,24 +234,27 @@ def build_decision(
     metrics: dict[str, Any],
     *,
     tavily_requests: int,
+    wiby_requests: int,
+    wiby_raw_cases: int,
+    wiby_attributed_cases: int,
 ) -> dict[str, Any]:
     by_arm = {arm: [outcome for outcome in outcomes if outcome["arm"] == arm] for arm in ARMS}
     safe = by_arm["quality_safe_8_2"]
-    evaluable = [
-        outcome
-        for outcome in safe
-        if outcome["eligible_tavily_result_count"] >= outcome["ranking_reservation_requested"]
-    ]
-    fulfilled = [
-        outcome
-        for outcome in evaluable
-        if outcome["ranking_reservation_fulfilled"] == outcome["ranking_reservation_requested"]
-    ]
     safe_vs_direct = _paired(safe, by_arm["tavily_direct"])
     safe_vs_legacy = _paired(safe, by_arm["quality_legacy"])
     community_available = metrics["community"]["availability"]["numerator"]
     safe_target_hits = metrics["quality_safe_8_2"]["target_domain_hit_at_10"]["numerator"]
     legacy_target_hits = metrics["quality_legacy"]["target_domain_hit_at_10"]["numerator"]
+    reservation_requested_total = sum(outcome["ranking_reservation_requested"] for outcome in safe)
+    reservation_target_total = sum(outcome["ranking_reservation_target"] for outcome in safe)
+    reservation_fulfilled_cases = sum(
+        outcome["ranking_reservation_fulfilled"] == outcome["ranking_reservation_target"]
+        for outcome in safe
+    )
+    reservation_target_at_least_six_cases = sum(
+        outcome["ranking_reservation_target"] >= 6 for outcome in safe
+    )
+    community_wiby_selected_cases = metrics["community"]["cases_with_selected_wiby"]["numerator"]
     gates = {
         "community_availability_at_least_90_percent": {
             "passed": community_available >= 11,
@@ -375,16 +272,44 @@ def build_decision(
             "observed_losses": safe_vs_direct["losses"],
             "maximum": 1,
         },
-        "safe_8_2_reservation_fulfilled_when_evaluable": {
-            "passed": len(evaluable) >= 9 and len(fulfilled) == len(evaluable),
-            "evaluable_cases": len(evaluable),
-            "fulfilled_cases": len(fulfilled),
-            "minimum_evaluable_cases": 9,
+        "domain_aware_reservation_is_strong_and_fulfilled": {
+            "passed": (
+                reservation_fulfilled_cases == EXPECTED_CASE_COUNT
+                and reservation_target_at_least_six_cases == EXPECTED_CASE_COUNT
+                and reservation_target_total >= 90
+            ),
+            "requested_total": reservation_requested_total,
+            "target_total": reservation_target_total,
+            "minimum_target_total": 90,
+            "fulfilled_cases": reservation_fulfilled_cases,
+            "target_at_least_six_cases": reservation_target_at_least_six_cases,
+            "required_cases": EXPECTED_CASE_COUNT,
         },
-        "tavily_traffic_within_budget": {
-            "passed": tavily_requests <= EXPECTED_CASE_COUNT,
-            "observed": tavily_requests,
-            "maximum": EXPECTED_CASE_COUNT,
+        "wiby_independent_index_available": {
+            "passed": wiby_raw_cases >= 6,
+            "observed": wiby_raw_cases,
+            "required": 6,
+            "denominator": EXPECTED_CASE_COUNT,
+        },
+        "wiby_survives_community_ranking": {
+            "passed": community_wiby_selected_cases >= 3,
+            "observed": community_wiby_selected_cases,
+            "required": 3,
+            "denominator": EXPECTED_CASE_COUNT,
+        },
+        "wiby_attribution_complete": {
+            "passed": (wiby_raw_cases > 0 and wiby_attributed_cases == wiby_raw_cases),
+            "raw_result_cases": wiby_raw_cases,
+            "attributed_cases": wiby_attributed_cases,
+        },
+        "paid_and_public_traffic_within_budget": {
+            "passed": (
+                tavily_requests <= EXPECTED_CASE_COUNT and wiby_requests <= EXPECTED_CASE_COUNT
+            ),
+            "tavily_requests": tavily_requests,
+            "maximum_tavily_requests": EXPECTED_CASE_COUNT,
+            "wiby_requests": wiby_requests,
+            "maximum_wiby_requests": EXPECTED_CASE_COUNT,
         },
     }
     candidate_passed = all(gate["passed"] for gate in gates.values())
@@ -394,14 +319,14 @@ def build_decision(
             "quality_safe_8_2_vs_tavily_direct": safe_vs_direct,
             "quality_safe_8_2_vs_quality_legacy": safe_vs_legacy,
         },
-        "phase11_candidate_passed": candidate_passed,
+        "phase11_1_candidate_passed": candidate_passed,
         "phase12_untouched_evaluation_allowed": candidate_passed,
         "stage_b_external_agents_allowed": False,
         "release_ready": False,
         "release_decision": "no-go",
         "reason": (
-            "Phase 11 is a retrieval calibration without answer-model or external-agent "
-            "evaluation; release remains blocked regardless of these gates."
+            "Phase 11.1 is an authored retrieval calibration without answer-model, "
+            "external-agent, or second-network evaluation; release remains blocked."
         ),
     }
 
@@ -412,20 +337,21 @@ async def run(arguments: argparse.Namespace) -> dict[str, Any]:
     cases, suite_bytes = load_suite(suite_path)
     config_bytes = await asyncio.to_thread(config_path.read_bytes)
     if sha256_bytes(config_bytes) != LOCKED_SEARXNG_CONFIG_SHA256:
-        raise ValueError("Phase 11 SearXNG config checksum does not match the locked revision")
+        raise ValueError("Phase 11.1 SearXNG config checksum does not match the lock")
     api_key = os.getenv("TAVILY_API_KEY")
     if not api_key:
-        raise ValueError("TAVILY_API_KEY is required for the Phase 11 calibration")
+        raise ValueError("TAVILY_API_KEY is required for the Phase 11.1 calibration")
 
     cache_root = Path(arguments.cache_root)
     await asyncio.to_thread(cache_root.mkdir, parents=True, exist_ok=True)
     settings = Settings(
         deployment_profile=DeploymentProfile.QUALITY,
-        enabled_providers=list(PHASE11_QUALITY_PROVIDERS),
+        enabled_providers=list(PHASE11_1_QUALITY_PROVIDERS),
         searxng_url=arguments.searxng_url,
+        wiby_url=arguments.wiby_url,
         tavily_api_key=api_key,
         quality_primary_provider_share=0.0,
-        cache_path=cache_root / "phase11.sqlite3",
+        cache_path=cache_root / "phase11-1.sqlite3",
         request_timeout_seconds=arguments.request_timeout_seconds,
         respect_robots_txt=False,
     )
@@ -436,6 +362,9 @@ async def run(arguments: argparse.Namespace) -> dict[str, Any]:
     retrieval_diagnostics: list[dict[str, Any]] = []
     provider_query_calls = 0
     tavily_requests = 0
+    wiby_requests = 0
+    wiby_raw_cases = 0
+    wiby_attributed_cases = 0
     latencies: list[float] = []
     started_at = datetime.now(UTC)
     try:
@@ -460,7 +389,14 @@ async def run(arguments: argparse.Namespace) -> dict[str, Any]:
             query_counts = response.metadata.provider_query_counts
             provider_query_calls += sum(query_counts.values())
             tavily_requests += query_counts.get("tavily", 0)
+            wiby_requests += query_counts.get("wiby", 0)
             raw_results = recorder.all_results()
+            has_wiby_results = any(result.provider == "wiby" for result in raw_results)
+            wiby_raw_cases += int(has_wiby_results)
+            wiby_attributed_cases += int(
+                has_wiby_results
+                and response.metadata.provider_attributions.get("wiby") == WIBY_ATTRIBUTION
+            )
             for arm in ARMS:
                 outcomes.append(
                     replay_arm(
@@ -477,6 +413,10 @@ async def run(arguments: argparse.Namespace) -> dict[str, Any]:
                     "case_id": case.id,
                     "latency_ms": elapsed_ms,
                     "provider_query_counts": query_counts,
+                    "wiby_returned_results": has_wiby_results,
+                    "wiby_attribution_present": (
+                        response.metadata.provider_attributions.get("wiby") == WIBY_ATTRIBUTION
+                    ),
                     "provider_failure_providers": sorted(
                         {
                             key.partition(":")[0]
@@ -512,6 +452,9 @@ async def run(arguments: argparse.Namespace) -> dict[str, Any]:
         outcomes,
         metrics,
         tavily_requests=tavily_requests,
+        wiby_requests=wiby_requests,
+        wiby_raw_cases=wiby_raw_cases,
+        wiby_attributed_cases=wiby_attributed_cases,
     )
     return {
         "schema_version": 1,
@@ -522,11 +465,19 @@ async def run(arguments: argparse.Namespace) -> dict[str, Any]:
             "case_count": len(cases),
             "case_ids": [case.id for case in cases],
             "topic_distribution": dict(sorted(Counter(case.topic for case in cases).items())),
-            "purpose": "authored calibration; not an untouched final evaluation",
+            "purpose": (
+                "authored Phase 11 diagnostic suite reused for a corrective "
+                "calibration; not an untouched final evaluation"
+            ),
+            "reused_from_phase11": True,
         },
         "protocol": {
             "arms": list(ARMS),
             "reservation_shares": ARM_SHARES,
+            "reservation_contract": (
+                "target=min(requested, diverse-feasible); fulfillment is judged "
+                "against target while requested remains visible"
+            ),
             "shared_raw_pool_per_case": True,
             "provider_calls_replayed": False,
             "cache": False,
@@ -536,11 +487,18 @@ async def run(arguments: argparse.Namespace) -> dict[str, Any]:
             "prompt_projection_budget_chars": arguments.prompt_budget_chars,
             "searxng_config_sha256": sha256_bytes(config_bytes),
             "community_providers": [
-                provider for provider in PHASE11_QUALITY_PROVIDERS if provider != "tavily"
+                provider for provider in PHASE11_1_QUALITY_PROVIDERS if provider != "tavily"
             ],
-            "quality_providers": list(PHASE11_QUALITY_PROVIDERS),
+            "quality_providers": list(PHASE11_1_QUALITY_PROVIDERS),
+            "independent_provider": {
+                "name": "wiby",
+                "endpoint": WIBY_ENDPOINT,
+                "attribution": WIBY_ATTRIBUTION,
+                "query_budget_per_case": 1,
+            },
             "gemini_requests": 0,
             "maximum_tavily_requests": EXPECTED_CASE_COUNT,
+            "maximum_wiby_requests": EXPECTED_CASE_COUNT,
         },
         "environment": {
             "commit_sha": os.getenv("EVIDENCEMESH_BENCHMARK_COMMIT", "unknown"),
@@ -560,6 +518,8 @@ async def run(arguments: argparse.Namespace) -> dict[str, Any]:
             "provider_query_calls": provider_query_calls,
             "tavily_requests": tavily_requests,
             "maximum_tavily_requests": EXPECTED_CASE_COUNT,
+            "wiby_requests": wiby_requests,
+            "maximum_wiby_requests": EXPECTED_CASE_COUNT,
             "gemini_requests": 0,
             "retries": 0,
         },
@@ -576,6 +536,7 @@ async def run(arguments: argparse.Namespace) -> dict[str, Any]:
             "target_domains_in_report": False,
             "source_titles_or_urls_in_report": False,
             "source_snippets_in_report": False,
+            "provider_attribution_urls_in_report": True,
             "api_keys_in_report": False,
         },
     }
@@ -591,27 +552,27 @@ def parse_args() -> argparse.Namespace:
         "--searxng-config",
         default="docker/searxng/phase11-community-settings.yml",
     )
-    parser.add_argument("--searxng-url", default="http://127.0.0.1:8894")
-    parser.add_argument("--cache-root", default=".phase11-cache")
+    parser.add_argument("--searxng-url", default="http://127.0.0.1:8895")
+    parser.add_argument("--wiby-url", default=WIBY_ENDPOINT)
+    parser.add_argument("--cache-root", default=".phase11-1-cache")
     parser.add_argument("--max-results", type=int, default=10)
     parser.add_argument("--max-per-domain", type=int, default=3)
     parser.add_argument("--prompt-budget-chars", type=int, default=12_000)
-    parser.add_argument("--request-timeout-seconds", type=float, default=20.0)
-    parser.add_argument("--wall-time-seconds", type=float, default=60.0)
-    parser.add_argument("--pause-seconds", type=float, default=0.5)
-    parser.add_argument(
-        "--network-region",
-        default="not reported",
-    )
+    parser.add_argument("--request-timeout-seconds", type=float, default=25.0)
+    parser.add_argument("--wall-time-seconds", type=float, default=75.0)
+    parser.add_argument("--pause-seconds", type=float, default=1.0)
+    parser.add_argument("--network-region", default="not reported")
     parser.add_argument("--progress", action="store_true")
     parser.add_argument("--output", required=True)
     arguments = parser.parse_args()
     if arguments.max_results != 10:
-        parser.error("the locked Phase 11 protocol requires --max-results 10")
+        parser.error("the locked Phase 11.1 protocol requires --max-results 10")
     if arguments.max_per_domain != 3:
-        parser.error("the locked Phase 11 protocol requires --max-per-domain 3")
+        parser.error("the locked Phase 11.1 protocol requires --max-per-domain 3")
     if arguments.prompt_budget_chars != 12_000:
-        parser.error("the locked Phase 11 protocol requires --prompt-budget-chars 12000")
+        parser.error("the locked Phase 11.1 protocol requires --prompt-budget-chars 12000")
+    if arguments.wiby_url != WIBY_ENDPOINT:
+        parser.error(f"the locked Phase 11.1 protocol requires --wiby-url {WIBY_ENDPOINT}")
     return arguments
 
 

@@ -14,6 +14,7 @@ from evidencemesh.providers.github import GitHubProvider
 from evidencemesh.providers.openalex import OpenAlexProvider
 from evidencemesh.providers.searxng import SearxngProvider
 from evidencemesh.providers.tavily import TavilyProvider
+from evidencemesh.providers.wiby import WibyProvider
 from evidencemesh.providers.wikipedia import WikipediaProvider
 
 
@@ -45,6 +46,8 @@ def build_providers(
             )
         elif name == "ddgs":
             providers.append(DDGSProvider())
+        elif name == "wiby":
+            providers.append(WibyProvider(settings.wiby_url, client))
         elif name == "wikipedia":
             providers.append(WikipediaProvider(settings.wikipedia_url_template, client))
         elif name == "crossref":

@@ -237,7 +237,11 @@ def test_primary_provider_reservation_preserves_configured_share_and_lineage() -
         assert fused_count == 20
         assert sum("tavily" in hit.providers for hit in hits) >= expected
         assert diagnostics.reservation_requested == expected
+        assert diagnostics.reservation_eligible == 10
+        assert diagnostics.reservation_feasible == 10
+        assert diagnostics.reservation_target == expected
         assert diagnostics.reservation_fulfilled == expected
+        assert diagnostics.reservation_shortfall_reason is None
         assert diagnostics.provider_stage_counts["raw"] == {
             "ddgs": 10,
             "searxng": 10,
@@ -252,9 +256,10 @@ def test_primary_provider_reservation_preserves_configured_share_and_lineage() -
 
 
 def test_primary_provider_reservation_keeps_domain_diversity_cap() -> None:
+    titles = ["Oak", "River", "Quartz", "Falcon", "Harbor"]
     results = [
         make_result(
-            title=f"Tavily same domain {rank}",
+            title=titles[rank - 1],
             url=f"https://same.example/result-{rank}",
             provider="tavily",
             rank=rank,
@@ -280,7 +285,11 @@ def test_primary_provider_reservation_keeps_domain_diversity_cap() -> None:
         primary_provider_share=0.8,
     )
     assert diagnostics.reservation_requested == 4
+    assert diagnostics.reservation_eligible == 5
+    assert diagnostics.reservation_feasible == 1
+    assert diagnostics.reservation_target == 1
     assert diagnostics.reservation_fulfilled == 1
+    assert diagnostics.reservation_shortfall_reason == "domain_diversity_cap"
     assert sum("tavily" in hit.providers for hit in hits) == 1
 
 
@@ -298,4 +307,39 @@ def test_primary_provider_reservation_remains_observable_with_no_results() -> No
     assert fused_count == 0
     assert diagnostics.reservation_policy == "provider_share:tavily:0.800"
     assert diagnostics.reservation_requested == 8
+    assert diagnostics.reservation_eligible == 0
+    assert diagnostics.reservation_feasible == 0
+    assert diagnostics.reservation_target == 0
     assert diagnostics.reservation_fulfilled == 0
+    assert diagnostics.reservation_shortfall_reason == "insufficient_eligible_results"
+
+
+def test_primary_provider_reports_mixed_feasibility_shortfall() -> None:
+    titles = ["Oak", "River", "Quartz"]
+    results = [
+        make_result(
+            title=titles[rank - 1],
+            url=f"https://same.example/result-{rank}",
+            provider="tavily",
+            rank=rank,
+        )
+        for rank in range(1, 4)
+    ]
+    _, _, diagnostics = rank_results_with_diagnostics(
+        results,
+        query="alpha evidence",
+        profile=SearchProfile.WEB,
+        limit=10,
+        max_per_domain=2,
+        primary_provider="tavily",
+        primary_provider_share=0.8,
+    )
+    assert diagnostics.reservation_requested == 8
+    assert diagnostics.reservation_eligible == 3
+    assert diagnostics.reservation_feasible == 2
+    assert diagnostics.reservation_target == 2
+    assert diagnostics.reservation_fulfilled == 2
+    assert (
+        diagnostics.reservation_shortfall_reason
+        == "insufficient_eligible_results_and_domain_diversity_cap"
+    )

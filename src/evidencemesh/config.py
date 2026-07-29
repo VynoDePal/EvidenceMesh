@@ -20,6 +20,7 @@ class DeploymentProfile(StrEnum):
 COMMUNITY_PROVIDERS = (
     "searxng",
     "ddgs",
+    "wiby",
     "wikipedia",
     "crossref",
     "arxiv",
@@ -50,6 +51,7 @@ class Settings(BaseModel):
     enabled_providers: list[str]
     searxng_url: str = "http://127.0.0.1:8888"
     searxng_fallback_urls: list[str] = Field(default_factory=list)
+    wiby_url: str = "https://wiby.me/json/"
     wikipedia_url_template: str = "https://{language}.wikipedia.org/w/api.php"
     crossref_url: str = "https://api.crossref.org/works"
     arxiv_url: str = "https://export.arxiv.org/api/query"
@@ -109,6 +111,7 @@ class Settings(BaseModel):
             "openalex",
             "searxng",
             "tavily",
+            "wiby",
             "wikipedia",
         }
         normalised = list(dict.fromkeys(value.strip().lower() for value in values if value.strip()))
@@ -129,6 +132,14 @@ class Settings(BaseModel):
                 raise ValueError("SearXNG fallback URLs must use http or https")
             normalised.append(url)
         return list(dict.fromkeys(normalised))
+
+    @field_validator("wiby_url")
+    @classmethod
+    def normalise_wiby_url(cls, value: str) -> str:
+        url = value.strip()
+        if not url.startswith(("http://", "https://")):
+            raise ValueError("Wiby URL must use http or https")
+        return f"{url.rstrip('/')}/"
 
     @field_validator("quality_primary_provider")
     @classmethod
@@ -155,6 +166,10 @@ class Settings(BaseModel):
                 "EVIDENCEMESH_SEARXNG_FALLBACK_URLS",
                 "",
             ).split(","),
+            "wiby_url": os.getenv(
+                "EVIDENCEMESH_WIBY_URL",
+                "https://wiby.me/json/",
+            ),
             "arxiv_url": os.getenv(
                 "EVIDENCEMESH_ARXIV_URL",
                 "https://export.arxiv.org/api/query",

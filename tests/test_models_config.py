@@ -118,6 +118,7 @@ def test_settings_from_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> N
         "EVIDENCEMESH_SEARXNG_FALLBACK_URLS",
         "https://one.example/, https://two.example,https://one.example",
     )
+    monkeypatch.setenv("EVIDENCEMESH_WIBY_URL", "https://wiby.example/api/")
     monkeypatch.setenv("EVIDENCEMESH_QUALITY_PRIMARY_PROVIDER_SHARE", "0.6")
     settings = Settings.from_env()
     assert settings.enabled_providers == ["ddgs", "wikipedia"]
@@ -133,6 +134,7 @@ def test_settings_from_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> N
         "https://one.example",
         "https://two.example",
     ]
+    assert settings.wiby_url == "https://wiby.example/api/"
     assert settings.quality_primary_provider_share == 0.6
 
 
@@ -148,6 +150,7 @@ def test_settings_default_to_self_hosted_zero_key_profile(
     assert Settings.from_env().enabled_providers == [
         "searxng",
         "ddgs",
+        "wiby",
         "wikipedia",
         "crossref",
         "arxiv",
@@ -165,6 +168,7 @@ def test_settings_quality_profile_adds_optional_providers(
     assert settings.enabled_providers == [
         "searxng",
         "ddgs",
+        "wiby",
         "wikipedia",
         "crossref",
         "arxiv",

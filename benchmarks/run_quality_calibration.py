@@ -22,7 +22,7 @@ try:
     from benchmarks.run_live_retrieval import percentile, rate_metric
 except ModuleNotFoundError:
     from run_live_retrieval import percentile, rate_metric
-from evidencemesh.config import QUALITY_PROVIDERS, DeploymentProfile, Settings
+from evidencemesh.config import DeploymentProfile, Settings
 from evidencemesh.engine import EvidenceMesh
 from evidencemesh.models import SearchProfile, SearchRequest, SourceFamilyStatus
 from evidencemesh.urls import domain_matches
@@ -31,7 +31,14 @@ LOCKED_SUITE_SHA256 = "bfa1b033d31e509f622d35d7eb224498db9ba7a939fce3554b0a57c44
 LOCKED_CONFIG_SHA256 = "26a74f699515539fdb9bed3f1d3bda57ef908e1111d5393b4af2009fd7069645"
 EXPECTED_TOPICS = ("academic", "code", "reference", "web")
 EXPECTED_FAMILIES = frozenset(EXPECTED_TOPICS)
-CALIBRATION_PROVIDERS = tuple(QUALITY_PROVIDERS)
+CALIBRATION_PROVIDERS = (
+    "searxng",
+    "wikipedia",
+    "crossref",
+    "arxiv",
+    "github",
+    "tavily",
+)
 MAX_INPUT_BYTES = 1_000_000
 OVERALL_GATES: dict[str, float | int] = {
     "minimum_availability_rate": 0.90,

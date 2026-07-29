@@ -195,7 +195,11 @@ async def test_quality_search_reports_provider_lineage_and_reservation(settings)
     response = await engine.search(SearchRequest(query="EvidenceMesh", limit=4, use_cache=False))
     assert response.metadata.ranking_reservation_policy == ("provider_share:tavily:0.500")
     assert response.metadata.ranking_reservation_requested == 2
+    assert response.metadata.ranking_reservation_eligible == 4
+    assert response.metadata.ranking_reservation_feasible == 4
+    assert response.metadata.ranking_reservation_target == 2
     assert response.metadata.ranking_reservation_fulfilled == 2
+    assert response.metadata.ranking_reservation_shortfall_reason is None
     assert response.metadata.provider_stage_counts["raw"] == {
         "searxng": 4,
         "tavily": 4,
@@ -214,6 +218,26 @@ async def test_quality_search_reports_provider_lineage_and_reservation(settings)
         "eligible_to_selected",
         "selected_to_evidence",
     }
+    await engine.aclose()
+
+
+@pytest.mark.asyncio
+async def test_search_surfaces_provider_attribution(settings) -> None:
+    result = ProviderResult(
+        title="Independent result",
+        url="https://small.example/page",
+        snippet="Small-web evidence.",
+        provider="wiby",
+        rank=1,
+        query="small web",
+        metadata={"attribution_url": "https://wiby.me/"},
+    )
+    engine = EvidenceMesh(
+        settings,
+        providers=[StaticProvider("wiby", [result])],
+    )
+    response = await engine.search(SearchRequest(query="small web", use_cache=False))
+    assert response.metadata.provider_attributions == {"wiby": "https://wiby.me/"}
     await engine.aclose()
 
 

@@ -1,0 +1,268 @@
+name: Phase 11.1 Feasibility Calibration
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/phase11-1-calibration.yml
+      - benchmarks/data/phase11_calibration_v1.json
+      - benchmarks/run_phase11_1_calibration.py
+      - benchmarks/results/phase11_1_calibration_2026-07-29.json
+      - docker/searxng/phase11-community-settings.yml
+      - docs/benchmark-protocol-v10.md
+      - docs/providers.md
+      - src/evidencemesh/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase11-1-calibration-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SEARXNG_IMAGE: searxng/searxng:2026.7.26-b060c780d@sha256:d0aaeb14880e6e92bde1518fcc7261e995783367d63d95203383607bef9c6516
+  RESULT_PATH: /tmp/phase11_1_calibration_2026-07-29.json
+  CACHE_ROOT: /tmp/evidencemesh-phase11-1-cache
+
+jobs:
+  feasibility-calibration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Detect an already committed result
+        id: benchmark-state
+        shell: bash
+        run: |
+          if [[ -f benchmarks/results/phase11_1_calibration_2026-07-29.json ]]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        if: steps.benchmark-state.outputs.run == 'true'
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install benchmark environment
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Verify protocol-locked inputs
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          echo \
+            "23f0a3c1c6d680b0ec6bdd0964a81f28b23e5778f4965632b03ed5dc4e78c5d7  benchmarks/data/phase11_calibration_v1.json" \
+            | sha256sum --check
+          echo \
+            "e33610cdd83c89a0fb85e687e632b179ed36057d948db102c7a6e2c33b456efb  docker/searxng/phase11-community-settings.yml" \
+            | sha256sum --check
+
+      - name: Verify Tavily credential is available
+        if: steps.benchmark-state.outputs.run == 'true'
+        env:
+          TAVILY_API_KEY: ${{ secrets.EVIDENCE_MESH_TAVILY_KEY }}
+        run: |
+          if [[ -z "${TAVILY_API_KEY:-}" ]]; then
+            echo "::error::EVIDENCE_MESH_TAVILY_KEY is not configured"
+            exit 1
+          fi
+
+      - name: Start checksum-pinned multi-engine SearXNG
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          docker run --detach \
+            --name evidencemesh-searxng-phase11-1 \
+            --publish 127.0.0.1:8895:8080 \
+            --volume \
+              "$GITHUB_WORKSPACE/docker/searxng/phase11-community-settings.yml:/etc/searxng/settings.yml:ro" \
+            --env SEARXNG_BASE_URL=http://localhost:8895/ \
+            --env "SEARXNG_SECRET=$(openssl rand -hex 32)" \
+            --env FORCE_OWNERSHIP=false \
+            "$SEARXNG_IMAGE"
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:8895/ > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs evidencemesh-searxng-phase11-1
+          exit 1
+
+      - name: Verify SearXNG image digest
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          docker image inspect "$SEARXNG_IMAGE" --format '{{json .RepoDigests}}' |
+            grep --fixed-strings \
+              "sha256:d0aaeb14880e6e92bde1518fcc7261e995783367d63d95203383607bef9c6516"
+
+      - name: Run locked shared-pool calibration
+        if: steps.benchmark-state.outputs.run == 'true'
+        env:
+          EVIDENCEMESH_BENCHMARK_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+          TAVILY_API_KEY: ${{ secrets.EVIDENCE_MESH_TAVILY_KEY }}
+        run: |
+          uv run python benchmarks/run_phase11_1_calibration.py \
+            --suite benchmarks/data/phase11_calibration_v1.json \
+            --searxng-config docker/searxng/phase11-community-settings.yml \
+            --searxng-url http://127.0.0.1:8895 \
+            --wiby-url https://wiby.me/json/ \
+            --cache-root "$CACHE_ROOT" \
+            --max-results 10 \
+            --max-per-domain 3 \
+            --prompt-budget-chars 12000 \
+            --request-timeout-seconds 25 \
+            --wall-time-seconds 75 \
+            --pause-seconds 1.0 \
+            --network-region "GitHub-hosted ubuntu-latest; physical region not exposed" \
+            --progress \
+            --output "$RESULT_PATH"
+
+      - name: Validate lineage, privacy, traffic and claim boundary
+        if: steps.benchmark-state.outputs.run == 'true'
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          TAVILY_API_KEY: ${{ secrets.EVIDENCE_MESH_TAVILY_KEY }}
+        run: |
+          uv run python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          path = Path(os.environ["RESULT_PATH"])
+          raw = path.read_bytes()
+          report = json.loads(raw)
+          outcomes = report["outcomes"]
+          arms = {
+              "tavily_direct",
+              "wiby_direct",
+              "community",
+              "quality_legacy",
+              "quality_safe_4_6",
+              "quality_safe_6_4",
+              "quality_safe_8_2",
+          }
+          forbidden = {
+              "query",
+              "question",
+              "target_domains",
+              "title",
+              "url",
+              "snippet",
+              "content",
+              "evidence",
+          }
+          required_stages = {
+              "raw",
+              "fused",
+              "eligible",
+              "selected",
+              "evidence",
+              "prompt",
+          }
+          expected = (
+              report["schema_version"] == 1
+              and report["benchmark"]
+                  == "evidencemesh-phase11-1-feasibility-calibration-v1"
+              and report["suite"]["sha256"]
+                  == "23f0a3c1c6d680b0ec6bdd0964a81f28b23e5778f4965632b03ed5dc4e78c5d7"
+              and report["suite"]["case_count"] == 12
+              and report["suite"]["reused_from_phase11"] is True
+              and report["protocol"]["searxng_config_sha256"]
+                  == "e33610cdd83c89a0fb85e687e632b179ed36057d948db102c7a6e2c33b456efb"
+              and set(report["protocol"]["arms"]) == arms
+              and report["protocol"]["shared_raw_pool_per_case"] is True
+              and report["protocol"]["provider_calls_replayed"] is False
+              and report["protocol"]["gemini_requests"] == 0
+              and report["protocol"]["independent_provider"]["name"] == "wiby"
+              and report["protocol"]["independent_provider"]["attribution"]
+                  == "https://wiby.me/"
+              and report["environment"]["commit_sha"] == os.environ["EXPECTED_SHA"]
+              and report["traffic"]["case_retrieval_operations"] == 12
+              and report["traffic"]["provider_query_calls"] == 60
+              and report["traffic"]["tavily_requests"] == 12
+              and report["traffic"]["maximum_tavily_requests"] == 12
+              and report["traffic"]["wiby_requests"] == 12
+              and report["traffic"]["maximum_wiby_requests"] == 12
+              and report["traffic"]["gemini_requests"] == 0
+              and report["traffic"]["retries"] == 0
+              and len(report["retrieval_diagnostics"]) == 12
+              and len(outcomes) == 84
+              and {outcome["arm"] for outcome in outcomes} == arms
+              and all(not forbidden & set(outcome) for outcome in outcomes)
+              and all(
+                  set(outcome["provider_stage_counts"]) == required_stages
+                  for outcome in outcomes
+              )
+              and all(
+                  outcome["ranking_reservation_target"]
+                      <= outcome["ranking_reservation_requested"]
+                  for outcome in outcomes
+              )
+              and report["privacy"]["queries_in_report"] is False
+              and report["privacy"]["target_domains_in_report"] is False
+              and report["privacy"]["source_titles_or_urls_in_report"] is False
+              and report["privacy"]["source_snippets_in_report"] is False
+              and report["privacy"]["provider_attribution_urls_in_report"] is True
+              and report["decision"]["stage_b_external_agents_allowed"] is False
+              and report["decision"]["release_ready"] is False
+              and report["decision"]["release_decision"] == "no-go"
+              and os.environ["TAVILY_API_KEY"].encode() not in raw
+          )
+          if not expected:
+              raise AssertionError(
+                  "Phase 11.1 report failed a locked lineage, privacy, "
+                  "traffic, provenance, or release invariant"
+              )
+          PY
+
+      - name: Write calibration summary
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          uv run python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          import os
+          from pathlib import Path
+
+          report = json.loads(Path(os.environ["RESULT_PATH"]).read_bytes())
+          print("## Phase 11.1 feasibility calibration")
+          print()
+          print("| Arm | Availability | Target hit@10 | Tavily selected | Wiby selected |")
+          print("|---|---:|---:|---:|---:|")
+          for arm, values in report["metrics"].items():
+              availability = values["availability"]
+              target = values["target_domain_hit_at_10"]
+              print(
+                  f"| {arm} | {availability['numerator']}/{availability['denominator']} "
+                  f"| {target['numerator']}/{target['denominator']} "
+                  f"| {values['mean_selected_tavily_result_count']:.3f} "
+                  f"| {values['mean_selected_wiby_result_count']:.3f} |"
+              )
+          print()
+          print(
+              "Candidate gates passed: "
+              f"`{report['decision']['phase11_1_candidate_passed']}`."
+          )
+          print("Release remains `no-go`; this workflow makes no model calls.")
+          PY
+
+      - name: Upload privacy-safe Phase 11.1 result
+        if: steps.benchmark-state.outputs.run == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: phase11-1-calibration-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ env.RESULT_PATH }}
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Stop SearXNG
+        if: always() && steps.benchmark-state.outputs.run == 'true'
+        run: docker rm --force evidencemesh-searxng-phase11-1 || true

@@ -23,8 +23,9 @@ Most search MCPs are thin wrappers around one paid API. Most deep-research
 projects bundle a particular model, search service and report writer.
 EvidenceMesh separates those concerns:
 
-- **Free core:** self-hosted SearXNG plus bounded DDGS fallback and direct
-  Wikipedia, Crossref, arXiv and GitHub repository adapters.
+- **Free core:** self-hosted SearXNG, Wiby's independently crawled index,
+  bounded DDGS fallback and direct Wikipedia, Crossref, arXiv and GitHub
+  repository adapters.
 - **Deterministic routing:** web, reference, academic and code sources receive
   only compatible queries, with conservative budgets for rate-limited APIs and
   profile-aware domain diversity.
@@ -127,6 +128,7 @@ research workflow.
 | Provider | Key required | `community` | `quality` | Profiles |
 |---|---:|---:|---:|---|
 | SearXNG | No | Yes | Yes | Web, news |
+| Wiby | No | Yes | Yes | Web |
 | Wikipedia | No | Yes | Yes | Web, reference, academic |
 | Crossref | No | Yes | Yes | Academic |
 | arXiv | No | Yes | Yes | Academic |
@@ -153,9 +155,10 @@ export EVIDENCEMESH_DEPLOYMENT_PROFILE=community  # or quality
 export TAVILY_API_KEY=...
 
 # An explicit list overrides the selected bundle.
-export EVIDENCEMESH_PROVIDERS=searxng,ddgs,wikipedia,crossref,arxiv,github
+export EVIDENCEMESH_PROVIDERS=searxng,ddgs,wiby,wikipedia,crossref,arxiv,github
 export EVIDENCEMESH_SEARXNG_URL=http://127.0.0.1:8888
 export EVIDENCEMESH_SEARXNG_FALLBACK_URLS=https://search-2.example
+export EVIDENCEMESH_WIBY_URL=https://wiby.me/json/
 export EVIDENCEMESH_PROVIDER_FAILURE_THRESHOLD=3
 export EVIDENCEMESH_PROVIDER_RECOVERY_SECONDS=60
 
@@ -356,6 +359,14 @@ kept community available, but does not provide an index independent from the
 only surviving SearXNG engine. The frozen candidate gate therefore failed,
 Phase 12 remains blocked and release remains no-go.
 
+The corrective
+[Phase 11.1 protocol](docs/benchmark-protocol-v10.md) leaves that historical
+failure unchanged. It separates requested, eligible, domain-feasible, target
+and fulfilled reservation counts, and adds Wiby as a bounded zero-key source
+with a genuinely independent crawler/index. Its authored calibration reuses
+the Phase 11 diagnostic suite transparently, makes no model call and keeps the
+PR, release and superiority claims blocked regardless of the result.
+
 ## Security
 
 EvidenceMesh blocks private, loopback, link-local and reserved fetch targets by
@@ -382,7 +393,7 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current suite contains 238 tests and reports 91.47% branch-aware coverage
+The current suite contains 273 tests and reports 91.71% branch-aware coverage
 locally. CI repeats the suite on Python 3.11, 3.12 and 3.13.
 
 ## License

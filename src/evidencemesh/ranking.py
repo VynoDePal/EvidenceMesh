@@ -34,6 +34,7 @@ _PROVIDER_WEIGHTS = {
     "openalex": 1.10,
     "searxng": 1.00,
     "tavily": 1.05,
+    "wiby": 0.95,
     "wikipedia": 1.00,
 }
 
@@ -121,7 +122,11 @@ class RankingDiagnostics:
     provider_stage_counts: dict[str, dict[str, int]]
     reservation_policy: str
     reservation_requested: int
+    reservation_eligible: int
+    reservation_feasible: int
+    reservation_target: int
     reservation_fulfilled: int
+    reservation_shortfall_reason: str | None
 
 
 _ScoredAggregate = tuple[float, _Aggregate, float, float, float]
@@ -201,6 +206,9 @@ def rank_results_with_diagnostics(
 ) -> tuple[list[SearchHit], int, RankingDiagnostics]:
     raw_counts = dict(sorted(Counter(result.provider for result in results).items()))
     reservation_requested = 0
+    reservation_eligible = 0
+    reservation_feasible = 0
+    reservation_target = 0
     reservation_fulfilled = 0
     reservation_policy = "none"
     if primary_provider and primary_provider_share > 0:
@@ -221,7 +229,13 @@ def rank_results_with_diagnostics(
                 },
                 reservation_policy=reservation_policy,
                 reservation_requested=reservation_requested,
+                reservation_eligible=0,
+                reservation_feasible=0,
+                reservation_target=0,
                 reservation_fulfilled=0,
+                reservation_shortfall_reason=(
+                    "insufficient_eligible_results" if reservation_requested else None
+                ),
             ),
         )
     max_rrf = max(aggregate.rrf for aggregate in aggregates) or 1.0
@@ -257,6 +271,34 @@ def rank_results_with_diagnostics(
     selected_urls: set[str] = set()
     domain_counts: dict[str, int] = defaultdict(int)
 
+    if reservation_requested and primary_provider:
+        primary_items = [item for item in scored if primary_provider in item[1].providers]
+        reservation_eligible = len(primary_items)
+        feasible_domain_counts: dict[str, int] = defaultdict(int)
+        for item in primary_items:
+            domain_key = registrable_domain_hint(hostname_from_url(item[1].canonical_url))
+            if feasible_domain_counts[domain_key] >= max_per_domain:
+                continue
+            feasible_domain_counts[domain_key] += 1
+            reservation_feasible += 1
+            if reservation_feasible >= limit:
+                break
+        reservation_target = min(reservation_requested, reservation_feasible)
+
+    reservation_shortfall_reason: str | None = None
+    if reservation_requested and reservation_target < reservation_requested:
+        insufficient = reservation_eligible < reservation_requested
+        diversity_limited = reservation_feasible < min(
+            reservation_requested,
+            reservation_eligible,
+        )
+        if insufficient and diversity_limited:
+            reservation_shortfall_reason = "insufficient_eligible_results_and_domain_diversity_cap"
+        elif diversity_limited:
+            reservation_shortfall_reason = "domain_diversity_cap"
+        else:
+            reservation_shortfall_reason = "insufficient_eligible_results"
+
     def select(item: _ScoredAggregate) -> bool:
         canonical_url = item[1].canonical_url
         if canonical_url in selected_urls:
@@ -269,12 +311,12 @@ def rank_results_with_diagnostics(
         domain_counts[domain_key] += 1
         return True
 
-    if reservation_requested and primary_provider:
+    if reservation_target and primary_provider:
         for item in scored:
             if primary_provider not in item[1].providers:
                 continue
             reservation_fulfilled += int(select(item))
-            if reservation_fulfilled >= reservation_requested:
+            if reservation_fulfilled >= reservation_target:
                 break
 
     for item in scored:
@@ -315,7 +357,11 @@ def rank_results_with_diagnostics(
         },
         reservation_policy=reservation_policy,
         reservation_requested=reservation_requested,
+        reservation_eligible=reservation_eligible,
+        reservation_feasible=reservation_feasible,
+        reservation_target=reservation_target,
         reservation_fulfilled=reservation_fulfilled,
+        reservation_shortfall_reason=reservation_shortfall_reason,
     )
     return hits, len(aggregates), diagnostics
 

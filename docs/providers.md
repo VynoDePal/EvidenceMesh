@@ -2,10 +2,11 @@
 
 ## Deployment profiles
 
-`community` is the default and contains `searxng`, bounded one-query `ddgs`,
-`wikipedia`, `crossref`, `arxiv` and `github`. It requires no key and is
-self-hostable, but internet access, compute and storage are not cost-free
-infrastructure.
+`community` is the default and contains `searxng`, independently crawled
+`wiby`, bounded one-query `ddgs`, `wikipedia`, `crossref`, `arxiv` and
+`github`. It requires no key, but internet access, compute and storage are not
+cost-free infrastructure. Wiby can be replaced by an operator-controlled
+compatible deployment.
 
 `quality` includes the community set plus Tavily, the current recommended
 general-web candidate. Tavily is enabled only when `TAVILY_API_KEY` is
@@ -51,6 +52,11 @@ SearXNG also failed completely in 4/12 cases and returned only partial results
 in 8/12. Phase 12 remains blocked; these diagnostics do not establish factual
 answer or source quality.
 
+The [Phase 11.1 protocol](benchmark-protocol-v10.md) keeps that failed result
+frozen, makes the reservation target explicitly domain-feasible and evaluates
+Wiby as an independent-index fallback. It is a corrective calibration, not a
+new untouched quality evaluation.
+
 ## Zero-key community providers
 
 ### SearXNG
@@ -87,6 +93,21 @@ network. Phase 2 and Phase 3 observed persistent failure in one managed
 environment, so DDGS is redundancy rather than a guaranteed independent search
 index. Failures remain isolated as partial-provider warnings, and operators can
 remove it with an explicit `EVIDENCEMESH_PROVIDERS` value.
+
+### Wiby
+
+[Wiby](https://wiby.me/) maintains its own crawler and deliberately small-web
+index. Its [JSON API](https://wiby.me/json/) requires no key and requires a link
+back to Wiby with results. EvidenceMesh routes one base web query, never
+requests Wiby's optional unfiltered mode and emits the required link in
+`metadata.provider_attributions` whenever Wiby returns results.
+
+Wiby is a specialized, comparatively small index. It adds genuine index
+independence but is not represented as a complete replacement for a broad
+commercial search engine. The public endpoint is best effort and must not be
+load-tested. The [GPLv2 installation guide](https://wiby.me/about/guide.html)
+supports self-hosting; point EvidenceMesh at a compatible deployment with
+`EVIDENCEMESH_WIBY_URL`.
 
 ### Wikipedia
 
@@ -147,8 +168,10 @@ request; provider terms and quotas can change independently.
 
 For web and news in the named `quality` profile, ranking temporarily reserves
 80% of the requested slots for eligible Tavily results before filling from the
-global fused ranking. URL filtering and the per-domain cap still apply. Configure
-or disable the policy with
+global fused ranking. URL filtering and the per-domain cap still apply. Phase
+11.1 reports the configured request separately from the maximum domain-feasible
+target and the actually fulfilled count; a target reduction is never hidden.
+Configure or disable the policy with
 `EVIDENCEMESH_QUALITY_PRIMARY_PROVIDER` and
 `EVIDENCEMESH_QUALITY_PRIMARY_PROVIDER_SHARE`. This is a Phase 11 safety policy,
 not evidence that Tavily results are intrinsically correct.
@@ -167,7 +190,7 @@ The public search profile selects compatible source types:
 
 | Profile | Community route | Maximum query variants per provider | Default maximum per domain |
 |---|---|---|---:|
-| Web | SearXNG, DDGS, Wikipedia; quality adds Tavily | unlimited, 1, 2 and 1 | 3 |
+| Web | SearXNG, DDGS, Wiby, Wikipedia; quality adds Tavily | unlimited, 1, 1, 2 and 1 | 3 |
 | Reference | Wikipedia | 2 | 10 |
 | News | SearXNG, DDGS | unlimited and 1 | 3 |
 | Academic | Crossref, arXiv, Wikipedia | 2, 1 and 2 | 10 |
@@ -182,10 +205,11 @@ available even when another route satisfies the request. The effective
 per-domain maximum and whether it came from the profile default or an explicit
 request override are also reported. Provider lineage is counted at raw, fused,
 eligible, selected and evidence stages, with adjacent loss counts. Metadata also
-reports quality reservation demand/fulfillment and SearXNG contributing or
-unresponsive engine query counts. Total upstream failures retain a sanitized
-failure kind and unavailable-engine counts, including calls that returned no
-result.
+reports quality reservation request, eligibility, domain-feasible target,
+fulfillment and shortfall reason, plus SearXNG contributing or unresponsive
+engine query counts. Provider attribution links are explicit. Total upstream
+failures retain a sanitized failure kind and unavailable-engine counts,
+including calls that returned no result.
 
 ## Runtime reliability
 
@@ -210,7 +234,8 @@ remaining recovery delay without making a network request.
 
 ## Custom/self-hosted services
 
-Use `EVIDENCEMESH_SEARXNG_URL` and `EVIDENCEMESH_FIRECRAWL_URL`. Additional
+Use `EVIDENCEMESH_SEARXNG_URL`, `EVIDENCEMESH_WIBY_URL` and
+`EVIDENCEMESH_FIRECRAWL_URL`. Additional
 operator-controlled SearXNG endpoints can be supplied as a comma-separated
 `EVIDENCEMESH_SEARXNG_FALLBACK_URLS` list. Each endpoint receives its own
 provider name and circuit state. Provider service URLs are trusted administrator
