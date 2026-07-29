@@ -21,6 +21,20 @@ services:
       timeout: 5s
       retries: 10
 
+  yacy:
+    image: yacy/yacy_search_server:latest@sha256:a4672379f0824f4611e29d1c1dbd7eb26eac1011d1f1962dcffb83c099f5d278
+    profiles:
+      - independent-index
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8090:8090"
+    volumes:
+      - yacy-data:/opt/yacy_search_server/DATA
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   evidencemesh:
     build: .
     restart: unless-stopped
@@ -31,6 +45,7 @@ services:
       - "127.0.0.1:8000:8000"
     environment:
       EVIDENCEMESH_SEARXNG_URL: http://searxng:8080
+      EVIDENCEMESH_YACY_URL: http://yacy:8090
       EVIDENCEMESH_CACHE_PATH: /data/cache.sqlite3
     volumes:
       - evidencemesh-data:/data
@@ -45,3 +60,4 @@ services:
 
 volumes:
   evidencemesh-data:
+  yacy-data:
