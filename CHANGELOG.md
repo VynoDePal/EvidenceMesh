@@ -141,3 +141,14 @@ All notable changes to EvidenceMesh are documented here.
 - Documented that Phase 11.2 counted routed logical provider calls rather than
   separately measuring HTTP attempts and circuit-open skips. Corrected attempt
   telemetry is required before any independent-index corrective calibration.
+- Added privacy-safe provider network observability to the core engine,
+  separating logical calls, cache hits, circuit skips, adapter invocations,
+  shared-client HTTP attempts, responses, status counts and per-attempt
+  latencies.
+- Added bounded failure classification for circuit, timeout, DNS, connection,
+  HTTP status, JSON, schema, encoding and protocol failures without retaining
+  response bodies, URLs or raw exception messages.
+- Locked Phase 11.3 as a four-probe, non-scored Mwmbl diagnostic with zero
+  Tavily, Gemini, paid-provider or retry traffic. Mwmbl remains outside named
+  defaults under its current result-license boundary, no unpopulated YaCy node
+  is benchmarked, Phase 12 stays blocked and release remains no-go.
