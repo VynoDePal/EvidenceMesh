@@ -284,6 +284,15 @@ minimum. Five of the six misses were absent upstream and one web target was
 dropped by ranking. The per-topic functional gate therefore failed, Stage B
 was not run, and the release decision remains no-go.
 
+Phase 9 isolates the remaining repository-query defect with a paired
+calibration: the frozen Phase 8 normalizer and the entity-anchor candidate run
+against the same 24 new GitHub targets. Both arms remain anonymous, use exactly
+one repository-search request per case, run without Tavily and are interleaved
+below GitHub's documented anonymous search limit. Inputs, paired gates and
+privacy rules are frozen in
+[benchmark protocol v7](docs/benchmark-protocol-v7.md). The PR remains draft
+regardless of the single-network result.
+
 ## Security
 
 EvidenceMesh blocks private, loopback, link-local and reserved fetch targets by
@@ -310,7 +319,7 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current suite contains 226 tests and reports over 91% branch-aware coverage
+The current suite contains 237 tests and reports 91.47% branch-aware coverage
 locally. CI repeats the suite on Python 3.11, 3.12 and 3.13.
 
 ## License

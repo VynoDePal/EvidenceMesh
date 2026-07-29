@@ -1,0 +1,170 @@
+[
+  {
+    "id": "p9-code-01",
+    "query": "Pydantic data validation library for Python official repository",
+    "target_identities": ["github:pydantic/pydantic"],
+    "difficulty": "low",
+    "query_form": "entity_first"
+  },
+  {
+    "id": "p9-code-02",
+    "query": "Official GitHub repository for pytest, the Python testing framework",
+    "target_identities": ["github:pytest-dev/pytest"],
+    "difficulty": "low",
+    "query_form": "intent_prefix"
+  },
+  {
+    "id": "p9-code-03",
+    "query": "ripgrep fast recursive line search source code",
+    "target_identities": ["github:BurntSushi/ripgrep"],
+    "difficulty": "low",
+    "query_form": "entity_first"
+  },
+  {
+    "id": "p9-code-04",
+    "query": "Find the repository for Playwright browser automation",
+    "target_identities": ["github:microsoft/playwright"],
+    "difficulty": "low",
+    "query_form": "intent_prefix"
+  },
+  {
+    "id": "p9-code-05",
+    "query": "Neovim extensible text editor official source repository",
+    "target_identities": ["github:neovim/neovim"],
+    "difficulty": "low",
+    "query_form": "entity_first"
+  },
+  {
+    "id": "p9-code-06",
+    "query": "Source code for Immich self-hosted photo management",
+    "target_identities": ["github:immich-app/immich"],
+    "difficulty": "low",
+    "query_form": "intent_prefix"
+  },
+  {
+    "id": "p9-code-07",
+    "query": "LocalSend cross-platform local file sharing repository",
+    "target_identities": ["github:localsend/localsend"],
+    "difficulty": "low",
+    "query_form": "entity_first"
+  },
+  {
+    "id": "p9-code-08",
+    "query": "GitHub repository for Svelte compiler and UI framework",
+    "target_identities": ["github:sveltejs/svelte"],
+    "difficulty": "low",
+    "query_form": "intent_prefix"
+  },
+  {
+    "id": "p9-code-09",
+    "query": "Typer Python command line interface framework source repository",
+    "target_identities": ["github:fastapi/typer"],
+    "difficulty": "medium",
+    "query_form": "entity_first"
+  },
+  {
+    "id": "p9-code-10",
+    "query": "Locate the official source code for HTTPX async Python client",
+    "target_identities": ["github:encode/httpx"],
+    "difficulty": "medium",
+    "query_form": "intent_prefix"
+  },
+  {
+    "id": "p9-code-11",
+    "query": "Ruff Python linter and formatter official GitHub repository",
+    "target_identities": ["github:astral-sh/ruff"],
+    "difficulty": "medium",
+    "query_form": "entity_first"
+  },
+  {
+    "id": "p9-code-12",
+    "query": "Repository for Axum Rust web framework from Tokio",
+    "target_identities": ["github:tokio-rs/axum"],
+    "difficulty": "medium",
+    "query_form": "intent_prefix"
+  },
+  {
+    "id": "p9-code-13",
+    "query": "Deno JavaScript and TypeScript runtime official source",
+    "target_identities": ["github:denoland/deno"],
+    "difficulty": "medium",
+    "query_form": "entity_first"
+  },
+  {
+    "id": "p9-code-14",
+    "query": "Find the GitHub repository for Vite frontend build tool",
+    "target_identities": ["github:vitejs/vite"],
+    "difficulty": "medium",
+    "query_form": "intent_prefix"
+  },
+  {
+    "id": "p9-code-15",
+    "query": "Helix modal text editor source code repository",
+    "target_identities": ["github:helix-editor/helix"],
+    "difficulty": "medium",
+    "query_form": "entity_first"
+  },
+  {
+    "id": "p9-code-16",
+    "query": "Official source repository for Apache Airflow workflow orchestration",
+    "target_identities": ["github:apache/airflow"],
+    "difficulty": "medium",
+    "query_form": "intent_prefix"
+  },
+  {
+    "id": "p9-code-17",
+    "query": "Poetry Python packaging and dependency manager source code",
+    "target_identities": ["github:python-poetry/poetry"],
+    "difficulty": "high",
+    "query_form": "entity_first"
+  },
+  {
+    "id": "p9-code-18",
+    "query": "Where is the official repository for Click Python command line toolkit",
+    "target_identities": ["github:pallets/click"],
+    "difficulty": "high",
+    "query_form": "intent_prefix"
+  },
+  {
+    "id": "p9-code-19",
+    "query": "Rich Python terminal formatting library GitHub repository",
+    "target_identities": ["github:Textualize/rich"],
+    "difficulty": "high",
+    "query_form": "entity_first"
+  },
+  {
+    "id": "p9-code-20",
+    "query": "Source repository for fd, the simple find alternative",
+    "target_identities": ["github:sharkdp/fd"],
+    "difficulty": "high",
+    "query_form": "intent_prefix"
+  },
+  {
+    "id": "p9-code-21",
+    "query": "fzf command line fuzzy finder official repository",
+    "target_identities": ["github:junegunn/fzf"],
+    "difficulty": "high",
+    "query_form": "entity_first"
+  },
+  {
+    "id": "p9-code-22",
+    "query": "Find the official GitHub repository for Bun JavaScript runtime",
+    "target_identities": ["github:oven-sh/bun"],
+    "difficulty": "high",
+    "query_form": "intent_prefix"
+  },
+  {
+    "id": "p9-code-23",
+    "query": "Next.js React web framework source code",
+    "target_identities": ["github:vercel/next.js"],
+    "difficulty": "high",
+    "query_form": "entity_first"
+  },
+  {
+    "id": "p9-code-24",
+    "query": "Official repository for Home Assistant open source home automation",
+    "target_identities": ["github:home-assistant/core"],
+    "difficulty": "high",
+    "query_form": "intent_prefix"
+  }
+]

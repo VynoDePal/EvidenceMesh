@@ -25,7 +25,9 @@ suite. Its
 retrieved 7/8 academic targets but only 4/8 repository targets. All four
 repository misses were absent from GitHub's provider-native result list rather
 than removed by EvidenceMesh ranking, so repository-query recall remains an
-open limitation.
+open limitation. The locked
+[Phase 9 protocol](benchmark-protocol-v7.md) compares that Phase 8 strategy
+against the default entity-anchor planner on the same 24 new repository cases.
 
 ## Zero-key community providers
 
@@ -81,10 +83,13 @@ responsible for the [arXiv API terms](https://info.arxiv.org/help/api/tou.html).
 
 The code profile uses public repository search. EvidenceMesh deliberately does
 not treat anonymous GitHub code-content search as a dependable zero-key API. It
-routes only the base query. Natural-language repository suffixes are removed
-conservatively and `in:name,description` is added before the query is bounded
-to GitHub's 256-character search limit. Anonymous public repository search has
-a low rate limit; `GITHUB_TOKEN` is optional and raises the applicable quota.
+routes only the base query. Exact GitHub URLs, `owner/repository` references and
+explicit search qualifiers are preserved. For natural-language intent, the
+deterministic planner removes repository boilerplate, extracts the leading
+project entity and searches it in `name`, `description` and `topics`. Queries
+remain bounded to 256 characters. The planner uses no LLM or lookup and does
+not increase the one-query budget. Anonymous public repository search has a low
+rate limit; `GITHUB_TOKEN` is optional and raises the applicable quota.
 
 ## Optional API providers
 

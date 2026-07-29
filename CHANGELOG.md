@@ -76,3 +76,11 @@ All notable changes to EvidenceMesh are documented here.
   code reached only 4/8 against the locked 6/8 minimum. Five of six misses were
   absent upstream and one was removed by ranking; the functional gate failed,
   Stage B was not run and release remains no-go.
+- Replaced descriptive GitHub repository searches with a deterministic
+  entity-anchor planner that preserves explicit qualifiers and exact
+  repository references, searches name/description/topics, and retains the
+  one-query provider budget.
+- Locked the Phase 9 paired GitHub-recall protocol and 24-case suite. The
+  Phase 8 baseline and candidate run on the same cases with anonymous,
+  rate-paced traffic, no Tavily calls, no cache and no retries; the
+  independent-network and release gates remain closed.

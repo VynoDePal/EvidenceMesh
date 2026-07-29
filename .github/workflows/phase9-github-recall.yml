@@ -1,0 +1,215 @@
+name: Phase 9 Paired GitHub Recall
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/phase9-github-recall.yml
+      - benchmarks/data/github_recall_v1.json
+      - benchmarks/run_github_recall_paired.py
+      - benchmarks/target_identity.py
+      - benchmarks/results/github_recall_phase9_2026-07-29.json
+      - docs/benchmark-protocol-v7.md
+      - src/evidencemesh/providers/github.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase9-github-recall-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  RESULT_PATH: /tmp/github_recall_phase9_2026-07-29.json
+  CACHE_DIR: /tmp/evidencemesh-phase9-cache
+
+jobs:
+  paired-github-recall:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Detect an already committed result
+        id: benchmark-state
+        shell: bash
+        run: |
+          if [[ -f benchmarks/results/github_recall_phase9_2026-07-29.json ]]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        if: steps.benchmark-state.outputs.run == 'true'
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install benchmark environment
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Verify protocol-locked suite
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          echo \
+            "0cfafa78e44662af47e51f26775593af0e3e9d6dbbc417d18178f1218f5ad61a  benchmarks/data/github_recall_v1.json" \
+            | sha256sum --check
+
+      - name: Run locked 24-case paired GitHub recall benchmark
+        if: steps.benchmark-state.outputs.run == 'true'
+        env:
+          EVIDENCEMESH_BENCHMARK_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          uv run python benchmarks/run_github_recall_paired.py \
+            --suite benchmarks/data/github_recall_v1.json \
+            --github-endpoint https://api.github.com/search/repositories \
+            --cache-dir "$CACHE_DIR" \
+            --max-results 10 \
+            --request-timeout 20 \
+            --pause-seconds 6.5 \
+            --network-region "GitHub-hosted ubuntu-latest; physical region not exposed" \
+            --progress \
+            --output "$RESULT_PATH"
+
+      - name: Validate provenance, privacy and publish summary
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          uv run python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          path = Path(os.environ["RESULT_PATH"])
+          raw = path.read_bytes()
+          report = json.loads(raw)
+          outcomes = report["outcomes"]
+          forbidden = {
+              "query",
+              "normalized_query",
+              "title",
+              "snippet",
+              "content",
+              "url",
+              "results",
+              "target_identities",
+          }
+          baseline = [
+              outcome for outcome in outcomes
+              if outcome["arm"] == "baseline"
+          ]
+          candidate = [
+              outcome for outcome in outcomes
+              if outcome["arm"] == "candidate"
+          ]
+          expected = (
+              report["schema_version"] == 1
+              and report["benchmark"]
+                  == "evidencemesh-github-recall-paired-v1"
+              and report["suite"]["count"] == 24
+              and report["suite"]["sha256"]
+                  == "0cfafa78e44662af47e51f26775593af0e3e9d6dbbc417d18178f1218f5ad61a"
+              and report["suite"]["manifest_sha256"]
+                  == "7369c9a0f47e4dbf4f752885f32bdf28e44b0472a5129353e75f4da616d20e57"
+              and report["protocol"]["version"] == 7
+              and report["protocol"]["request_count"] == 48
+              and report["protocol"]["requests_per_arm"] == 24
+              and report["protocol"]["maximum_queries_per_arm_case"] == 1
+              and report["protocol"]["pause_seconds"] == 6.5
+              and report["protocol"]["retry_policy"] == "none"
+              and report["protocol"]["cache"] is False
+              and report["protocol"]["tavily_requests"] == 0
+              and report["protocol"]["new_user_secrets"] == 0
+              and report["provider_configuration"]["authentication"]
+                  == "anonymous"
+              and report["provider_configuration"]["arms"]["baseline"]
+                  ["query_strategy"] == "legacy-v1"
+              and report["provider_configuration"]["arms"]["candidate"]
+                  ["query_strategy"] == "entity-anchor-v2"
+              and len(outcomes) == 48
+              and len(baseline) == 24
+              and len(candidate) == 24
+              and all(not forbidden & set(outcome) for outcome in outcomes)
+              and all(
+                  outcome["provider_query_count"] in {0, 1}
+                  for outcome in outcomes
+              )
+              and all(outcome["cache_hits"] == 0 for outcome in outcomes)
+              and report["decision"]["cross_network_gate"]["status"]
+                  == "not_testable"
+              and report["decision"]["stage_b_200_case_run_allowed"] is False
+              and report["decision"]["release_ready"] is False
+              and report["decision"]["release_decision"] == "no-go"
+          )
+          if not expected:
+              raise AssertionError(json.dumps(report, indent=2, sort_keys=True))
+
+          arms = report["metrics"]["arms"]
+          paired = report["metrics"]["paired"]["target_hit_at_10"]
+          decision = report["decision"]
+          summary = [
+              "## Phase 9 paired GitHub recall",
+              "",
+              "| Metric | Baseline | Candidate |",
+              "|---|---:|---:|",
+              (
+                  "| Request success | "
+                  f"{arms['baseline']['request_success']['rate']} | "
+                  f"{arms['candidate']['request_success']['rate']} |"
+              ),
+              (
+                  "| Raw target seen | "
+                  f"{arms['baseline']['raw_target_seen']['rate']} | "
+                  f"{arms['candidate']['raw_target_seen']['rate']} |"
+              ),
+              (
+                  "| Target @10 | "
+                  f"{arms['baseline']['target_hit_at_10']['rate']} | "
+                  f"{arms['candidate']['target_hit_at_10']['rate']} |"
+              ),
+              (
+                  "| p95 latency ms | "
+                  f"{arms['baseline']['latency_ms']['p95']} | "
+                  f"{arms['candidate']['latency_ms']['p95']} |"
+              ),
+              "",
+              f"Candidate wins: `{paired['candidate_wins']}`",
+              "",
+              f"Baseline wins: `{paired['baseline_wins']}`",
+              "",
+              f"Net target gain: `{paired['net_gain']}`",
+              "",
+              (
+                  "Functional gate: "
+                  f"`{decision['functional_gate_passed']}`"
+              ),
+              "",
+              "Cross-network gate: `not_testable` (1/2 environments)",
+              "",
+              "Stage B allowed: `False`",
+              "",
+              "Release decision: `no-go`",
+              "",
+              f"Raw SHA-256: `{hashlib.sha256(raw).hexdigest()}`",
+          ]
+          Path("/tmp/phase9-summary.md").write_text(
+              "\n".join(summary) + "\n",
+              encoding="utf-8",
+          )
+          PY
+          cat /tmp/phase9-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload raw report
+        if: always() && steps.benchmark-state.outputs.run == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: phase9-github-recall-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ env.RESULT_PATH }}
+          if-no-files-found: warn
+          retention-days: 14

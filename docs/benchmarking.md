@@ -209,6 +209,20 @@ target gate at 4/8 versus the required 6/8. Raw-rank telemetry attributed five
 of six total misses to upstream retrieval and one web miss to final ranking.
 The functional, Stage B and release decisions therefore remain no-go.
 
+## Paired GitHub repository recall
+
+`benchmarks/run_github_recall_paired.py` implements the locked Phase 9
+repository-only comparison. It interleaves the frozen `legacy-v1` normalizer
+and the production `entity-anchor-v2` planner over the same 24 new targets.
+Each arm makes exactly one anonymous GitHub repository-search request per case;
+requests are sequential, cache and retries are disabled, and no Tavily credit
+or new secret is used.
+
+The candidate must find at least 20/24 raw targets and retain at least 18/24 in
+the final top ten. It must gain at least four paired targets with no regression
+against the baseline. The complete traffic, privacy and decision contract is
+frozen in [benchmark protocol v7](benchmark-protocol-v7.md).
+
 ## End-to-end generation
 
 `benchmarks/run_end_to_end.py` now fixes the evidence-to-answer prompt and

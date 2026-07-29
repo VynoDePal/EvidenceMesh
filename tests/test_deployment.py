@@ -110,6 +110,29 @@ def test_phase8_workflow_locks_profile_caps_diagnostics_and_release_gate() -> No
     assert "searxng/searxng:2026.7.26-b060c780d@sha256:" in workflow
 
 
+def test_phase9_workflow_locks_paired_anonymous_github_budget() -> None:
+    root = Path(__file__).parents[1]
+    workflow = (root / ".github" / "workflows" / "phase9-github-recall.yml").read_text(
+        encoding="utf-8"
+    )
+    assert "run_github_recall_paired.py" in workflow
+    assert "github_recall_v1.json" in workflow
+    assert "--max-results 10" in workflow
+    assert "--request-timeout 20" in workflow
+    assert "--pause-seconds 6.5" in workflow
+    assert 'request_count"] == 48' in workflow
+    assert 'requests_per_arm"] == 24' in workflow
+    assert 'maximum_queries_per_arm_case"] == 1' in workflow
+    assert 'tavily_requests"] == 0' in workflow
+    assert 'new_user_secrets"] == 0' in workflow
+    assert '"authentication"]' in workflow
+    assert '"anonymous"' in workflow
+    assert "EVIDENCE_MESH_TAVILY_KEY" not in workflow
+    assert "TAVILY_API_KEY" not in workflow
+    assert 'stage_b_200_case_run_allowed"] is False' in workflow
+    assert 'release_ready"] is False' in workflow
+
+
 def test_committed_phase4_result_matches_locked_protocol() -> None:
     root = Path(__file__).parents[1]
     result_path = root / "benchmarks" / "results" / "simpleqa_retrieval_phase4_2026-07-28.json"

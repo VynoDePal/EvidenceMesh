@@ -31,7 +31,11 @@ from evidencemesh.providers.ddgs import DDGSProvider
 from evidencemesh.providers.exa import ExaProvider
 from evidencemesh.providers.factory import build_providers
 from evidencemesh.providers.firecrawl import FirecrawlProvider
-from evidencemesh.providers.github import GitHubProvider, normalize_repository_query
+from evidencemesh.providers.github import (
+    GitHubProvider,
+    RepositoryQueryStrategy,
+    normalize_repository_query,
+)
 from evidencemesh.providers.openalex import OpenAlexProvider, reconstruct_abstract
 from evidencemesh.providers.searxng import SearxngProvider
 from evidencemesh.providers.tavily import TavilyProvider
@@ -390,7 +394,8 @@ async def test_github_provider_searches_public_repositories() -> None:
     assert result.source_type.value == "code"
     assert result.metadata["stars"] == 1234
     assert captured[0].headers["authorization"] == "Bearer token"
-    assert captured[0].url.params["q"] == "model context protocol sdk in:name,description"
+    assert captured[0].url.params["q"] == ("model context protocol in:name,description,topics")
+    assert result.metadata["query_strategy"] == "entity-anchor-v2"
     await client.aclose()
 
 
@@ -399,11 +404,23 @@ async def test_github_provider_searches_public_repositories() -> None:
     [
         (
             "FastAPI Python framework official GitHub repository",
-            "FastAPI Python framework in:name,description",
+            "FastAPI in:name,description,topics",
         ),
-        ("Astral uv source code", "Astral uv in:name,description"),
+        ("Astral uv source code", "uv in:name,description,topics"),
+        (
+            "Find the official GitHub repository for Playwright browser automation",
+            "Playwright in:name,description,topics",
+        ),
+        (
+            "Official repository for Home Assistant open source home automation",
+            "Home Assistant in:name,description,topics",
+        ),
+        (
+            "https://github.com/modelcontextprotocol/python-sdk.git",
+            "repo:modelcontextprotocol/python-sdk",
+        ),
         ("evidence in:readme", "evidence in:readme"),
-        ("repository", "repository in:name,description"),
+        ("repository", "repository in:name,description,topics"),
     ],
 )
 def test_github_query_normalisation(query: str, expected: str) -> None:
@@ -413,7 +430,17 @@ def test_github_query_normalisation(query: str, expected: str) -> None:
 def test_github_query_normalisation_enforces_api_length_limit() -> None:
     normalised = normalize_repository_query("a" * 512)
     assert len(normalised) == 256
-    assert normalised.endswith(" in:name,description")
+    assert normalised.endswith(" in:name,description,topics")
+
+
+def test_github_legacy_query_strategy_is_frozen_for_paired_benchmark() -> None:
+    assert (
+        normalize_repository_query(
+            "FastAPI Python framework official GitHub repository",
+            strategy=RepositoryQueryStrategy.LEGACY,
+        )
+        == "FastAPI Python framework in:name,description"
+    )
 
 
 @pytest.mark.asyncio

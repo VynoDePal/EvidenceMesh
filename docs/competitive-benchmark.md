@@ -131,6 +131,13 @@ EvidenceMesh ranking. This narrows the next engineering problem to repository
 query recall, but the failed topic gate and missing independent network remain
 evidence against release or superiority.
 
+Phase 9 is intentionally narrower than a competitive benchmark. Its
+[paired protocol](benchmark-protocol-v7.md) tests only GitHub repository recall,
+using one anonymous request per arm and case on 24 new targets. It can establish
+whether the entity-anchor planner improves the measured failure mode, but it
+cannot establish overall search quality, deep-research quality or competitive
+superiority.
+
 ## Fair next comparison
 
 Use EvidenceMesh as the retrieval MCP for a fixed external model, then compare
