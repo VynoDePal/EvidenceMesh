@@ -103,3 +103,10 @@ All notable changes to EvidenceMesh are documented here.
   degraded in all EvidenceMesh web cases, quality lost 14 net pairs to Tavily
   direct and missed retrieval, generation and citation gates. The functional
   gate failed and release remains no-go.
+- Added raw-to-prompt provider lineage, sanitized upstream-engine failure
+  telemetry, bounded DDGS community fallback, independent SearXNG endpoint
+  circuits and a temporary Tavily-first quality reservation.
+- Published the Phase 11 retrieval calibration: community and 8/2 quality both
+  reached 12/12 availability and target-domain hit@10, but the 8/2 reservation
+  was fully satisfied in only 10/12 evaluable cases. The frozen candidate gate
+  failed, Phase 12 remains blocked and release remains no-go.

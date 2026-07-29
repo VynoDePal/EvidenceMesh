@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 from pathlib import Path
 
 from benchmarks.run_phase11_calibration import (
@@ -94,3 +96,66 @@ def test_phase11_replays_reservations_from_one_raw_pool() -> None:
             "evidence",
             "prompt",
         }
+
+
+def test_committed_phase11_result_matches_frozen_protocol() -> None:
+    root = Path(__file__).parents[1]
+    result_path = root / "benchmarks" / "results" / "phase11_calibration_2026-07-29.json"
+    result_bytes = result_path.read_bytes()
+    assert hashlib.sha256(result_bytes).hexdigest() == (
+        "bafeacfad2d0b831910b6ce1470970b6bf7521e544d238cbf51cfdbdcb8305f7"
+    )
+    report = json.loads(result_bytes)
+
+    assert report["benchmark"] == "evidencemesh-phase11-retrieval-calibration-v1"
+    assert report["environment"]["commit_sha"] == ("4a1ed0a63ec5711fdc326d9d39073f10d972f6dc")
+    assert report["suite"]["sha256"] == (
+        "23f0a3c1c6d680b0ec6bdd0964a81f28b23e5778f4965632b03ed5dc4e78c5d7"
+    )
+    assert report["protocol"]["searxng_config_sha256"] == (
+        "e33610cdd83c89a0fb85e687e632b179ed36057d948db102c7a6e2c33b456efb"
+    )
+    assert report["traffic"] == {
+        "case_retrieval_operations": 12,
+        "gemini_requests": 0,
+        "maximum_tavily_requests": 12,
+        "provider_query_calls": 48,
+        "retries": 0,
+        "tavily_requests": 12,
+    }
+    assert len(report["retrieval_diagnostics"]) == 12
+    assert len(report["outcomes"]) == 72
+
+    metrics = report["metrics"]
+    assert metrics["community"]["availability"]["numerator"] == 12
+    assert metrics["community"]["target_domain_hit_at_10"]["numerator"] == 12
+    assert metrics["quality_safe_8_2"]["target_domain_hit_at_10"]["numerator"] == 12
+    assert metrics["tavily_direct"]["target_domain_hit_at_10"]["numerator"] == 12
+
+    reservation_gate = report["decision"]["gates"]["safe_8_2_reservation_fulfilled_when_evaluable"]
+    assert reservation_gate == {
+        "evaluable_cases": 12,
+        "fulfilled_cases": 10,
+        "minimum_evaluable_cases": 9,
+        "passed": False,
+    }
+    assert report["decision"]["phase11_candidate_passed"] is False
+    assert report["decision"]["phase12_untouched_evaluation_allowed"] is False
+    assert report["decision"]["release_decision"] == "no-go"
+
+    private_fields = {
+        "query",
+        "question",
+        "target_domains",
+        "title",
+        "url",
+        "snippet",
+        "content",
+        "evidence",
+    }
+    assert all(not private_fields & set(outcome) for outcome in report["outcomes"])
+    assert all(
+        set(outcome["provider_stage_counts"])
+        == {"raw", "fused", "eligible", "selected", "evidence", "prompt"}
+        for outcome in report["outcomes"]
+    )

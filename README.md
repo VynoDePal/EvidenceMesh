@@ -345,6 +345,17 @@ requests. The Phase 10 sample is retired from future final evaluation, and
 release remains no-go until a new untouched Phase 12 run and later external
 agent replication.
 
+The
+[Phase 11 result](benchmarks/results/phase11_calibration_2026-07-29.md)
+reached 12/12 availability and target-domain hit@10 for community, legacy
+quality, 8/2 quality and Tavily direct. The 8/2 candidate recorded no paired
+target-domain loss, but filled its eight reserved Tavily slots in only 10/12
+evaluable cases because the per-domain diversity cap constrained two cases.
+SearXNG failed completely in 4/12 cases and was partial in 8/12; direct DDGS
+kept community available, but does not provide an index independent from the
+only surviving SearXNG engine. The frozen candidate gate therefore failed,
+Phase 12 remains blocked and release remains no-go.
+
 ## Security
 
 EvidenceMesh blocks private, loopback, link-local and reserved fetch targets by

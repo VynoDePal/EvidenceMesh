@@ -41,6 +41,16 @@ substantially more useful evidence than the full quality route. The
 instrumentation, a temporary Tavily-first policy and community resilience tests
 without making any model call.
 
+The published
+[Phase 11 result](../benchmarks/results/phase11_calibration_2026-07-29.md)
+reached 12/12 availability and navigational target-domain hit@10 for community,
+legacy quality, 8/2 quality and Tavily direct. The 8/2 candidate nevertheless
+failed its frozen reservation gate: it filled eight Tavily slots in only 10/12
+evaluable cases because the per-domain diversity cap constrained two cases.
+SearXNG also failed completely in 4/12 cases and returned only partial results
+in 8/12. Phase 12 remains blocked; these diagnostics do not establish factual
+answer or source quality.
+
 ## Zero-key community providers
 
 ### SearXNG
