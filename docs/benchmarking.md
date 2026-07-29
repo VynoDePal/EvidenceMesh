@@ -18,6 +18,9 @@ by the circuit, or lost before dispatch? The locked
 [Phase 11.3 protocol](benchmark-protocol-v12.md) adds this accounting to core
 search metadata and runs four privacy-safe Mwmbl diagnostics. It computes no
 retrieval or answer-quality metric and cannot unlock a later evaluation.
+The [published result](../benchmarks/results/phase11_3_network_diagnostic_2026-07-29.md)
+recorded four real HTTP attempts: three HTTP 200 responses with results and one
+sanitized timeout without a response.
 
 A one-question [zero-key smoke run](../benchmarks/results/live_smoke_2026-07-28.md)
 is committed only as an interface/connectivity check; it is not included in any
