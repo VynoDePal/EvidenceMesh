@@ -51,6 +51,9 @@ class Settings(BaseModel):
     searxng_url: str = "http://127.0.0.1:8888"
     searxng_fallback_urls: list[str] = Field(default_factory=list)
     wiby_url: str = "https://wiby.me/json/"
+    mwmbl_url: str = "https://api.mwmbl.org/api/v2/search/"
+    yacy_url: str = "http://127.0.0.1:8090"
+    yacy_resource: str = "local"
     wikipedia_url_template: str = "https://{language}.wikipedia.org/w/api.php"
     crossref_url: str = "https://api.crossref.org/works"
     arxiv_url: str = "https://export.arxiv.org/api/query"
@@ -107,11 +110,13 @@ class Settings(BaseModel):
             "exa",
             "firecrawl",
             "github",
+            "mwmbl",
             "openalex",
             "searxng",
             "tavily",
             "wiby",
             "wikipedia",
+            "yacy",
         }
         normalised = list(dict.fromkeys(value.strip().lower() for value in values if value.strip()))
         unknown = set(normalised) - allowed
@@ -139,6 +144,30 @@ class Settings(BaseModel):
         if not url.startswith(("http://", "https://")):
             raise ValueError("Wiby URL must use http or https")
         return f"{url.rstrip('/')}/"
+
+    @field_validator("mwmbl_url")
+    @classmethod
+    def normalise_mwmbl_url(cls, value: str) -> str:
+        url = value.strip()
+        if not url.startswith(("http://", "https://")):
+            raise ValueError("Mwmbl URL must use http or https")
+        return f"{url.rstrip('/')}/"
+
+    @field_validator("yacy_url")
+    @classmethod
+    def normalise_yacy_url(cls, value: str) -> str:
+        url = value.strip().rstrip("/")
+        if not url.startswith(("http://", "https://")):
+            raise ValueError("YaCy URL must use http or https")
+        return url
+
+    @field_validator("yacy_resource")
+    @classmethod
+    def normalise_yacy_resource(cls, value: str) -> str:
+        resource = value.strip().lower()
+        if resource not in {"local", "global"}:
+            raise ValueError("YaCy resource must be 'local' or 'global'")
+        return resource
 
     @field_validator("quality_primary_provider")
     @classmethod
@@ -168,6 +197,18 @@ class Settings(BaseModel):
             "wiby_url": os.getenv(
                 "EVIDENCEMESH_WIBY_URL",
                 "https://wiby.me/json/",
+            ),
+            "mwmbl_url": os.getenv(
+                "EVIDENCEMESH_MWMBL_URL",
+                "https://api.mwmbl.org/api/v2/search/",
+            ),
+            "yacy_url": os.getenv(
+                "EVIDENCEMESH_YACY_URL",
+                "http://127.0.0.1:8090",
+            ),
+            "yacy_resource": os.getenv(
+                "EVIDENCEMESH_YACY_RESOURCE",
+                "local",
             ),
             "arxiv_url": os.getenv(
                 "EVIDENCEMESH_ARXIV_URL",
