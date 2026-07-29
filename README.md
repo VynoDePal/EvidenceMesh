@@ -30,6 +30,9 @@ EvidenceMesh separates those concerns:
   only compatible queries, with conservative budgets for rate-limited APIs and
   profile-aware domain diversity.
 - **Provider federation:** reciprocal-rank fusion across independent result lists.
+- **Privacy-safe network observability:** logical calls, cache hits, circuit
+  skips, adapter invocations and shared-client HTTP attempts are reported
+  separately without storing queries, URLs or response bodies.
 - **Evidence, not hidden answers:** quotations, retrieval time, content hash,
   provenance signals and risk flags.
 - **Model neutral:** the MCP client keeps control of reasoning and synthesis.
@@ -404,6 +407,16 @@ identifies a telemetry gap: routed calls were counted, but actual HTTP attempts
 and circuit-open skips were not separated. No opportunistic rerun was made;
 named bundles remain unchanged and Phase 12 remains blocked.
 
+The [Phase 11.3 protocol](docs/benchmark-protocol-v12.md) corrects that
+observability gap before any further scored retrieval work. Core search
+metadata now separates routed logical calls, cache hits, circuit skips,
+adapter invocations, dispatched HTTP attempts and received responses, with
+sanitized timeout, DNS, connection, HTTP, JSON and schema failure classes.
+Its four-query Mwmbl workflow is explicitly non-scored, makes no paid-provider
+or model call, emits no query or result content and cannot promote a provider
+or unlock Phase 12. A broad YaCy run is excluded because no persistent,
+reproducibly populated index is available.
+
 ## Security
 
 EvidenceMesh blocks private, loopback, link-local and reserved fetch targets by
@@ -430,7 +443,7 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current suite contains 287 tests and reports 91.69% branch-aware coverage
+The current suite contains 307 tests and reports 91.46% branch-aware coverage
 locally. CI repeats the suite on Python 3.11, 3.12 and 3.13.
 
 ## License
