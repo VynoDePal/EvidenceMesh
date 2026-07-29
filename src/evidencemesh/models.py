@@ -261,6 +261,7 @@ class SearchMetadata(StrictModel):
     )
     provider_failure_kind_counts: dict[str, dict[str, int]] = Field(default_factory=dict)
     provider_attributions: dict[str, str] = Field(default_factory=dict)
+    provider_result_licenses: dict[str, str] = Field(default_factory=dict)
     ranking_reservation_policy: str = "none"
     ranking_reservation_requested: int = Field(default=0, ge=0)
     ranking_reservation_eligible: int = Field(default=0, ge=0)
