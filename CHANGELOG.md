@@ -133,3 +133,11 @@ All notable changes to EvidenceMesh are documented here.
   pool with exactly 16 Mwmbl and 16 Wiby requests, no paid API, no model and no
   retry; default promotion, Phase 12 and release remain blocked independently
   of retrieval performance.
+- Published the Phase 11.2 result: candidate and legacy community tied at
+  16/16 availability and 15/16 target-domain hit@10, while Mwmbl returned no
+  raw result and the Mwmbl-plus-Wiby independent arm reached only 7/16
+  availability. The retrieval candidate failed, no opportunistic rerun was
+  made, named defaults remain unchanged and Phase 12 stays blocked.
+- Documented that Phase 11.2 counted routed logical provider calls rather than
+  separately measuring HTTP attempts and circuit-open skips. Corrected attempt
+  telemetry is required before any independent-index corrective calibration.
