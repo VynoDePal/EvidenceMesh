@@ -89,3 +89,12 @@ All notable changes to EvidenceMesh are documented here.
   paired gains and zero regressions while staying within one query per case.
   Every functional gate passed, but the unavailable second network keeps Stage
   B blocked and the release decision at no-go.
+- Locked the Phase 10 controlled end-to-end protocol and an untouched 12-case
+  SimpleQA manifest excluding the Phase 3 sample. Four retrieval arms reuse
+  identical evidence packets across `gemma-4-31b-it`,
+  `gemma-4-26b-a4b-it` and `gemini-3.5-flash-lite`.
+- Added a native Gemini `generateContent` runner with high thinking, 144
+  generation calls, 36 retrieval case-arm operations, a 24-request Tavily
+  ceiling, no retries, privacy-safe output and explicitly labeled
+  answer/evidence/citation substring proxies. External replication and the
+  unavailable second network keep Stage B and release blocked.

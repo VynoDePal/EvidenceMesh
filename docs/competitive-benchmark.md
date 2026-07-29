@@ -147,6 +147,22 @@ defect on that suite. It does not change the competitive claim boundary:
 replication is available from only one network, Stage B was not run and no
 end-to-end agent comparison exists.
 
+Phase 10 begins end-to-end measurement without crossing that claim boundary.
+Its [locked protocol](benchmark-protocol-v8.md) applies the same three hosted
+answer models to `closed_book`, one-query Tavily, EvidenceMesh `community` and
+EvidenceMesh `quality` arms. Retrieval packets are reused across models, model
+traffic is fixed at 144 calls, Tavily is capped at 24 basic requests and no
+failed request is selectively retried.
+
+The resulting answer-key and citation-support fields are transparent normalized
+substring proxies. They are not official SimpleQA accuracy, semantic citation
+judgments or DeepResearch Bench scores. The user deferred external-agent
+replication, and a second independently administered network remains
+unavailable. Phase 10 can therefore compare the internal deployment choices
+under a fixed run, but cannot establish that EvidenceMesh is better than GPT
+Researcher, Open Deep Research, Local Deep Research, Vane or another complete
+agent.
+
 ## Fair next comparison
 
 Use EvidenceMesh as the retrieval MCP for a fixed external model, then compare

@@ -218,6 +218,7 @@ See the [benchmark methodology](docs/benchmarking.md), the
 [locked Phase 7 protocol](docs/benchmark-protocol-v5.md), the
 [locked Phase 8 protocol](docs/benchmark-protocol-v6.md), the
 [locked Phase 9 protocol](docs/benchmark-protocol-v7.md), the
+[locked Phase 10 protocol](docs/benchmark-protocol-v8.md), the
 [end-to-end guide](docs/end-to-end-benchmark.md), the
 [competitive snapshot](docs/competitive-benchmark.md) and the committed
 [offline v1 result](benchmarks/results/offline_v1.md). A
@@ -303,6 +304,21 @@ regressions and an exact two-sided McNemar p-value of 0.000002. This establishes
 the narrow repository-query improvement on the locked suite, not general
 search or deep-research superiority. The second-network gate remains
 `not_testable`, Stage B remains blocked and release remains no-go.
+
+Phase 10 introduces the first locked multi-model end-to-end pilot. Twelve
+SimpleQA cases not used in Phase 3 are evaluated under four arms:
+`closed_book`, one-query `tavily_direct`, zero-key EvidenceMesh `community` and
+Tavily-backed EvidenceMesh `quality`. Retrieval packets are created once and
+reused across `gemma-4-31b-it`, `gemma-4-26b-a4b-it` and
+`gemini-3.5-flash-lite`, producing 36 retrieval case-arm operations and 144
+generation calls with no retries and at most 24 Tavily requests.
+
+The [Phase 10 protocol](docs/benchmark-protocol-v8.md) freezes the untouched
+sample, native Gemini API payload, traffic, privacy rules, transparent
+substring proxies and gates before the first model request. Those proxies are
+not official SimpleQA accuracy or semantic citation judgments. External-agent
+replication was deferred, the second network remains unavailable and the PR
+stays draft regardless of the pilot result.
 
 ## Security
 

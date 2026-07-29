@@ -133,6 +133,34 @@ def test_phase9_workflow_locks_paired_anonymous_github_budget() -> None:
     assert 'release_ready"] is False' in workflow
 
 
+def test_phase10_workflow_locks_models_secrets_traffic_privacy_and_release_gate() -> None:
+    root = Path(__file__).parents[1]
+    workflow = (root / ".github" / "workflows" / "phase10-end-to-end.yml").read_text(
+        encoding="utf-8"
+    )
+    assert "run_end_to_end_phase10.py" in workflow
+    assert "end_to_end_phase10_v1.json" in workflow
+    assert "EVIDENCE_MESH_GEMINI_KEY" in workflow
+    assert "EVIDENCE_MESH_TAVILY_KEY" in workflow
+    assert "GEMINI_API_KEY: ${{ secrets.EVIDENCE_MESH_GEMINI_KEY }}" in workflow
+    assert "TAVILY_API_KEY: ${{ secrets.EVIDENCE_MESH_TAVILY_KEY }}" in workflow
+    assert "gemma-4-31b-it" in workflow
+    assert "gemma-4-26b-a4b-it" in workflow
+    assert "gemini-3.5-flash-lite" in workflow
+    assert "--model-pause-seconds 2.0" in workflow
+    assert "--max-output-tokens 2048" in workflow
+    assert 'report["traffic"]["generation_requests"] == 144' in workflow
+    assert 'report["traffic"]["tavily_requests"] == 24' in workflow
+    assert 'report["traffic"]["retries"] == 0' in workflow
+    assert 'report["privacy"]["generated_answers_in_report"] is False' in workflow
+    assert 'report["decision"]["stage_b_allowed"] is False' in workflow
+    assert 'report["decision"]["release_ready"] is False' in workflow
+    assert 'report["decision"]["release_decision"] == "no-go"' in workflow
+    assert 'echo "$GEMINI_API_KEY"' not in workflow
+    assert 'echo "$TAVILY_API_KEY"' not in workflow
+    assert "searxng/searxng:2026.7.26-b060c780d@sha256:" in workflow
+
+
 def test_committed_phase4_result_matches_locked_protocol() -> None:
     root = Path(__file__).parents[1]
     result_path = root / "benchmarks" / "results" / "simpleqa_retrieval_phase4_2026-07-28.json"

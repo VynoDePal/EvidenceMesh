@@ -242,6 +242,24 @@ carries the text for separate official grading. See the
 The runner intentionally produces no correctness score. That prevents local
 string matching from being presented as official SimpleQA accuracy.
 
+Phase 10 adds the locked `benchmarks/run_end_to_end_phase10.py` pilot without
+changing that generic runner. It samples 12 SimpleQA cases not used in Phase 3,
+retrieves each `tavily_direct`, `community` and `quality` packet once, and
+reuses it across `gemma-4-31b-it`, `gemma-4-26b-a4b-it` and
+`gemini-3.5-flash-lite`. The fourth arm is `closed_book`.
+
+The run contains 36 retrieval case-arm operations, 144 generation calls, no
+retries and at most 24 Tavily basic requests. Its deterministic
+`answer_key_covered`, evidence-coverage and citation-support values are named
+and documented as substring proxies, not official accuracy or semantic
+judgments. The sample, API payload, ordering, budgets and functional thresholds
+are frozen in [benchmark protocol v8](benchmark-protocol-v8.md).
+
+The assistant's separate, pre-reference web-search diagnostic recognized 8/12
+under the same strict proxy, including known false negatives from harmless
+formatting differences. That diagnostic is not a benchmark arm because its
+search backend and budget are not reproducible from this repository.
+
 ## Planned standard evaluations
 
 - SimpleQA answer accuracy with the official judge over the new generation

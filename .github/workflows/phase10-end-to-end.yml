@@ -1,0 +1,364 @@
+name: Phase 10 Controlled End-to-End
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/phase10-end-to-end.yml
+      - benchmarks/data/end_to_end_phase10_v1.json
+      - benchmarks/run_end_to_end_phase10.py
+      - benchmarks/results/end_to_end_phase10_2026-07-29.json
+      - docker/searxng/community-calibration-settings.yml
+      - docs/benchmark-protocol-v8.md
+      - docs/end-to-end-benchmark.md
+      - src/evidencemesh/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase10-end-to-end-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SEARXNG_IMAGE: searxng/searxng:2026.7.26-b060c780d@sha256:d0aaeb14880e6e92bde1518fcc7261e995783367d63d95203383607bef9c6516
+  DATASET_PATH: /tmp/simple_qa_test_set_phase10.csv
+  RESULT_PATH: /tmp/end_to_end_phase10_2026-07-29.json
+  CACHE_ROOT: /tmp/evidencemesh-phase10-cache
+
+jobs:
+  controlled-end-to-end:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Detect an already committed result
+        id: benchmark-state
+        shell: bash
+        run: |
+          if [[ -f benchmarks/results/end_to_end_phase10_2026-07-29.json ]]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        if: steps.benchmark-state.outputs.run == 'true'
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install benchmark environment
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Verify protocol-locked inputs
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          echo \
+            "b38b89d316219be7dbd249f4365e0801330eb469ff6cc9b4fdaffebe6510134f  benchmarks/data/end_to_end_phase10_v1.json" \
+            | sha256sum --check
+          echo \
+            "26a74f699515539fdb9bed3f1d3bda57ef908e1111d5393b4af2009fd7069645  docker/searxng/community-calibration-settings.yml" \
+            | sha256sum --check
+
+      - name: Verify benchmark credentials are available
+        if: steps.benchmark-state.outputs.run == 'true'
+        env:
+          GEMINI_API_KEY: ${{ secrets.EVIDENCE_MESH_GEMINI_KEY }}
+          TAVILY_API_KEY: ${{ secrets.EVIDENCE_MESH_TAVILY_KEY }}
+        run: |
+          if [[ -z "${GEMINI_API_KEY:-}" ]]; then
+            echo "::error::EVIDENCE_MESH_GEMINI_KEY is not configured"
+            exit 1
+          fi
+          if [[ -z "${TAVILY_API_KEY:-}" ]]; then
+            echo "::error::EVIDENCE_MESH_TAVILY_KEY is not configured"
+            exit 1
+          fi
+
+      - name: Download checksum-pinned SimpleQA
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          curl \
+            --fail \
+            --location \
+            --silent \
+            --show-error \
+            --output "$DATASET_PATH" \
+            https://openaipublic.blob.core.windows.net/simple-evals/simple_qa_test_set.csv
+          echo \
+            "feee3f7e7db3617e94e8fcf1977b756ec420ef8568f4e0fcbbe0e92e9d5fc032  $DATASET_PATH" \
+            | sha256sum --check
+
+      - name: Start checksum-pinned community SearXNG
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          docker run --detach \
+            --name evidencemesh-searxng-phase10 \
+            --publish 127.0.0.1:8893:8080 \
+            --volume \
+              "$GITHUB_WORKSPACE/docker/searxng/community-calibration-settings.yml:/etc/searxng/settings.yml:ro" \
+            --env SEARXNG_BASE_URL=http://localhost:8893/ \
+            --env "SEARXNG_SECRET=$(openssl rand -hex 32)" \
+            --env FORCE_OWNERSHIP=false \
+            "$SEARXNG_IMAGE"
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:8893/ > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs evidencemesh-searxng-phase10
+          exit 1
+
+      - name: Verify SearXNG image digest
+        if: steps.benchmark-state.outputs.run == 'true'
+        run: |
+          docker image inspect "$SEARXNG_IMAGE" --format '{{json .RepoDigests}}' |
+            grep --fixed-strings \
+              "sha256:d0aaeb14880e6e92bde1518fcc7261e995783367d63d95203383607bef9c6516"
+
+      - name: Run locked 12-case four-arm three-model pilot
+        if: steps.benchmark-state.outputs.run == 'true'
+        env:
+          EVIDENCEMESH_BENCHMARK_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+          GEMINI_API_KEY: ${{ secrets.EVIDENCE_MESH_GEMINI_KEY }}
+          TAVILY_API_KEY: ${{ secrets.EVIDENCE_MESH_TAVILY_KEY }}
+        run: |
+          uv run python benchmarks/run_end_to_end_phase10.py \
+            --dataset "$DATASET_PATH" \
+            --manifest benchmarks/data/end_to_end_phase10_v1.json \
+            --excluded-sample-result \
+              benchmarks/results/simpleqa_retrieval_phase3_2026-07-28.json \
+            --models \
+              gemma-4-31b-it \
+              gemma-4-26b-a4b-it \
+              gemini-3.5-flash-lite \
+            --searxng-url http://127.0.0.1:8893 \
+            --cache-root "$CACHE_ROOT" \
+            --max-sources 10 \
+            --content-budget-chars 30000 \
+            --evidence-budget-chars 12000 \
+            --max-output-tokens 2048 \
+            --retrieval-wall-time-seconds 180 \
+            --generation-wall-time-seconds 120 \
+            --retrieval-pause-seconds 0.5 \
+            --model-pause-seconds 2.0 \
+            --request-timeout-seconds 20 \
+            --network-region "GitHub-hosted ubuntu-latest; physical region not exposed" \
+            --progress \
+            --output "$RESULT_PATH"
+
+      - name: Validate provenance, privacy, fairness and traffic
+        if: steps.benchmark-state.outputs.run == 'true'
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          GEMINI_API_KEY: ${{ secrets.EVIDENCE_MESH_GEMINI_KEY }}
+          TAVILY_API_KEY: ${{ secrets.EVIDENCE_MESH_TAVILY_KEY }}
+        run: |
+          uv run python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from collections import defaultdict
+          from pathlib import Path
+
+          path = Path(os.environ["RESULT_PATH"])
+          raw = path.read_bytes()
+          report = json.loads(raw)
+          retrieval = report["retrieval_outcomes"]
+          generation = report["generation_outcomes"]
+          arms = {
+              "closed_book",
+              "tavily_direct",
+              "community",
+              "quality",
+          }
+          models = {
+              "gemma-4-31b-it",
+              "gemma-4-26b-a4b-it",
+              "gemini-3.5-flash-lite",
+          }
+          retrieval_forbidden = {
+              "question",
+              "answer",
+              "reference_answer",
+              "evidence",
+              "title",
+              "url",
+              "content",
+              "results",
+          }
+          generation_forbidden = {
+              *retrieval_forbidden,
+              "response",
+              "generated_answer",
+          }
+          group_prompts = defaultdict(set)
+          group_evidence_counts = defaultdict(set)
+          for outcome in generation:
+              key = (outcome["case_id"], outcome["arm"])
+              group_prompts[key].add(outcome["prompt_sha256"])
+              group_evidence_counts[key].add(
+                  outcome["prompt_evidence_count"]
+              )
+
+          expected = (
+              report["schema_version"] == 1
+              and report["benchmark"]
+                  == "evidencemesh-end-to-end-phase10-v1"
+              and report["suite"]["manifest_sha256"]
+                  == "b38b89d316219be7dbd249f4365e0801330eb469ff6cc9b4fdaffebe6510134f"
+              and report["suite"]["sample_count"] == 12
+              and len(report["suite"]["sample_ids"]) == 12
+              and report["protocol"]["arms"]
+                  == [
+                      "closed_book",
+                      "tavily_direct",
+                      "community",
+                      "quality",
+                  ]
+              and report["protocol"]["models"]
+                  == [
+                      "gemma-4-31b-it",
+                      "gemma-4-26b-a4b-it",
+                      "gemini-3.5-flash-lite",
+                  ]
+              and report["protocol"]["native_api"]
+                  == "Gemini generateContent v1beta"
+              and report["protocol"]["thinking_level"] == "high"
+              and report["protocol"]["max_output_tokens"] == 2048
+              and report["protocol"]["retry_policy"]
+                  == "none; no selective retry"
+              and report["protocol"]["cache"] is False
+              and report["environment"]["commit_sha"]
+                  == os.environ["EXPECTED_SHA"]
+              and report["traffic"]["retrieval_case_arm_operations"] == 36
+              and report["traffic"]["generation_requests"] == 144
+              and report["traffic"]["generation_requests_expected"] == 144
+              and report["traffic"]["tavily_requests"] == 24
+              and report["traffic"]["maximum_tavily_requests"] == 24
+              and report["traffic"]["maximum_tavily_credits"] == 24
+              and report["traffic"]["retries"] == 0
+              and len(retrieval) == 48
+              and len(generation) == 144
+              and {outcome["arm"] for outcome in retrieval} == arms
+              and {outcome["arm"] for outcome in generation} == arms
+              and {outcome["model"] for outcome in generation} == models
+              and all(
+                  not retrieval_forbidden & set(outcome)
+                  for outcome in retrieval
+              )
+              and all(
+                  not generation_forbidden & set(outcome)
+                  for outcome in generation
+              )
+              and len(group_prompts) == 48
+              and all(len(values) == 1 for values in group_prompts.values())
+              and all(
+                  len(values) == 1
+                  for values in group_evidence_counts.values()
+              )
+              and report["privacy"]["questions_in_report"] is False
+              and report["privacy"]["reference_answers_in_report"] is False
+              and report["privacy"]["source_titles_or_urls_in_report"] is False
+              and report["privacy"]["evidence_text_in_report"] is False
+              and report["privacy"]["generated_answers_in_report"] is False
+              and report["decision"]["cross_network_gate"]["status"]
+                  == "not_testable"
+              and report["decision"]["stage_b_allowed"] is False
+              and report["decision"]["release_ready"] is False
+              and report["decision"]["release_decision"] == "no-go"
+              and os.environ["GEMINI_API_KEY"].encode() not in raw
+              and os.environ["TAVILY_API_KEY"].encode() not in raw
+          )
+          if not expected:
+              raise AssertionError(
+                  "Phase 10 report failed a locked provenance, privacy, "
+                  "fairness, traffic, or release invariant"
+              )
+
+          retrieval_metrics = report["retrieval_metrics"]
+          generation_metrics = report["generation_metrics"]["aggregate"]
+          paired = report["paired_answer_key_coverage"][
+              "quality_vs_community"
+          ]["overall"]
+          decision = report["decision"]
+          summary = [
+              "## Phase 10 controlled end-to-end pilot",
+              "",
+              "| Arm | Evidence answer-key proxy | "
+              "Generated answer-key proxy |",
+              "|---|---:|---:|",
+              (
+                  "| Closed book | n/a | "
+                  f"{generation_metrics['closed_book']['answer_key_covered']['rate']} |"
+              ),
+              (
+                  "| Tavily direct | "
+                  f"{retrieval_metrics['tavily_direct']['answer_key_in_evidence']['rate']} | "
+                  f"{generation_metrics['tavily_direct']['answer_key_covered']['rate']} |"
+              ),
+              (
+                  "| Community | "
+                  f"{retrieval_metrics['community']['answer_key_in_evidence']['rate']} | "
+                  f"{generation_metrics['community']['answer_key_covered']['rate']} |"
+              ),
+              (
+                  "| Quality | "
+                  f"{retrieval_metrics['quality']['answer_key_in_evidence']['rate']} | "
+                  f"{generation_metrics['quality']['answer_key_covered']['rate']} |"
+              ),
+              "",
+              (
+                  "Quality vs community paired net answer-key gain: "
+                  f"`{paired['net_gain']}`"
+              ),
+              "",
+              (
+                  "Functional gate: "
+                  f"`{decision['functional_gate_passed']}`"
+              ),
+              "",
+              "Cross-network gate: `not_testable` (1/2 environments)",
+              "",
+              "Stage B allowed: `False`",
+              "",
+              "Release decision: `no-go`",
+              "",
+              (
+                  "Scoring note: strict normalized substring proxies, "
+                  "not official SimpleQA accuracy."
+              ),
+              "",
+              f"Raw SHA-256: `{hashlib.sha256(raw).hexdigest()}`",
+          ]
+          Path("/tmp/phase10-summary.md").write_text(
+              "\n".join(summary) + "\n",
+              encoding="utf-8",
+          )
+          PY
+          cat /tmp/phase10-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Show SearXNG logs on failure
+        if: failure() && steps.benchmark-state.outputs.run == 'true'
+        run: docker logs evidencemesh-searxng-phase10
+
+      - name: Stop SearXNG
+        if: always() && steps.benchmark-state.outputs.run == 'true'
+        run: docker rm --force evidencemesh-searxng-phase10
+
+      - name: Upload privacy-safe raw report
+        if: always() && steps.benchmark-state.outputs.run == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: phase10-end-to-end-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ env.RESULT_PATH }}
+          if-no-files-found: warn
+          retention-days: 14

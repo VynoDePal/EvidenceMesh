@@ -79,3 +79,34 @@ DeepResearch Bench is a different long-form task and currently requires
 specific evaluator models and scraping credentials. Do not convert the short
 answer output into a DeepResearch Bench score or replace its FACT/RACE judges
 with a local string metric.
+
+## Locked Phase 10 pilot
+
+Phase 10 adds a separate, purpose-built runner:
+`benchmarks/run_end_to_end_phase10.py`. It does not replace the generic
+OpenAI-compatible generation harness above.
+
+The locked pilot uses 12 untouched SimpleQA cases, four arms and three Google
+API models:
+
+- `closed_book`;
+- one-query `tavily_direct`;
+- zero-key EvidenceMesh `community`;
+- Tavily-backed EvidenceMesh `quality`;
+- `gemma-4-31b-it`;
+- `gemma-4-26b-a4b-it`;
+- `gemini-3.5-flash-lite`.
+
+Retrieval occurs once per case and arm. All three models receive the exact same
+packet and prompt for that pair. There are 36 retrieval case-arm operations,
+144 generation calls, at most 24 Tavily basic-search requests and no retries.
+
+Unlike the generic harness, this runner computes deterministic diagnostics:
+answer-key substring coverage, evidence answer-key coverage, citation-ID
+validity and a citation-support substring proxy. They are intentionally named
+as proxies. The official SimpleQA model grader is not run, and public output
+still excludes questions, references, evidence and generated answer text.
+
+The exact sample, prompt, API settings, traffic cap and pre-registered gates are
+frozen in [benchmark protocol v8](benchmark-protocol-v8.md). A passing pilot
+cannot establish external-agent superiority or release readiness.
