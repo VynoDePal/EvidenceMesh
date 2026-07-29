@@ -123,6 +123,14 @@ Tavily budget and all functional thresholds are unchanged. The experiment is
 still retrieval-only and single-network, so even a functional pass cannot
 support a best-in-class or release claim.
 
+The
+[Phase 8 result](../benchmarks/results/quality_calibration_phase8_2026-07-29.md)
+cleared every overall threshold with 26/32 targets but failed the pre-registered
+code gate at 4/8. Five targets were absent upstream and only one was lost by
+EvidenceMesh ranking. This narrows the next engineering problem to repository
+query recall, but the failed topic gate and missing independent network remain
+evidence against release or superiority.
+
 ## Fair next comparison
 
 Use EvidenceMesh as the retrieval MCP for a fixed external model, then compare

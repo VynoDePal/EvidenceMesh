@@ -1,0 +1,2210 @@
+{
+  "benchmark": "evidencemesh-quality-calibration-v3",
+  "decision": {
+    "checks": {
+      "overall": {
+        "availability_rate": true,
+        "contributing_providers": true,
+        "contributing_source_families": true,
+        "expected_family_hit_at_10": true,
+        "p95_latency_ms": true,
+        "provider_degradation_rate": true,
+        "required_family_unsatisfied_rate": true,
+        "target_hit_at_10": true
+      },
+      "per_topic": {
+        "academic": {
+          "availability_rate": true,
+          "expected_family_hit_at_10": true,
+          "required_family_unsatisfied_rate": true,
+          "target_hit_at_10": true
+        },
+        "code": {
+          "availability_rate": true,
+          "expected_family_hit_at_10": true,
+          "required_family_unsatisfied_rate": true,
+          "target_hit_at_10": false
+        },
+        "reference": {
+          "availability_rate": true,
+          "expected_family_hit_at_10": true,
+          "required_family_unsatisfied_rate": true,
+          "target_hit_at_10": true
+        },
+        "web": {
+          "availability_rate": true,
+          "expected_family_hit_at_10": true,
+          "required_family_unsatisfied_rate": true,
+          "target_hit_at_10": true
+        }
+      },
+      "tavily": {
+        "contributed_cases": true,
+        "query_budget": true,
+        "requested_cases": true,
+        "succeeded_cases": true
+      }
+    },
+    "contributing_provider_count": 6,
+    "contributing_source_family_count": 4,
+    "cross_network_gate": {
+      "observed_independent_networks": 1,
+      "passed": false,
+      "required_independent_networks": 2,
+      "status": "not_testable"
+    },
+    "functional_gate_passed": false,
+    "independent_network_replication_required": true,
+    "release_decision": "no-go",
+    "release_ready": false,
+    "stage_b_200_case_run_allowed": false,
+    "thresholds": {
+      "overall": {
+        "maximum_p95_latency_ms": 15000.0,
+        "maximum_provider_degradation_rate": 0.25,
+        "maximum_required_family_unsatisfied_rate": 0.1,
+        "minimum_availability_rate": 0.9,
+        "minimum_contributing_providers": 5,
+        "minimum_contributing_source_families": 4,
+        "minimum_expected_family_hit_at_10": 0.9,
+        "minimum_target_hit_at_10": 0.8
+      },
+      "per_topic": {
+        "maximum_required_family_unsatisfied_rate": 0.125,
+        "minimum_availability_rate": 0.875,
+        "minimum_expected_family_hit_at_10": 0.875,
+        "minimum_target_hit_at_10": 0.75
+      },
+      "tavily": {
+        "maximum_queries_per_case": 1,
+        "minimum_contributed_cases": 6,
+        "minimum_succeeded_cases": 7,
+        "required_cases": 8
+      }
+    }
+  },
+  "environment": {
+    "commit_sha": "0b029f3df4b85ffe83b64406f0f88b50eff634e4",
+    "network_region": "GitHub-hosted ubuntu-latest; physical region not exposed",
+    "packages": {
+      "evidencemesh": "0.1.0",
+      "httpx": "0.28.1"
+    },
+    "platform": "Linux-6.17.0-1020-azure-x86_64-with-glibc2.39",
+    "python": "3.11.15"
+  },
+  "generated_at": "2026-07-29T09:56:33.134135+00:00",
+  "metrics": {
+    "by_topic": {
+      "academic": {
+        "availability": {
+          "denominator": 8,
+          "numerator": 8,
+          "rate": 1.0,
+          "wilson_95": [
+            0.675592,
+            1.0
+          ]
+        },
+        "expected_family_hit_at_10": {
+          "denominator": 8,
+          "numerator": 8,
+          "rate": 1.0,
+          "wilson_95": [
+            0.675592,
+            1.0
+          ]
+        },
+        "latency_ms": {
+          "maximum": 2807.0,
+          "p50": 2312.915,
+          "p95": 2807.0
+        },
+        "provider_degradation": {
+          "denominator": 8,
+          "numerator": 0,
+          "rate": 0.0,
+          "wilson_95": [
+            0.0,
+            0.324408
+          ]
+        },
+        "raw_target_seen": {
+          "denominator": 8,
+          "numerator": 7,
+          "rate": 0.875,
+          "wilson_95": [
+            0.529112,
+            0.977583
+          ]
+        },
+        "required_family_unsatisfied": {
+          "denominator": 8,
+          "numerator": 0,
+          "rate": 0.0,
+          "wilson_95": [
+            0.0,
+            0.324408
+          ]
+        },
+        "response_success": {
+          "denominator": 8,
+          "numerator": 8,
+          "rate": 1.0,
+          "wilson_95": [
+            0.675592,
+            1.0
+          ]
+        },
+        "result_count": {
+          "mean": 10.0,
+          "total": 80
+        },
+        "target_dropped_by_ranking": {
+          "denominator": 8,
+          "numerator": 0,
+          "rate": 0.0,
+          "wilson_95": [
+            0.0,
+            0.324408
+          ]
+        },
+        "target_hit_at_10": {
+          "denominator": 8,
+          "numerator": 7,
+          "rate": 0.875,
+          "wilson_95": [
+            0.529112,
+            0.977583
+          ]
+        },
+        "target_rank": {
+          "at_1": 1,
+          "at_10": 7,
+          "at_3": 5,
+          "at_5": 5,
+          "mean": 3.286,
+          "observed": 7,
+          "p50": 2,
+          "p95": 7
+        }
+      },
+      "code": {
+        "availability": {
+          "denominator": 8,
+          "numerator": 8,
+          "rate": 1.0,
+          "wilson_95": [
+            0.675592,
+            1.0
+          ]
+        },
+        "expected_family_hit_at_10": {
+          "denominator": 8,
+          "numerator": 8,
+          "rate": 1.0,
+          "wilson_95": [
+            0.675592,
+            1.0
+          ]
+        },
+        "latency_ms": {
+          "maximum": 990.29,
+          "p50": 741.978,
+          "p95": 990.29
+        },
+        "provider_degradation": {
+          "denominator": 8,
+          "numerator": 0,
+          "rate": 0.0,
+          "wilson_95": [
+            0.0,
+            0.324408
+          ]
+        },
+        "raw_target_seen": {
+          "denominator": 8,
+          "numerator": 4,
+          "rate": 0.5,
+          "wilson_95": [
+            0.215216,
+            0.784784
+          ]
+        },
+        "required_family_unsatisfied": {
+          "denominator": 8,
+          "numerator": 0,
+          "rate": 0.0,
+          "wilson_95": [
+            0.0,
+            0.324408
+          ]
+        },
+        "response_success": {
+          "denominator": 8,
+          "numerator": 8,
+          "rate": 1.0,
+          "wilson_95": [
+            0.675592,
+            1.0
+          ]
+        },
+        "result_count": {
+          "mean": 8.875,
+          "total": 71
+        },
+        "target_dropped_by_ranking": {
+          "denominator": 8,
+          "numerator": 0,
+          "rate": 0.0,
+          "wilson_95": [
+            0.0,
+            0.324408
+          ]
+        },
+        "target_hit_at_10": {
+          "denominator": 8,
+          "numerator": 4,
+          "rate": 0.5,
+          "wilson_95": [
+            0.215216,
+            0.784784
+          ]
+        },
+        "target_rank": {
+          "at_1": 3,
+          "at_10": 4,
+          "at_3": 3,
+          "at_5": 4,
+          "mean": 2.0,
+          "observed": 4,
+          "p50": 1,
+          "p95": 5
+        }
+      },
+      "reference": {
+        "availability": {
+          "denominator": 8,
+          "numerator": 8,
+          "rate": 1.0,
+          "wilson_95": [
+            0.675592,
+            1.0
+          ]
+        },
+        "expected_family_hit_at_10": {
+          "denominator": 8,
+          "numerator": 8,
+          "rate": 1.0,
+          "wilson_95": [
+            0.675592,
+            1.0
+          ]
+        },
+        "latency_ms": {
+          "maximum": 403.179,
+          "p50": 241.694,
+          "p95": 403.179
+        },
+        "provider_degradation": {
+          "denominator": 8,
+          "numerator": 0,
+          "rate": 0.0,
+          "wilson_95": [
+            0.0,
+            0.324408
+          ]
+        },
+        "raw_target_seen": {
+          "denominator": 8,
+          "numerator": 8,
+          "rate": 1.0,
+          "wilson_95": [
+            0.675592,
+            1.0
+          ]
+        },
+        "required_family_unsatisfied": {
+          "denominator": 8,
+          "numerator": 0,
+          "rate": 0.0,
+          "wilson_95": [
+            0.0,
+            0.324408
+          ]
+        },
+        "response_success": {
+          "denominator": 8,
+          "numerator": 8,
+          "rate": 1.0,
+          "wilson_95": [
+            0.675592,
+            1.0
+          ]
+        },
+        "result_count": {
+          "mean": 10.0,
+          "total": 80
+        },
+        "target_dropped_by_ranking": {
+          "denominator": 8,
+          "numerator": 0,
+          "rate": 0.0,
+          "wilson_95": [
+            0.0,
+            0.324408
+          ]
+        },
+        "target_hit_at_10": {
+          "denominator": 8,
+          "numerator": 8,
+          "rate": 1.0,
+          "wilson_95": [
+            0.675592,
+            1.0
+          ]
+        },
+        "target_rank": {
+          "at_1": 5,
+          "at_10": 8,
+          "at_3": 8,
+          "at_5": 8,
+          "mean": 1.625,
+          "observed": 8,
+          "p50": 1,
+          "p95": 3
+        }
+      },
+      "web": {
+        "availability": {
+          "denominator": 8,
+          "numerator": 8,
+          "rate": 1.0,
+          "wilson_95": [
+            0.675592,
+            1.0
+          ]
+        },
+        "expected_family_hit_at_10": {
+          "denominator": 8,
+          "numerator": 8,
+          "rate": 1.0,
+          "wilson_95": [
+            0.675592,
+            1.0
+          ]
+        },
+        "latency_ms": {
+          "maximum": 2516.698,
+          "p50": 1117.683,
+          "p95": 2516.698
+        },
+        "provider_degradation": {
+          "denominator": 8,
+          "numerator": 4,
+          "rate": 0.5,
+          "wilson_95": [
+            0.215216,
+            0.784784
+          ]
+        },
+        "raw_target_seen": {
+          "denominator": 8,
+          "numerator": 8,
+          "rate": 1.0,
+          "wilson_95": [
+            0.675592,
+            1.0
+          ]
+        },
+        "required_family_unsatisfied": {
+          "denominator": 8,
+          "numerator": 0,
+          "rate": 0.0,
+          "wilson_95": [
+            0.0,
+            0.324408
+          ]
+        },
+        "response_success": {
+          "denominator": 8,
+          "numerator": 8,
+          "rate": 1.0,
+          "wilson_95": [
+            0.675592,
+            1.0
+          ]
+        },
+        "result_count": {
+          "mean": 9.625,
+          "total": 77
+        },
+        "target_dropped_by_ranking": {
+          "denominator": 8,
+          "numerator": 1,
+          "rate": 0.125,
+          "wilson_95": [
+            0.022417,
+            0.470888
+          ]
+        },
+        "target_hit_at_10": {
+          "denominator": 8,
+          "numerator": 7,
+          "rate": 0.875,
+          "wilson_95": [
+            0.529112,
+            0.977583
+          ]
+        },
+        "target_rank": {
+          "at_1": 3,
+          "at_10": 7,
+          "at_3": 6,
+          "at_5": 7,
+          "mean": 2.143,
+          "observed": 7,
+          "p50": 2,
+          "p95": 5
+        }
+      }
+    },
+    "overall": {
+      "availability": {
+        "denominator": 32,
+        "numerator": 32,
+        "rate": 1.0,
+        "wilson_95": [
+          0.892821,
+          1.0
+        ]
+      },
+      "expected_family_hit_at_10": {
+        "denominator": 32,
+        "numerator": 32,
+        "rate": 1.0,
+        "wilson_95": [
+          0.892821,
+          1.0
+        ]
+      },
+      "latency_ms": {
+        "maximum": 2807.0,
+        "p50": 925.037,
+        "p95": 2516.698
+      },
+      "provider_degradation": {
+        "denominator": 32,
+        "numerator": 4,
+        "rate": 0.125,
+        "wilson_95": [
+          0.049701,
+          0.280683
+        ]
+      },
+      "raw_target_seen": {
+        "denominator": 32,
+        "numerator": 27,
+        "rate": 0.84375,
+        "wilson_95": [
+          0.682459,
+          0.931356
+        ]
+      },
+      "required_family_unsatisfied": {
+        "denominator": 32,
+        "numerator": 0,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.107179
+        ]
+      },
+      "response_success": {
+        "denominator": 32,
+        "numerator": 32,
+        "rate": 1.0,
+        "wilson_95": [
+          0.892821,
+          1.0
+        ]
+      },
+      "result_count": {
+        "mean": 9.625,
+        "total": 308
+      },
+      "target_dropped_by_ranking": {
+        "denominator": 32,
+        "numerator": 1,
+        "rate": 0.03125,
+        "wilson_95": [
+          0.005538,
+          0.157443
+        ]
+      },
+      "target_hit_at_10": {
+        "denominator": 32,
+        "numerator": 26,
+        "rate": 0.8125,
+        "wilson_95": [
+          0.646908,
+          0.911105
+        ]
+      },
+      "target_rank": {
+        "at_1": 12,
+        "at_10": 26,
+        "at_3": 22,
+        "at_5": 24,
+        "mean": 2.269,
+        "observed": 26,
+        "p50": 2,
+        "p95": 6
+      }
+    },
+    "providers": {
+      "arxiv": {
+        "contributed_cases": 8,
+        "requested_cases": 8,
+        "succeeded_cases": 8
+      },
+      "crossref": {
+        "contributed_cases": 8,
+        "requested_cases": 8,
+        "succeeded_cases": 8
+      },
+      "github": {
+        "contributed_cases": 8,
+        "requested_cases": 8,
+        "succeeded_cases": 8
+      },
+      "searxng": {
+        "contributed_cases": 4,
+        "requested_cases": 8,
+        "succeeded_cases": 4
+      },
+      "tavily": {
+        "contributed_cases": 8,
+        "requested_cases": 8,
+        "succeeded_cases": 8
+      },
+      "wikipedia": {
+        "contributed_cases": 15,
+        "requested_cases": 24,
+        "succeeded_cases": 24
+      }
+    },
+    "source_families": {
+      "academic": 8,
+      "code": 8,
+      "reference": 15,
+      "web": 8
+    }
+  },
+  "outcomes": [
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-web-01",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 3,
+      "error_type": null,
+      "expected_family": "web",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 1471.383,
+      "max_per_domain_policy": "profile_default",
+      "profile": "web",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "searxng": 1,
+        "tavily": 1,
+        "wikipedia": 1
+      },
+      "providers_contributed": [
+        "searxng",
+        "tavily"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "searxng",
+        "wikipedia",
+        "tavily"
+      ],
+      "providers_succeeded": [
+        "searxng",
+        "tavily",
+        "wikipedia"
+      ],
+      "raw_target_provider_ranks": {
+        "searxng": 1,
+        "tavily": 1
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "web"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1,
+      "topic": "web"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-web-02",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 3,
+      "error_type": null,
+      "expected_family": "web",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 1117.683,
+      "max_per_domain_policy": "profile_default",
+      "profile": "web",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "searxng": 1,
+        "tavily": 1,
+        "wikipedia": 1
+      },
+      "providers_contributed": [
+        "searxng",
+        "tavily",
+        "wikipedia"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "searxng",
+        "wikipedia",
+        "tavily"
+      ],
+      "providers_succeeded": [
+        "searxng",
+        "tavily",
+        "wikipedia"
+      ],
+      "raw_target_provider_ranks": {
+        "searxng": 1,
+        "tavily": 2
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "reference",
+        "web"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 2,
+      "topic": "web"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-web-03",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 3,
+      "error_type": null,
+      "expected_family": "web",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 2516.698,
+      "max_per_domain_policy": "profile_default",
+      "profile": "web",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "searxng": 1,
+        "tavily": 1,
+        "wikipedia": 1
+      },
+      "providers_contributed": [
+        "searxng",
+        "tavily",
+        "wikipedia"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "searxng",
+        "wikipedia",
+        "tavily"
+      ],
+      "providers_succeeded": [
+        "searxng",
+        "tavily",
+        "wikipedia"
+      ],
+      "raw_target_provider_ranks": {
+        "searxng": 1,
+        "tavily": 8
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "reference",
+        "web"
+      ],
+      "target_dropped_by_ranking": true,
+      "target_hit_at_10": false,
+      "target_rank": null,
+      "topic": "web"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-web-04",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 3,
+      "error_type": null,
+      "expected_family": "web",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 925.037,
+      "max_per_domain_policy": "profile_default",
+      "profile": "web",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "searxng": 1,
+        "tavily": 1,
+        "wikipedia": 1
+      },
+      "providers_contributed": [
+        "searxng",
+        "tavily",
+        "wikipedia"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "searxng",
+        "wikipedia",
+        "tavily"
+      ],
+      "providers_succeeded": [
+        "searxng",
+        "tavily",
+        "wikipedia"
+      ],
+      "raw_target_provider_ranks": {
+        "searxng": 1,
+        "tavily": 1
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "reference",
+        "web"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1,
+      "topic": "web"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-web-05",
+      "degraded_source_families": [
+        "web"
+      ],
+      "effective_max_per_domain": 3,
+      "error_type": null,
+      "expected_family": "web",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 949.177,
+      "max_per_domain_policy": "profile_default",
+      "profile": "web",
+      "provider_degradation": true,
+      "provider_query_counts": {
+        "searxng": 1,
+        "tavily": 1,
+        "wikipedia": 1
+      },
+      "providers_contributed": [
+        "tavily",
+        "wikipedia"
+      ],
+      "providers_failed": [
+        "searxng"
+      ],
+      "providers_requested": [
+        "searxng",
+        "wikipedia",
+        "tavily"
+      ],
+      "providers_succeeded": [
+        "tavily",
+        "wikipedia"
+      ],
+      "raw_target_provider_ranks": {
+        "tavily": 5
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "reference",
+        "web"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 3,
+      "topic": "web"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-web-06",
+      "degraded_source_families": [
+        "web"
+      ],
+      "effective_max_per_domain": 3,
+      "error_type": null,
+      "expected_family": "web",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 787.264,
+      "max_per_domain_policy": "profile_default",
+      "profile": "web",
+      "provider_degradation": true,
+      "provider_query_counts": {
+        "searxng": 1,
+        "tavily": 1,
+        "wikipedia": 1
+      },
+      "providers_contributed": [
+        "tavily",
+        "wikipedia"
+      ],
+      "providers_failed": [
+        "searxng"
+      ],
+      "providers_requested": [
+        "searxng",
+        "wikipedia",
+        "tavily"
+      ],
+      "providers_succeeded": [
+        "tavily",
+        "wikipedia"
+      ],
+      "raw_target_provider_ranks": {
+        "tavily": 1
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "reference",
+        "web"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 5,
+      "topic": "web"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-web-07",
+      "degraded_source_families": [
+        "web"
+      ],
+      "effective_max_per_domain": 3,
+      "error_type": null,
+      "expected_family": "web",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 1206.11,
+      "max_per_domain_policy": "profile_default",
+      "profile": "web",
+      "provider_degradation": true,
+      "provider_query_counts": {
+        "searxng": 1,
+        "tavily": 1,
+        "wikipedia": 1
+      },
+      "providers_contributed": [
+        "tavily",
+        "wikipedia"
+      ],
+      "providers_failed": [
+        "searxng"
+      ],
+      "providers_requested": [
+        "searxng",
+        "wikipedia",
+        "tavily"
+      ],
+      "providers_succeeded": [
+        "tavily",
+        "wikipedia"
+      ],
+      "raw_target_provider_ranks": {
+        "tavily": 1
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 8,
+      "source_families_contributed": [
+        "reference",
+        "web"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 2,
+      "topic": "web"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-web-08",
+      "degraded_source_families": [
+        "web"
+      ],
+      "effective_max_per_domain": 3,
+      "error_type": null,
+      "expected_family": "web",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 949.088,
+      "max_per_domain_policy": "profile_default",
+      "profile": "web",
+      "provider_degradation": true,
+      "provider_query_counts": {
+        "searxng": 1,
+        "tavily": 1,
+        "wikipedia": 1
+      },
+      "providers_contributed": [
+        "tavily",
+        "wikipedia"
+      ],
+      "providers_failed": [
+        "searxng"
+      ],
+      "providers_requested": [
+        "searxng",
+        "wikipedia",
+        "tavily"
+      ],
+      "providers_succeeded": [
+        "tavily",
+        "wikipedia"
+      ],
+      "raw_target_provider_ranks": {
+        "tavily": 2
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 9,
+      "source_families_contributed": [
+        "reference",
+        "web"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1,
+      "topic": "web"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-reference-01",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 10,
+      "error_type": null,
+      "expected_family": "reference",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 235.073,
+      "max_per_domain_policy": "profile_default",
+      "profile": "reference",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "wikipedia": 1
+      },
+      "providers_contributed": [
+        "wikipedia"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "wikipedia"
+      ],
+      "providers_succeeded": [
+        "wikipedia"
+      ],
+      "raw_target_provider_ranks": {
+        "wikipedia": 1
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "reference"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 2,
+      "topic": "reference"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-reference-02",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 10,
+      "error_type": null,
+      "expected_family": "reference",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 270.247,
+      "max_per_domain_policy": "profile_default",
+      "profile": "reference",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "wikipedia": 1
+      },
+      "providers_contributed": [
+        "wikipedia"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "wikipedia"
+      ],
+      "providers_succeeded": [
+        "wikipedia"
+      ],
+      "raw_target_provider_ranks": {
+        "wikipedia": 3
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "reference"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 3,
+      "topic": "reference"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-reference-03",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 10,
+      "error_type": null,
+      "expected_family": "reference",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 232.1,
+      "max_per_domain_policy": "profile_default",
+      "profile": "reference",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "wikipedia": 1
+      },
+      "providers_contributed": [
+        "wikipedia"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "wikipedia"
+      ],
+      "providers_succeeded": [
+        "wikipedia"
+      ],
+      "raw_target_provider_ranks": {
+        "wikipedia": 1
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "reference"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1,
+      "topic": "reference"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-reference-04",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 10,
+      "error_type": null,
+      "expected_family": "reference",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 232.45,
+      "max_per_domain_policy": "profile_default",
+      "profile": "reference",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "wikipedia": 1
+      },
+      "providers_contributed": [
+        "wikipedia"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "wikipedia"
+      ],
+      "providers_succeeded": [
+        "wikipedia"
+      ],
+      "raw_target_provider_ranks": {
+        "wikipedia": 2
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "reference"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 3,
+      "topic": "reference"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-reference-05",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 10,
+      "error_type": null,
+      "expected_family": "reference",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 403.146,
+      "max_per_domain_policy": "profile_default",
+      "profile": "reference",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "wikipedia": 1
+      },
+      "providers_contributed": [
+        "wikipedia"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "wikipedia"
+      ],
+      "providers_succeeded": [
+        "wikipedia"
+      ],
+      "raw_target_provider_ranks": {
+        "wikipedia": 1
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "reference"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1,
+      "topic": "reference"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-reference-06",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 10,
+      "error_type": null,
+      "expected_family": "reference",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 241.694,
+      "max_per_domain_policy": "profile_default",
+      "profile": "reference",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "wikipedia": 1
+      },
+      "providers_contributed": [
+        "wikipedia"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "wikipedia"
+      ],
+      "providers_succeeded": [
+        "wikipedia"
+      ],
+      "raw_target_provider_ranks": {
+        "wikipedia": 1
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "reference"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1,
+      "topic": "reference"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-reference-07",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 10,
+      "error_type": null,
+      "expected_family": "reference",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 232.93,
+      "max_per_domain_policy": "profile_default",
+      "profile": "reference",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "wikipedia": 1
+      },
+      "providers_contributed": [
+        "wikipedia"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "wikipedia"
+      ],
+      "providers_succeeded": [
+        "wikipedia"
+      ],
+      "raw_target_provider_ranks": {
+        "wikipedia": 1
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "reference"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1,
+      "topic": "reference"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-reference-08",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 10,
+      "error_type": null,
+      "expected_family": "reference",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 403.179,
+      "max_per_domain_policy": "profile_default",
+      "profile": "reference",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "wikipedia": 1
+      },
+      "providers_contributed": [
+        "wikipedia"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "wikipedia"
+      ],
+      "providers_succeeded": [
+        "wikipedia"
+      ],
+      "raw_target_provider_ranks": {
+        "wikipedia": 1
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "reference"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1,
+      "topic": "reference"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-academic-01",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 10,
+      "error_type": null,
+      "expected_family": "academic",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 1427.371,
+      "max_per_domain_policy": "profile_default",
+      "profile": "academic",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "arxiv": 1,
+        "crossref": 1,
+        "wikipedia": 1
+      },
+      "providers_contributed": [
+        "arxiv",
+        "crossref"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "wikipedia",
+        "crossref",
+        "arxiv"
+      ],
+      "providers_succeeded": [
+        "arxiv",
+        "crossref",
+        "wikipedia"
+      ],
+      "raw_target_provider_ranks": {
+        "arxiv": 9
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "academic"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 2,
+      "topic": "academic"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-academic-02",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 10,
+      "error_type": null,
+      "expected_family": "academic",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 1907.2,
+      "max_per_domain_policy": "profile_default",
+      "profile": "academic",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "arxiv": 1,
+        "crossref": 1,
+        "wikipedia": 1
+      },
+      "providers_contributed": [
+        "arxiv",
+        "crossref"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "wikipedia",
+        "crossref",
+        "arxiv"
+      ],
+      "providers_succeeded": [
+        "arxiv",
+        "crossref",
+        "wikipedia"
+      ],
+      "raw_target_provider_ranks": {
+        "arxiv": 2
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "academic"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 2,
+      "topic": "academic"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-academic-03",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 10,
+      "error_type": null,
+      "expected_family": "academic",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 2482.25,
+      "max_per_domain_policy": "profile_default",
+      "profile": "academic",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "arxiv": 1,
+        "crossref": 1,
+        "wikipedia": 1
+      },
+      "providers_contributed": [
+        "arxiv",
+        "crossref"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "wikipedia",
+        "crossref",
+        "arxiv"
+      ],
+      "providers_succeeded": [
+        "arxiv",
+        "crossref",
+        "wikipedia"
+      ],
+      "raw_target_provider_ranks": {
+        "arxiv": 1
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "academic"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1,
+      "topic": "academic"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-academic-04",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 10,
+      "error_type": null,
+      "expected_family": "academic",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 2807.0,
+      "max_per_domain_policy": "profile_default",
+      "profile": "academic",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "arxiv": 1,
+        "crossref": 1,
+        "wikipedia": 1
+      },
+      "providers_contributed": [
+        "arxiv",
+        "crossref"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "wikipedia",
+        "crossref",
+        "arxiv"
+      ],
+      "providers_succeeded": [
+        "arxiv",
+        "crossref",
+        "wikipedia"
+      ],
+      "raw_target_provider_ranks": {
+        "arxiv": 1
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "academic"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 2,
+      "topic": "academic"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-academic-05",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 10,
+      "error_type": null,
+      "expected_family": "academic",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 2311.445,
+      "max_per_domain_policy": "profile_default",
+      "profile": "academic",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "arxiv": 1,
+        "crossref": 1,
+        "wikipedia": 1
+      },
+      "providers_contributed": [
+        "arxiv",
+        "crossref"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "wikipedia",
+        "crossref",
+        "arxiv"
+      ],
+      "providers_succeeded": [
+        "arxiv",
+        "crossref",
+        "wikipedia"
+      ],
+      "raw_target_provider_ranks": {
+        "arxiv": 9
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "academic"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 3,
+      "topic": "academic"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-academic-06",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 10,
+      "error_type": null,
+      "expected_family": "academic",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 2312.915,
+      "max_per_domain_policy": "profile_default",
+      "profile": "academic",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "arxiv": 1,
+        "crossref": 1,
+        "wikipedia": 1
+      },
+      "providers_contributed": [
+        "arxiv",
+        "crossref"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "wikipedia",
+        "crossref",
+        "arxiv"
+      ],
+      "providers_succeeded": [
+        "arxiv",
+        "crossref",
+        "wikipedia"
+      ],
+      "raw_target_provider_ranks": {},
+      "raw_target_seen": false,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "academic"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": false,
+      "target_rank": null,
+      "topic": "academic"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-academic-07",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 10,
+      "error_type": null,
+      "expected_family": "academic",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 2708.492,
+      "max_per_domain_policy": "profile_default",
+      "profile": "academic",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "arxiv": 1,
+        "crossref": 1,
+        "wikipedia": 1
+      },
+      "providers_contributed": [
+        "arxiv",
+        "crossref"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "wikipedia",
+        "crossref",
+        "arxiv"
+      ],
+      "providers_succeeded": [
+        "arxiv",
+        "crossref",
+        "wikipedia"
+      ],
+      "raw_target_provider_ranks": {
+        "arxiv": 12
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "academic"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 6,
+      "topic": "academic"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-academic-08",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 10,
+      "error_type": null,
+      "expected_family": "academic",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 2288.584,
+      "max_per_domain_policy": "profile_default",
+      "profile": "academic",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "arxiv": 1,
+        "crossref": 1,
+        "wikipedia": 1
+      },
+      "providers_contributed": [
+        "arxiv",
+        "crossref"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "wikipedia",
+        "crossref",
+        "arxiv"
+      ],
+      "providers_succeeded": [
+        "arxiv",
+        "crossref",
+        "wikipedia"
+      ],
+      "raw_target_provider_ranks": {
+        "arxiv": 17
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "academic"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 7,
+      "topic": "academic"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-code-01",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 10,
+      "error_type": null,
+      "expected_family": "code",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 990.29,
+      "max_per_domain_policy": "profile_default",
+      "profile": "code",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "github": 1
+      },
+      "providers_contributed": [
+        "github"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "github"
+      ],
+      "providers_succeeded": [
+        "github"
+      ],
+      "raw_target_provider_ranks": {},
+      "raw_target_seen": false,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "code"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": false,
+      "target_rank": null,
+      "topic": "code"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-code-02",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 10,
+      "error_type": null,
+      "expected_family": "code",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 725.43,
+      "max_per_domain_policy": "profile_default",
+      "profile": "code",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "github": 1
+      },
+      "providers_contributed": [
+        "github"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "github"
+      ],
+      "providers_succeeded": [
+        "github"
+      ],
+      "raw_target_provider_ranks": {},
+      "raw_target_seen": false,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "code"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": false,
+      "target_rank": null,
+      "topic": "code"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-code-03",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 10,
+      "error_type": null,
+      "expected_family": "code",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 229.827,
+      "max_per_domain_policy": "profile_default",
+      "profile": "code",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "github": 1
+      },
+      "providers_contributed": [
+        "github"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "github"
+      ],
+      "providers_succeeded": [
+        "github"
+      ],
+      "raw_target_provider_ranks": {
+        "github": 1
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 1,
+      "source_families_contributed": [
+        "code"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1,
+      "topic": "code"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-code-04",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 10,
+      "error_type": null,
+      "expected_family": "code",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 709.018,
+      "max_per_domain_policy": "profile_default",
+      "profile": "code",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "github": 1
+      },
+      "providers_contributed": [
+        "github"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "github"
+      ],
+      "providers_succeeded": [
+        "github"
+      ],
+      "raw_target_provider_ranks": {},
+      "raw_target_seen": false,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "code"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": false,
+      "target_rank": null,
+      "topic": "code"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-code-05",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 10,
+      "error_type": null,
+      "expected_family": "code",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 741.978,
+      "max_per_domain_policy": "profile_default",
+      "profile": "code",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "github": 1
+      },
+      "providers_contributed": [
+        "github"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "github"
+      ],
+      "providers_succeeded": [
+        "github"
+      ],
+      "raw_target_provider_ranks": {
+        "github": 1
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "code"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1,
+      "topic": "code"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-code-06",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 10,
+      "error_type": null,
+      "expected_family": "code",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 812.153,
+      "max_per_domain_policy": "profile_default",
+      "profile": "code",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "github": 1
+      },
+      "providers_contributed": [
+        "github"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "github"
+      ],
+      "providers_succeeded": [
+        "github"
+      ],
+      "raw_target_provider_ranks": {},
+      "raw_target_seen": false,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "code"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": false,
+      "target_rank": null,
+      "topic": "code"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-code-07",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 10,
+      "error_type": null,
+      "expected_family": "code",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 712.402,
+      "max_per_domain_policy": "profile_default",
+      "profile": "code",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "github": 1
+      },
+      "providers_contributed": [
+        "github"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "github"
+      ],
+      "providers_succeeded": [
+        "github"
+      ],
+      "raw_target_provider_ranks": {
+        "github": 1
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "code"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 5,
+      "topic": "code"
+    },
+    {
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p8-code-08",
+      "degraded_source_families": [],
+      "effective_max_per_domain": 10,
+      "error_type": null,
+      "expected_family": "code",
+      "expected_family_hit_at_10": true,
+      "failed_source_families": [],
+      "latency_ms": 761.628,
+      "max_per_domain_policy": "profile_default",
+      "profile": "code",
+      "provider_degradation": false,
+      "provider_query_counts": {
+        "github": 1
+      },
+      "providers_contributed": [
+        "github"
+      ],
+      "providers_failed": [],
+      "providers_requested": [
+        "github"
+      ],
+      "providers_succeeded": [
+        "github"
+      ],
+      "raw_target_provider_ranks": {
+        "github": 1
+      },
+      "raw_target_seen": true,
+      "required_family_satisfied": true,
+      "required_family_status": "satisfied",
+      "response_success": true,
+      "result_count": 10,
+      "source_families_contributed": [
+        "code"
+      ],
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1,
+      "topic": "code"
+    }
+  ],
+  "protocol": {
+    "arxiv_minimum_cache_ttl_seconds": 86400,
+    "arxiv_minimum_interval_seconds": 3.0,
+    "content_fetching": false,
+    "max_results": 10,
+    "maximum_tavily_credits": 8,
+    "maximum_tavily_requests": 8,
+    "pause_seconds": 0.5,
+    "profile_default_max_per_domain": {
+      "academic": 10,
+      "code": 10,
+      "news": 3,
+      "reference": 10,
+      "web": 3
+    },
+    "query_variants": false,
+    "raw_target_rank_capture": "in-memory provider wrapper; no additional requests",
+    "request_count": 32,
+    "request_timeout_seconds": 20.0,
+    "retry_policy": "none",
+    "target_identity_schema": 1,
+    "version": 6
+  },
+  "provider_configuration": {
+    "deployment_profile": "quality",
+    "github": {
+      "authentication": "anonymous",
+      "query_budget": 1,
+      "repository_query_normalization": "intent suffix removal plus in:name,description"
+    },
+    "other_keyed_providers_enabled": false,
+    "providers": [
+      "searxng",
+      "wikipedia",
+      "crossref",
+      "arxiv",
+      "github",
+      "tavily"
+    ],
+    "searxng": {
+      "file": "community-calibration-settings.yml",
+      "image": "searxng/searxng:2026.7.26-b060c780d@sha256:d0aaeb14880e6e92bde1518fcc7261e995783367d63d95203383607bef9c6516",
+      "sha256": "26a74f699515539fdb9bed3f1d3bda57ef908e1111d5393b4af2009fd7069645"
+    },
+    "tavily": {
+      "authentication": "environment secret; value and fingerprint omitted",
+      "enabled": true,
+      "maximum_results": 10,
+      "query_budget": 1,
+      "search_depth": "basic"
+    }
+  },
+  "schema_version": 3,
+  "suite": {
+    "count": 32,
+    "file": "quality_calibration_v3.json",
+    "ids": [
+      "p8-web-01",
+      "p8-web-02",
+      "p8-web-03",
+      "p8-web-04",
+      "p8-web-05",
+      "p8-web-06",
+      "p8-web-07",
+      "p8-web-08",
+      "p8-reference-01",
+      "p8-reference-02",
+      "p8-reference-03",
+      "p8-reference-04",
+      "p8-reference-05",
+      "p8-reference-06",
+      "p8-reference-07",
+      "p8-reference-08",
+      "p8-academic-01",
+      "p8-academic-02",
+      "p8-academic-03",
+      "p8-academic-04",
+      "p8-academic-05",
+      "p8-academic-06",
+      "p8-academic-07",
+      "p8-academic-08",
+      "p8-code-01",
+      "p8-code-02",
+      "p8-code-03",
+      "p8-code-04",
+      "p8-code-05",
+      "p8-code-06",
+      "p8-code-07",
+      "p8-code-08"
+    ],
+    "manifest_sha256": "7afd84280ae74b6fe2e4e28b490c26375b0c130e3a1f3efdfbbd864e36e8834c",
+    "sha256": "4a080230b0fe4590f1ef1af9087c7dbfaa05910bdcbd9c43a197cf87c5e44dc4",
+    "target_identity_schema": 1,
+    "topic_distribution": {
+      "academic": 8,
+      "code": 8,
+      "reference": 8,
+      "web": 8
+    }
+  }
+}

@@ -20,7 +20,12 @@ repository targets underperformed. See the
 [raw and interpreted result](../benchmarks/results/quality_calibration_phase7_2026-07-29.md).
 The separate [Phase 8 protocol](benchmark-protocol-v6.md) preserves that result
 and pre-registers profile-aware diversity and target-rank diagnostics on a new
-suite.
+suite. Its
+[committed result](../benchmarks/results/quality_calibration_phase8_2026-07-29.md)
+retrieved 7/8 academic targets but only 4/8 repository targets. All four
+repository misses were absent from GitHub's provider-native result list rather
+than removed by EvidenceMesh ranking, so repository-query recall remains an
+open limitation.
 
 ## Zero-key community providers
 

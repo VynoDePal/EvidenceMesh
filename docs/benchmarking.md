@@ -202,6 +202,13 @@ Inputs, privacy rules and traffic limits are frozen in
 [benchmark protocol v6](benchmark-protocol-v6.md). A result from the one
 available GitHub-hosted environment cannot authorize Stage B or release.
 
+The committed
+[Phase 8 result](../benchmarks/results/quality_calibration_phase8_2026-07-29.md)
+passed all overall thresholds at 26/32 target hits, but failed the code-specific
+target gate at 4/8 versus the required 6/8. Raw-rank telemetry attributed five
+of six total misses to upstream retrieval and one web miss to final ranking.
+The functional, Stage B and release decisions therefore remain no-go.
+
 ## End-to-end generation
 
 `benchmarks/run_end_to_end.py` now fixes the evidence-to-answer prompt and

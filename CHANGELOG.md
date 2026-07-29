@@ -72,3 +72,7 @@ All notable changes to EvidenceMesh are documented here.
   identities, provider-native target-rank diagnostics, unchanged functional
   thresholds and the same eight-credit Tavily ceiling. The independent-network
   and release gates remain closed.
+- Published the Phase 8 result: all overall gates passed at 26/32 targets, but
+  code reached only 4/8 against the locked 6/8 minimum. Five of six misses were
+  absent upstream and one was removed by ranking; the functional gate failed,
+  Stage B was not run and release remains no-go.

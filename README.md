@@ -275,6 +275,15 @@ basic calls. The protocol is locked before the first live request; the
 two-network and release gates remain closed regardless of a one-network
 functional result.
 
+The
+[Phase 8 result](benchmarks/results/quality_calibration_phase8_2026-07-29.md)
+returned evidence and the required source family for 32/32 cases and hit 26/32
+canonical targets, clearing every overall gate. Reference reached 8/8 and
+academic 7/8, but repository code reached only 4/8 against the locked 6/8
+minimum. Five of the six misses were absent upstream and one web target was
+dropped by ranking. The per-topic functional gate therefore failed, Stage B
+was not run, and the release decision remains no-go.
+
 ## Security
 
 EvidenceMesh blocks private, loopback, link-local and reserved fetch targets by
@@ -301,7 +310,7 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current suite contains 225 tests and reports over 91% branch-aware coverage
+The current suite contains 226 tests and reports over 91% branch-aware coverage
 locally. CI repeats the suite on Python 3.11, 3.12 and 3.13.
 
 ## License

@@ -284,3 +284,78 @@ def test_committed_phase7_result_matches_locked_protocol() -> None:
         "target_url_prefixes",
     }
     assert all(not private_fields & set(outcome) for outcome in report["outcomes"])
+
+
+def test_committed_phase8_result_matches_locked_protocol() -> None:
+    root = Path(__file__).parents[1]
+    result_path = root / "benchmarks" / "results" / "quality_calibration_phase8_2026-07-29.json"
+    result_bytes = result_path.read_bytes()
+    assert hashlib.sha256(result_bytes).hexdigest() == (
+        "d13598c873e0e7092542bf2f078132efa38fb42b3c67bac60ffe67d113ab563f"
+    )
+    report = json.loads(result_bytes)
+
+    assert report["schema_version"] == 3
+    assert report["benchmark"] == "evidencemesh-quality-calibration-v3"
+    assert report["environment"]["commit_sha"] == ("0b029f3df4b85ffe83b64406f0f88b50eff634e4")
+    assert report["suite"]["sha256"] == (
+        "4a080230b0fe4590f1ef1af9087c7dbfaa05910bdcbd9c43a197cf87c5e44dc4"
+    )
+    assert report["protocol"]["version"] == 6
+    assert report["protocol"]["request_count"] == 32
+    assert report["protocol"]["maximum_tavily_requests"] == 8
+    assert report["protocol"]["profile_default_max_per_domain"] == {
+        "academic": 10,
+        "code": 10,
+        "news": 3,
+        "reference": 10,
+        "web": 3,
+    }
+    assert len(report["outcomes"]) == 32
+
+    overall = report["metrics"]["overall"]
+    assert overall["availability"]["numerator"] == 32
+    assert overall["target_hit_at_10"]["numerator"] == 26
+    assert overall["raw_target_seen"]["numerator"] == 27
+    assert overall["target_dropped_by_ranking"]["numerator"] == 1
+    assert overall["expected_family_hit_at_10"]["numerator"] == 32
+    assert overall["provider_degradation"]["numerator"] == 4
+    assert overall["required_family_unsatisfied"]["numerator"] == 0
+    assert report["metrics"]["by_topic"]["code"]["target_hit_at_10"]["numerator"] == 4
+    assert report["metrics"]["providers"]["tavily"] == {
+        "requested_cases": 8,
+        "succeeded_cases": 8,
+        "contributed_cases": 8,
+    }
+
+    decision = report["decision"]
+    assert all(decision["checks"]["overall"].values())
+    assert decision["checks"]["per_topic"]["code"]["target_hit_at_10"] is False
+    assert decision["functional_gate_passed"] is False
+    assert decision["cross_network_gate"]["status"] == "not_testable"
+    assert decision["stage_b_200_case_run_allowed"] is False
+    assert decision["release_decision"] == "no-go"
+
+    private_fields = {
+        "query",
+        "title",
+        "snippet",
+        "content",
+        "url",
+        "results",
+        "target_domains",
+        "target_url_prefixes",
+        "target_identities",
+    }
+    diagnostic_fields = {
+        "target_rank",
+        "raw_target_seen",
+        "raw_target_provider_ranks",
+        "target_dropped_by_ranking",
+    }
+    assert all(not private_fields & set(outcome) for outcome in report["outcomes"])
+    assert all(diagnostic_fields <= set(outcome) for outcome in report["outcomes"])
+    assert all(
+        outcome["effective_max_per_domain"] == (3 if outcome["topic"] == "web" else 10)
+        for outcome in report["outcomes"]
+    )
