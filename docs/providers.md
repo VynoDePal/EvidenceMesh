@@ -75,6 +75,18 @@ separate gates: Mwmbl's result-license boundary and the absence of a measured,
 reproducibly populated YaCy index keep both adapters opt-in even if retrieval
 passes.
 
+The published
+[Phase 11.2 result](../benchmarks/results/phase11_2_independent_index_2026-07-29.md)
+did not pass retrieval. Mwmbl produced a sanitized provider failure and no raw
+result in all 16 routed cases. Candidate community consequently tied legacy
+community at 16/16 availability and 15/16 target-domain hit@10, while the
+Mwmbl-plus-Wiby independent arm reached only 7/16 availability. The first three
+case latencies matched the 25-second timeout and later cases were much faster,
+which is consistent with circuit opening after three failed adapter attempts.
+Because the report counted routed calls rather than separating HTTP attempts
+and circuit skips, that diagnosis remains an inference and the traffic field
+must not be presented as confirmed network attempts.
+
 ## Zero-key community providers
 
 ### SearXNG
@@ -145,6 +157,12 @@ This makes the constraint visible but does not resolve its downstream
 application. Mwmbl is therefore absent from named bundles. Opt in with
 `EVIDENCEMESH_PROVIDERS=mwmbl`; a compatible endpoint can be selected with
 `EVIDENCEMESH_MWMBL_URL`.
+
+In the Phase 11.2 GitHub-hosted run, the public endpoint did not return a usable
+response through the adapter. This is a measured deployment-reliability failure,
+not evidence that the underlying index contains no useful pages. Do not promote
+the public endpoint without new, pre-registered calibration and corrected
+network-attempt telemetry.
 
 ### YaCy
 
