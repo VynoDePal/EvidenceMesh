@@ -124,3 +124,12 @@ All notable changes to EvidenceMesh are documented here.
   Wiby returned results in 4/12 cases and survived community selection in
   0/12. The candidate failed, Wiby remains opt-in, Phase 12 stays blocked and
   release remains no-go.
+- Added opt-in Mwmbl and YaCy adapters for a public community-crawled index and
+  an operator-controlled local or peer index. Mwmbl result-license metadata is
+  preserved, and YaCy is available through a checksum-pinned optional Compose
+  profile without implying that an unpopulated index has broad coverage.
+- Locked the Phase 11.2 independent-index protocol and balanced 16-case
+  calibration suite before scored traffic. Five arms replay one shared raw
+  pool with exactly 16 Mwmbl and 16 Wiby requests, no paid API, no model and no
+  retry; default promotion, Phase 12 and release remain blocked independently
+  of retrieval performance.
