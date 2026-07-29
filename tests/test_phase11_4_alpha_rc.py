@@ -292,3 +292,41 @@ def test_alpha_distribution_guide_does_not_imply_publication() -> None:
     assert "sha256sum --check SHA256SUMS" in guide
     assert guide.count("gh attestation verify") == 2
     assert "--predicate-type https://cyclonedx.org/bom" in guide
+
+
+def test_committed_phase11_4_result_is_the_audited_candidate() -> None:
+    root = Path(__file__).parents[1]
+    result_path = root / "benchmarks" / "results" / "phase11_4_alpha_rc_2026-07-29.json"
+    report_path = root / "benchmarks" / "results" / "phase11_4_alpha_rc_2026-07-29.md"
+    result = json.loads(result_path.read_bytes())
+    report = report_path.read_text(encoding="utf-8")
+
+    assert hashlib.sha256(result_path.read_bytes()).hexdigest() == (
+        "53f07d0eadf9dcd61ab6971a0dc84768cee67f2956b5ab8e756e9bfb95644138"
+    )
+    assert result["environment"] == {
+        "commit_sha": "41b2698deee13eb92205a5733452681cc84c9f4c",
+        "github_run_attempt": 1,
+        "github_run_id": 30476241370,
+        "repository": "VynoDePal/EvidenceMesh",
+    }
+    assert result["protocol"]["sha256"] == PROTOCOL_SHA256
+    assert all(result["validation"]["local_build_gates"].values())
+    assert result["validation"]["sha256sums_verified"] is True
+    assert result["supply_chain"]["provenance"]["attestation_id"] == "37796765"
+    assert result["supply_chain"]["sbom"]["attestation_id"] == "37796768"
+    assert result["traffic"] == {
+        "model_requests": 0,
+        "paid_provider_requests": 0,
+        "provider_http_requests": 0,
+        "retries": 0,
+    }
+    assert result["decision"]["alpha_technical_candidate_passed"] is True
+    assert result["decision"]["quality_benchmark_passed"] is False
+    assert result["decision"]["public_distribution_allowed"] is False
+    assert result["decision"]["release_ready"] is False
+    assert result["decision"]["release_decision"] == "no-go"
+    assert "30475162303" in report
+    assert "invalidated and must not be treated" in " ".join(report.split())
+    assert "30476241370" in report
+    assert "0d0ddb24bb8a6515c18e94fdd828ffadbaee10940e6a77a68412b412394b4545" in report

@@ -166,3 +166,7 @@ All notable changes to EvidenceMesh are documented here.
   GitHub keyless SLSA provenance and SBOM attestations, and in-workflow GitHub
   CLI verification. PyPI, GitHub Release, merge, Phase 12 and quality claims
   remain blocked independently of the technical result.
+- Rejected the first Phase 11.4 artifact after its post-download audit found an
+  unchecksummed MCP stderr log. The accepted rerun keeps logs outside the
+  candidate, enforces an exact seven-file inventory and uploads only explicit
+  candidate paths.
