@@ -23,9 +23,9 @@ Most search MCPs are thin wrappers around one paid API. Most deep-research
 projects bundle a particular model, search service and report writer.
 EvidenceMesh separates those concerns:
 
-- **Free core:** self-hosted SearXNG, Wiby's independently crawled index,
-  bounded DDGS fallback and direct Wikipedia, Crossref, arXiv and GitHub
-  repository adapters.
+- **Free core:** self-hosted SearXNG, bounded DDGS fallback and direct
+  Wikipedia, Crossref, arXiv and GitHub repository adapters; Wiby's
+  independently crawled index is available as an explicit opt-in.
 - **Deterministic routing:** web, reference, academic and code sources receive
   only compatible queries, with conservative budgets for rate-limited APIs and
   profile-aware domain diversity.
@@ -128,7 +128,7 @@ research workflow.
 | Provider | Key required | `community` | `quality` | Profiles |
 |---|---:|---:|---:|---|
 | SearXNG | No | Yes | Yes | Web, news |
-| Wiby | No | Yes | Yes | Web |
+| Wiby | No | Explicit opt-in | Explicit opt-in | Web |
 | Wikipedia | No | Yes | Yes | Web, reference, academic |
 | Crossref | No | Yes | Yes | Academic |
 | arXiv | No | Yes | Yes | Academic |
@@ -141,7 +141,8 @@ research workflow.
 | DDGS | No | Yes | Yes | Web, news |
 
 The default `community` profile requires no API key and remains a best-effort
-self-hosted route. The recommended `quality` profile adds Tavily when
+self-hosted route. Wiby remains an explicit opt-in after its Phase 11.1
+candidate gates failed. The recommended `quality` profile adds Tavily when
 `TAVILY_API_KEY` is configured; a missing key produces a visible configuration
 warning and a degraded health status. Other keyed adapters remain available
 through an explicit provider list, but are not silently added to the
@@ -367,6 +368,14 @@ with a genuinely independent crawler/index. Its authored calibration reuses
 the Phase 11 diagnostic suite transparently, makes no model call and keeps the
 PR, release and superiority claims blocked regardless of the result.
 
+The
+[Phase 11.1 result](benchmarks/results/phase11_1_calibration_2026-07-29.md)
+also failed. The domain-aware target was fulfilled in 12/12 cases, but its
+aggregate strength was 89/96 against a frozen minimum of 90. Wiby returned
+results in 4/12 cases and none survived community top-10 selection. The adapter
+therefore remains available by explicit provider configuration but is not
+promoted into the default bundles. Phase 12 remains blocked.
+
 ## Security
 
 EvidenceMesh blocks private, loopback, link-local and reserved fetch targets by
@@ -393,7 +402,7 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current suite contains 273 tests and reports 91.71% branch-aware coverage
+The current suite contains 274 tests and reports 91.71% branch-aware coverage
 locally. CI repeats the suite on Python 3.11, 3.12 and 3.13.
 
 ## License

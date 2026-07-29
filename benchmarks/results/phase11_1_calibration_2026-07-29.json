@@ -1,0 +1,7055 @@
+{
+  "benchmark": "evidencemesh-phase11-1-feasibility-calibration-v1",
+  "decision": {
+    "gates": {
+      "community_availability_at_least_90_percent": {
+        "denominator": 12,
+        "observed": 12,
+        "passed": true,
+        "required": 11
+      },
+      "domain_aware_reservation_is_strong_and_fulfilled": {
+        "fulfilled_cases": 12,
+        "minimum_target_total": 90,
+        "passed": false,
+        "requested_total": 96,
+        "required_cases": 12,
+        "target_at_least_six_cases": 10,
+        "target_total": 89
+      },
+      "paid_and_public_traffic_within_budget": {
+        "maximum_tavily_requests": 12,
+        "maximum_wiby_requests": 12,
+        "passed": true,
+        "tavily_requests": 12,
+        "wiby_requests": 12
+      },
+      "safe_8_2_at_most_one_loss_vs_tavily_direct": {
+        "maximum": 1,
+        "observed_losses": 0,
+        "passed": true
+      },
+      "safe_8_2_not_below_legacy_target_recall": {
+        "legacy_observed": 12,
+        "passed": true,
+        "safe_observed": 12
+      },
+      "wiby_attribution_complete": {
+        "attributed_cases": 4,
+        "passed": true,
+        "raw_result_cases": 4
+      },
+      "wiby_independent_index_available": {
+        "denominator": 12,
+        "observed": 4,
+        "passed": false,
+        "required": 6
+      },
+      "wiby_survives_community_ranking": {
+        "denominator": 12,
+        "observed": 0,
+        "passed": false,
+        "required": 3
+      }
+    },
+    "paired_target_recall": {
+      "quality_safe_8_2_vs_quality_legacy": {
+        "losses": 0,
+        "net": 0,
+        "ties": 12,
+        "wins": 0
+      },
+      "quality_safe_8_2_vs_tavily_direct": {
+        "losses": 0,
+        "net": 0,
+        "ties": 12,
+        "wins": 0
+      }
+    },
+    "phase11_1_candidate_passed": false,
+    "phase12_untouched_evaluation_allowed": false,
+    "reason": "Phase 11.1 is an authored retrieval calibration without answer-model, external-agent, or second-network evaluation; release remains blocked.",
+    "release_decision": "no-go",
+    "release_ready": false,
+    "stage_b_external_agents_allowed": false
+  },
+  "environment": {
+    "commit_sha": "7d83ea3bca128e50397c9898db8bf06cd78d6d25",
+    "dependency_versions": {
+      "ddgs": "9.14.4",
+      "httpx": "0.28.1",
+      "pydantic": "2.13.4"
+    },
+    "finished_at": "2026-07-29T14:15:37.076623+00:00",
+    "network_region": "GitHub-hosted ubuntu-latest; physical region not exposed",
+    "platform": "Linux-6.17.0-1020-azure-x86_64-with-glibc2.39",
+    "python": "3.11.15",
+    "started_at": "2026-07-29T14:14:54.082366+00:00"
+  },
+  "latency_ms": {
+    "p50": 2729.748,
+    "p95": 3419.433
+  },
+  "metrics": {
+    "community": {
+      "availability": {
+        "denominator": 12,
+        "numerator": 12,
+        "rate": 1.0
+      },
+      "case_count": 12,
+      "cases_with_selected_wiby": {
+        "denominator": 12,
+        "numerator": 0,
+        "rate": 0.0
+      },
+      "mean_prompt_result_count": 10.0,
+      "mean_selected_tavily_result_count": 0.0,
+      "mean_selected_wiby_result_count": 0.0,
+      "target_domain_hit_at_10": {
+        "denominator": 12,
+        "numerator": 12,
+        "rate": 1.0
+      }
+    },
+    "quality_legacy": {
+      "availability": {
+        "denominator": 12,
+        "numerator": 12,
+        "rate": 1.0
+      },
+      "case_count": 12,
+      "cases_with_selected_wiby": {
+        "denominator": 12,
+        "numerator": 0,
+        "rate": 0.0
+      },
+      "mean_prompt_result_count": 10.0,
+      "mean_selected_tavily_result_count": 5.583,
+      "mean_selected_wiby_result_count": 0.0,
+      "target_domain_hit_at_10": {
+        "denominator": 12,
+        "numerator": 12,
+        "rate": 1.0
+      }
+    },
+    "quality_safe_4_6": {
+      "availability": {
+        "denominator": 12,
+        "numerator": 12,
+        "rate": 1.0
+      },
+      "case_count": 12,
+      "cases_with_selected_wiby": {
+        "denominator": 12,
+        "numerator": 0,
+        "rate": 0.0
+      },
+      "mean_prompt_result_count": 10.0,
+      "mean_selected_tavily_result_count": 5.667,
+      "mean_selected_wiby_result_count": 0.0,
+      "target_domain_hit_at_10": {
+        "denominator": 12,
+        "numerator": 12,
+        "rate": 1.0
+      }
+    },
+    "quality_safe_6_4": {
+      "availability": {
+        "denominator": 12,
+        "numerator": 12,
+        "rate": 1.0
+      },
+      "case_count": 12,
+      "cases_with_selected_wiby": {
+        "denominator": 12,
+        "numerator": 0,
+        "rate": 0.0
+      },
+      "mean_prompt_result_count": 10.0,
+      "mean_selected_tavily_result_count": 6.25,
+      "mean_selected_wiby_result_count": 0.0,
+      "target_domain_hit_at_10": {
+        "denominator": 12,
+        "numerator": 12,
+        "rate": 1.0
+      }
+    },
+    "quality_safe_8_2": {
+      "availability": {
+        "denominator": 12,
+        "numerator": 12,
+        "rate": 1.0
+      },
+      "case_count": 12,
+      "cases_with_selected_wiby": {
+        "denominator": 12,
+        "numerator": 0,
+        "rate": 0.0
+      },
+      "mean_prompt_result_count": 10.0,
+      "mean_selected_tavily_result_count": 7.417,
+      "mean_selected_wiby_result_count": 0.0,
+      "target_domain_hit_at_10": {
+        "denominator": 12,
+        "numerator": 12,
+        "rate": 1.0
+      }
+    },
+    "tavily_direct": {
+      "availability": {
+        "denominator": 12,
+        "numerator": 12,
+        "rate": 1.0
+      },
+      "case_count": 12,
+      "cases_with_selected_wiby": {
+        "denominator": 12,
+        "numerator": 0,
+        "rate": 0.0
+      },
+      "mean_prompt_result_count": 8.333,
+      "mean_selected_tavily_result_count": 8.333,
+      "mean_selected_wiby_result_count": 0.0,
+      "target_domain_hit_at_10": {
+        "denominator": 12,
+        "numerator": 12,
+        "rate": 1.0
+      }
+    },
+    "wiby_direct": {
+      "availability": {
+        "denominator": 12,
+        "numerator": 4,
+        "rate": 0.333333
+      },
+      "case_count": 12,
+      "cases_with_selected_wiby": {
+        "denominator": 12,
+        "numerator": 4,
+        "rate": 0.333333
+      },
+      "mean_prompt_result_count": 0.583,
+      "mean_selected_tavily_result_count": 0.0,
+      "mean_selected_wiby_result_count": 0.583,
+      "target_domain_hit_at_10": {
+        "denominator": 12,
+        "numerator": 0,
+        "rate": 0.0
+      }
+    }
+  },
+  "outcomes": [
+    {
+      "arm": "tavily_direct",
+      "available": true,
+      "case_id": "p11-001",
+      "eligible_tavily_result_count": 8,
+      "evidence_result_count": 8,
+      "fused_result_count": 8,
+      "prompt_result_count": 8,
+      "provider_stage_counts": {
+        "eligible": {
+          "tavily": 8
+        },
+        "evidence": {
+          "tavily": 8
+        },
+        "fused": {
+          "tavily": 8
+        },
+        "prompt": {
+          "tavily": 8
+        },
+        "raw": {
+          "tavily": 9
+        },
+        "selected": {
+          "tavily": 8
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "tavily": 0
+        },
+        "evidence_to_prompt": {
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "tavily": 0
+        },
+        "raw_to_fused": {
+          "tavily": 1
+        },
+        "selected_to_evidence": {
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 8,
+      "selected_tavily_result_count": 8,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "wiby_direct",
+      "available": false,
+      "case_id": "p11-001",
+      "eligible_tavily_result_count": 0,
+      "evidence_result_count": 0,
+      "fused_result_count": 0,
+      "prompt_result_count": 0,
+      "provider_stage_counts": {
+        "eligible": {},
+        "evidence": {},
+        "fused": {},
+        "prompt": {},
+        "raw": {},
+        "selected": {}
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {},
+        "evidence_to_prompt": {},
+        "fused_to_eligible": {},
+        "raw_to_fused": {},
+        "selected_to_evidence": {}
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 0,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 0,
+      "selected_tavily_result_count": 0,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": false
+    },
+    {
+      "arm": "community",
+      "available": true,
+      "case_id": "p11-001",
+      "eligible_tavily_result_count": 0,
+      "evidence_result_count": 10,
+      "fused_result_count": 31,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 25,
+          "searxng": 10,
+          "wikipedia": 3
+        },
+        "evidence": {
+          "ddgs": 9,
+          "searxng": 8
+        },
+        "fused": {
+          "ddgs": 25,
+          "searxng": 10,
+          "wikipedia": 3
+        },
+        "prompt": {
+          "ddgs": 9,
+          "searxng": 8
+        },
+        "raw": {
+          "ddgs": 25,
+          "searxng": 10,
+          "wikipedia": 3
+        },
+        "selected": {
+          "ddgs": 9,
+          "searxng": 8
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 16,
+          "searxng": 2,
+          "wikipedia": 3
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "searxng": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 0,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 0,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_legacy",
+      "available": true,
+      "case_id": "p11-001",
+      "eligible_tavily_result_count": 9,
+      "evidence_result_count": 10,
+      "fused_result_count": 37,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 25,
+          "searxng": 10,
+          "tavily": 9,
+          "wikipedia": 3
+        },
+        "evidence": {
+          "ddgs": 9,
+          "searxng": 7,
+          "tavily": 4
+        },
+        "fused": {
+          "ddgs": 25,
+          "searxng": 10,
+          "tavily": 9,
+          "wikipedia": 3
+        },
+        "prompt": {
+          "ddgs": 9,
+          "searxng": 7,
+          "tavily": 4
+        },
+        "raw": {
+          "ddgs": 25,
+          "searxng": 10,
+          "tavily": 9,
+          "wikipedia": 3
+        },
+        "selected": {
+          "ddgs": 9,
+          "searxng": 7,
+          "tavily": 4
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 16,
+          "searxng": 3,
+          "tavily": 5,
+          "wikipedia": 3
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 4,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_4_6",
+      "available": true,
+      "case_id": "p11-001",
+      "eligible_tavily_result_count": 9,
+      "evidence_result_count": 10,
+      "fused_result_count": 37,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 25,
+          "searxng": 10,
+          "tavily": 9,
+          "wikipedia": 3
+        },
+        "evidence": {
+          "ddgs": 9,
+          "searxng": 7,
+          "tavily": 4
+        },
+        "fused": {
+          "ddgs": 25,
+          "searxng": 10,
+          "tavily": 9,
+          "wikipedia": 3
+        },
+        "prompt": {
+          "ddgs": 9,
+          "searxng": 7,
+          "tavily": 4
+        },
+        "raw": {
+          "ddgs": 25,
+          "searxng": 10,
+          "tavily": 9,
+          "wikipedia": 3
+        },
+        "selected": {
+          "ddgs": 9,
+          "searxng": 7,
+          "tavily": 4
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 16,
+          "searxng": 3,
+          "tavily": 5,
+          "wikipedia": 3
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 9,
+      "ranking_reservation_feasible": 8,
+      "ranking_reservation_fulfilled": 4,
+      "ranking_reservation_policy": "provider_share:tavily:0.400",
+      "ranking_reservation_requested": 4,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 4,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 4,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_6_4",
+      "available": true,
+      "case_id": "p11-001",
+      "eligible_tavily_result_count": 9,
+      "evidence_result_count": 10,
+      "fused_result_count": 37,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 25,
+          "searxng": 10,
+          "tavily": 9,
+          "wikipedia": 3
+        },
+        "evidence": {
+          "ddgs": 7,
+          "searxng": 5,
+          "tavily": 6
+        },
+        "fused": {
+          "ddgs": 25,
+          "searxng": 10,
+          "tavily": 9,
+          "wikipedia": 3
+        },
+        "prompt": {
+          "ddgs": 7,
+          "searxng": 5,
+          "tavily": 6
+        },
+        "raw": {
+          "ddgs": 25,
+          "searxng": 10,
+          "tavily": 9,
+          "wikipedia": 3
+        },
+        "selected": {
+          "ddgs": 7,
+          "searxng": 5,
+          "tavily": 6
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 18,
+          "searxng": 5,
+          "tavily": 3,
+          "wikipedia": 3
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 9,
+      "ranking_reservation_feasible": 8,
+      "ranking_reservation_fulfilled": 6,
+      "ranking_reservation_policy": "provider_share:tavily:0.600",
+      "ranking_reservation_requested": 6,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 6,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 6,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_8_2",
+      "available": true,
+      "case_id": "p11-001",
+      "eligible_tavily_result_count": 9,
+      "evidence_result_count": 10,
+      "fused_result_count": 37,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 25,
+          "searxng": 10,
+          "tavily": 9,
+          "wikipedia": 3
+        },
+        "evidence": {
+          "ddgs": 5,
+          "searxng": 3,
+          "tavily": 8
+        },
+        "fused": {
+          "ddgs": 25,
+          "searxng": 10,
+          "tavily": 9,
+          "wikipedia": 3
+        },
+        "prompt": {
+          "ddgs": 5,
+          "searxng": 3,
+          "tavily": 8
+        },
+        "raw": {
+          "ddgs": 25,
+          "searxng": 10,
+          "tavily": 9,
+          "wikipedia": 3
+        },
+        "selected": {
+          "ddgs": 5,
+          "searxng": 3,
+          "tavily": 8
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 20,
+          "searxng": 7,
+          "tavily": 1,
+          "wikipedia": 3
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 9,
+      "ranking_reservation_feasible": 8,
+      "ranking_reservation_fulfilled": 8,
+      "ranking_reservation_policy": "provider_share:tavily:0.800",
+      "ranking_reservation_requested": 8,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 8,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 8,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "tavily_direct",
+      "available": true,
+      "case_id": "p11-002",
+      "eligible_tavily_result_count": 10,
+      "evidence_result_count": 10,
+      "fused_result_count": 10,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "tavily": 10
+        },
+        "evidence": {
+          "tavily": 10
+        },
+        "fused": {
+          "tavily": 10
+        },
+        "prompt": {
+          "tavily": 10
+        },
+        "raw": {
+          "tavily": 10
+        },
+        "selected": {
+          "tavily": 10
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "tavily": 0
+        },
+        "evidence_to_prompt": {
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "tavily": 0
+        },
+        "raw_to_fused": {
+          "tavily": 0
+        },
+        "selected_to_evidence": {
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 10,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 10,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "wiby_direct",
+      "available": false,
+      "case_id": "p11-002",
+      "eligible_tavily_result_count": 0,
+      "evidence_result_count": 0,
+      "fused_result_count": 0,
+      "prompt_result_count": 0,
+      "provider_stage_counts": {
+        "eligible": {},
+        "evidence": {},
+        "fused": {},
+        "prompt": {},
+        "raw": {},
+        "selected": {}
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {},
+        "evidence_to_prompt": {},
+        "fused_to_eligible": {},
+        "raw_to_fused": {},
+        "selected_to_evidence": {}
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 0,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 0,
+      "selected_tavily_result_count": 0,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": false
+    },
+    {
+      "arm": "community",
+      "available": true,
+      "case_id": "p11-002",
+      "eligible_tavily_result_count": 0,
+      "evidence_result_count": 10,
+      "fused_result_count": 30,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 24,
+          "searxng": 10,
+          "wikipedia": 1
+        },
+        "evidence": {
+          "ddgs": 8,
+          "searxng": 7
+        },
+        "fused": {
+          "ddgs": 24,
+          "searxng": 10,
+          "wikipedia": 1
+        },
+        "prompt": {
+          "ddgs": 8,
+          "searxng": 7
+        },
+        "raw": {
+          "ddgs": 25,
+          "searxng": 10,
+          "wikipedia": 1
+        },
+        "selected": {
+          "ddgs": 8,
+          "searxng": 7
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 16,
+          "searxng": 3,
+          "wikipedia": 1
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 1,
+          "searxng": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 0,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 0,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_legacy",
+      "available": true,
+      "case_id": "p11-002",
+      "eligible_tavily_result_count": 10,
+      "evidence_result_count": 10,
+      "fused_result_count": 35,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 24,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 1
+        },
+        "evidence": {
+          "ddgs": 8,
+          "searxng": 7,
+          "tavily": 5
+        },
+        "fused": {
+          "ddgs": 24,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 1
+        },
+        "prompt": {
+          "ddgs": 8,
+          "searxng": 7,
+          "tavily": 5
+        },
+        "raw": {
+          "ddgs": 25,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 1
+        },
+        "selected": {
+          "ddgs": 8,
+          "searxng": 7,
+          "tavily": 5
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 16,
+          "searxng": 3,
+          "tavily": 5,
+          "wikipedia": 1
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 1,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 10,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 5,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_4_6",
+      "available": true,
+      "case_id": "p11-002",
+      "eligible_tavily_result_count": 10,
+      "evidence_result_count": 10,
+      "fused_result_count": 35,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 24,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 1
+        },
+        "evidence": {
+          "ddgs": 8,
+          "searxng": 7,
+          "tavily": 5
+        },
+        "fused": {
+          "ddgs": 24,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 1
+        },
+        "prompt": {
+          "ddgs": 8,
+          "searxng": 7,
+          "tavily": 5
+        },
+        "raw": {
+          "ddgs": 25,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 1
+        },
+        "selected": {
+          "ddgs": 8,
+          "searxng": 7,
+          "tavily": 5
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 16,
+          "searxng": 3,
+          "tavily": 5,
+          "wikipedia": 1
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 1,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 10,
+      "ranking_reservation_feasible": 10,
+      "ranking_reservation_fulfilled": 4,
+      "ranking_reservation_policy": "provider_share:tavily:0.400",
+      "ranking_reservation_requested": 4,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 4,
+      "raw_tavily_result_count": 10,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 5,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_6_4",
+      "available": true,
+      "case_id": "p11-002",
+      "eligible_tavily_result_count": 10,
+      "evidence_result_count": 10,
+      "fused_result_count": 35,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 24,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 1
+        },
+        "evidence": {
+          "ddgs": 7,
+          "searxng": 7,
+          "tavily": 6
+        },
+        "fused": {
+          "ddgs": 24,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 1
+        },
+        "prompt": {
+          "ddgs": 7,
+          "searxng": 7,
+          "tavily": 6
+        },
+        "raw": {
+          "ddgs": 25,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 1
+        },
+        "selected": {
+          "ddgs": 7,
+          "searxng": 7,
+          "tavily": 6
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 17,
+          "searxng": 3,
+          "tavily": 4,
+          "wikipedia": 1
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 1,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 10,
+      "ranking_reservation_feasible": 10,
+      "ranking_reservation_fulfilled": 6,
+      "ranking_reservation_policy": "provider_share:tavily:0.600",
+      "ranking_reservation_requested": 6,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 6,
+      "raw_tavily_result_count": 10,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 6,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_8_2",
+      "available": true,
+      "case_id": "p11-002",
+      "eligible_tavily_result_count": 10,
+      "evidence_result_count": 10,
+      "fused_result_count": 35,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 24,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 1
+        },
+        "evidence": {
+          "ddgs": 5,
+          "searxng": 5,
+          "tavily": 8
+        },
+        "fused": {
+          "ddgs": 24,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 1
+        },
+        "prompt": {
+          "ddgs": 5,
+          "searxng": 5,
+          "tavily": 8
+        },
+        "raw": {
+          "ddgs": 25,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 1
+        },
+        "selected": {
+          "ddgs": 5,
+          "searxng": 5,
+          "tavily": 8
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 19,
+          "searxng": 5,
+          "tavily": 2,
+          "wikipedia": 1
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 1,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 10,
+      "ranking_reservation_feasible": 10,
+      "ranking_reservation_fulfilled": 8,
+      "ranking_reservation_policy": "provider_share:tavily:0.800",
+      "ranking_reservation_requested": 8,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 8,
+      "raw_tavily_result_count": 10,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 8,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "tavily_direct",
+      "available": true,
+      "case_id": "p11-003",
+      "eligible_tavily_result_count": 9,
+      "evidence_result_count": 9,
+      "fused_result_count": 9,
+      "prompt_result_count": 9,
+      "provider_stage_counts": {
+        "eligible": {
+          "tavily": 9
+        },
+        "evidence": {
+          "tavily": 9
+        },
+        "fused": {
+          "tavily": 9
+        },
+        "prompt": {
+          "tavily": 9
+        },
+        "raw": {
+          "tavily": 10
+        },
+        "selected": {
+          "tavily": 9
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "tavily": 0
+        },
+        "evidence_to_prompt": {
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "tavily": 0
+        },
+        "raw_to_fused": {
+          "tavily": 1
+        },
+        "selected_to_evidence": {
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 10,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 9,
+      "selected_tavily_result_count": 9,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "wiby_direct",
+      "available": true,
+      "case_id": "p11-003",
+      "eligible_tavily_result_count": 0,
+      "evidence_result_count": 1,
+      "fused_result_count": 1,
+      "prompt_result_count": 1,
+      "provider_stage_counts": {
+        "eligible": {
+          "wiby": 1
+        },
+        "evidence": {
+          "wiby": 1
+        },
+        "fused": {
+          "wiby": 1
+        },
+        "prompt": {
+          "wiby": 1
+        },
+        "raw": {
+          "wiby": 1
+        },
+        "selected": {
+          "wiby": 1
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "wiby": 0
+        },
+        "evidence_to_prompt": {
+          "wiby": 0
+        },
+        "fused_to_eligible": {
+          "wiby": 0
+        },
+        "raw_to_fused": {
+          "wiby": 0
+        },
+        "selected_to_evidence": {
+          "wiby": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 0,
+      "raw_wiby_result_count": 1,
+      "selected_result_count": 1,
+      "selected_tavily_result_count": 0,
+      "selected_wiby_result_count": 1,
+      "target_domain_hit": false
+    },
+    {
+      "arm": "community",
+      "available": true,
+      "case_id": "p11-003",
+      "eligible_tavily_result_count": 0,
+      "evidence_result_count": 10,
+      "fused_result_count": 51,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 26,
+          "searxng": 9,
+          "wiby": 1,
+          "wikipedia": 20
+        },
+        "evidence": {
+          "ddgs": 9,
+          "searxng": 5,
+          "wikipedia": 1
+        },
+        "fused": {
+          "ddgs": 26,
+          "searxng": 9,
+          "wiby": 1,
+          "wikipedia": 20
+        },
+        "prompt": {
+          "ddgs": 9,
+          "searxng": 5,
+          "wikipedia": 1
+        },
+        "raw": {
+          "ddgs": 26,
+          "searxng": 10,
+          "wiby": 1,
+          "wikipedia": 20
+        },
+        "selected": {
+          "ddgs": 9,
+          "searxng": 5,
+          "wikipedia": 1
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 17,
+          "searxng": 4,
+          "wiby": 1,
+          "wikipedia": 19
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "wikipedia": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "searxng": 1,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "wikipedia": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 0,
+      "raw_wiby_result_count": 1,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 0,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_legacy",
+      "available": true,
+      "case_id": "p11-003",
+      "eligible_tavily_result_count": 10,
+      "evidence_result_count": 10,
+      "fused_result_count": 56,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 26,
+          "searxng": 9,
+          "tavily": 10,
+          "wiby": 1,
+          "wikipedia": 20
+        },
+        "evidence": {
+          "ddgs": 7,
+          "searxng": 4,
+          "tavily": 8,
+          "wikipedia": 1
+        },
+        "fused": {
+          "ddgs": 26,
+          "searxng": 9,
+          "tavily": 10,
+          "wiby": 1,
+          "wikipedia": 20
+        },
+        "prompt": {
+          "ddgs": 7,
+          "searxng": 4,
+          "tavily": 8,
+          "wikipedia": 1
+        },
+        "raw": {
+          "ddgs": 26,
+          "searxng": 10,
+          "tavily": 10,
+          "wiby": 1,
+          "wikipedia": 20
+        },
+        "selected": {
+          "ddgs": 7,
+          "searxng": 4,
+          "tavily": 8,
+          "wikipedia": 1
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 19,
+          "searxng": 5,
+          "tavily": 2,
+          "wiby": 1,
+          "wikipedia": 19
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "searxng": 1,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 10,
+      "raw_wiby_result_count": 1,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 8,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_4_6",
+      "available": true,
+      "case_id": "p11-003",
+      "eligible_tavily_result_count": 10,
+      "evidence_result_count": 10,
+      "fused_result_count": 56,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 26,
+          "searxng": 9,
+          "tavily": 10,
+          "wiby": 1,
+          "wikipedia": 20
+        },
+        "evidence": {
+          "ddgs": 7,
+          "searxng": 4,
+          "tavily": 8,
+          "wikipedia": 1
+        },
+        "fused": {
+          "ddgs": 26,
+          "searxng": 9,
+          "tavily": 10,
+          "wiby": 1,
+          "wikipedia": 20
+        },
+        "prompt": {
+          "ddgs": 7,
+          "searxng": 4,
+          "tavily": 8,
+          "wikipedia": 1
+        },
+        "raw": {
+          "ddgs": 26,
+          "searxng": 10,
+          "tavily": 10,
+          "wiby": 1,
+          "wikipedia": 20
+        },
+        "selected": {
+          "ddgs": 7,
+          "searxng": 4,
+          "tavily": 8,
+          "wikipedia": 1
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 19,
+          "searxng": 5,
+          "tavily": 2,
+          "wiby": 1,
+          "wikipedia": 19
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "searxng": 1,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        }
+      },
+      "ranking_reservation_eligible": 10,
+      "ranking_reservation_feasible": 10,
+      "ranking_reservation_fulfilled": 4,
+      "ranking_reservation_policy": "provider_share:tavily:0.400",
+      "ranking_reservation_requested": 4,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 4,
+      "raw_tavily_result_count": 10,
+      "raw_wiby_result_count": 1,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 8,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_6_4",
+      "available": true,
+      "case_id": "p11-003",
+      "eligible_tavily_result_count": 10,
+      "evidence_result_count": 10,
+      "fused_result_count": 56,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 26,
+          "searxng": 9,
+          "tavily": 10,
+          "wiby": 1,
+          "wikipedia": 20
+        },
+        "evidence": {
+          "ddgs": 7,
+          "searxng": 4,
+          "tavily": 8,
+          "wikipedia": 1
+        },
+        "fused": {
+          "ddgs": 26,
+          "searxng": 9,
+          "tavily": 10,
+          "wiby": 1,
+          "wikipedia": 20
+        },
+        "prompt": {
+          "ddgs": 7,
+          "searxng": 4,
+          "tavily": 8,
+          "wikipedia": 1
+        },
+        "raw": {
+          "ddgs": 26,
+          "searxng": 10,
+          "tavily": 10,
+          "wiby": 1,
+          "wikipedia": 20
+        },
+        "selected": {
+          "ddgs": 7,
+          "searxng": 4,
+          "tavily": 8,
+          "wikipedia": 1
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 19,
+          "searxng": 5,
+          "tavily": 2,
+          "wiby": 1,
+          "wikipedia": 19
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "searxng": 1,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        }
+      },
+      "ranking_reservation_eligible": 10,
+      "ranking_reservation_feasible": 10,
+      "ranking_reservation_fulfilled": 6,
+      "ranking_reservation_policy": "provider_share:tavily:0.600",
+      "ranking_reservation_requested": 6,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 6,
+      "raw_tavily_result_count": 10,
+      "raw_wiby_result_count": 1,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 8,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_8_2",
+      "available": true,
+      "case_id": "p11-003",
+      "eligible_tavily_result_count": 10,
+      "evidence_result_count": 10,
+      "fused_result_count": 56,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 26,
+          "searxng": 9,
+          "tavily": 10,
+          "wiby": 1,
+          "wikipedia": 20
+        },
+        "evidence": {
+          "ddgs": 7,
+          "searxng": 4,
+          "tavily": 8,
+          "wikipedia": 1
+        },
+        "fused": {
+          "ddgs": 26,
+          "searxng": 9,
+          "tavily": 10,
+          "wiby": 1,
+          "wikipedia": 20
+        },
+        "prompt": {
+          "ddgs": 7,
+          "searxng": 4,
+          "tavily": 8,
+          "wikipedia": 1
+        },
+        "raw": {
+          "ddgs": 26,
+          "searxng": 10,
+          "tavily": 10,
+          "wiby": 1,
+          "wikipedia": 20
+        },
+        "selected": {
+          "ddgs": 7,
+          "searxng": 4,
+          "tavily": 8,
+          "wikipedia": 1
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 19,
+          "searxng": 5,
+          "tavily": 2,
+          "wiby": 1,
+          "wikipedia": 19
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "searxng": 1,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        }
+      },
+      "ranking_reservation_eligible": 10,
+      "ranking_reservation_feasible": 10,
+      "ranking_reservation_fulfilled": 8,
+      "ranking_reservation_policy": "provider_share:tavily:0.800",
+      "ranking_reservation_requested": 8,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 8,
+      "raw_tavily_result_count": 10,
+      "raw_wiby_result_count": 1,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 8,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "tavily_direct",
+      "available": true,
+      "case_id": "p11-004",
+      "eligible_tavily_result_count": 9,
+      "evidence_result_count": 8,
+      "fused_result_count": 9,
+      "prompt_result_count": 8,
+      "provider_stage_counts": {
+        "eligible": {
+          "tavily": 9
+        },
+        "evidence": {
+          "tavily": 8
+        },
+        "fused": {
+          "tavily": 9
+        },
+        "prompt": {
+          "tavily": 8
+        },
+        "raw": {
+          "tavily": 9
+        },
+        "selected": {
+          "tavily": 8
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "tavily": 1
+        },
+        "evidence_to_prompt": {
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "tavily": 0
+        },
+        "raw_to_fused": {
+          "tavily": 0
+        },
+        "selected_to_evidence": {
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 8,
+      "selected_tavily_result_count": 8,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "wiby_direct",
+      "available": false,
+      "case_id": "p11-004",
+      "eligible_tavily_result_count": 0,
+      "evidence_result_count": 0,
+      "fused_result_count": 0,
+      "prompt_result_count": 0,
+      "provider_stage_counts": {
+        "eligible": {},
+        "evidence": {},
+        "fused": {},
+        "prompt": {},
+        "raw": {},
+        "selected": {}
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {},
+        "evidence_to_prompt": {},
+        "fused_to_eligible": {},
+        "raw_to_fused": {},
+        "selected_to_evidence": {}
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 0,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 0,
+      "selected_tavily_result_count": 0,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": false
+    },
+    {
+      "arm": "community",
+      "available": true,
+      "case_id": "p11-004",
+      "eligible_tavily_result_count": 0,
+      "evidence_result_count": 10,
+      "fused_result_count": 33,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 30,
+          "searxng": 10
+        },
+        "evidence": {
+          "ddgs": 10,
+          "searxng": 7
+        },
+        "fused": {
+          "ddgs": 30,
+          "searxng": 10
+        },
+        "prompt": {
+          "ddgs": 10,
+          "searxng": 7
+        },
+        "raw": {
+          "ddgs": 30,
+          "searxng": 10
+        },
+        "selected": {
+          "ddgs": 10,
+          "searxng": 7
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 20,
+          "searxng": 3
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "searxng": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 0,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 0,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_legacy",
+      "available": true,
+      "case_id": "p11-004",
+      "eligible_tavily_result_count": 9,
+      "evidence_result_count": 10,
+      "fused_result_count": 36,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 9
+        },
+        "evidence": {
+          "ddgs": 9,
+          "searxng": 7,
+          "tavily": 6
+        },
+        "fused": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 9
+        },
+        "prompt": {
+          "ddgs": 9,
+          "searxng": 7,
+          "tavily": 6
+        },
+        "raw": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 9
+        },
+        "selected": {
+          "ddgs": 9,
+          "searxng": 7,
+          "tavily": 6
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 21,
+          "searxng": 3,
+          "tavily": 3
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 6,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_4_6",
+      "available": true,
+      "case_id": "p11-004",
+      "eligible_tavily_result_count": 9,
+      "evidence_result_count": 10,
+      "fused_result_count": 36,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 9
+        },
+        "evidence": {
+          "ddgs": 9,
+          "searxng": 7,
+          "tavily": 6
+        },
+        "fused": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 9
+        },
+        "prompt": {
+          "ddgs": 9,
+          "searxng": 7,
+          "tavily": 6
+        },
+        "raw": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 9
+        },
+        "selected": {
+          "ddgs": 9,
+          "searxng": 7,
+          "tavily": 6
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 21,
+          "searxng": 3,
+          "tavily": 3
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 9,
+      "ranking_reservation_feasible": 8,
+      "ranking_reservation_fulfilled": 4,
+      "ranking_reservation_policy": "provider_share:tavily:0.400",
+      "ranking_reservation_requested": 4,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 4,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 6,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_6_4",
+      "available": true,
+      "case_id": "p11-004",
+      "eligible_tavily_result_count": 9,
+      "evidence_result_count": 10,
+      "fused_result_count": 36,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 9
+        },
+        "evidence": {
+          "ddgs": 9,
+          "searxng": 7,
+          "tavily": 6
+        },
+        "fused": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 9
+        },
+        "prompt": {
+          "ddgs": 9,
+          "searxng": 7,
+          "tavily": 6
+        },
+        "raw": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 9
+        },
+        "selected": {
+          "ddgs": 9,
+          "searxng": 7,
+          "tavily": 6
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 21,
+          "searxng": 3,
+          "tavily": 3
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 9,
+      "ranking_reservation_feasible": 8,
+      "ranking_reservation_fulfilled": 6,
+      "ranking_reservation_policy": "provider_share:tavily:0.600",
+      "ranking_reservation_requested": 6,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 6,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 6,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_8_2",
+      "available": true,
+      "case_id": "p11-004",
+      "eligible_tavily_result_count": 9,
+      "evidence_result_count": 10,
+      "fused_result_count": 36,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 9
+        },
+        "evidence": {
+          "ddgs": 7,
+          "searxng": 5,
+          "tavily": 8
+        },
+        "fused": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 9
+        },
+        "prompt": {
+          "ddgs": 7,
+          "searxng": 5,
+          "tavily": 8
+        },
+        "raw": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 9
+        },
+        "selected": {
+          "ddgs": 7,
+          "searxng": 5,
+          "tavily": 8
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 23,
+          "searxng": 5,
+          "tavily": 1
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 9,
+      "ranking_reservation_feasible": 8,
+      "ranking_reservation_fulfilled": 8,
+      "ranking_reservation_policy": "provider_share:tavily:0.800",
+      "ranking_reservation_requested": 8,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 8,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 8,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "tavily_direct",
+      "available": true,
+      "case_id": "p11-005",
+      "eligible_tavily_result_count": 7,
+      "evidence_result_count": 5,
+      "fused_result_count": 7,
+      "prompt_result_count": 5,
+      "provider_stage_counts": {
+        "eligible": {
+          "tavily": 7
+        },
+        "evidence": {
+          "tavily": 5
+        },
+        "fused": {
+          "tavily": 7
+        },
+        "prompt": {
+          "tavily": 5
+        },
+        "raw": {
+          "tavily": 9
+        },
+        "selected": {
+          "tavily": 5
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "tavily": 2
+        },
+        "evidence_to_prompt": {
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "tavily": 0
+        },
+        "raw_to_fused": {
+          "tavily": 2
+        },
+        "selected_to_evidence": {
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 5,
+      "selected_tavily_result_count": 5,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "wiby_direct",
+      "available": false,
+      "case_id": "p11-005",
+      "eligible_tavily_result_count": 0,
+      "evidence_result_count": 0,
+      "fused_result_count": 0,
+      "prompt_result_count": 0,
+      "provider_stage_counts": {
+        "eligible": {},
+        "evidence": {},
+        "fused": {},
+        "prompt": {},
+        "raw": {},
+        "selected": {}
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {},
+        "evidence_to_prompt": {},
+        "fused_to_eligible": {},
+        "raw_to_fused": {},
+        "selected_to_evidence": {}
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 0,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 0,
+      "selected_tavily_result_count": 0,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": false
+    },
+    {
+      "arm": "community",
+      "available": true,
+      "case_id": "p11-005",
+      "eligible_tavily_result_count": 0,
+      "evidence_result_count": 10,
+      "fused_result_count": 37,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 29,
+          "searxng": 8,
+          "wikipedia": 3
+        },
+        "evidence": {
+          "ddgs": 7,
+          "searxng": 6
+        },
+        "fused": {
+          "ddgs": 29,
+          "searxng": 8,
+          "wikipedia": 3
+        },
+        "prompt": {
+          "ddgs": 7,
+          "searxng": 6
+        },
+        "raw": {
+          "ddgs": 30,
+          "searxng": 8,
+          "wikipedia": 3
+        },
+        "selected": {
+          "ddgs": 7,
+          "searxng": 6
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 22,
+          "searxng": 2,
+          "wikipedia": 3
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 1,
+          "searxng": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 0,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 0,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_legacy",
+      "available": true,
+      "case_id": "p11-005",
+      "eligible_tavily_result_count": 6,
+      "evidence_result_count": 10,
+      "fused_result_count": 39,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 29,
+          "searxng": 8,
+          "tavily": 6,
+          "wikipedia": 3
+        },
+        "evidence": {
+          "ddgs": 9,
+          "searxng": 4,
+          "tavily": 4
+        },
+        "fused": {
+          "ddgs": 29,
+          "searxng": 8,
+          "tavily": 6,
+          "wikipedia": 3
+        },
+        "prompt": {
+          "ddgs": 9,
+          "searxng": 4,
+          "tavily": 4
+        },
+        "raw": {
+          "ddgs": 30,
+          "searxng": 8,
+          "tavily": 9,
+          "wikipedia": 3
+        },
+        "selected": {
+          "ddgs": 9,
+          "searxng": 4,
+          "tavily": 4
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 20,
+          "searxng": 4,
+          "tavily": 2,
+          "wikipedia": 3
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 1,
+          "searxng": 0,
+          "tavily": 3,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 4,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_4_6",
+      "available": true,
+      "case_id": "p11-005",
+      "eligible_tavily_result_count": 6,
+      "evidence_result_count": 10,
+      "fused_result_count": 39,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 29,
+          "searxng": 8,
+          "tavily": 6,
+          "wikipedia": 3
+        },
+        "evidence": {
+          "ddgs": 9,
+          "searxng": 4,
+          "tavily": 4
+        },
+        "fused": {
+          "ddgs": 29,
+          "searxng": 8,
+          "tavily": 6,
+          "wikipedia": 3
+        },
+        "prompt": {
+          "ddgs": 9,
+          "searxng": 4,
+          "tavily": 4
+        },
+        "raw": {
+          "ddgs": 30,
+          "searxng": 8,
+          "tavily": 9,
+          "wikipedia": 3
+        },
+        "selected": {
+          "ddgs": 9,
+          "searxng": 4,
+          "tavily": 4
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 20,
+          "searxng": 4,
+          "tavily": 2,
+          "wikipedia": 3
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 1,
+          "searxng": 0,
+          "tavily": 3,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 6,
+      "ranking_reservation_feasible": 5,
+      "ranking_reservation_fulfilled": 4,
+      "ranking_reservation_policy": "provider_share:tavily:0.400",
+      "ranking_reservation_requested": 4,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 4,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 4,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_6_4",
+      "available": true,
+      "case_id": "p11-005",
+      "eligible_tavily_result_count": 6,
+      "evidence_result_count": 10,
+      "fused_result_count": 39,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 29,
+          "searxng": 8,
+          "tavily": 6,
+          "wikipedia": 3
+        },
+        "evidence": {
+          "ddgs": 8,
+          "searxng": 4,
+          "tavily": 5
+        },
+        "fused": {
+          "ddgs": 29,
+          "searxng": 8,
+          "tavily": 6,
+          "wikipedia": 3
+        },
+        "prompt": {
+          "ddgs": 8,
+          "searxng": 4,
+          "tavily": 5
+        },
+        "raw": {
+          "ddgs": 30,
+          "searxng": 8,
+          "tavily": 9,
+          "wikipedia": 3
+        },
+        "selected": {
+          "ddgs": 8,
+          "searxng": 4,
+          "tavily": 5
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 21,
+          "searxng": 4,
+          "tavily": 1,
+          "wikipedia": 3
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 1,
+          "searxng": 0,
+          "tavily": 3,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 6,
+      "ranking_reservation_feasible": 5,
+      "ranking_reservation_fulfilled": 5,
+      "ranking_reservation_policy": "provider_share:tavily:0.600",
+      "ranking_reservation_requested": 6,
+      "ranking_reservation_shortfall_reason": "domain_diversity_cap",
+      "ranking_reservation_target": 5,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 5,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_8_2",
+      "available": true,
+      "case_id": "p11-005",
+      "eligible_tavily_result_count": 6,
+      "evidence_result_count": 10,
+      "fused_result_count": 39,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 29,
+          "searxng": 8,
+          "tavily": 6,
+          "wikipedia": 3
+        },
+        "evidence": {
+          "ddgs": 8,
+          "searxng": 4,
+          "tavily": 5
+        },
+        "fused": {
+          "ddgs": 29,
+          "searxng": 8,
+          "tavily": 6,
+          "wikipedia": 3
+        },
+        "prompt": {
+          "ddgs": 8,
+          "searxng": 4,
+          "tavily": 5
+        },
+        "raw": {
+          "ddgs": 30,
+          "searxng": 8,
+          "tavily": 9,
+          "wikipedia": 3
+        },
+        "selected": {
+          "ddgs": 8,
+          "searxng": 4,
+          "tavily": 5
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 21,
+          "searxng": 4,
+          "tavily": 1,
+          "wikipedia": 3
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 1,
+          "searxng": 0,
+          "tavily": 3,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 6,
+      "ranking_reservation_feasible": 5,
+      "ranking_reservation_fulfilled": 5,
+      "ranking_reservation_policy": "provider_share:tavily:0.800",
+      "ranking_reservation_requested": 8,
+      "ranking_reservation_shortfall_reason": "insufficient_eligible_results_and_domain_diversity_cap",
+      "ranking_reservation_target": 5,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 5,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "tavily_direct",
+      "available": true,
+      "case_id": "p11-006",
+      "eligible_tavily_result_count": 9,
+      "evidence_result_count": 9,
+      "fused_result_count": 9,
+      "prompt_result_count": 9,
+      "provider_stage_counts": {
+        "eligible": {
+          "tavily": 9
+        },
+        "evidence": {
+          "tavily": 9
+        },
+        "fused": {
+          "tavily": 9
+        },
+        "prompt": {
+          "tavily": 9
+        },
+        "raw": {
+          "tavily": 9
+        },
+        "selected": {
+          "tavily": 9
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "tavily": 0
+        },
+        "evidence_to_prompt": {
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "tavily": 0
+        },
+        "raw_to_fused": {
+          "tavily": 0
+        },
+        "selected_to_evidence": {
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 9,
+      "selected_tavily_result_count": 9,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "wiby_direct",
+      "available": false,
+      "case_id": "p11-006",
+      "eligible_tavily_result_count": 0,
+      "evidence_result_count": 0,
+      "fused_result_count": 0,
+      "prompt_result_count": 0,
+      "provider_stage_counts": {
+        "eligible": {},
+        "evidence": {},
+        "fused": {},
+        "prompt": {},
+        "raw": {},
+        "selected": {}
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {},
+        "evidence_to_prompt": {},
+        "fused_to_eligible": {},
+        "raw_to_fused": {},
+        "selected_to_evidence": {}
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 0,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 0,
+      "selected_tavily_result_count": 0,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": false
+    },
+    {
+      "arm": "community",
+      "available": true,
+      "case_id": "p11-006",
+      "eligible_tavily_result_count": 0,
+      "evidence_result_count": 10,
+      "fused_result_count": 31,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 23,
+          "searxng": 7,
+          "wikipedia": 5
+        },
+        "evidence": {
+          "ddgs": 8,
+          "searxng": 6
+        },
+        "fused": {
+          "ddgs": 23,
+          "searxng": 7,
+          "wikipedia": 5
+        },
+        "prompt": {
+          "ddgs": 8,
+          "searxng": 6
+        },
+        "raw": {
+          "ddgs": 25,
+          "searxng": 8,
+          "wikipedia": 5
+        },
+        "selected": {
+          "ddgs": 8,
+          "searxng": 6
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 15,
+          "searxng": 1,
+          "wikipedia": 5
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 2,
+          "searxng": 1,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 0,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 0,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_legacy",
+      "available": true,
+      "case_id": "p11-006",
+      "eligible_tavily_result_count": 9,
+      "evidence_result_count": 10,
+      "fused_result_count": 33,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 23,
+          "searxng": 7,
+          "tavily": 9,
+          "wikipedia": 5
+        },
+        "evidence": {
+          "ddgs": 8,
+          "searxng": 6,
+          "tavily": 6
+        },
+        "fused": {
+          "ddgs": 23,
+          "searxng": 7,
+          "tavily": 9,
+          "wikipedia": 5
+        },
+        "prompt": {
+          "ddgs": 8,
+          "searxng": 6,
+          "tavily": 6
+        },
+        "raw": {
+          "ddgs": 25,
+          "searxng": 8,
+          "tavily": 9,
+          "wikipedia": 5
+        },
+        "selected": {
+          "ddgs": 8,
+          "searxng": 6,
+          "tavily": 6
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 15,
+          "searxng": 1,
+          "tavily": 3,
+          "wikipedia": 5
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 2,
+          "searxng": 1,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 6,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_4_6",
+      "available": true,
+      "case_id": "p11-006",
+      "eligible_tavily_result_count": 9,
+      "evidence_result_count": 10,
+      "fused_result_count": 33,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 23,
+          "searxng": 7,
+          "tavily": 9,
+          "wikipedia": 5
+        },
+        "evidence": {
+          "ddgs": 8,
+          "searxng": 6,
+          "tavily": 6
+        },
+        "fused": {
+          "ddgs": 23,
+          "searxng": 7,
+          "tavily": 9,
+          "wikipedia": 5
+        },
+        "prompt": {
+          "ddgs": 8,
+          "searxng": 6,
+          "tavily": 6
+        },
+        "raw": {
+          "ddgs": 25,
+          "searxng": 8,
+          "tavily": 9,
+          "wikipedia": 5
+        },
+        "selected": {
+          "ddgs": 8,
+          "searxng": 6,
+          "tavily": 6
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 15,
+          "searxng": 1,
+          "tavily": 3,
+          "wikipedia": 5
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 2,
+          "searxng": 1,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 9,
+      "ranking_reservation_feasible": 9,
+      "ranking_reservation_fulfilled": 4,
+      "ranking_reservation_policy": "provider_share:tavily:0.400",
+      "ranking_reservation_requested": 4,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 4,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 6,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_6_4",
+      "available": true,
+      "case_id": "p11-006",
+      "eligible_tavily_result_count": 9,
+      "evidence_result_count": 10,
+      "fused_result_count": 33,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 23,
+          "searxng": 7,
+          "tavily": 9,
+          "wikipedia": 5
+        },
+        "evidence": {
+          "ddgs": 8,
+          "searxng": 6,
+          "tavily": 6
+        },
+        "fused": {
+          "ddgs": 23,
+          "searxng": 7,
+          "tavily": 9,
+          "wikipedia": 5
+        },
+        "prompt": {
+          "ddgs": 8,
+          "searxng": 6,
+          "tavily": 6
+        },
+        "raw": {
+          "ddgs": 25,
+          "searxng": 8,
+          "tavily": 9,
+          "wikipedia": 5
+        },
+        "selected": {
+          "ddgs": 8,
+          "searxng": 6,
+          "tavily": 6
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 15,
+          "searxng": 1,
+          "tavily": 3,
+          "wikipedia": 5
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 2,
+          "searxng": 1,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 9,
+      "ranking_reservation_feasible": 9,
+      "ranking_reservation_fulfilled": 6,
+      "ranking_reservation_policy": "provider_share:tavily:0.600",
+      "ranking_reservation_requested": 6,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 6,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 6,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_8_2",
+      "available": true,
+      "case_id": "p11-006",
+      "eligible_tavily_result_count": 9,
+      "evidence_result_count": 10,
+      "fused_result_count": 33,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 23,
+          "searxng": 7,
+          "tavily": 9,
+          "wikipedia": 5
+        },
+        "evidence": {
+          "ddgs": 7,
+          "searxng": 5,
+          "tavily": 8
+        },
+        "fused": {
+          "ddgs": 23,
+          "searxng": 7,
+          "tavily": 9,
+          "wikipedia": 5
+        },
+        "prompt": {
+          "ddgs": 7,
+          "searxng": 5,
+          "tavily": 8
+        },
+        "raw": {
+          "ddgs": 25,
+          "searxng": 8,
+          "tavily": 9,
+          "wikipedia": 5
+        },
+        "selected": {
+          "ddgs": 7,
+          "searxng": 5,
+          "tavily": 8
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 16,
+          "searxng": 2,
+          "tavily": 1,
+          "wikipedia": 5
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 2,
+          "searxng": 1,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 9,
+      "ranking_reservation_feasible": 9,
+      "ranking_reservation_fulfilled": 8,
+      "ranking_reservation_policy": "provider_share:tavily:0.800",
+      "ranking_reservation_requested": 8,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 8,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 8,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "tavily_direct",
+      "available": true,
+      "case_id": "p11-007",
+      "eligible_tavily_result_count": 10,
+      "evidence_result_count": 10,
+      "fused_result_count": 10,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "tavily": 10
+        },
+        "evidence": {
+          "tavily": 10
+        },
+        "fused": {
+          "tavily": 10
+        },
+        "prompt": {
+          "tavily": 10
+        },
+        "raw": {
+          "tavily": 10
+        },
+        "selected": {
+          "tavily": 10
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "tavily": 0
+        },
+        "evidence_to_prompt": {
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "tavily": 0
+        },
+        "raw_to_fused": {
+          "tavily": 0
+        },
+        "selected_to_evidence": {
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 10,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 10,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "wiby_direct",
+      "available": false,
+      "case_id": "p11-007",
+      "eligible_tavily_result_count": 0,
+      "evidence_result_count": 0,
+      "fused_result_count": 0,
+      "prompt_result_count": 0,
+      "provider_stage_counts": {
+        "eligible": {},
+        "evidence": {},
+        "fused": {},
+        "prompt": {},
+        "raw": {},
+        "selected": {}
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {},
+        "evidence_to_prompt": {},
+        "fused_to_eligible": {},
+        "raw_to_fused": {},
+        "selected_to_evidence": {}
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 0,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 0,
+      "selected_tavily_result_count": 0,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": false
+    },
+    {
+      "arm": "community",
+      "available": true,
+      "case_id": "p11-007",
+      "eligible_tavily_result_count": 0,
+      "evidence_result_count": 10,
+      "fused_result_count": 40,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 29,
+          "searxng": 10,
+          "wikipedia": 4
+        },
+        "evidence": {
+          "ddgs": 6,
+          "searxng": 7
+        },
+        "fused": {
+          "ddgs": 29,
+          "searxng": 10,
+          "wikipedia": 4
+        },
+        "prompt": {
+          "ddgs": 6,
+          "searxng": 7
+        },
+        "raw": {
+          "ddgs": 30,
+          "searxng": 10,
+          "wikipedia": 4
+        },
+        "selected": {
+          "ddgs": 6,
+          "searxng": 7
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 23,
+          "searxng": 3,
+          "wikipedia": 4
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 1,
+          "searxng": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 0,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 0,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_legacy",
+      "available": true,
+      "case_id": "p11-007",
+      "eligible_tavily_result_count": 10,
+      "evidence_result_count": 10,
+      "fused_result_count": 44,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 29,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 4
+        },
+        "evidence": {
+          "ddgs": 8,
+          "searxng": 5,
+          "tavily": 5
+        },
+        "fused": {
+          "ddgs": 29,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 4
+        },
+        "prompt": {
+          "ddgs": 8,
+          "searxng": 5,
+          "tavily": 5
+        },
+        "raw": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 4
+        },
+        "selected": {
+          "ddgs": 8,
+          "searxng": 5,
+          "tavily": 5
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 21,
+          "searxng": 5,
+          "tavily": 5,
+          "wikipedia": 4
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 1,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 10,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 5,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_4_6",
+      "available": true,
+      "case_id": "p11-007",
+      "eligible_tavily_result_count": 10,
+      "evidence_result_count": 10,
+      "fused_result_count": 44,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 29,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 4
+        },
+        "evidence": {
+          "ddgs": 8,
+          "searxng": 5,
+          "tavily": 5
+        },
+        "fused": {
+          "ddgs": 29,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 4
+        },
+        "prompt": {
+          "ddgs": 8,
+          "searxng": 5,
+          "tavily": 5
+        },
+        "raw": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 4
+        },
+        "selected": {
+          "ddgs": 8,
+          "searxng": 5,
+          "tavily": 5
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 21,
+          "searxng": 5,
+          "tavily": 5,
+          "wikipedia": 4
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 1,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 10,
+      "ranking_reservation_feasible": 10,
+      "ranking_reservation_fulfilled": 4,
+      "ranking_reservation_policy": "provider_share:tavily:0.400",
+      "ranking_reservation_requested": 4,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 4,
+      "raw_tavily_result_count": 10,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 5,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_6_4",
+      "available": true,
+      "case_id": "p11-007",
+      "eligible_tavily_result_count": 10,
+      "evidence_result_count": 10,
+      "fused_result_count": 44,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 29,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 4
+        },
+        "evidence": {
+          "ddgs": 8,
+          "searxng": 4,
+          "tavily": 6
+        },
+        "fused": {
+          "ddgs": 29,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 4
+        },
+        "prompt": {
+          "ddgs": 8,
+          "searxng": 4,
+          "tavily": 6
+        },
+        "raw": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 4
+        },
+        "selected": {
+          "ddgs": 8,
+          "searxng": 4,
+          "tavily": 6
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 21,
+          "searxng": 6,
+          "tavily": 4,
+          "wikipedia": 4
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 1,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 10,
+      "ranking_reservation_feasible": 10,
+      "ranking_reservation_fulfilled": 6,
+      "ranking_reservation_policy": "provider_share:tavily:0.600",
+      "ranking_reservation_requested": 6,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 6,
+      "raw_tavily_result_count": 10,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 6,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_8_2",
+      "available": true,
+      "case_id": "p11-007",
+      "eligible_tavily_result_count": 10,
+      "evidence_result_count": 10,
+      "fused_result_count": 44,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 29,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 4
+        },
+        "evidence": {
+          "ddgs": 8,
+          "searxng": 2,
+          "tavily": 8
+        },
+        "fused": {
+          "ddgs": 29,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 4
+        },
+        "prompt": {
+          "ddgs": 8,
+          "searxng": 2,
+          "tavily": 8
+        },
+        "raw": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 4
+        },
+        "selected": {
+          "ddgs": 8,
+          "searxng": 2,
+          "tavily": 8
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 21,
+          "searxng": 8,
+          "tavily": 2,
+          "wikipedia": 4
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 1,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 10,
+      "ranking_reservation_feasible": 10,
+      "ranking_reservation_fulfilled": 8,
+      "ranking_reservation_policy": "provider_share:tavily:0.800",
+      "ranking_reservation_requested": 8,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 8,
+      "raw_tavily_result_count": 10,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 8,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "tavily_direct",
+      "available": true,
+      "case_id": "p11-008",
+      "eligible_tavily_result_count": 10,
+      "evidence_result_count": 10,
+      "fused_result_count": 10,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "tavily": 10
+        },
+        "evidence": {
+          "tavily": 10
+        },
+        "fused": {
+          "tavily": 10
+        },
+        "prompt": {
+          "tavily": 10
+        },
+        "raw": {
+          "tavily": 10
+        },
+        "selected": {
+          "tavily": 10
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "tavily": 0
+        },
+        "evidence_to_prompt": {
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "tavily": 0
+        },
+        "raw_to_fused": {
+          "tavily": 0
+        },
+        "selected_to_evidence": {
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 10,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 10,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "wiby_direct",
+      "available": false,
+      "case_id": "p11-008",
+      "eligible_tavily_result_count": 0,
+      "evidence_result_count": 0,
+      "fused_result_count": 0,
+      "prompt_result_count": 0,
+      "provider_stage_counts": {
+        "eligible": {},
+        "evidence": {},
+        "fused": {},
+        "prompt": {},
+        "raw": {},
+        "selected": {}
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {},
+        "evidence_to_prompt": {},
+        "fused_to_eligible": {},
+        "raw_to_fused": {},
+        "selected_to_evidence": {}
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 0,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 0,
+      "selected_tavily_result_count": 0,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": false
+    },
+    {
+      "arm": "community",
+      "available": true,
+      "case_id": "p11-008",
+      "eligible_tavily_result_count": 0,
+      "evidence_result_count": 10,
+      "fused_result_count": 54,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 29,
+          "searxng": 9,
+          "wikipedia": 20
+        },
+        "evidence": {
+          "ddgs": 6,
+          "searxng": 8
+        },
+        "fused": {
+          "ddgs": 29,
+          "searxng": 9,
+          "wikipedia": 20
+        },
+        "prompt": {
+          "ddgs": 6,
+          "searxng": 8
+        },
+        "raw": {
+          "ddgs": 30,
+          "searxng": 10,
+          "wikipedia": 20
+        },
+        "selected": {
+          "ddgs": 6,
+          "searxng": 8
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 23,
+          "searxng": 1,
+          "wikipedia": 20
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 1,
+          "searxng": 1,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 0,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 0,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_legacy",
+      "available": true,
+      "case_id": "p11-008",
+      "eligible_tavily_result_count": 10,
+      "evidence_result_count": 10,
+      "fused_result_count": 58,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 29,
+          "searxng": 9,
+          "tavily": 10,
+          "wikipedia": 20
+        },
+        "evidence": {
+          "ddgs": 8,
+          "searxng": 5,
+          "tavily": 7
+        },
+        "fused": {
+          "ddgs": 29,
+          "searxng": 9,
+          "tavily": 10,
+          "wikipedia": 20
+        },
+        "prompt": {
+          "ddgs": 8,
+          "searxng": 5,
+          "tavily": 7
+        },
+        "raw": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 20
+        },
+        "selected": {
+          "ddgs": 8,
+          "searxng": 5,
+          "tavily": 7
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 21,
+          "searxng": 4,
+          "tavily": 3,
+          "wikipedia": 20
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 1,
+          "searxng": 1,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 10,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 7,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_4_6",
+      "available": true,
+      "case_id": "p11-008",
+      "eligible_tavily_result_count": 10,
+      "evidence_result_count": 10,
+      "fused_result_count": 58,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 29,
+          "searxng": 9,
+          "tavily": 10,
+          "wikipedia": 20
+        },
+        "evidence": {
+          "ddgs": 8,
+          "searxng": 5,
+          "tavily": 7
+        },
+        "fused": {
+          "ddgs": 29,
+          "searxng": 9,
+          "tavily": 10,
+          "wikipedia": 20
+        },
+        "prompt": {
+          "ddgs": 8,
+          "searxng": 5,
+          "tavily": 7
+        },
+        "raw": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 20
+        },
+        "selected": {
+          "ddgs": 8,
+          "searxng": 5,
+          "tavily": 7
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 21,
+          "searxng": 4,
+          "tavily": 3,
+          "wikipedia": 20
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 1,
+          "searxng": 1,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 10,
+      "ranking_reservation_feasible": 10,
+      "ranking_reservation_fulfilled": 4,
+      "ranking_reservation_policy": "provider_share:tavily:0.400",
+      "ranking_reservation_requested": 4,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 4,
+      "raw_tavily_result_count": 10,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 7,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_6_4",
+      "available": true,
+      "case_id": "p11-008",
+      "eligible_tavily_result_count": 10,
+      "evidence_result_count": 10,
+      "fused_result_count": 58,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 29,
+          "searxng": 9,
+          "tavily": 10,
+          "wikipedia": 20
+        },
+        "evidence": {
+          "ddgs": 8,
+          "searxng": 5,
+          "tavily": 7
+        },
+        "fused": {
+          "ddgs": 29,
+          "searxng": 9,
+          "tavily": 10,
+          "wikipedia": 20
+        },
+        "prompt": {
+          "ddgs": 8,
+          "searxng": 5,
+          "tavily": 7
+        },
+        "raw": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 20
+        },
+        "selected": {
+          "ddgs": 8,
+          "searxng": 5,
+          "tavily": 7
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 21,
+          "searxng": 4,
+          "tavily": 3,
+          "wikipedia": 20
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 1,
+          "searxng": 1,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 10,
+      "ranking_reservation_feasible": 10,
+      "ranking_reservation_fulfilled": 6,
+      "ranking_reservation_policy": "provider_share:tavily:0.600",
+      "ranking_reservation_requested": 6,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 6,
+      "raw_tavily_result_count": 10,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 7,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_8_2",
+      "available": true,
+      "case_id": "p11-008",
+      "eligible_tavily_result_count": 10,
+      "evidence_result_count": 10,
+      "fused_result_count": 58,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 29,
+          "searxng": 9,
+          "tavily": 10,
+          "wikipedia": 20
+        },
+        "evidence": {
+          "ddgs": 8,
+          "searxng": 4,
+          "tavily": 8
+        },
+        "fused": {
+          "ddgs": 29,
+          "searxng": 9,
+          "tavily": 10,
+          "wikipedia": 20
+        },
+        "prompt": {
+          "ddgs": 8,
+          "searxng": 4,
+          "tavily": 8
+        },
+        "raw": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 10,
+          "wikipedia": 20
+        },
+        "selected": {
+          "ddgs": 8,
+          "searxng": 4,
+          "tavily": 8
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 21,
+          "searxng": 5,
+          "tavily": 2,
+          "wikipedia": 20
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 1,
+          "searxng": 1,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 10,
+      "ranking_reservation_feasible": 10,
+      "ranking_reservation_fulfilled": 8,
+      "ranking_reservation_policy": "provider_share:tavily:0.800",
+      "ranking_reservation_requested": 8,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 8,
+      "raw_tavily_result_count": 10,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 8,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "tavily_direct",
+      "available": true,
+      "case_id": "p11-009",
+      "eligible_tavily_result_count": 9,
+      "evidence_result_count": 7,
+      "fused_result_count": 9,
+      "prompt_result_count": 7,
+      "provider_stage_counts": {
+        "eligible": {
+          "tavily": 9
+        },
+        "evidence": {
+          "tavily": 7
+        },
+        "fused": {
+          "tavily": 9
+        },
+        "prompt": {
+          "tavily": 7
+        },
+        "raw": {
+          "tavily": 9
+        },
+        "selected": {
+          "tavily": 7
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "tavily": 2
+        },
+        "evidence_to_prompt": {
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "tavily": 0
+        },
+        "raw_to_fused": {
+          "tavily": 0
+        },
+        "selected_to_evidence": {
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 7,
+      "selected_tavily_result_count": 7,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "wiby_direct",
+      "available": true,
+      "case_id": "p11-009",
+      "eligible_tavily_result_count": 0,
+      "evidence_result_count": 3,
+      "fused_result_count": 3,
+      "prompt_result_count": 3,
+      "provider_stage_counts": {
+        "eligible": {
+          "wiby": 3
+        },
+        "evidence": {
+          "wiby": 3
+        },
+        "fused": {
+          "wiby": 3
+        },
+        "prompt": {
+          "wiby": 3
+        },
+        "raw": {
+          "wiby": 3
+        },
+        "selected": {
+          "wiby": 3
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "wiby": 0
+        },
+        "evidence_to_prompt": {
+          "wiby": 0
+        },
+        "fused_to_eligible": {
+          "wiby": 0
+        },
+        "raw_to_fused": {
+          "wiby": 0
+        },
+        "selected_to_evidence": {
+          "wiby": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 0,
+      "raw_wiby_result_count": 3,
+      "selected_result_count": 3,
+      "selected_tavily_result_count": 0,
+      "selected_wiby_result_count": 3,
+      "target_domain_hit": false
+    },
+    {
+      "arm": "community",
+      "available": true,
+      "case_id": "p11-009",
+      "eligible_tavily_result_count": 0,
+      "evidence_result_count": 10,
+      "fused_result_count": 58,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 30,
+          "searxng": 10,
+          "wiby": 3,
+          "wikipedia": 20
+        },
+        "evidence": {
+          "ddgs": 7,
+          "searxng": 7,
+          "wikipedia": 1
+        },
+        "fused": {
+          "ddgs": 30,
+          "searxng": 10,
+          "wiby": 3,
+          "wikipedia": 20
+        },
+        "prompt": {
+          "ddgs": 7,
+          "searxng": 7,
+          "wikipedia": 1
+        },
+        "raw": {
+          "ddgs": 30,
+          "searxng": 10,
+          "wiby": 3,
+          "wikipedia": 20
+        },
+        "selected": {
+          "ddgs": 7,
+          "searxng": 7,
+          "wikipedia": 1
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 23,
+          "searxng": 3,
+          "wiby": 3,
+          "wikipedia": 19
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "wikipedia": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "searxng": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "wikipedia": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 0,
+      "raw_wiby_result_count": 3,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 0,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_legacy",
+      "available": true,
+      "case_id": "p11-009",
+      "eligible_tavily_result_count": 9,
+      "evidence_result_count": 10,
+      "fused_result_count": 61,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 9,
+          "wiby": 3,
+          "wikipedia": 20
+        },
+        "evidence": {
+          "ddgs": 8,
+          "searxng": 6,
+          "tavily": 5,
+          "wikipedia": 1
+        },
+        "fused": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 9,
+          "wiby": 3,
+          "wikipedia": 20
+        },
+        "prompt": {
+          "ddgs": 8,
+          "searxng": 6,
+          "tavily": 5,
+          "wikipedia": 1
+        },
+        "raw": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 9,
+          "wiby": 3,
+          "wikipedia": 20
+        },
+        "selected": {
+          "ddgs": 8,
+          "searxng": 6,
+          "tavily": 5,
+          "wikipedia": 1
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 22,
+          "searxng": 4,
+          "tavily": 4,
+          "wiby": 3,
+          "wikipedia": 19
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 3,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 5,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_4_6",
+      "available": true,
+      "case_id": "p11-009",
+      "eligible_tavily_result_count": 9,
+      "evidence_result_count": 10,
+      "fused_result_count": 61,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 9,
+          "wiby": 3,
+          "wikipedia": 20
+        },
+        "evidence": {
+          "ddgs": 8,
+          "searxng": 5,
+          "tavily": 6,
+          "wikipedia": 1
+        },
+        "fused": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 9,
+          "wiby": 3,
+          "wikipedia": 20
+        },
+        "prompt": {
+          "ddgs": 8,
+          "searxng": 5,
+          "tavily": 6,
+          "wikipedia": 1
+        },
+        "raw": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 9,
+          "wiby": 3,
+          "wikipedia": 20
+        },
+        "selected": {
+          "ddgs": 8,
+          "searxng": 5,
+          "tavily": 6,
+          "wikipedia": 1
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 22,
+          "searxng": 5,
+          "tavily": 3,
+          "wiby": 3,
+          "wikipedia": 19
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        }
+      },
+      "ranking_reservation_eligible": 9,
+      "ranking_reservation_feasible": 7,
+      "ranking_reservation_fulfilled": 4,
+      "ranking_reservation_policy": "provider_share:tavily:0.400",
+      "ranking_reservation_requested": 4,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 4,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 3,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 6,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_6_4",
+      "available": true,
+      "case_id": "p11-009",
+      "eligible_tavily_result_count": 9,
+      "evidence_result_count": 10,
+      "fused_result_count": 61,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 9,
+          "wiby": 3,
+          "wikipedia": 20
+        },
+        "evidence": {
+          "ddgs": 8,
+          "searxng": 5,
+          "tavily": 6,
+          "wikipedia": 1
+        },
+        "fused": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 9,
+          "wiby": 3,
+          "wikipedia": 20
+        },
+        "prompt": {
+          "ddgs": 8,
+          "searxng": 5,
+          "tavily": 6,
+          "wikipedia": 1
+        },
+        "raw": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 9,
+          "wiby": 3,
+          "wikipedia": 20
+        },
+        "selected": {
+          "ddgs": 8,
+          "searxng": 5,
+          "tavily": 6,
+          "wikipedia": 1
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 22,
+          "searxng": 5,
+          "tavily": 3,
+          "wiby": 3,
+          "wikipedia": 19
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        }
+      },
+      "ranking_reservation_eligible": 9,
+      "ranking_reservation_feasible": 7,
+      "ranking_reservation_fulfilled": 6,
+      "ranking_reservation_policy": "provider_share:tavily:0.600",
+      "ranking_reservation_requested": 6,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 6,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 3,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 6,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_8_2",
+      "available": true,
+      "case_id": "p11-009",
+      "eligible_tavily_result_count": 9,
+      "evidence_result_count": 10,
+      "fused_result_count": 61,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 9,
+          "wiby": 3,
+          "wikipedia": 20
+        },
+        "evidence": {
+          "ddgs": 8,
+          "searxng": 4,
+          "tavily": 7,
+          "wikipedia": 1
+        },
+        "fused": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 9,
+          "wiby": 3,
+          "wikipedia": 20
+        },
+        "prompt": {
+          "ddgs": 8,
+          "searxng": 4,
+          "tavily": 7,
+          "wikipedia": 1
+        },
+        "raw": {
+          "ddgs": 30,
+          "searxng": 10,
+          "tavily": 9,
+          "wiby": 3,
+          "wikipedia": 20
+        },
+        "selected": {
+          "ddgs": 8,
+          "searxng": 4,
+          "tavily": 7,
+          "wikipedia": 1
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 22,
+          "searxng": 6,
+          "tavily": 2,
+          "wiby": 3,
+          "wikipedia": 19
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        }
+      },
+      "ranking_reservation_eligible": 9,
+      "ranking_reservation_feasible": 7,
+      "ranking_reservation_fulfilled": 7,
+      "ranking_reservation_policy": "provider_share:tavily:0.800",
+      "ranking_reservation_requested": 8,
+      "ranking_reservation_shortfall_reason": "domain_diversity_cap",
+      "ranking_reservation_target": 7,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 3,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 7,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "tavily_direct",
+      "available": true,
+      "case_id": "p11-010",
+      "eligible_tavily_result_count": 9,
+      "evidence_result_count": 9,
+      "fused_result_count": 9,
+      "prompt_result_count": 9,
+      "provider_stage_counts": {
+        "eligible": {
+          "tavily": 9
+        },
+        "evidence": {
+          "tavily": 9
+        },
+        "fused": {
+          "tavily": 9
+        },
+        "prompt": {
+          "tavily": 9
+        },
+        "raw": {
+          "tavily": 9
+        },
+        "selected": {
+          "tavily": 9
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "tavily": 0
+        },
+        "evidence_to_prompt": {
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "tavily": 0
+        },
+        "raw_to_fused": {
+          "tavily": 0
+        },
+        "selected_to_evidence": {
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 9,
+      "selected_tavily_result_count": 9,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "wiby_direct",
+      "available": false,
+      "case_id": "p11-010",
+      "eligible_tavily_result_count": 0,
+      "evidence_result_count": 0,
+      "fused_result_count": 0,
+      "prompt_result_count": 0,
+      "provider_stage_counts": {
+        "eligible": {},
+        "evidence": {},
+        "fused": {},
+        "prompt": {},
+        "raw": {},
+        "selected": {}
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {},
+        "evidence_to_prompt": {},
+        "fused_to_eligible": {},
+        "raw_to_fused": {},
+        "selected_to_evidence": {}
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 0,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 0,
+      "selected_tavily_result_count": 0,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": false
+    },
+    {
+      "arm": "community",
+      "available": true,
+      "case_id": "p11-010",
+      "eligible_tavily_result_count": 0,
+      "evidence_result_count": 10,
+      "fused_result_count": 16,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 10,
+          "searxng": 8
+        },
+        "evidence": {
+          "ddgs": 4,
+          "searxng": 8
+        },
+        "fused": {
+          "ddgs": 10,
+          "searxng": 8
+        },
+        "prompt": {
+          "ddgs": 4,
+          "searxng": 8
+        },
+        "raw": {
+          "ddgs": 10,
+          "searxng": 8
+        },
+        "selected": {
+          "ddgs": 4,
+          "searxng": 8
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 6,
+          "searxng": 0
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "searxng": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 0,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 0,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_legacy",
+      "available": true,
+      "case_id": "p11-010",
+      "eligible_tavily_result_count": 9,
+      "evidence_result_count": 10,
+      "fused_result_count": 23,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 10,
+          "searxng": 8,
+          "tavily": 9
+        },
+        "evidence": {
+          "ddgs": 3,
+          "searxng": 6,
+          "tavily": 5
+        },
+        "fused": {
+          "ddgs": 10,
+          "searxng": 8,
+          "tavily": 9
+        },
+        "prompt": {
+          "ddgs": 3,
+          "searxng": 6,
+          "tavily": 5
+        },
+        "raw": {
+          "ddgs": 10,
+          "searxng": 8,
+          "tavily": 9
+        },
+        "selected": {
+          "ddgs": 3,
+          "searxng": 6,
+          "tavily": 5
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 7,
+          "searxng": 2,
+          "tavily": 4
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 5,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_4_6",
+      "available": true,
+      "case_id": "p11-010",
+      "eligible_tavily_result_count": 9,
+      "evidence_result_count": 10,
+      "fused_result_count": 23,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 10,
+          "searxng": 8,
+          "tavily": 9
+        },
+        "evidence": {
+          "ddgs": 3,
+          "searxng": 6,
+          "tavily": 5
+        },
+        "fused": {
+          "ddgs": 10,
+          "searxng": 8,
+          "tavily": 9
+        },
+        "prompt": {
+          "ddgs": 3,
+          "searxng": 6,
+          "tavily": 5
+        },
+        "raw": {
+          "ddgs": 10,
+          "searxng": 8,
+          "tavily": 9
+        },
+        "selected": {
+          "ddgs": 3,
+          "searxng": 6,
+          "tavily": 5
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 7,
+          "searxng": 2,
+          "tavily": 4
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 9,
+      "ranking_reservation_feasible": 9,
+      "ranking_reservation_fulfilled": 4,
+      "ranking_reservation_policy": "provider_share:tavily:0.400",
+      "ranking_reservation_requested": 4,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 4,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 5,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_6_4",
+      "available": true,
+      "case_id": "p11-010",
+      "eligible_tavily_result_count": 9,
+      "evidence_result_count": 10,
+      "fused_result_count": 23,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 10,
+          "searxng": 8,
+          "tavily": 9
+        },
+        "evidence": {
+          "ddgs": 2,
+          "searxng": 6,
+          "tavily": 6
+        },
+        "fused": {
+          "ddgs": 10,
+          "searxng": 8,
+          "tavily": 9
+        },
+        "prompt": {
+          "ddgs": 2,
+          "searxng": 6,
+          "tavily": 6
+        },
+        "raw": {
+          "ddgs": 10,
+          "searxng": 8,
+          "tavily": 9
+        },
+        "selected": {
+          "ddgs": 2,
+          "searxng": 6,
+          "tavily": 6
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 8,
+          "searxng": 2,
+          "tavily": 3
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 9,
+      "ranking_reservation_feasible": 9,
+      "ranking_reservation_fulfilled": 6,
+      "ranking_reservation_policy": "provider_share:tavily:0.600",
+      "ranking_reservation_requested": 6,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 6,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 6,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_8_2",
+      "available": true,
+      "case_id": "p11-010",
+      "eligible_tavily_result_count": 9,
+      "evidence_result_count": 10,
+      "fused_result_count": 23,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 10,
+          "searxng": 8,
+          "tavily": 9
+        },
+        "evidence": {
+          "ddgs": 2,
+          "searxng": 4,
+          "tavily": 8
+        },
+        "fused": {
+          "ddgs": 10,
+          "searxng": 8,
+          "tavily": 9
+        },
+        "prompt": {
+          "ddgs": 2,
+          "searxng": 4,
+          "tavily": 8
+        },
+        "raw": {
+          "ddgs": 10,
+          "searxng": 8,
+          "tavily": 9
+        },
+        "selected": {
+          "ddgs": 2,
+          "searxng": 4,
+          "tavily": 8
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 8,
+          "searxng": 4,
+          "tavily": 1
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "searxng": 0,
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 9,
+      "ranking_reservation_feasible": 9,
+      "ranking_reservation_fulfilled": 8,
+      "ranking_reservation_policy": "provider_share:tavily:0.800",
+      "ranking_reservation_requested": 8,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 8,
+      "raw_tavily_result_count": 9,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 8,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "tavily_direct",
+      "available": true,
+      "case_id": "p11-011",
+      "eligible_tavily_result_count": 5,
+      "evidence_result_count": 5,
+      "fused_result_count": 5,
+      "prompt_result_count": 5,
+      "provider_stage_counts": {
+        "eligible": {
+          "tavily": 5
+        },
+        "evidence": {
+          "tavily": 5
+        },
+        "fused": {
+          "tavily": 5
+        },
+        "prompt": {
+          "tavily": 5
+        },
+        "raw": {
+          "tavily": 5
+        },
+        "selected": {
+          "tavily": 5
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "tavily": 0
+        },
+        "evidence_to_prompt": {
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "tavily": 0
+        },
+        "raw_to_fused": {
+          "tavily": 0
+        },
+        "selected_to_evidence": {
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 5,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 5,
+      "selected_tavily_result_count": 5,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "wiby_direct",
+      "available": true,
+      "case_id": "p11-011",
+      "eligible_tavily_result_count": 0,
+      "evidence_result_count": 2,
+      "fused_result_count": 2,
+      "prompt_result_count": 2,
+      "provider_stage_counts": {
+        "eligible": {
+          "wiby": 2
+        },
+        "evidence": {
+          "wiby": 2
+        },
+        "fused": {
+          "wiby": 2
+        },
+        "prompt": {
+          "wiby": 2
+        },
+        "raw": {
+          "wiby": 2
+        },
+        "selected": {
+          "wiby": 2
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "wiby": 0
+        },
+        "evidence_to_prompt": {
+          "wiby": 0
+        },
+        "fused_to_eligible": {
+          "wiby": 0
+        },
+        "raw_to_fused": {
+          "wiby": 0
+        },
+        "selected_to_evidence": {
+          "wiby": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 0,
+      "raw_wiby_result_count": 2,
+      "selected_result_count": 2,
+      "selected_tavily_result_count": 0,
+      "selected_wiby_result_count": 2,
+      "target_domain_hit": false
+    },
+    {
+      "arm": "community",
+      "available": true,
+      "case_id": "p11-011",
+      "eligible_tavily_result_count": 0,
+      "evidence_result_count": 10,
+      "fused_result_count": 25,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 14,
+          "wiby": 2,
+          "wikipedia": 9
+        },
+        "evidence": {
+          "ddgs": 7,
+          "wikipedia": 3
+        },
+        "fused": {
+          "ddgs": 14,
+          "wiby": 2,
+          "wikipedia": 9
+        },
+        "prompt": {
+          "ddgs": 7,
+          "wikipedia": 3
+        },
+        "raw": {
+          "ddgs": 14,
+          "wiby": 2,
+          "wikipedia": 9
+        },
+        "selected": {
+          "ddgs": 7,
+          "wikipedia": 3
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 7,
+          "wiby": 2,
+          "wikipedia": 6
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "wikipedia": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "wikipedia": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 0,
+      "raw_wiby_result_count": 2,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 0,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_legacy",
+      "available": true,
+      "case_id": "p11-011",
+      "eligible_tavily_result_count": 5,
+      "evidence_result_count": 10,
+      "fused_result_count": 29,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 14,
+          "tavily": 5,
+          "wiby": 2,
+          "wikipedia": 9
+        },
+        "evidence": {
+          "ddgs": 6,
+          "tavily": 4,
+          "wikipedia": 1
+        },
+        "fused": {
+          "ddgs": 14,
+          "tavily": 5,
+          "wiby": 2,
+          "wikipedia": 9
+        },
+        "prompt": {
+          "ddgs": 6,
+          "tavily": 4,
+          "wikipedia": 1
+        },
+        "raw": {
+          "ddgs": 14,
+          "tavily": 5,
+          "wiby": 2,
+          "wikipedia": 9
+        },
+        "selected": {
+          "ddgs": 6,
+          "tavily": 4,
+          "wikipedia": 1
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 8,
+          "tavily": 1,
+          "wiby": 2,
+          "wikipedia": 8
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 5,
+      "raw_wiby_result_count": 2,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 4,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_4_6",
+      "available": true,
+      "case_id": "p11-011",
+      "eligible_tavily_result_count": 5,
+      "evidence_result_count": 10,
+      "fused_result_count": 29,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 14,
+          "tavily": 5,
+          "wiby": 2,
+          "wikipedia": 9
+        },
+        "evidence": {
+          "ddgs": 6,
+          "tavily": 4,
+          "wikipedia": 1
+        },
+        "fused": {
+          "ddgs": 14,
+          "tavily": 5,
+          "wiby": 2,
+          "wikipedia": 9
+        },
+        "prompt": {
+          "ddgs": 6,
+          "tavily": 4,
+          "wikipedia": 1
+        },
+        "raw": {
+          "ddgs": 14,
+          "tavily": 5,
+          "wiby": 2,
+          "wikipedia": 9
+        },
+        "selected": {
+          "ddgs": 6,
+          "tavily": 4,
+          "wikipedia": 1
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 8,
+          "tavily": 1,
+          "wiby": 2,
+          "wikipedia": 8
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        }
+      },
+      "ranking_reservation_eligible": 5,
+      "ranking_reservation_feasible": 5,
+      "ranking_reservation_fulfilled": 4,
+      "ranking_reservation_policy": "provider_share:tavily:0.400",
+      "ranking_reservation_requested": 4,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 4,
+      "raw_tavily_result_count": 5,
+      "raw_wiby_result_count": 2,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 4,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_6_4",
+      "available": true,
+      "case_id": "p11-011",
+      "eligible_tavily_result_count": 5,
+      "evidence_result_count": 10,
+      "fused_result_count": 29,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 14,
+          "tavily": 5,
+          "wiby": 2,
+          "wikipedia": 9
+        },
+        "evidence": {
+          "ddgs": 5,
+          "tavily": 5,
+          "wikipedia": 1
+        },
+        "fused": {
+          "ddgs": 14,
+          "tavily": 5,
+          "wiby": 2,
+          "wikipedia": 9
+        },
+        "prompt": {
+          "ddgs": 5,
+          "tavily": 5,
+          "wikipedia": 1
+        },
+        "raw": {
+          "ddgs": 14,
+          "tavily": 5,
+          "wiby": 2,
+          "wikipedia": 9
+        },
+        "selected": {
+          "ddgs": 5,
+          "tavily": 5,
+          "wikipedia": 1
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 9,
+          "tavily": 0,
+          "wiby": 2,
+          "wikipedia": 8
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        }
+      },
+      "ranking_reservation_eligible": 5,
+      "ranking_reservation_feasible": 5,
+      "ranking_reservation_fulfilled": 5,
+      "ranking_reservation_policy": "provider_share:tavily:0.600",
+      "ranking_reservation_requested": 6,
+      "ranking_reservation_shortfall_reason": "insufficient_eligible_results",
+      "ranking_reservation_target": 5,
+      "raw_tavily_result_count": 5,
+      "raw_wiby_result_count": 2,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 5,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_8_2",
+      "available": true,
+      "case_id": "p11-011",
+      "eligible_tavily_result_count": 5,
+      "evidence_result_count": 10,
+      "fused_result_count": 29,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 14,
+          "tavily": 5,
+          "wiby": 2,
+          "wikipedia": 9
+        },
+        "evidence": {
+          "ddgs": 5,
+          "tavily": 5,
+          "wikipedia": 1
+        },
+        "fused": {
+          "ddgs": 14,
+          "tavily": 5,
+          "wiby": 2,
+          "wikipedia": 9
+        },
+        "prompt": {
+          "ddgs": 5,
+          "tavily": 5,
+          "wikipedia": 1
+        },
+        "raw": {
+          "ddgs": 14,
+          "tavily": 5,
+          "wiby": 2,
+          "wikipedia": 9
+        },
+        "selected": {
+          "ddgs": 5,
+          "tavily": 5,
+          "wikipedia": 1
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 9,
+          "tavily": 0,
+          "wiby": 2,
+          "wikipedia": 8
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        }
+      },
+      "ranking_reservation_eligible": 5,
+      "ranking_reservation_feasible": 5,
+      "ranking_reservation_fulfilled": 5,
+      "ranking_reservation_policy": "provider_share:tavily:0.800",
+      "ranking_reservation_requested": 8,
+      "ranking_reservation_shortfall_reason": "insufficient_eligible_results",
+      "ranking_reservation_target": 5,
+      "raw_tavily_result_count": 5,
+      "raw_wiby_result_count": 2,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 5,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "tavily_direct",
+      "available": true,
+      "case_id": "p11-012",
+      "eligible_tavily_result_count": 10,
+      "evidence_result_count": 10,
+      "fused_result_count": 10,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "tavily": 10
+        },
+        "evidence": {
+          "tavily": 10
+        },
+        "fused": {
+          "tavily": 10
+        },
+        "prompt": {
+          "tavily": 10
+        },
+        "raw": {
+          "tavily": 10
+        },
+        "selected": {
+          "tavily": 10
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "tavily": 0
+        },
+        "evidence_to_prompt": {
+          "tavily": 0
+        },
+        "fused_to_eligible": {
+          "tavily": 0
+        },
+        "raw_to_fused": {
+          "tavily": 0
+        },
+        "selected_to_evidence": {
+          "tavily": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 10,
+      "raw_wiby_result_count": 0,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 10,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "wiby_direct",
+      "available": true,
+      "case_id": "p11-012",
+      "eligible_tavily_result_count": 0,
+      "evidence_result_count": 1,
+      "fused_result_count": 1,
+      "prompt_result_count": 1,
+      "provider_stage_counts": {
+        "eligible": {
+          "wiby": 1
+        },
+        "evidence": {
+          "wiby": 1
+        },
+        "fused": {
+          "wiby": 1
+        },
+        "prompt": {
+          "wiby": 1
+        },
+        "raw": {
+          "wiby": 1
+        },
+        "selected": {
+          "wiby": 1
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "wiby": 0
+        },
+        "evidence_to_prompt": {
+          "wiby": 0
+        },
+        "fused_to_eligible": {
+          "wiby": 0
+        },
+        "raw_to_fused": {
+          "wiby": 0
+        },
+        "selected_to_evidence": {
+          "wiby": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 0,
+      "raw_wiby_result_count": 1,
+      "selected_result_count": 1,
+      "selected_tavily_result_count": 0,
+      "selected_wiby_result_count": 1,
+      "target_domain_hit": false
+    },
+    {
+      "arm": "community",
+      "available": true,
+      "case_id": "p11-012",
+      "eligible_tavily_result_count": 0,
+      "evidence_result_count": 10,
+      "fused_result_count": 36,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 19,
+          "wiby": 1,
+          "wikipedia": 16
+        },
+        "evidence": {
+          "ddgs": 8,
+          "wikipedia": 2
+        },
+        "fused": {
+          "ddgs": 19,
+          "wiby": 1,
+          "wikipedia": 16
+        },
+        "prompt": {
+          "ddgs": 8,
+          "wikipedia": 2
+        },
+        "raw": {
+          "ddgs": 19,
+          "wiby": 1,
+          "wikipedia": 16
+        },
+        "selected": {
+          "ddgs": 8,
+          "wikipedia": 2
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 11,
+          "wiby": 1,
+          "wikipedia": 14
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "wikipedia": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "wikipedia": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 0,
+      "raw_wiby_result_count": 1,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 0,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_legacy",
+      "available": true,
+      "case_id": "p11-012",
+      "eligible_tavily_result_count": 10,
+      "evidence_result_count": 10,
+      "fused_result_count": 43,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 19,
+          "tavily": 10,
+          "wiby": 1,
+          "wikipedia": 16
+        },
+        "evidence": {
+          "ddgs": 4,
+          "tavily": 8,
+          "wikipedia": 1
+        },
+        "fused": {
+          "ddgs": 19,
+          "tavily": 10,
+          "wiby": 1,
+          "wikipedia": 16
+        },
+        "prompt": {
+          "ddgs": 4,
+          "tavily": 8,
+          "wikipedia": 1
+        },
+        "raw": {
+          "ddgs": 19,
+          "tavily": 10,
+          "wiby": 1,
+          "wikipedia": 16
+        },
+        "selected": {
+          "ddgs": 4,
+          "tavily": 8,
+          "wikipedia": 1
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 15,
+          "tavily": 2,
+          "wiby": 1,
+          "wikipedia": 15
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        }
+      },
+      "ranking_reservation_eligible": 0,
+      "ranking_reservation_feasible": 0,
+      "ranking_reservation_fulfilled": 0,
+      "ranking_reservation_policy": "none",
+      "ranking_reservation_requested": 0,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 0,
+      "raw_tavily_result_count": 10,
+      "raw_wiby_result_count": 1,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 8,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_4_6",
+      "available": true,
+      "case_id": "p11-012",
+      "eligible_tavily_result_count": 10,
+      "evidence_result_count": 10,
+      "fused_result_count": 43,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 19,
+          "tavily": 10,
+          "wiby": 1,
+          "wikipedia": 16
+        },
+        "evidence": {
+          "ddgs": 4,
+          "tavily": 8,
+          "wikipedia": 1
+        },
+        "fused": {
+          "ddgs": 19,
+          "tavily": 10,
+          "wiby": 1,
+          "wikipedia": 16
+        },
+        "prompt": {
+          "ddgs": 4,
+          "tavily": 8,
+          "wikipedia": 1
+        },
+        "raw": {
+          "ddgs": 19,
+          "tavily": 10,
+          "wiby": 1,
+          "wikipedia": 16
+        },
+        "selected": {
+          "ddgs": 4,
+          "tavily": 8,
+          "wikipedia": 1
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 15,
+          "tavily": 2,
+          "wiby": 1,
+          "wikipedia": 15
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        }
+      },
+      "ranking_reservation_eligible": 10,
+      "ranking_reservation_feasible": 10,
+      "ranking_reservation_fulfilled": 4,
+      "ranking_reservation_policy": "provider_share:tavily:0.400",
+      "ranking_reservation_requested": 4,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 4,
+      "raw_tavily_result_count": 10,
+      "raw_wiby_result_count": 1,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 8,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_6_4",
+      "available": true,
+      "case_id": "p11-012",
+      "eligible_tavily_result_count": 10,
+      "evidence_result_count": 10,
+      "fused_result_count": 43,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 19,
+          "tavily": 10,
+          "wiby": 1,
+          "wikipedia": 16
+        },
+        "evidence": {
+          "ddgs": 4,
+          "tavily": 8,
+          "wikipedia": 1
+        },
+        "fused": {
+          "ddgs": 19,
+          "tavily": 10,
+          "wiby": 1,
+          "wikipedia": 16
+        },
+        "prompt": {
+          "ddgs": 4,
+          "tavily": 8,
+          "wikipedia": 1
+        },
+        "raw": {
+          "ddgs": 19,
+          "tavily": 10,
+          "wiby": 1,
+          "wikipedia": 16
+        },
+        "selected": {
+          "ddgs": 4,
+          "tavily": 8,
+          "wikipedia": 1
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 15,
+          "tavily": 2,
+          "wiby": 1,
+          "wikipedia": 15
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        }
+      },
+      "ranking_reservation_eligible": 10,
+      "ranking_reservation_feasible": 10,
+      "ranking_reservation_fulfilled": 6,
+      "ranking_reservation_policy": "provider_share:tavily:0.600",
+      "ranking_reservation_requested": 6,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 6,
+      "raw_tavily_result_count": 10,
+      "raw_wiby_result_count": 1,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 8,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    },
+    {
+      "arm": "quality_safe_8_2",
+      "available": true,
+      "case_id": "p11-012",
+      "eligible_tavily_result_count": 10,
+      "evidence_result_count": 10,
+      "fused_result_count": 43,
+      "prompt_result_count": 10,
+      "provider_stage_counts": {
+        "eligible": {
+          "ddgs": 19,
+          "tavily": 10,
+          "wiby": 1,
+          "wikipedia": 16
+        },
+        "evidence": {
+          "ddgs": 4,
+          "tavily": 8,
+          "wikipedia": 1
+        },
+        "fused": {
+          "ddgs": 19,
+          "tavily": 10,
+          "wiby": 1,
+          "wikipedia": 16
+        },
+        "prompt": {
+          "ddgs": 4,
+          "tavily": 8,
+          "wikipedia": 1
+        },
+        "raw": {
+          "ddgs": 19,
+          "tavily": 10,
+          "wiby": 1,
+          "wikipedia": 16
+        },
+        "selected": {
+          "ddgs": 4,
+          "tavily": 8,
+          "wikipedia": 1
+        }
+      },
+      "provider_stage_loss_counts": {
+        "eligible_to_selected": {
+          "ddgs": 15,
+          "tavily": 2,
+          "wiby": 1,
+          "wikipedia": 15
+        },
+        "evidence_to_prompt": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        },
+        "fused_to_eligible": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "raw_to_fused": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wiby": 0,
+          "wikipedia": 0
+        },
+        "selected_to_evidence": {
+          "ddgs": 0,
+          "tavily": 0,
+          "wikipedia": 0
+        }
+      },
+      "ranking_reservation_eligible": 10,
+      "ranking_reservation_feasible": 10,
+      "ranking_reservation_fulfilled": 8,
+      "ranking_reservation_policy": "provider_share:tavily:0.800",
+      "ranking_reservation_requested": 8,
+      "ranking_reservation_shortfall_reason": null,
+      "ranking_reservation_target": 8,
+      "raw_tavily_result_count": 10,
+      "raw_wiby_result_count": 1,
+      "selected_result_count": 10,
+      "selected_tavily_result_count": 8,
+      "selected_wiby_result_count": 0,
+      "target_domain_hit": true
+    }
+  ],
+  "privacy": {
+    "api_keys_in_report": false,
+    "provider_attribution_urls_in_report": true,
+    "queries_in_report": false,
+    "source_snippets_in_report": false,
+    "source_titles_or_urls_in_report": false,
+    "target_domains_in_report": false
+  },
+  "protocol": {
+    "arms": [
+      "tavily_direct",
+      "wiby_direct",
+      "community",
+      "quality_legacy",
+      "quality_safe_4_6",
+      "quality_safe_6_4",
+      "quality_safe_8_2"
+    ],
+    "cache": false,
+    "community_providers": [
+      "searxng",
+      "ddgs",
+      "wiby",
+      "wikipedia",
+      "crossref",
+      "arxiv",
+      "github"
+    ],
+    "gemini_requests": 0,
+    "independent_provider": {
+      "attribution": "https://wiby.me/",
+      "endpoint": "https://wiby.me/json/",
+      "name": "wiby",
+      "query_budget_per_case": 1
+    },
+    "max_per_domain": 3,
+    "max_results": 10,
+    "maximum_tavily_requests": 12,
+    "maximum_wiby_requests": 12,
+    "prompt_projection_budget_chars": 12000,
+    "provider_calls_replayed": false,
+    "quality_providers": [
+      "searxng",
+      "ddgs",
+      "wiby",
+      "wikipedia",
+      "crossref",
+      "arxiv",
+      "github",
+      "tavily"
+    ],
+    "reservation_contract": "target=min(requested, diverse-feasible); fulfillment is judged against target while requested remains visible",
+    "reservation_shares": {
+      "quality_safe_4_6": 0.4,
+      "quality_safe_6_4": 0.6,
+      "quality_safe_8_2": 0.8
+    },
+    "retry_policy": "none",
+    "searxng_config_sha256": "e33610cdd83c89a0fb85e687e632b179ed36057d948db102c7a6e2c33b456efb",
+    "shared_raw_pool_per_case": true
+  },
+  "retrieval_diagnostics": [
+    {
+      "case_id": "p11-001",
+      "latency_ms": 3789.023,
+      "provider_failure_kind_counts": {},
+      "provider_failure_providers": [],
+      "provider_query_counts": {
+        "ddgs": 1,
+        "searxng": 1,
+        "tavily": 1,
+        "wiby": 1,
+        "wikipedia": 1
+      },
+      "provider_unavailable_engine_query_counts": {},
+      "provider_unresponsive_engine_query_counts": {
+        "searxng": {
+          "brave": 1,
+          "startpage": 1
+        }
+      },
+      "provider_upstream_engine_query_counts": {
+        "searxng": {
+          "duckduckgo": 1
+        }
+      },
+      "wiby_attribution_present": false,
+      "wiby_returned_results": false
+    },
+    {
+      "case_id": "p11-002",
+      "latency_ms": 2402.893,
+      "provider_failure_kind_counts": {},
+      "provider_failure_providers": [],
+      "provider_query_counts": {
+        "ddgs": 1,
+        "searxng": 1,
+        "tavily": 1,
+        "wiby": 1,
+        "wikipedia": 1
+      },
+      "provider_unavailable_engine_query_counts": {},
+      "provider_unresponsive_engine_query_counts": {
+        "searxng": {
+          "brave": 1,
+          "startpage": 1
+        }
+      },
+      "provider_upstream_engine_query_counts": {
+        "searxng": {
+          "duckduckgo": 1
+        }
+      },
+      "wiby_attribution_present": false,
+      "wiby_returned_results": false
+    },
+    {
+      "case_id": "p11-003",
+      "latency_ms": 2765.761,
+      "provider_failure_kind_counts": {},
+      "provider_failure_providers": [],
+      "provider_query_counts": {
+        "ddgs": 1,
+        "searxng": 1,
+        "tavily": 1,
+        "wiby": 1,
+        "wikipedia": 1
+      },
+      "provider_unavailable_engine_query_counts": {},
+      "provider_unresponsive_engine_query_counts": {
+        "searxng": {
+          "brave": 1,
+          "startpage": 1
+        }
+      },
+      "provider_upstream_engine_query_counts": {
+        "searxng": {
+          "duckduckgo": 1
+        }
+      },
+      "wiby_attribution_present": true,
+      "wiby_returned_results": true
+    },
+    {
+      "case_id": "p11-004",
+      "latency_ms": 2823.834,
+      "provider_failure_kind_counts": {},
+      "provider_failure_providers": [],
+      "provider_query_counts": {
+        "ddgs": 1,
+        "searxng": 1,
+        "tavily": 1,
+        "wiby": 1,
+        "wikipedia": 1
+      },
+      "provider_unavailable_engine_query_counts": {},
+      "provider_unresponsive_engine_query_counts": {
+        "searxng": {
+          "brave": 1,
+          "startpage": 1
+        }
+      },
+      "provider_upstream_engine_query_counts": {
+        "searxng": {
+          "duckduckgo": 1
+        }
+      },
+      "wiby_attribution_present": false,
+      "wiby_returned_results": false
+    },
+    {
+      "case_id": "p11-005",
+      "latency_ms": 1815.262,
+      "provider_failure_kind_counts": {},
+      "provider_failure_providers": [],
+      "provider_query_counts": {
+        "ddgs": 1,
+        "searxng": 1,
+        "tavily": 1,
+        "wiby": 1,
+        "wikipedia": 1
+      },
+      "provider_unavailable_engine_query_counts": {},
+      "provider_unresponsive_engine_query_counts": {
+        "searxng": {
+          "brave": 1,
+          "startpage": 1
+        }
+      },
+      "provider_upstream_engine_query_counts": {
+        "searxng": {
+          "duckduckgo": 1
+        }
+      },
+      "wiby_attribution_present": false,
+      "wiby_returned_results": false
+    },
+    {
+      "case_id": "p11-006",
+      "latency_ms": 3117.041,
+      "provider_failure_kind_counts": {},
+      "provider_failure_providers": [],
+      "provider_query_counts": {
+        "ddgs": 1,
+        "searxng": 1,
+        "tavily": 1,
+        "wiby": 1,
+        "wikipedia": 1
+      },
+      "provider_unavailable_engine_query_counts": {},
+      "provider_unresponsive_engine_query_counts": {
+        "searxng": {
+          "brave": 1,
+          "startpage": 1
+        }
+      },
+      "provider_upstream_engine_query_counts": {
+        "searxng": {
+          "duckduckgo": 1
+        }
+      },
+      "wiby_attribution_present": false,
+      "wiby_returned_results": false
+    },
+    {
+      "case_id": "p11-007",
+      "latency_ms": 2014.544,
+      "provider_failure_kind_counts": {},
+      "provider_failure_providers": [],
+      "provider_query_counts": {
+        "ddgs": 1,
+        "searxng": 1,
+        "tavily": 1,
+        "wiby": 1,
+        "wikipedia": 1
+      },
+      "provider_unavailable_engine_query_counts": {},
+      "provider_unresponsive_engine_query_counts": {
+        "searxng": {
+          "brave": 1,
+          "startpage": 1
+        }
+      },
+      "provider_upstream_engine_query_counts": {
+        "searxng": {
+          "duckduckgo": 1
+        }
+      },
+      "wiby_attribution_present": false,
+      "wiby_returned_results": false
+    },
+    {
+      "case_id": "p11-008",
+      "latency_ms": 2229.462,
+      "provider_failure_kind_counts": {},
+      "provider_failure_providers": [],
+      "provider_query_counts": {
+        "ddgs": 1,
+        "searxng": 1,
+        "tavily": 1,
+        "wiby": 1,
+        "wikipedia": 1
+      },
+      "provider_unavailable_engine_query_counts": {},
+      "provider_unresponsive_engine_query_counts": {
+        "searxng": {
+          "brave": 1,
+          "startpage": 1
+        }
+      },
+      "provider_upstream_engine_query_counts": {
+        "searxng": {
+          "duckduckgo": 1
+        }
+      },
+      "wiby_attribution_present": false,
+      "wiby_returned_results": false
+    },
+    {
+      "case_id": "p11-009",
+      "latency_ms": 2270.097,
+      "provider_failure_kind_counts": {},
+      "provider_failure_providers": [],
+      "provider_query_counts": {
+        "ddgs": 1,
+        "searxng": 1,
+        "tavily": 1,
+        "wiby": 1,
+        "wikipedia": 1
+      },
+      "provider_unavailable_engine_query_counts": {},
+      "provider_unresponsive_engine_query_counts": {
+        "searxng": {
+          "brave": 1,
+          "startpage": 1
+        }
+      },
+      "provider_upstream_engine_query_counts": {
+        "searxng": {
+          "duckduckgo": 1
+        }
+      },
+      "wiby_attribution_present": true,
+      "wiby_returned_results": true
+    },
+    {
+      "case_id": "p11-010",
+      "latency_ms": 2693.735,
+      "provider_failure_kind_counts": {},
+      "provider_failure_providers": [],
+      "provider_query_counts": {
+        "ddgs": 1,
+        "searxng": 1,
+        "tavily": 1,
+        "wiby": 1,
+        "wikipedia": 1
+      },
+      "provider_unavailable_engine_query_counts": {},
+      "provider_unresponsive_engine_query_counts": {
+        "searxng": {
+          "brave": 1,
+          "startpage": 1
+        }
+      },
+      "provider_upstream_engine_query_counts": {
+        "searxng": {
+          "duckduckgo": 1
+        }
+      },
+      "wiby_attribution_present": false,
+      "wiby_returned_results": false
+    },
+    {
+      "case_id": "p11-011",
+      "latency_ms": 2824.852,
+      "provider_failure_kind_counts": {
+        "searxng": {
+          "upstream_unavailable": 1
+        }
+      },
+      "provider_failure_providers": [
+        "searxng"
+      ],
+      "provider_query_counts": {
+        "ddgs": 1,
+        "searxng": 1,
+        "tavily": 1,
+        "wiby": 1,
+        "wikipedia": 1
+      },
+      "provider_unavailable_engine_query_counts": {
+        "searxng": {
+          "brave": 1,
+          "duckduckgo": 1,
+          "startpage": 1
+        }
+      },
+      "provider_unresponsive_engine_query_counts": {},
+      "provider_upstream_engine_query_counts": {},
+      "wiby_attribution_present": true,
+      "wiby_returned_results": true
+    },
+    {
+      "case_id": "p11-012",
+      "latency_ms": 2893.776,
+      "provider_failure_kind_counts": {
+        "searxng": {
+          "upstream_unavailable": 1
+        }
+      },
+      "provider_failure_providers": [
+        "searxng"
+      ],
+      "provider_query_counts": {
+        "ddgs": 1,
+        "searxng": 1,
+        "tavily": 1,
+        "wiby": 1,
+        "wikipedia": 1
+      },
+      "provider_unavailable_engine_query_counts": {
+        "searxng": {
+          "brave": 1,
+          "duckduckgo": 1,
+          "startpage": 1
+        }
+      },
+      "provider_unresponsive_engine_query_counts": {},
+      "provider_upstream_engine_query_counts": {},
+      "wiby_attribution_present": true,
+      "wiby_returned_results": true
+    }
+  ],
+  "schema_version": 1,
+  "suite": {
+    "case_count": 12,
+    "case_ids": [
+      "p11-001",
+      "p11-002",
+      "p11-003",
+      "p11-004",
+      "p11-005",
+      "p11-006",
+      "p11-007",
+      "p11-008",
+      "p11-009",
+      "p11-010",
+      "p11-011",
+      "p11-012"
+    ],
+    "path": "benchmarks/data/phase11_calibration_v1.json",
+    "purpose": "authored Phase 11 diagnostic suite reused for a corrective calibration; not an untouched final evaluation",
+    "reused_from_phase11": true,
+    "sha256": "23f0a3c1c6d680b0ec6bdd0964a81f28b23e5778f4965632b03ed5dc4e78c5d7",
+    "topic_distribution": {
+      "developer_docs": 6,
+      "protocol": 2,
+      "public_data": 1,
+      "public_policy": 1,
+      "research": 1,
+      "security": 1
+    }
+  },
+  "traffic": {
+    "case_retrieval_operations": 12,
+    "gemini_requests": 0,
+    "maximum_tavily_requests": 12,
+    "maximum_wiby_requests": 12,
+    "provider_query_calls": 60,
+    "retries": 0,
+    "tavily_requests": 12,
+    "wiby_requests": 12
+  }
+}

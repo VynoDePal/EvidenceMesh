@@ -2,11 +2,11 @@
 
 ## Deployment profiles
 
-`community` is the default and contains `searxng`, independently crawled
-`wiby`, bounded one-query `ddgs`, `wikipedia`, `crossref`, `arxiv` and
-`github`. It requires no key, but internet access, compute and storage are not
-cost-free infrastructure. Wiby can be replaced by an operator-controlled
-compatible deployment.
+`community` is the default and contains `searxng`, bounded one-query `ddgs`,
+`wikipedia`, `crossref`, `arxiv` and `github`. It requires no key, but internet
+access, compute and storage are not cost-free infrastructure. The independently
+crawled Wiby adapter is an explicit opt-in after failing its Phase 11.1
+candidate gates.
 
 `quality` includes the community set plus Tavily, the current recommended
 general-web candidate. Tavily is enabled only when `TAVILY_API_KEY` is
@@ -57,6 +57,14 @@ frozen, makes the reservation target explicitly domain-feasible and evaluates
 Wiby as an independent-index fallback. It is a corrective calibration, not a
 new untouched quality evaluation.
 
+The published
+[Phase 11.1 result](../benchmarks/results/phase11_1_calibration_2026-07-29.md)
+fulfilled its domain-aware reservation target in 12/12 cases, but reached only
+89/96 total target slots against the frozen minimum of 90. Wiby returned
+results in 4/12 cases and survived community selection in 0/12. Its attribution
+was present in all four applicable cases. The candidate failed, so Wiby remains
+opt-in and Phase 12 remains blocked.
+
 ## Zero-key community providers
 
 ### SearXNG
@@ -102,11 +110,13 @@ back to Wiby with results. EvidenceMesh routes one base web query, never
 requests Wiby's optional unfiltered mode and emits the required link in
 `metadata.provider_attributions` whenever Wiby returns results.
 
-Wiby is a specialized, comparatively small index. It adds genuine index
-independence but is not represented as a complete replacement for a broad
-commercial search engine. The public endpoint is best effort and must not be
-load-tested. The [GPLv2 installation guide](https://wiby.me/about/guide.html)
-supports self-hosting; point EvidenceMesh at a compatible deployment with
+Wiby is a specialized, comparatively small index. It offers genuine index
+independence but did not meet the frozen availability or selected-contribution
+gates, so it is not enabled by either named bundle. Opt in with
+`EVIDENCEMESH_PROVIDERS` when small-web recall is useful. The public endpoint is
+best effort and must not be load-tested. The
+[GPLv2 installation guide](https://wiby.me/about/guide.html) supports
+self-hosting; point EvidenceMesh at a compatible deployment with
 `EVIDENCEMESH_WIBY_URL`.
 
 ### Wikipedia
@@ -190,7 +200,7 @@ The public search profile selects compatible source types:
 
 | Profile | Community route | Maximum query variants per provider | Default maximum per domain |
 |---|---|---|---:|
-| Web | SearXNG, DDGS, Wiby, Wikipedia; quality adds Tavily | unlimited, 1, 1, 2 and 1 | 3 |
+| Web | SearXNG, DDGS, Wikipedia; quality adds Tavily; Wiby is opt-in | unlimited, 1, 2 and 1; Wiby 1 | 3 |
 | Reference | Wikipedia | 2 | 10 |
 | News | SearXNG, DDGS | unlimited and 1 | 3 |
 | Academic | Crossref, arXiv, Wikipedia | 2, 1 and 2 | 10 |

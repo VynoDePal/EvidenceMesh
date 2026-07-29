@@ -110,12 +110,17 @@ All notable changes to EvidenceMesh are documented here.
   reached 12/12 availability and target-domain hit@10, but the 8/2 reservation
   was fully satisfied in only 10/12 evaluable cases. The frozen candidate gate
   failed, Phase 12 remains blocked and release remains no-go.
-- Added the zero-key Wiby adapter as a bounded independent-crawl community
-  source, including mandatory provider attribution and a configurable
-  compatible endpoint.
+- Added a zero-key Wiby adapter as a bounded independent-crawl source,
+  including mandatory provider attribution and a configurable compatible
+  endpoint.
 - Split primary-provider reservation telemetry into requested, eligible,
   domain-feasible, target and fulfilled counts with explicit shortfall causes.
 - Locked the Phase 11.1 corrective protocol and GitHub workflow before any
   benchmark-suite traffic, after one disclosed non-suite Wiby schema check. It
   reuses the authored Phase 11 diagnostic suite, caps Tavily and Wiby at 12
   calls each, makes no model request and keeps release no-go.
+- Published the Phase 11.1 result: the domain-aware target was fulfilled in
+  12/12 cases but reached 89/96 total slots against a frozen minimum of 90;
+  Wiby returned results in 4/12 cases and survived community selection in
+  0/12. The candidate failed, Wiby remains opt-in, Phase 12 stays blocked and
+  release remains no-go.

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 from pathlib import Path
 
 from benchmarks.run_phase11_1_calibration import (
@@ -184,3 +186,67 @@ def test_phase11_1_workflow_locks_traffic_privacy_and_no_model_calls() -> None:
     assert 'report["traffic"]["gemini_requests"] == 0' in workflow
     assert 'report["decision"]["release_ready"] is False' in workflow
     assert 'report["decision"]["release_decision"] == "no-go"' in workflow
+
+
+def test_committed_phase11_1_result_matches_frozen_protocol() -> None:
+    root = Path(__file__).parents[1]
+    result_path = root / "benchmarks" / "results" / "phase11_1_calibration_2026-07-29.json"
+    result_bytes = result_path.read_bytes()
+    assert hashlib.sha256(result_bytes).hexdigest() == (
+        "0c8a0a08f54477e44968c40519f228e94341cf17b41e0ffaf163bb831a6abfe3"
+    )
+    report = json.loads(result_bytes)
+
+    assert report["benchmark"] == "evidencemesh-phase11-1-feasibility-calibration-v1"
+    assert report["environment"]["commit_sha"] == ("7d83ea3bca128e50397c9898db8bf06cd78d6d25")
+    assert report["suite"]["reused_from_phase11"] is True
+    assert report["suite"]["sha256"] == (
+        "23f0a3c1c6d680b0ec6bdd0964a81f28b23e5778f4965632b03ed5dc4e78c5d7"
+    )
+    assert report["traffic"] == {
+        "case_retrieval_operations": 12,
+        "gemini_requests": 0,
+        "maximum_tavily_requests": 12,
+        "maximum_wiby_requests": 12,
+        "provider_query_calls": 60,
+        "retries": 0,
+        "tavily_requests": 12,
+        "wiby_requests": 12,
+    }
+    assert len(report["retrieval_diagnostics"]) == 12
+    assert len(report["outcomes"]) == 84
+
+    metrics = report["metrics"]
+    assert metrics["community"]["availability"]["numerator"] == 12
+    assert metrics["quality_safe_8_2"]["target_domain_hit_at_10"]["numerator"] == 12
+    assert metrics["wiby_direct"]["availability"]["numerator"] == 4
+    assert metrics["community"]["cases_with_selected_wiby"]["numerator"] == 0
+
+    gates = report["decision"]["gates"]
+    assert gates["domain_aware_reservation_is_strong_and_fulfilled"] == {
+        "fulfilled_cases": 12,
+        "minimum_target_total": 90,
+        "passed": False,
+        "requested_total": 96,
+        "required_cases": 12,
+        "target_at_least_six_cases": 10,
+        "target_total": 89,
+    }
+    assert gates["wiby_independent_index_available"]["passed"] is False
+    assert gates["wiby_survives_community_ranking"]["passed"] is False
+    assert gates["wiby_attribution_complete"]["passed"] is True
+    assert report["decision"]["phase11_1_candidate_passed"] is False
+    assert report["decision"]["phase12_untouched_evaluation_allowed"] is False
+    assert report["decision"]["release_decision"] == "no-go"
+
+    private_fields = {
+        "query",
+        "question",
+        "target_domains",
+        "title",
+        "url",
+        "snippet",
+        "content",
+        "evidence",
+    }
+    assert all(not private_fields & set(outcome) for outcome in report["outcomes"])

@@ -150,7 +150,6 @@ def test_settings_default_to_self_hosted_zero_key_profile(
     assert Settings.from_env().enabled_providers == [
         "searxng",
         "ddgs",
-        "wiby",
         "wikipedia",
         "crossref",
         "arxiv",
@@ -168,7 +167,6 @@ def test_settings_quality_profile_adds_optional_providers(
     assert settings.enabled_providers == [
         "searxng",
         "ddgs",
-        "wiby",
         "wikipedia",
         "crossref",
         "arxiv",

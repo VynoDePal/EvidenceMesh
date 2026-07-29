@@ -20,7 +20,6 @@ class DeploymentProfile(StrEnum):
 COMMUNITY_PROVIDERS = (
     "searxng",
     "ddgs",
-    "wiby",
     "wikipedia",
     "crossref",
     "arxiv",
