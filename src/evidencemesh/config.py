@@ -26,11 +26,7 @@ COMMUNITY_PROVIDERS = (
 )
 QUALITY_PROVIDERS = (
     *COMMUNITY_PROVIDERS,
-    "openalex",
-    "brave",
     "tavily",
-    "exa",
-    "firecrawl",
 )
 
 

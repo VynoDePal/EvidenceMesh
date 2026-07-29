@@ -126,24 +126,30 @@ research workflow.
 | Provider | Key required | `community` | `quality` | Profiles |
 |---|---:|---:|---:|---|
 | SearXNG | No | Yes | Yes | Web, news |
-| Wikipedia | No | Yes | Yes | Web, academic |
+| Wikipedia | No | Yes | Yes | Web, reference, academic |
 | Crossref | No | Yes | Yes | Academic |
 | arXiv | No | Yes | Yes | Academic |
 | GitHub repositories | No; token optional | Yes | Yes | Code |
-| OpenAlex | Free key | No | Optional | Academic |
-| Brave | Yes | No | Optional | Web, news, academic, code |
-| Tavily | Yes | No | Optional | Web, news, academic, code |
-| Exa | Yes | No | Optional | Web, news, academic, code |
-| Firecrawl | Cloud only | No | Optional | Web, news, academic, code |
+| Tavily | Yes | No | Yes when configured | Web, news |
+| OpenAlex | Free key | No | Explicit opt-in | Academic |
+| Brave | Yes | No | Explicit opt-in | Web, news, academic, code |
+| Exa | Yes | No | Explicit opt-in | Web, news, academic, code |
+| Firecrawl | Cloud only | No | Explicit opt-in | Web, news, academic, code |
 | DDGS | No | No | No | Web, news, academic, code |
 
-The default `community` profile requires no API key. The `quality` profile adds
-optional adapters but silently omits none: every missing key produces a
-configuration warning.
+The default `community` profile requires no API key and remains a best-effort
+self-hosted route. The recommended `quality` profile adds Tavily when
+`TAVILY_API_KEY` is configured; a missing key produces a visible configuration
+warning and a degraded health status. Other keyed adapters remain available
+through an explicit provider list, but are not silently added to the
+recommended quality bundle.
 
 ```bash
 # Named bundles.
 export EVIDENCEMESH_DEPLOYMENT_PROFILE=community  # or quality
+
+# Required by the recommended quality profile.
+export TAVILY_API_KEY=...
 
 # An explicit list overrides the selected bundle.
 export EVIDENCEMESH_PROVIDERS=searxng,wikipedia,crossref,arxiv,github
@@ -208,6 +214,7 @@ See the [benchmark methodology](docs/benchmarking.md), the
 [locked Phase 4 protocol](docs/benchmark-protocol-v2.md), the
 [locked Phase 5 protocol](docs/benchmark-protocol-v3.md), the
 [locked Phase 6 protocol](docs/benchmark-protocol-v4.md), the
+[locked Phase 7 protocol](docs/benchmark-protocol-v5.md), the
 [end-to-end guide](docs/end-to-end-benchmark.md), the
 [competitive snapshot](docs/competitive-benchmark.md) and the committed
 [offline v1 result](benchmarks/results/offline_v1.md). A
@@ -247,7 +254,12 @@ returned results for 24/24 cases and hit the target domain and expected source
 family for 22/24, with five providers and all four families contributing.
 However, SearXNG failed in 8/12 routed cases, producing a 33.3% partial-failure
 rate above the locked 25% maximum. The functional gate therefore failed, the
-200-case stage was not run, and the release decision remains no-go.
+200-case stage was not run, and the release decision remains no-go. Phase 7
+adds an explicit reference route, separates raw provider degradation from
+required-family satisfaction, and freezes a new 32-case quality-profile
+calibration. Tavily is capped at one basic request per web case and eight
+credits for the complete run. Its result is pending; the two-network and
+release gates remain closed regardless of a single-environment result.
 
 ## Security
 
@@ -275,7 +287,7 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current suite contains 180 tests and reports over 90% branch-aware coverage
+The current suite contains 192 tests and reports over 90% branch-aware coverage
 locally. CI repeats the suite on Python 3.11, 3.12 and 3.13.
 
 ## License

@@ -6,6 +6,7 @@ import asyncio
 import hashlib
 import json
 import time
+from collections import Counter
 from datetime import UTC, datetime
 from typing import Any
 
@@ -31,6 +32,7 @@ from evidencemesh.models import (
     SearchMetadata,
     SearchRequest,
     SearchResponse,
+    SourceFamilyStatus,
     SourceType,
 )
 from evidencemesh.providers import build_providers
@@ -169,32 +171,46 @@ class EvidenceMesh:
         succeeded: set[str] = set()
         raw_results: list[ProviderResult] = []
         cache_hits = 0
+        family_call_counts: Counter[str] = Counter()
+        family_success_counts: Counter[str] = Counter()
+        family_failure_counts: Counter[str] = Counter()
+        family_result_counts: Counter[str] = Counter()
+        for route in routes:
+            family_call_counts[route.source_family.value] += len(route.queries)
 
         async def run(
             provider: SearchProvider,
             query: str,
-        ) -> tuple[str, str, list[ProviderResult], bool, str | None]:
+            source_family: SourceType,
+        ) -> tuple[str, str, SourceType, list[ProviderResult], bool, str | None]:
             try:
                 results, cache_hit = await self._provider_search(provider, query, request)
-                return provider.name, query, results, cache_hit, None
+                return provider.name, query, source_family, results, cache_hit, None
             except (ProviderError, httpx.HTTPError, ValueError) as exc:
-                return provider.name, query, [], False, str(exc)
+                return provider.name, query, source_family, [], False, str(exc)
             except Exception as exc:  # Provider plugins must not collapse the whole federation.
                 return (
                     provider.name,
                     query,
+                    source_family,
                     [],
                     False,
                     f"unexpected {type(exc).__name__}",
                 )
 
-        tasks = [run(route.provider, query) for route in routes for query in route.queries]
+        tasks = [
+            run(route.provider, query, route.source_family)
+            for route in routes
+            for query in route.queries
+        ]
         outcomes = await asyncio.gather(*tasks) if tasks else []
-        for provider_name, query, results, cache_hit, error in outcomes:
+        for provider_name, query, source_family, results, cache_hit, error in outcomes:
             if error:
                 failures[f"{provider_name}:{query}"] = error
+                family_failure_counts[source_family.value] += 1
                 continue
             succeeded.add(provider_name)
+            family_success_counts[source_family.value] += 1
             raw_results.extend(results)
             cache_hits += int(cache_hit)
 
@@ -207,13 +223,35 @@ class EvidenceMesh:
             domains=request.domains,
             exclude_domains=request.exclude_domains,
         )
+        family_result_counts.update(hit.source_type.value for hit in hits)
         evidence: list[EvidenceItem] = []
         warnings = list(self.configuration_warnings)
+        required_family = request.profile.value
+        if not family_call_counts[required_family]:
+            required_family_status = SourceFamilyStatus.NOT_CONFIGURED
+        elif family_result_counts[required_family]:
+            required_family_status = SourceFamilyStatus.SATISFIED
+        elif family_success_counts[required_family]:
+            required_family_status = SourceFamilyStatus.EMPTY
+        else:
+            required_family_status = SourceFamilyStatus.FAILED
+        degraded_families = sorted(
+            family for family, count in family_failure_counts.items() if count > 0
+        )
+        failed_families = sorted(
+            family
+            for family, count in family_call_counts.items()
+            if count > 0 and family_failure_counts[family] == count
+        )
         if not routes:
             warnings.append(f"no configured provider supports profile '{request.profile.value}'")
         if failures:
             warnings.append(
                 f"{len(failures)} provider-query call(s) failed; partial results returned"
+            )
+        if required_family_status is not SourceFamilyStatus.SATISFIED:
+            warnings.append(
+                f"required source family '{required_family}' is {required_family_status.value}"
             )
         if request.fetch_content and hits:
             evidence, fetch_warnings = await self._collect_evidence(
@@ -237,6 +275,14 @@ class EvidenceMesh:
             provider_source_families={
                 route.provider.name: route.source_family.value for route in routes
             },
+            required_source_family=required_family,
+            required_source_family_status=required_family_status,
+            source_family_call_counts=dict(sorted(family_call_counts.items())),
+            source_family_success_counts=dict(sorted(family_success_counts.items())),
+            source_family_failure_counts=dict(sorted(family_failure_counts.items())),
+            source_family_result_counts=dict(sorted(family_result_counts.items())),
+            degraded_source_families=degraded_families,
+            failed_source_families=failed_families,
             raw_result_count=len(raw_results),
             deduplicated_result_count=deduplicated_count,
             elapsed_ms=round((time.perf_counter() - started) * 1_000),
@@ -512,7 +558,7 @@ class EvidenceMesh:
             }
             for provider in self.providers
         ]
-        degraded = any(
+        degraded = bool(self.configuration_warnings) or any(
             provider["circuit"]["status"] in {"open", "half_open"} for provider in providers
         )
         return {

@@ -158,6 +158,21 @@ claim. The committed
 [Phase 6 result](../benchmarks/results/multisource_calibration_phase6_2026-07-28.md)
 failed the functional gate on partial failures, so no Stage B run was made.
 
+## Quality-profile calibration
+
+`benchmarks/run_quality_calibration.py` evaluates the Tavily-backed `quality`
+candidate on a new 32-case suite with no exact query overlap with Phase 6.
+Reference, academic and code cases use exact expected URL prefixes; web cases
+use official target domains. The runner reports raw provider degradation
+separately from required-family satisfaction and enforces overall, per-topic
+and Tavily-specific gates. Tavily is limited to eight basic calls and eight
+credits for the entire run. Inputs and thresholds are frozen in
+[benchmark protocol v5](benchmark-protocol-v5.md).
+
+The unavailable second independent network remains a hard release boundary.
+Consequently, even a functional pass cannot authorize Stage B, merge,
+publication or a superiority claim.
+
 ## End-to-end generation
 
 `benchmarks/run_end_to_end.py` now fixes the evidence-to-answer prompt and

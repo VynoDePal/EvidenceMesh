@@ -6,10 +6,11 @@
 `arxiv` and `github`. It requires no key and is self-hostable, but internet
 access, compute and storage are not cost-free infrastructure.
 
-`quality` includes the community set plus OpenAlex, Brave, Tavily, Exa and
-Firecrawl. Keyed adapters are enabled only when their credential or a
-self-hosted endpoint is configured; missing credentials remain visible as
-health warnings. Set `EVIDENCEMESH_DEPLOYMENT_PROFILE=quality`, or override
+`quality` includes the community set plus Tavily, the current recommended
+general-web candidate. Tavily is enabled only when `TAVILY_API_KEY` is
+configured; a missing credential remains visible as a health warning and marks
+the service degraded. OpenAlex, Brave, Exa and Firecrawl remain implemented
+explicit opt-ins. Set `EVIDENCEMESH_DEPLOYMENT_PROFILE=quality`, or override
 either bundle with an explicit comma-separated `EVIDENCEMESH_PROVIDERS`.
 
 ## Zero-key community providers
@@ -44,8 +45,9 @@ partial-provider warnings.
 
 ### Wikipedia
 
-Wikipedia is used as a reference source for web and academic profiles. It
-improves entity coverage but should not replace primary sources.
+Wikipedia is the sole provider for the explicit reference profile and can also
+supplement web and academic searches. It improves entity coverage but should
+not replace primary sources.
 
 ### Crossref
 
@@ -85,6 +87,14 @@ unlimited free backend. Every HTTP provider response is streamed through a
 5 MB decompressed-size limit before parsing. OpenAlex is not in the zero-key
 profile: its current API guidance requires a free key for meaningful quota.
 
+### Tavily quality route
+
+The named quality profile routes Tavily only for web and news. A single
+EvidenceMesh search sends Tavily at most the base query, explicitly selects
+basic depth, disables generated answers and raw content, and caps the API
+response at 20 results. Basic Tavily search currently consumes one credit per
+request; provider terms and quotas can change independently.
+
 ## Deliberate exclusions
 
 Common Crawl's CDX API searches archived URL patterns rather than arbitrary page
@@ -99,14 +109,18 @@ The public search profile selects compatible source types:
 
 | Profile | Community route | Maximum query variants per provider |
 |---|---|---|
-| Web | SearXNG, Wikipedia | unlimited for SearXNG; 2 for Wikipedia |
+| Web | SearXNG, Wikipedia; quality adds Tavily | unlimited, 2 and 1 |
+| Reference | Wikipedia | 2 |
 | News | SearXNG | unlimited |
 | Academic | Crossref, arXiv, Wikipedia | 2, 1 and 2 |
 | Code | GitHub repositories | 1 |
 
 Quality adapters join only the profiles they support. Search metadata records
 the deployment profile, routed query count and source family for every requested
-provider.
+provider. It also keeps per-family call, success, failure and result counts,
+lists degraded and fully failed families, and reports the required family as
+`satisfied`, `empty`, `failed` or `not_configured`. Raw provider failures remain
+available even when another route satisfies the request.
 
 ## Runtime reliability
 

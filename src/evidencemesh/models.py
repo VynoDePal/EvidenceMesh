@@ -17,6 +17,7 @@ class StrictModel(BaseModel):
 
 class SearchProfile(StrEnum):
     WEB = "web"
+    REFERENCE = "reference"
     NEWS = "news"
     ACADEMIC = "academic"
     CODE = "code"
@@ -48,6 +49,15 @@ class SourceType(StrEnum):
     CODE = "code"
     REFERENCE = "reference"
     PDF = "pdf"
+
+
+class SourceFamilyStatus(StrEnum):
+    """Outcome of the source family required by a search profile."""
+
+    SATISFIED = "satisfied"
+    EMPTY = "empty"
+    FAILED = "failed"
+    NOT_CONFIGURED = "not_configured"
 
 
 Domain = Annotated[str, Field(min_length=1, max_length=253)]
@@ -221,6 +231,14 @@ class SearchMetadata(StrictModel):
     deployment_profile: str = "custom"
     provider_query_counts: dict[str, int] = Field(default_factory=dict)
     provider_source_families: dict[str, str] = Field(default_factory=dict)
+    required_source_family: str = SourceType.WEB.value
+    required_source_family_status: SourceFamilyStatus = SourceFamilyStatus.NOT_CONFIGURED
+    source_family_call_counts: dict[str, int] = Field(default_factory=dict)
+    source_family_success_counts: dict[str, int] = Field(default_factory=dict)
+    source_family_failure_counts: dict[str, int] = Field(default_factory=dict)
+    source_family_result_counts: dict[str, int] = Field(default_factory=dict)
+    degraded_source_families: list[str] = Field(default_factory=list)
+    failed_source_families: list[str] = Field(default_factory=list)
     raw_result_count: int
     deduplicated_result_count: int
     elapsed_ms: int = Field(ge=0)

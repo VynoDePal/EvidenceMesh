@@ -14,6 +14,8 @@ from evidencemesh.providers.base import (
 
 class TavilyProvider(SearchProvider):
     name = "tavily"
+    supported_profiles = frozenset({SearchProfile.WEB, SearchProfile.NEWS})
+    query_budget = 1
 
     def __init__(self, api_key: str, client: httpx.AsyncClient) -> None:
         self.api_key = api_key
@@ -22,7 +24,7 @@ class TavilyProvider(SearchProvider):
     async def search(self, query: str, request: SearchRequest) -> list[ProviderResult]:
         body: dict[str, object] = {
             "query": query,
-            "max_results": min(max(request.limit * 3, 20), 50),
+            "max_results": min(max(request.limit, 5), 20),
             "search_depth": "basic",
             "topic": "news" if request.profile is SearchProfile.NEWS else "general",
             "include_answer": False,
@@ -43,10 +45,12 @@ class TavilyProvider(SearchProvider):
             items = payload.get("results", [])
         except (httpx.HTTPError, ValueError) as exc:
             raise ProviderError(f"Tavily request failed: {type(exc).__name__}") from exc
+        if not isinstance(items, list):
+            raise ProviderError("Tavily response has an invalid results field")
         return [
             ProviderResult(
-                title=strip_markup(item.get("title")) or item["url"],
-                url=item["url"],
+                title=strip_markup(item.get("title")) or str(item["url"]),
+                url=str(item["url"]),
                 snippet=strip_markup(item.get("content")),
                 provider=self.name,
                 rank=rank,
@@ -56,5 +60,5 @@ class TavilyProvider(SearchProvider):
                 provider_score=item.get("score"),
             )
             for rank, item in enumerate(items, start=1)
-            if item.get("url")
+            if isinstance(item, dict) and item.get("url")
         ]

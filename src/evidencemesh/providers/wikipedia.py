@@ -11,7 +11,13 @@ from evidencemesh.providers.base import SearchProvider, bounded_json_request, st
 
 class WikipediaProvider(SearchProvider):
     name = "wikipedia"
-    supported_profiles = frozenset({SearchProfile.WEB, SearchProfile.ACADEMIC})
+    supported_profiles = frozenset(
+        {
+            SearchProfile.WEB,
+            SearchProfile.REFERENCE,
+            SearchProfile.ACADEMIC,
+        }
+    )
     source_type = SourceType.REFERENCE
     query_budget = 2
 

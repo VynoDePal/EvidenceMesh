@@ -206,6 +206,7 @@ async def test_wikipedia_provider_builds_language_url() -> None:
     )[0]
     assert result.url == "https://fr.wikipedia.org/wiki/Recherche_scientifique"
     assert result.metadata["pageid"] == 12
+    assert provider.supports(SearchProfile.REFERENCE)
     await client.aclose()
 
 
@@ -499,6 +500,10 @@ async def test_tavily_provider_maps_score_and_filters() -> None:
     body = json.loads(captured[0].content)
     assert body["include_domains"] == ["example.com"]
     assert body["exclude_domains"] == ["other.example"]
+    assert body["max_results"] == 10
+    assert body["search_depth"] == "basic"
+    assert provider.query_budget == 1
+    assert not provider.supports(SearchProfile.REFERENCE)
     assert result.provider_score == 0.9
     await client.aclose()
 

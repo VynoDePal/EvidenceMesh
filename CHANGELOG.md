@@ -51,3 +51,11 @@ All notable changes to EvidenceMesh are documented here.
   family hits, but 8/24 partial failures because SearXNG succeeded in only 4/12
   routed cases. The functional gate failed, so Stage B was not run and the
   release decision remains no-go.
+- Added an explicit reference profile and per-family call, result and failure
+  telemetry without suppressing raw provider errors.
+- Narrowed the recommended keyed `quality` bundle to Tavily, capped Tavily at
+  one basic web/news query per search, and left other keyed adapters available
+  as explicit opt-ins.
+- Locked the Phase 7 quality protocol, an untouched 32-case suite, strict
+  per-topic gates and a maximum eight-credit Tavily calibration. The
+  independent-network and release gates remain closed.

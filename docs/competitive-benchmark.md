@@ -98,6 +98,14 @@ cases. That exceeds the pre-registered 25% maximum. The functional gate and the
 separate two-network gate are therefore both closed; this is still evidence
 against a best-in-class claim.
 
+Phase 7 does not retune the Phase 6 cases. It introduces an untouched 32-case
+quality-track suite, an explicit reference profile and a Tavily basic-search
+candidate capped at eight credits. The
+[locked protocol](benchmark-protocol-v5.md) measures both raw provider
+degradation and whether the requested source family remains satisfied. A
+single-network result, pass or fail, cannot establish competitive superiority
+or release readiness.
+
 ## Fair next comparison
 
 Use EvidenceMesh as the retrieval MCP for a fixed external model, then compare

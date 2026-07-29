@@ -8,6 +8,7 @@ from conftest import StaticFetcher, StaticProvider
 from pydantic import ValidationError
 
 from evidencemesh.benchmark import load_fixture, run_offline_benchmark
+from evidencemesh.config import DeploymentProfile
 from evidencemesh.engine import EvidenceMesh
 from evidencemesh.errors import FetchError, ProviderError
 from evidencemesh.models import (
@@ -18,6 +19,8 @@ from evidencemesh.models import (
     SearchDepth,
     SearchProfile,
     SearchRequest,
+    SourceFamilyStatus,
+    SourceType,
 )
 from evidencemesh.query import build_query_plan
 
@@ -47,6 +50,7 @@ def test_query_plan_depth(depth: SearchDepth, expected: int) -> None:
         (SearchProfile.WEB, "fr", "source officielle"),
         (SearchProfile.ACADEMIC, "en", "research paper"),
         (SearchProfile.CODE, "en", "source code"),
+        (SearchProfile.REFERENCE, "en", "encyclopedia"),
         (SearchProfile.NEWS, "en", "latest update"),
         (SearchProfile.WEB, "de", "official source"),
     ],
@@ -108,6 +112,14 @@ async def test_search_isolates_provider_failures(settings, result: ProviderResul
     assert len(response.metadata.provider_failures) == 2
     assert "partial results" in response.warnings[0]
     assert response.metadata.providers_succeeded == ["good"]
+    assert response.metadata.required_source_family == "web"
+    assert response.metadata.required_source_family_status is SourceFamilyStatus.SATISFIED
+    assert response.metadata.source_family_call_counts == {"web": 3}
+    assert response.metadata.source_family_success_counts == {"web": 1}
+    assert response.metadata.source_family_failure_counts == {"web": 2}
+    assert response.metadata.source_family_result_counts == {"web": 1}
+    assert response.metadata.degraded_source_families == ["web"]
+    assert response.metadata.failed_source_families == []
     await engine.aclose()
 
 
@@ -177,6 +189,11 @@ class AcademicOnlyProvider(StaticProvider):
     supported_profiles = frozenset({SearchProfile.ACADEMIC})
 
 
+class ReferenceOnlyProvider(StaticProvider):
+    supported_profiles = frozenset({SearchProfile.REFERENCE})
+    source_type = SourceType.REFERENCE
+
+
 class BudgetedProvider(StaticProvider):
     query_budget = 1
 
@@ -218,6 +235,51 @@ async def test_search_warns_when_no_provider_supports_profile(
     response = await engine.search(SearchRequest(query="EvidenceMesh", profile=SearchProfile.CODE))
     assert response.results == []
     assert "no configured provider supports" in response.warnings[0]
+    await engine.aclose()
+
+
+@pytest.mark.asyncio
+async def test_reference_profile_is_explicit_and_reports_required_family(
+    settings,
+    result: ProviderResult,
+) -> None:
+    reference_result = result.model_copy(update={"source_type": SourceType.REFERENCE})
+    default_web = StaticProvider("web", [result])
+    reference = ReferenceOnlyProvider("reference", [reference_result])
+    engine = EvidenceMesh(settings, providers=[default_web, reference])
+    response = await engine.search(
+        SearchRequest(
+            query="Grace Hopper",
+            profile=SearchProfile.REFERENCE,
+            use_cache=False,
+        )
+    )
+    assert default_web.calls == []
+    assert reference.calls == ["Grace Hopper"]
+    assert response.metadata.providers_requested == ["reference"]
+    assert response.metadata.required_source_family == "reference"
+    assert response.metadata.required_source_family_status is SourceFamilyStatus.SATISFIED
+    assert response.metadata.source_family_result_counts == {"reference": 1}
+    await engine.aclose()
+
+
+@pytest.mark.asyncio
+async def test_required_family_status_uses_returned_hits_after_filters(
+    settings,
+    result: ProviderResult,
+) -> None:
+    engine = EvidenceMesh(settings, providers=[StaticProvider("web", [result])])
+    response = await engine.search(
+        SearchRequest(
+            query="EvidenceMesh",
+            domains=["other.example"],
+            use_cache=False,
+        )
+    )
+    assert response.results == []
+    assert response.metadata.required_source_family_status is SourceFamilyStatus.EMPTY
+    assert response.metadata.source_family_result_counts == {}
+    assert "required source family 'web' is empty" in response.warnings
     await engine.aclose()
 
 
@@ -352,6 +414,24 @@ async def test_batch_search_and_limit(settings, result: ProviderResult) -> None:
     health = engine.health()
     assert health["status"] == "ready"
     assert health["safety"]["private_networks_allowed"] is False
+    await engine.aclose()
+
+
+@pytest.mark.asyncio
+async def test_health_is_degraded_when_requested_provider_is_not_configured(
+    settings,
+) -> None:
+    quality_settings = settings.model_copy(
+        update={
+            "deployment_profile": DeploymentProfile.QUALITY,
+            "enabled_providers": ["wikipedia", "tavily"],
+        }
+    )
+    engine = EvidenceMesh(quality_settings)
+    health = engine.health()
+    assert health["status"] == "degraded"
+    assert health["configuration_warnings"] == ["tavily disabled: TAVILY_API_KEY is not configured"]
+    assert [provider["name"] for provider in health["providers"]] == ["wikipedia"]
     await engine.aclose()
 
 

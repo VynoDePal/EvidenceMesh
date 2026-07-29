@@ -114,14 +114,14 @@ def test_settings_quality_profile_adds_optional_providers(
     monkeypatch.setenv("EVIDENCEMESH_DEPLOYMENT_PROFILE", "quality")
     settings = Settings.from_env()
     assert settings.deployment_profile is DeploymentProfile.QUALITY
-    assert settings.enabled_providers[:5] == [
+    assert settings.enabled_providers == [
         "searxng",
         "wikipedia",
         "crossref",
         "arxiv",
         "github",
+        "tavily",
     ]
-    assert {"openalex", "brave", "tavily", "exa", "firecrawl"} <= set(settings.enabled_providers)
 
 
 def test_explicit_provider_list_overrides_deployment_profile() -> None:

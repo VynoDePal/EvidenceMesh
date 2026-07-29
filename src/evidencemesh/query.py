@@ -42,6 +42,7 @@ def build_query_plan(
             "recent": "latest update",
             "academic": "research paper study",
             "code": "official documentation source code",
+            "reference": "encyclopedia overview",
         },
         "fr": {
             "official": "source officielle",
@@ -50,6 +51,7 @@ def build_query_plan(
             "recent": "mise à jour récente",
             "academic": "article scientifique étude",
             "code": "documentation officielle code source",
+            "reference": "encyclopédie définition",
         },
     }.get(language_code)
     if terms is None:
@@ -60,6 +62,7 @@ def build_query_plan(
             "recent": "latest",
             "academic": "research paper",
             "code": "official documentation",
+            "reference": "encyclopedia",
         }
 
     candidates = [base]
@@ -67,6 +70,8 @@ def build_query_plan(
         candidates.append(f"{base} {terms['academic']}")
     elif profile is SearchProfile.CODE:
         candidates.append(f"{base} {terms['code']}")
+    elif profile is SearchProfile.REFERENCE:
+        candidates.append(f"{base} {terms['reference']}")
     elif profile is SearchProfile.NEWS:
         candidates.append(f"{base} {terms['recent']}")
     else:

@@ -25,7 +25,9 @@ retrieval layer usable from MCP hosts, Python applications and shell workflows.
    to the exact validated address while preserving HTTP Host and TLS SNI.
 10. Extract main HTML/PDF text under time, byte, character and PDF-page limits;
    flag risky patterns and compute SHA-256.
-11. Return compact evidence, stable citation IDs and route telemetry.
+11. Return compact evidence, stable citation IDs and route telemetry, including
+    raw provider degradation and the status of the profile's required source
+    family.
 
 ## Ranking
 
@@ -50,6 +52,12 @@ Timeouts are reported through the same partial-failure path. Three consecutive
 operational failures open the provider's process-local circuit for 60 seconds by
 default. Calls fail fast while open; after recovery delay, one probe determines
 whether to close or reopen the circuit.
+
+`metadata.required_source_family_status` is separate from raw provider
+failures. It is `satisfied` when a result from the requested family survives,
+`empty` when compatible calls complete without such a result, `failed` when all
+required-family calls fail, and `not_configured` when no compatible route
+exists. This distinction never suppresses `metadata.provider_failures`.
 
 ## Extension points
 

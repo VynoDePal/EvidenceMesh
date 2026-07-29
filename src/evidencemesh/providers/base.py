@@ -103,7 +103,14 @@ def parse_datetime(value: object) -> datetime | None:
 
 class SearchProvider(ABC):
     name: str
-    supported_profiles: frozenset[SearchProfile] = frozenset(SearchProfile)
+    supported_profiles: frozenset[SearchProfile] = frozenset(
+        {
+            SearchProfile.WEB,
+            SearchProfile.NEWS,
+            SearchProfile.ACADEMIC,
+            SearchProfile.CODE,
+        }
+    )
     source_type: SourceType = SourceType.WEB
     query_budget: int | None = None
     minimum_cache_ttl_seconds: int = 0
