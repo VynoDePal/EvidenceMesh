@@ -35,7 +35,10 @@ class MwmblProvider(SearchProvider):
 
         items = payload.get("results")
         if not isinstance(items, list):
-            raise ProviderError("Mwmbl response must contain a results array")
+            raise ProviderError(
+                "Mwmbl response must contain a results array",
+                kind="invalid_schema",
+            )
 
         results: list[ProviderResult] = []
         for item in items[: min(max(request.limit * 3, 20), 50)]:
