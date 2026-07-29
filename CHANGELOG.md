@@ -170,3 +170,12 @@ All notable changes to EvidenceMesh are documented here.
   unchecksummed MCP stderr log. The accepted rerun keeps logs outside the
   candidate, enforces an exact seven-file inventory and uploads only explicit
   candidate paths.
+- Added a deterministic citation audit that validates exact `[S#]` syntax and
+  membership without pretending to judge semantic support. Tightened the MCP
+  research guide and reusable prompt so externally verifiable claims require
+  immediate, packet-local citations.
+- Locked Phase 11.5 as a corrective quality calibration on the already-observed
+  Phase 10 sample. Three generation arms replay one raw provider pool across
+  the same three Gemini API models, with exactly 12 Tavily requests, 108 model
+  requests, no retry or repair, a non-blocking community observability arm and
+  no access to Phase 12.

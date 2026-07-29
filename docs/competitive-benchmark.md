@@ -173,6 +173,15 @@ retrieval and citation gates. This failed pilot narrows the next work to
 reliable free web retrieval, provider-aware evidence retention and citation
 enforcement before an external-agent comparison is justified.
 
+Phase 11.5 addresses the measured answer and citation defect without claiming
+new evaluation independence. Its
+[locked protocol](benchmark-protocol-v13.md) reuses the Phase 10 cases, shares
+one raw provider pool per case, and compares Tavily direct, current 8/2 quality
+and a provider-aware prompt candidate under the same three answer models. The
+community pool remains observable but non-blocking. Even a complete gate pass
+only permits a later untouched Phase 12 run; it cannot establish competitive
+superiority.
+
 ## Fair next comparison
 
 Use EvidenceMesh as the retrieval MCP for a fixed external model, then compare

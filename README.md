@@ -441,6 +441,17 @@ merge, Phase 12 or a superiority claim. See the
 [alpha distribution guide](docs/alpha-release-v0.1.md) for the exact boundary
 and verification procedure.
 
+The [Phase 11.5 protocol](docs/benchmark-protocol-v13.md) returns to the
+unresolved answer-quality failure. It reuses the Phase 10 cases transparently,
+collects one raw provider pool per case, and compares Tavily direct, current
+8/2 quality and a provider-aware prompt candidate across the same three
+models. The candidate balances prompt space across all selected blocks and
+enforces exact packet-local citations with deterministic ID validation.
+Traffic is capped at 12 Tavily and 108 model requests with no retry or repair.
+Community retrieval remains visible but non-blocking; Phase 12, merge,
+publication and superiority claims remain blocked until the result and a
+separate authorization.
+
 ## Security
 
 EvidenceMesh blocks private, loopback, link-local and reserved fetch targets by
@@ -467,7 +478,7 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current suite contains 316 tests and reports 91.48% branch-aware coverage
+The current suite contains 326 tests and reports 91.55% branch-aware coverage
 locally. CI repeats the suite on Python 3.11, 3.12 and 3.13 and installs the
 built wheel before exercising its CLI and real MCP STDIO entry point.
 

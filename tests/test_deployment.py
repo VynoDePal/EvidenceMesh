@@ -201,6 +201,49 @@ def test_phase11_workflow_locks_shared_pool_traffic_and_no_model_calls() -> None
     assert "searxng/searxng:2026.7.26-b060c780d@sha256:" in workflow
 
 
+def test_phase11_5_protocol_and_workflow_lock_quality_recovery_budget() -> None:
+    root = Path(__file__).parents[1]
+    protocol_path = root / "docs" / "benchmark-protocol-v13.md"
+    workflow = (root / ".github" / "workflows" / "phase11-5-quality-recovery.yml").read_text(
+        encoding="utf-8"
+    )
+    protocol = protocol_path.read_text(encoding="utf-8")
+
+    assert hashlib.sha256(protocol_path.read_bytes()).hexdigest() == (
+        "7fa9f6a0e40d2c7e18260de6468fa1b86770752f1b366985a2bedc5b070155b6"
+    )
+    assert "corrective calibration, not an untouched evaluation" in protocol
+    assert "exactly 108 native Gemini" in protocol
+    assert "community observability arm is explicitly excluded" in protocol
+    assert "No Phase 12 question" in protocol
+    assert "PR remains draft" in protocol
+
+    assert "run_phase11_5_quality_recovery.py" in workflow
+    assert "EVIDENCE_MESH_GEMINI_KEY" in workflow
+    assert "EVIDENCE_MESH_TAVILY_KEY" in workflow
+    assert "gemma-4-31b-it" in workflow
+    assert "gemma-4-26b-a4b-it" in workflow
+    assert "gemini-3.5-flash-lite" in workflow
+    assert "--candidate-max-block-chars 900" in workflow
+    assert "--model-pause-seconds 2.0" in workflow
+    assert "--max-output-tokens 2048" in workflow
+    assert 'traffic["case_retrieval_operations"] == 12' in workflow
+    assert 'traffic["generation_requests"] == 108' in workflow
+    assert 'traffic["tavily_requests"] == 12' in workflow
+    assert 'traffic["retries"] == 0' in workflow
+    assert 'traffic["repair_requests"] == 0' in workflow
+    assert 'decision["phase12_executed"] is False' in workflow
+    assert 'decision["public_alpha_allowed"] is False' in workflow
+    assert 'decision["superiority_claim_allowed"] is False' in workflow
+    assert 'decision["merge_allowed"] is False' in workflow
+    assert 'decision["release_decision"] == "no-go"' in workflow
+    assert 'echo "$GEMINI_API_KEY"' not in workflow
+    assert 'echo "$TAVILY_API_KEY"' not in workflow
+    assert "gh release create" not in workflow.lower()
+    assert "pypi publish" not in workflow.lower()
+    assert "searxng/searxng:2026.7.26-b060c780d@sha256:" in workflow
+
+
 def test_committed_phase4_result_matches_locked_protocol() -> None:
     root = Path(__file__).parents[1]
     result_path = root / "benchmarks" / "results" / "simpleqa_retrieval_phase4_2026-07-28.json"

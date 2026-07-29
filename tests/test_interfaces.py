@@ -90,7 +90,10 @@ def test_mcp_resource_and_prompt() -> None:
     guide = mcp_server.research_guide()
     prompt = mcp_server.evidence_first_research("What changed?")
     assert "untrusted data" in guide
+    assert "immediately after every externally" in guide
     assert "deep_research" in prompt
+    assert "never invent or renumber" in prompt
+    assert "identifier validity" in prompt
     assert "What changed?" in prompt
 
 

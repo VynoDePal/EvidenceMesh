@@ -280,6 +280,26 @@ paired net +7 but lost to Tavily direct by -14. SearXNG degraded in every
 community and quality case, and quality citation presence reached only 14/34.
 The frozen functional gate therefore failed and release remains no-go.
 
+## Phase 11.5 quality recovery
+
+`benchmarks/run_phase11_5_quality_recovery.py` reuses the already-observed
+Phase 10 cases as a disclosed corrective calibration. It collects one raw
+provider pool per case and replays Tavily direct, current 8/2 quality and a
+candidate arm across the same three models. Community results are also
+reported in a retrieval-only, non-blocking observability arm.
+
+The candidate keeps the current selected 8/2 evidence but prevents sequential
+prompt starvation by applying an equal 900-character cap to every selected
+block. It also requires an exact returned citation immediately after every
+factual statement and uses the SDK's deterministic citation-ID audit. The
+protocol fixes 12 Tavily calls, 108 model calls, no retries or citation repair,
+and all decision gates in
+[benchmark protocol v13](benchmark-protocol-v13.md).
+
+A pass can only unblock a separately authorized untouched Phase 12 run. It
+cannot authorize merge, public distribution, an external-agent comparison or
+a superiority claim.
+
 ## Planned standard evaluations
 
 - SimpleQA answer accuracy with the official judge over the new generation
