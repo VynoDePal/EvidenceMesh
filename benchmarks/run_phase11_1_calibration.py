@@ -17,18 +17,32 @@ from itertools import pairwise
 from pathlib import Path
 from typing import Any
 
-from benchmarks.run_phase11_calibration import (
-    EXPECTED_CASE_COUNT,
-    LOCKED_SEARXNG_CONFIG_SHA256,
-    CalibrationCase,
-    RawResultRecorder,
-    RecordingProvider,
-    load_suite,
-    package_version,
-    percentile,
-    ratio,
-    sha256_bytes,
-)
+try:
+    from benchmarks.run_phase11_calibration import (
+        EXPECTED_CASE_COUNT,
+        LOCKED_SEARXNG_CONFIG_SHA256,
+        CalibrationCase,
+        RawResultRecorder,
+        RecordingProvider,
+        load_suite,
+        package_version,
+        percentile,
+        ratio,
+        sha256_bytes,
+    )
+except ModuleNotFoundError:
+    from run_phase11_calibration import (  # type: ignore[no-redef]
+        EXPECTED_CASE_COUNT,
+        LOCKED_SEARXNG_CONFIG_SHA256,
+        CalibrationCase,
+        RawResultRecorder,
+        RecordingProvider,
+        load_suite,
+        package_version,
+        percentile,
+        ratio,
+        sha256_bytes,
+    )
 from evidencemesh.config import DeploymentProfile, Settings
 from evidencemesh.engine import EvidenceMesh
 from evidencemesh.models import ProviderResult, SearchHit, SearchProfile, SearchRequest
