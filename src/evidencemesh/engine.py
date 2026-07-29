@@ -15,7 +15,12 @@ import httpx
 
 from evidencemesh.cache import SQLiteCache
 from evidencemesh.config import Settings
-from evidencemesh.errors import EvidenceMeshError, FetchError, ProviderError
+from evidencemesh.errors import (
+    EvidenceMeshError,
+    FetchError,
+    ProviderCircuitOpenError,
+    ProviderError,
+)
 from evidencemesh.extraction import content_sha256, select_excerpt
 from evidencemesh.fetcher import WebFetcher
 from evidencemesh.models import (
@@ -42,6 +47,12 @@ from evidencemesh.query import build_query_plan
 from evidencemesh.ranking import rank_results_with_diagnostics
 from evidencemesh.reliability import ProviderCircuitBreaker
 from evidencemesh.routing import build_provider_routes
+from evidencemesh.telemetry import (
+    ProviderCallTrace,
+    ProviderHTTPInstrumentation,
+    aggregate_provider_traces,
+    classify_provider_failure,
+)
 from evidencemesh.urls import PinnedURLResolver, canonicalize_url
 
 
@@ -111,6 +122,7 @@ class EvidenceMesh:
             self.settings.provider_failure_threshold,
             self.settings.provider_recovery_seconds,
         )
+        self._provider_http_instrumentation = ProviderHTTPInstrumentation(self.client)
         self._closed = False
 
     async def __aenter__(self) -> EvidenceMesh:
@@ -122,6 +134,7 @@ class EvidenceMesh:
     async def aclose(self) -> None:
         if self._closed:
             return
+        self._provider_http_instrumentation.detach()
         await self.fetcher.aclose()
         if self._owns_client:
             await self.client.aclose()
@@ -133,6 +146,7 @@ class EvidenceMesh:
         provider: SearchProvider,
         query: str,
         request: SearchRequest,
+        trace: ProviderCallTrace,
     ) -> tuple[list[ProviderResult], bool]:
         cache_payload = {
             "provider": provider.name,
@@ -149,19 +163,30 @@ class EvidenceMesh:
         if request.use_cache:
             cached = self.cache.get_json("search", key)
             if cached is not None:
+                trace.cache_hits += 1
                 return [ProviderResult.model_validate(item) for item in cached], True
-        permit = await self._provider_circuits.acquire(provider.name)
+        try:
+            permit = await self._provider_circuits.acquire(provider.name)
+        except ProviderCircuitOpenError:
+            trace.circuit_skips += 1
+            raise
         try:
             async with asyncio.timeout(self.settings.request_timeout_seconds):
                 async with self._semaphore:
-                    results = await provider.search(query, request)
+                    trace.begin_adapter(time.perf_counter())
+                    try:
+                        with self._provider_http_instrumentation.capture(trace):
+                            results = await provider.search(query, request)
+                    finally:
+                        trace.finish_adapter(time.perf_counter())
         except asyncio.CancelledError:
             await self._provider_circuits.release(permit)
             raise
         except TimeoutError as exc:
             await self._provider_circuits.record_failure(permit)
             raise ProviderError(
-                f"{provider.name} exceeded the configured request deadline"
+                f"{provider.name} exceeded the configured request deadline",
+                kind="timeout",
             ) from exc
         except Exception:
             await self._provider_circuits.record_failure(permit)
@@ -202,8 +227,11 @@ class EvidenceMesh:
         unresponsive_engine_query_counts: defaultdict[str, Counter[str]] = defaultdict(Counter)
         unavailable_engine_query_counts: defaultdict[str, Counter[str]] = defaultdict(Counter)
         provider_failure_kind_counts: defaultdict[str, Counter[str]] = defaultdict(Counter)
+        provider_logical_call_counts: Counter[str] = Counter()
+        provider_call_traces: defaultdict[str, list[ProviderCallTrace]] = defaultdict(list)
         for route in routes:
             family_call_counts[route.source_family.value] += len(route.queries)
+            provider_logical_call_counts[route.provider.name] += len(route.queries)
 
         async def run(
             provider: SearchProvider,
@@ -218,9 +246,16 @@ class EvidenceMesh:
             str | None,
             str | None,
             tuple[str, ...],
+            ProviderCallTrace,
         ]:
+            trace = ProviderCallTrace(provider=provider.name)
             try:
-                results, cache_hit = await self._provider_search(provider, query, request)
+                results, cache_hit = await self._provider_search(
+                    provider,
+                    query,
+                    request,
+                    trace,
+                )
                 return (
                     provider.name,
                     query,
@@ -230,8 +265,10 @@ class EvidenceMesh:
                     None,
                     None,
                     (),
+                    trace,
                 )
             except (ProviderError, httpx.HTTPError, ValueError) as exc:
+                failure = classify_provider_failure(exc)
                 return (
                     provider.name,
                     query,
@@ -239,10 +276,12 @@ class EvidenceMesh:
                     [],
                     False,
                     str(exc),
-                    exc.kind if isinstance(exc, ProviderError) else type(exc).__name__,
+                    failure.kind,
                     exc.upstream_engines if isinstance(exc, ProviderError) else (),
+                    trace,
                 )
             except Exception as exc:  # Provider plugins must not collapse the whole federation.
+                failure = classify_provider_failure(exc)
                 return (
                     provider.name,
                     query,
@@ -250,8 +289,9 @@ class EvidenceMesh:
                     [],
                     False,
                     f"unexpected {type(exc).__name__}",
-                    f"unexpected_{type(exc).__name__}",
+                    failure.kind,
                     (),
+                    trace,
                 )
 
         tasks = [
@@ -269,7 +309,9 @@ class EvidenceMesh:
             error,
             error_kind,
             unavailable_engines,
+            trace,
         ) in outcomes:
+            provider_call_traces[provider_name].append(trace)
             if error:
                 failures[f"{provider_name}:{query}"] = error
                 family_failure_counts[source_family.value] += 1
@@ -389,7 +431,7 @@ class EvidenceMesh:
             providers_succeeded=sorted(succeeded),
             provider_failures=failures,
             deployment_profile=self.settings.deployment_profile.value,
-            provider_query_counts={route.provider.name: len(route.queries) for route in routes},
+            provider_query_counts=dict(sorted(provider_logical_call_counts.items())),
             provider_source_families={
                 route.provider.name: route.source_family.value for route in routes
             },
@@ -421,6 +463,11 @@ class EvidenceMesh:
                 for provider, counts in sorted(provider_failure_kind_counts.items())
                 if counts
             },
+            provider_network_telemetry_scope=self._provider_http_instrumentation.scope,
+            provider_network_telemetry=aggregate_provider_traces(
+                provider_logical_call_counts,
+                dict(provider_call_traces),
+            ),
             provider_attributions=dict(sorted(provider_attributions.items())),
             provider_result_licenses=dict(sorted(provider_result_licenses.items())),
             ranking_reservation_policy=ranking_diagnostics.reservation_policy,
@@ -723,6 +770,7 @@ class EvidenceMesh:
                 "failure_threshold": self.settings.provider_failure_threshold,
                 "recovery_seconds": self.settings.provider_recovery_seconds,
                 "state_scope": "process-local",
+                "network_telemetry": self._provider_http_instrumentation.scope,
             },
             "safety": {
                 "private_networks_allowed": self.settings.allow_private_networks,
