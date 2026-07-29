@@ -258,8 +258,13 @@ rate above the locked 25% maximum. The functional gate therefore failed, the
 adds an explicit reference route, separates raw provider degradation from
 required-family satisfaction, and freezes a new 32-case quality-profile
 calibration. Tavily is capped at one basic request per web case and eight
-credits for the complete run. Its result is pending; the two-network and
-release gates remain closed regardless of a single-environment result.
+credits for the complete run. The
+[Phase 7 result](benchmarks/results/quality_calibration_phase7_2026-07-29.md)
+found Tavily successful and contributing in 8/8 web cases, with all eight web
+targets retrieved. The complete candidate nevertheless hit only 18/32 exact
+targets because academic reached 2/8 and code reached 0/8. The functional,
+two-network and release gates therefore remain closed, and Stage B was not
+run.
 
 ## Security
 
@@ -287,7 +292,7 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current suite contains 192 tests and reports over 90% branch-aware coverage
+The current suite contains 193 tests and reports over 90% branch-aware coverage
 locally. CI repeats the suite on Python 3.11, 3.12 and 3.13.
 
 ## License

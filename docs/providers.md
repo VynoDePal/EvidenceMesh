@@ -13,6 +13,12 @@ the service degraded. OpenAlex, Brave, Exa and Firecrawl remain implemented
 explicit opt-ins. Set `EVIDENCEMESH_DEPLOYMENT_PROFILE=quality`, or override
 either bundle with an explicit comma-separated `EVIDENCEMESH_PROVIDERS`.
 
+In the locked Phase 7 calibration, Tavily was requested, succeeded and
+contributed in 8/8 web cases, and every web target was retrieved. The complete
+quality candidate still failed its functional gate because exact academic and
+repository targets underperformed. See the
+[raw and interpreted result](../benchmarks/results/quality_calibration_phase7_2026-07-29.md).
+
 ## Zero-key community providers
 
 ### SearXNG

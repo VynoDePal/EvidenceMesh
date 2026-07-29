@@ -202,3 +202,63 @@ def test_committed_phase6_result_matches_locked_protocol() -> None:
 
     private_fields = {"query", "title", "snippet", "content", "url", "results"}
     assert all(not private_fields & set(outcome) for outcome in report["outcomes"])
+
+
+def test_committed_phase7_result_matches_locked_protocol() -> None:
+    root = Path(__file__).parents[1]
+    result_path = root / "benchmarks" / "results" / "quality_calibration_phase7_2026-07-29.json"
+    result_bytes = result_path.read_bytes()
+    assert hashlib.sha256(result_bytes).hexdigest() == (
+        "4a692732200105b4b6c269647ba3e776ea3b977b70358b66aa24021596ac4104"
+    )
+    report = json.loads(result_bytes)
+
+    assert report["schema_version"] == 2
+    assert report["benchmark"] == "evidencemesh-quality-calibration-v2"
+    assert report["environment"]["commit_sha"] == ("c837f5d51d89a8577408f34386ca55886c9b7358")
+    assert report["suite"]["sha256"] == (
+        "bfa1b033d31e509f622d35d7eb224498db9ba7a939fce3554b0a57c44417b869"
+    )
+    assert report["provider_configuration"]["searxng"]["sha256"] == (
+        "26a74f699515539fdb9bed3f1d3bda57ef908e1111d5393b4af2009fd7069645"
+    )
+    assert report["protocol"]["request_count"] == 32
+    assert report["protocol"]["maximum_tavily_requests"] == 8
+    assert report["protocol"]["retry_policy"] == "none"
+    assert len(report["outcomes"]) == 32
+
+    overall = report["metrics"]["overall"]
+    assert overall["availability"]["numerator"] == 31
+    assert overall["target_hit_at_10"]["numerator"] == 18
+    assert overall["expected_family_hit_at_10"]["numerator"] == 31
+    assert overall["provider_degradation"]["numerator"] == 1
+    assert overall["required_family_unsatisfied"]["numerator"] == 1
+    assert report["metrics"]["providers"]["tavily"] == {
+        "requested_cases": 8,
+        "succeeded_cases": 8,
+        "contributed_cases": 8,
+    }
+    decision = report["decision"]
+    assert decision["functional_gate_passed"] is False
+    assert decision["checks"]["overall"]["target_hit_at_10"] is False
+    assert decision["checks"]["tavily"] == {
+        "requested_cases": True,
+        "succeeded_cases": True,
+        "contributed_cases": True,
+        "query_budget": True,
+    }
+    assert decision["cross_network_gate"]["status"] == "not_testable"
+    assert decision["stage_b_200_case_run_allowed"] is False
+    assert decision["release_decision"] == "no-go"
+
+    private_fields = {
+        "query",
+        "title",
+        "snippet",
+        "content",
+        "url",
+        "results",
+        "target_domains",
+        "target_url_prefixes",
+    }
+    assert all(not private_fields & set(outcome) for outcome in report["outcomes"])

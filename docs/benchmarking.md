@@ -173,6 +173,16 @@ The unavailable second independent network remains a hard release boundary.
 Consequently, even a functional pass cannot authorize Stage B, merge,
 publication or a superiority claim.
 
+The committed
+[Phase 7 result](../benchmarks/results/quality_calibration_phase7_2026-07-29.md)
+failed the functional gate. Tavily passed its 8/8 requested, successful and
+contributing checks, and web retrieved 8/8 official domains. Overall exact
+target hit was only 18/32: academic retrieved 2/8 exact paper URLs and code
+retrieved 0/8 exact repositories. The locked runner also exposed that its
+default three-results-per-domain diversity cap makes single-domain verticals
+effectively `@3` despite the `@10` metric name. The frozen result is preserved;
+any correction requires a new protocol and untouched suite.
+
 ## End-to-end generation
 
 `benchmarks/run_end_to_end.py` now fixes the evidence-to-answer prompt and

@@ -59,3 +59,7 @@ All notable changes to EvidenceMesh are documented here.
 - Locked the Phase 7 quality protocol, an untouched 32-case suite, strict
   per-topic gates and a maximum eight-credit Tavily calibration. The
   independent-network and release gates remain closed.
+- Published the Phase 7 result: Tavily passed its 8/8 requested, successful and
+  contributing gates and web hit 8/8 targets, but the complete candidate hit
+  only 18/32 exact targets because academic reached 2/8 and code reached 0/8.
+  The functional gate failed, Stage B was not run and release remains no-go.

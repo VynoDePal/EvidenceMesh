@@ -106,6 +106,15 @@ degradation and whether the requested source family remains satisfied. A
 single-network result, pass or fail, cannot establish competitive superiority
 or release readiness.
 
+The
+[Phase 7 result](../benchmarks/results/quality_calibration_phase7_2026-07-29.md)
+passed every Tavily-specific gate and all eight web target cases, but the full
+candidate retrieved only 18/32 exact targets. Academic reached 2/8 and
+repository code reached 0/8, so the functional gate failed before the separate
+network gate was considered. This is evidence that adding a strong general-web
+provider is insufficient without improving vertical target ranking and its
+profile-aware diversity policy.
+
 ## Fair next comparison
 
 Use EvidenceMesh as the retrieval MCP for a fixed external model, then compare
