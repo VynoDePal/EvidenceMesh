@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 from pathlib import Path
 from typing import Any
 
@@ -26,6 +28,7 @@ from benchmarks.run_phase11_6_tavily_citation_isolation import (
     public_retrieval_outcome,
     validate_arguments,
 )
+from evidencemesh.config import COMMUNITY_PROVIDERS, QUALITY_PROVIDERS
 
 
 def row(case_id: str = "case-1", answer: str = "42") -> BenchmarkRow:
@@ -300,3 +303,80 @@ def test_locked_arguments_accept_exact_defaults_and_reject_any_model_or_timeout_
     changed_timeout.generation_wall_time_seconds = 61.0
     with pytest.raises(ValueError, match="locked arguments changed"):
         validate_arguments(changed_timeout)
+
+
+def test_committed_phase11_6_result_is_the_audited_blocking_no_go() -> None:
+    root = Path(__file__).parents[1]
+    result_path = (
+        root / "benchmarks" / "results" / "phase11_6_tavily_citation_isolation_2026-07-29.json"
+    )
+    report_path = (
+        root / "benchmarks" / "results" / "phase11_6_tavily_citation_isolation_2026-07-29.md"
+    )
+    result_bytes = result_path.read_bytes()
+    result = json.loads(result_bytes)
+    report = report_path.read_text(encoding="utf-8")
+
+    assert hashlib.sha256(result_bytes).hexdigest() == (
+        "86b9eda8ecb55822bb93501dbd1d1614c84c04444d1df62fbf6252e1202d22bd"
+    )
+    assert result["environment"]["commit_sha"] == ("5140b1d458e1846f6aa971e6707be7832c90b341")
+    assert result["traffic"] == {
+        "case_retrieval_operations": 12,
+        "expected_generation_requests": 72,
+        "expected_retrieval_operations": 12,
+        "expected_tavily_requests": 12,
+        "generation_requests": 72,
+        "provider_query_calls": 12,
+        "repair_requests": 0,
+        "retries": 0,
+        "tavily_requests": 12,
+    }
+    assert result["packet_identity"] == {
+        "denominator": 12,
+        "matching_cases": 12,
+        "passed": True,
+    }
+    assert result["privacy"] == {
+        "answer_hashes_in_report": True,
+        "api_keys_in_report": False,
+        "generated_answers_in_report": False,
+        "questions_in_report": False,
+        "reference_answers_in_report": False,
+        "source_snippets_or_evidence_in_report": False,
+        "source_titles_or_urls_in_report": False,
+        "system_or_user_prompts_in_report": False,
+    }
+
+    gates = result["decision"]["gates"]
+    assert len(gates) == 10
+    assert sum(bool(gate["passed"]) for gate in gates.values()) == 9
+    completion = gates["completion_at_least_11_of_12_per_model_arm"]
+    assert completion["passed"] is False
+    assert completion["gemma_4_26b_blocking"] is True
+    assert completion["observed"]["gemma-4-26b-a4b-it:tavily_legacy"] == 10
+    assert completion["observed"]["gemma-4-26b-a4b-it:tavily_strict"] == 10
+    assert gates["strict_answer_no_overall_regression"]["candidate_hits"] == 25
+    assert gates["strict_answer_no_overall_regression"]["baseline_hits"] == 25
+    assert gates["strict_answer_no_overall_regression"]["passed"] is True
+    assert gates["strict_answer_no_regression_for_any_model"]["passed"] is True
+    assert gates["strict_citation_presence_at_least_90_percent"]["observed"]["numerator"] == 34
+    assert gates["strict_citation_ids_100_percent_valid"]["observed"]["numerator"] == 34
+    assert gates["strict_citation_support_at_least_70_percent"]["observed"]["numerator"] == 28
+
+    decision = result["decision"]
+    assert decision["phase11_6_candidate_passed"] is False
+    assert decision["quality_profile_promotion_allowed"] is False
+    assert decision["quality_profile_promoted"] is False
+    assert decision["phase12_untouched_evaluation_allowed"] is False
+    assert decision["phase12_executed"] is False
+    assert decision["community_profile_unchanged"] is True
+    assert decision["merge_allowed"] is False
+    assert decision["release_ready"] is False
+    assert decision["release_decision"] == "no-go"
+    assert decision["superiority_claim_allowed"] is False
+
+    assert (*COMMUNITY_PROVIDERS, "tavily") == QUALITY_PROVIDERS
+    assert "30487190189" in report
+    assert "candidate failed; quality was not promoted" in report
+    assert "25/36 vs 25/36" in report

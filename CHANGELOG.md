@@ -191,3 +191,9 @@ All notable changes to EvidenceMesh are documented here.
   requests with no retry, fallback or repair. A ten-gate pass may promote only
   the paid quality default in a separate commit; the free community profile
   remains unchanged and Phase 12 is not executed.
+- Recorded the audited Phase 11.6 no-go. Nine of ten gates passed: strict and
+  legacy answer-key coverage tied at 25/36, strict citation presence and
+  identifier integrity reached 100%, and support proxy reached 82.4%.
+  Blocking Gemma 26B completed 10/12 requests in both arms, below the frozen
+  11/12 floor. The quality and community defaults are unchanged and Phase 12
+  remains blocked.

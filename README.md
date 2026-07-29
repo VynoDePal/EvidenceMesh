@@ -463,7 +463,12 @@ to legacy and strict citation prompts. The matrix includes
 `gemini-3.5-flash-lite`: exactly 12 Tavily and 72 model requests, with no
 retry, fallback or repair. Only a ten-gate pass may promote the paid `quality`
 default to Tavily only in a separate result commit. The free `community`
-profile remains unchanged, and Phase 12 is not executed.
+profile remains unchanged, and Phase 12 is not executed. The
+[audited result](benchmarks/results/phase11_6_tavily_citation_isolation_2026-07-29.md)
+passed nine of ten gates. Strict and legacy answer-key hits tied at 25/36,
+while strict citations reached 100% presence, 100% identifier validity and
+82.4% support proxy. Blocking Gemma 26B completed only 10/12 calls in each
+arm, so the quality profile was not promoted and Phase 12 remains blocked.
 
 ## Security
 
@@ -491,7 +496,7 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current suite contains 335 tests and reports 91.55% branch-aware coverage
+The current suite contains 336 tests and reports 91.55% branch-aware coverage
 locally. CI repeats the suite on Python 3.11, 3.12 and 3.13 and installs the
 built wheel before exercising its CLI and real MCP STDIO entry point.
 

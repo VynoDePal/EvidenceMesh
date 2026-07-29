@@ -199,6 +199,15 @@ change the paid quality default and unblock a separately authorized untouched
 evaluation; it cannot itself authorize Phase 12 or an external-agent
 comparison. The free community profile is unchanged.
 
+The
+[Phase 11.6 result](../benchmarks/results/phase11_6_tavily_citation_isolation_2026-07-29.md)
+isolated the citation contract successfully: strict and legacy answer-key hits
+tied at 25/36, while strict citations reached 100% presence and identifier
+validity. The run nevertheless failed its pre-registered completion gate
+because blocking Gemma 26B completed 10/12 requests in each arm. No provider
+default or evaluation boundary changed, so an external-agent comparison and
+competitive claim remain blocked.
+
 ## Fair next comparison
 
 Use EvidenceMesh as the retrieval MCP for a fixed external model, then compare

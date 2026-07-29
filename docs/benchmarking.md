@@ -330,6 +330,19 @@ result commit and may unblock a separately authorized untouched Phase 12 run.
 It does not execute Phase 12. The zero-key `community` profile remains
 unchanged regardless of the result.
 
+The
+[audited Phase 11.6 result](../benchmarks/results/phase11_6_tavily_citation_isolation_2026-07-29.md)
+made exactly 12 Tavily and 72 model requests without retry or repair. Selected
+and projected packets matched in 12/12 pairs. Strict and legacy answer-key
+hits tied at 25/36 for the aggregate and did not regress for any model. The
+strict contract reached 34/34 citation presence, 34/34 valid identifiers and
+28/34 support proxy.
+
+Nine of ten gates passed. Gemma 26B completed only 10/12 requests in each arm,
+below its blocking 11/12 floor. The candidate therefore failed: the paid
+quality profile remains mixed, the free community profile is unchanged and
+Phase 12 remains blocked.
+
 ## Planned standard evaluations
 
 - SimpleQA answer accuracy with the official judge over the new generation
