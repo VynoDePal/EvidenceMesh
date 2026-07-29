@@ -231,6 +231,24 @@ their frozen 95% and 75% gates. The optional quality default was not promoted,
 the sealed Phase 12 evaluation remains blocked, and an external-agent
 comparison or competitive claim is still unauthorized.
 
+Phase 11.8 is also a calibration, not a competitive comparison. Its
+[frozen protocol](benchmark-protocol-v16.md) reuses the observed Phase 11.7
+cases to compare current strict evidence, expanded strict evidence and an
+expanded structured-response contract. One up-to-20-result Tavily pool is
+shared per case, and the two expanded arms receive byte-identical evidence.
+The exact live ceiling is 24 Tavily and 144 generation requests over Gemma 4
+31B and Gemini 3.5 Flash Lite, with no retry or repair.
+
+The twelve gates can diagnose whether evidence depth and a schema-bound
+citation contract recover the failed retrieval and citation floors. They
+cannot establish generalization because the cases are already observed. A
+complete pass can therefore unlock only the design of a fresh Phase 11.9
+confirmation; it cannot change provider defaults, inspect Phase 12, start the
+external-agent comparison or support a “best” claim. The protocol-lock commit
+contains no Phase 11.8 live result. Ordinary PR updates remain offline; live
+execution on the draft PR requires an exact same-repository authorization
+label event.
+
 ## Fair next comparison
 
 Use EvidenceMesh as the retrieval MCP for a fixed external model, then compare

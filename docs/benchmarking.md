@@ -378,6 +378,42 @@ while all 45 emitted citation identifiers were valid. The optional quality
 profile therefore remains mixed, the free community profile is unchanged and
 Phase 12 remains sealed and blocked.
 
+## Phase 11.8 corrective recovery
+
+`benchmarks/run_phase11_8_recovery.py` reuses only the 24 observed Phase 11.7
+cases. For each case it makes one Tavily request for at most 20 raw results,
+then deterministically replays that pool into a current limit-10 packet and an
+expanded limit-20 packet. Three model arms separate the two suspected causes:
+
+- `current_strict` keeps the Phase 11.7 selection and sequential projection;
+- `expanded_strict` uses balanced projection over the expanded packet;
+- `expanded_structured` receives the exact expanded packet and uses a strict
+  JSON claim-and-citation contract.
+
+The [frozen protocol](benchmark-protocol-v16.md) fixes the evidence budget at
+12,000 characters, the expanded per-block cap at 1,500 characters and the
+blocking model order at `gemma-4-31b-it` then
+`gemini-3.5-flash-lite`. Exactly 24 Tavily and 144 model requests are permitted
+with no retry, fallback or repair. Invalid structured output is scored as a
+failure rather than normalized or regenerated.
+
+The GitHub workflow performs only lock and boundary tests on ordinary PR open,
+reopen and synchronize events. While the workflow exists only in the draft PR,
+live traffic requires the deliberate addition of the exact
+`phase11.8-live-authorized` label on that same-repository PR. The job checks
+that the event action is `labeled`; leaving the label in place does not
+authorize later pushes. Once the workflow exists on the default branch, a
+manual dispatch with `authorize_live_run=true` is also accepted. The
+privacy-safe artifact excludes questions, answers, evidence, prompts,
+generated text, raw structured responses, API keys and all Phase 12
+identifiers.
+
+All twelve retrieval, packet-identity, completion, schema, answer and citation
+gates are blocking. Since this is an observed-case calibration, even a complete
+pass can authorize only a separately frozen fresh Phase 11.9 confirmation.
+Product defaults remain unchanged and Phase 12 stays sealed. The protocol-lock
+commit contains no live Phase 11.8 result.
+
 ## Planned standard evaluations
 
 - SimpleQA answer accuracy with the official judge over the new generation

@@ -212,3 +212,19 @@ All notable changes to EvidenceMesh are documented here.
   answer-bearing for 18/24 cases, strict citation presence reached 45/48 and
   support proxy reached 33/48, below the frozen 20/24, 95% and 75% gates. The
   quality profile is unchanged and Phase 12 remains sealed and blocked.
+- Locked Phase 11.8 as an observed-case corrective calibration before its
+  first scored request. A single up-to-20-result Tavily pool per Phase 11.7
+  case feeds current strict, expanded strict and expanded structured arms;
+  the expanded arms share byte-identical evidence.
+- Added a strict claim-and-citation JSON parser, deterministic balanced
+  evidence projection and twelve blocking retrieval, schema, answer and
+  citation gates across Gemma 4 31B and Gemini 3.5 Flash Lite. The exact
+  authorized budget is 24 Tavily and 144 generation requests with no retry,
+  fallback or repair.
+- Added an offline-by-default GitHub workflow. Live execution requires either
+  a manual dispatch with an explicit authorization input when the workflow is
+  on the default branch, or an exact same-repository PR label event while the
+  workflow exists only on the draft branch. A passing Phase 11.8 result can
+  authorize only a separately frozen fresh Phase 11.9 confirmation; product
+  defaults, the Phase 12 seal, draft PR, merge, release, external comparison
+  and superiority-claim boundaries remain unchanged.

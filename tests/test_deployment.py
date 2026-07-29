@@ -352,6 +352,81 @@ def test_phase11_7_protocol_workflow_and_sealed_reserve_lock_fresh_budget() -> N
     assert "run_phase12" not in workflow.lower()
 
 
+def test_phase11_8_workflow_requires_manual_live_authorization_and_locks_budget() -> None:
+    root = Path(__file__).parents[1]
+    protocol_path = root / "docs" / "benchmark-protocol-v16.md"
+    workflow_path = root / ".github" / "workflows" / "phase11-8-corrective-recovery.yml"
+    protocol = protocol_path.read_text(encoding="utf-8")
+    workflow = workflow_path.read_text(encoding="utf-8")
+    parsed = yaml.safe_load(workflow)
+
+    assert hashlib.sha256(protocol_path.read_bytes()).hexdigest() == (
+        "55b18c9a0e91f645e630dbb0d340482c8821339ecfff97b7f81fc11b207df5ea"
+    )
+    assert isinstance(parsed, dict)
+    assert "jobs" in parsed
+    assert set(parsed["jobs"]) == {"lock-validation", "live-calibration"}
+    assert "corrective calibration on the 24 SimpleQA cases already" in protocol
+    assert "Phase 11.8 therefore makes exactly 144 native Gemini" in protocol
+    assert "API generation requests" in protocol
+    assert "All twelve gates must pass" in protocol
+    assert "A pass may authorize a separately" in protocol
+    assert "Phase 11.9 confirmation" in protocol
+    assert "The pull request remains draft" in protocol
+
+    offline, live = workflow.split("\n  live-calibration:", maxsplit=1)
+    assert "pull_request:" in workflow
+    assert "workflow_dispatch:" in workflow
+    assert "authorize_live_run:" in workflow
+    assert "type: boolean" in workflow
+    assert "default: false" in workflow
+    assert "github.event_name == 'workflow_dispatch'" in live
+    assert "inputs.authorize_live_run == true" in live
+    assert "github.event_name == 'pull_request'" in live
+    assert "github.event.action == 'labeled'" in live
+    assert "github.event.label.name == 'phase11.8-live-authorized'" in live
+    assert "github.event.pull_request.head.repo.full_name == github.repository" in live
+    assert "EVIDENCE_MESH_GEMINI_KEY" not in offline
+    assert "EVIDENCE_MESH_TAVILY_KEY" not in offline
+    assert '{"row_index", "case_id"}' in offline
+    assert "EVIDENCE_MESH_GEMINI_KEY" in live
+    assert "EVIDENCE_MESH_TAVILY_KEY" in live
+
+    assert "run_phase11_8_recovery.py" in live
+    assert "--provider-max-results 20" in live
+    assert "--current-selection-limit 10" in live
+    assert "--expanded-selection-limit 20" in live
+    assert "--evidence-budget-chars 12000" in live
+    assert "--expanded-max-block-chars 1500" in live
+    assert "--max-output-tokens 2048" in live
+    assert "--retrieval-wall-time-seconds 30" in live
+    assert "--generation-wall-time-seconds 60" in live
+    assert "--model-pause-seconds 2.0" in live
+    assert "timeout-minutes: 180" in live
+    assert "gemma-4-31b-it" in live
+    assert "gemma-4-26b-a4b-it" not in workflow
+    assert "gemini-3.5-flash-lite" in live
+    assert 'traffic["tavily_requests"] == 24' in live
+    assert 'traffic["generation_requests"] == 144' in live
+    assert 'traffic["retries"] == 0' in live
+    assert 'traffic["fallback_requests"] == 0' in live
+    assert 'traffic["repair_requests"] == 0' in live
+    assert 'len(decision["gates"]) == 12' in live
+    assert 'decision["quality_profile_promotion_allowed"] is False' in live
+    assert 'decision["phase12_untouched_evaluation_allowed"] is False' in live
+    assert 'decision["phase12_executed"] is False' in live
+    assert 'decision["external_competitor_benchmark_allowed"] is False' in live
+    assert 'decision["public_alpha_allowed"] is False' in live
+    assert 'decision["superiority_claim_allowed"] is False' in live
+    assert 'decision["merge_allowed"] is False' in live
+    assert 'decision["release_decision"] == "no-go"' in live
+    assert 'echo "$GEMINI_API_KEY"' not in workflow
+    assert 'echo "$TAVILY_API_KEY"' not in workflow
+    assert "gh release create" not in workflow.lower()
+    assert "pypi publish" not in workflow.lower()
+    assert "run_phase12" not in workflow.lower()
+
+
 def test_committed_phase4_result_matches_locked_protocol() -> None:
     root = Path(__file__).parents[1]
     result_path = root / "benchmarks" / "results" / "simpleqa_retrieval_phase4_2026-07-28.json"

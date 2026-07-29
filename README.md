@@ -492,6 +492,26 @@ missed the frozen 95% presence floor; support proxy reached 33/48 against a
 a 20/24 minimum. The quality profile was not promoted and Phase 12 remains
 blocked.
 
+The [Phase 11.8 protocol](docs/benchmark-protocol-v16.md) freezes a corrective
+calibration on those already-observed 24 cases. One Tavily pool of up to 20
+results per case feeds `current_strict`, `expanded_strict` and
+`expanded_structured`; the latter two receive byte-identical expanded
+evidence. The structured arm uses a strictly parsed claim-and-citation JSON
+contract with no repair or fallback. The manual live budget is exactly 24
+Tavily and 144 generation requests across blocking `gemma-4-31b-it` and
+`gemini-3.5-flash-lite`, with zero retries. Pull-request checks are offline and
+receive no API credentials unless a maintainer deliberately adds the exact
+`phase11.8-live-authorized` label in a same-repository `labeled` event. A
+manual dispatch with an explicit boolean remains available once the workflow
+exists on the default branch.
+
+All twelve pre-registered gates must pass. Because the cases are observed, a
+pass may authorize only the design of a separate fresh Phase 11.9
+confirmation. It cannot promote the quality profile, consume the sealed Phase
+12 reserve, run an external-agent benchmark, merge the draft PR, publish a
+release or support a superiority claim. No Phase 11.8 live request or result
+is included in this protocol-lock commit.
+
 ## Security
 
 EvidenceMesh blocks private, loopback, link-local and reserved fetch targets by
@@ -518,7 +538,7 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current suite contains 348 tests and reports 91.55% branch-aware coverage
+The current suite contains 372 tests and reports 91.55% branch-aware coverage
 locally. CI repeats the suite on Python 3.11, 3.12 and 3.13 and installs the
 built wheel before exercising its CLI and real MCP STDIO entry point.
 
