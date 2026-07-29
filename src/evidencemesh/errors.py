@@ -31,6 +31,9 @@ class ProviderError(EvidenceMeshError):
 class ProviderCircuitOpenError(ProviderError):
     """Raised when a provider call is skipped by its reliability circuit."""
 
+    def __init__(self, message: str) -> None:
+        super().__init__(message, kind="circuit_open")
+
 
 class FetchError(EvidenceMeshError):
     """Raised when a document cannot be fetched safely."""
