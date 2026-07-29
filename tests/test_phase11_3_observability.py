@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import hashlib
+import json
 from pathlib import Path
 
 import pytest
 
-from benchmarks.run_phase11_3_network_diagnostic import _diagnosis, _sum_telemetry
+from benchmarks.run_phase11_3_network_diagnostic import PROBES, _diagnosis, _sum_telemetry
 
 
 def observation(
@@ -113,3 +115,78 @@ def test_phase11_3_workflow_locks_privacy_traffic_and_release_boundaries() -> No
     assert "EVIDENCE_MESH_GEMINI_KEY" not in workflow
     assert "TAVILY_API_KEY" not in workflow
     assert "GEMINI_API_KEY" not in workflow
+
+
+def test_committed_phase11_3_result_matches_locked_diagnostic() -> None:
+    root = Path(__file__).parents[1]
+    result_path = root / "benchmarks" / "results" / "phase11_3_network_diagnostic_2026-07-29.json"
+    result_bytes = result_path.read_bytes()
+    assert hashlib.sha256(result_bytes).hexdigest() == (
+        "dba044f47aa3960fcc212c2b53cdea0470acfdc4b9816c2e6d709f71aea8d20f"
+    )
+    report = json.loads(result_bytes)
+
+    assert report["diagnostic"] == "evidencemesh-phase11-3-network-observability-v1"
+    assert report["scored"] is False
+    assert report["environment"]["commit_sha"] == ("6a1925771048dcd0e66945ad6876512db88a8adb")
+    assert report["protocol"]["sha256"] == (
+        "d5d4b4e066e2010d3e420e91dfa4a11202eeb98d61174c5c7de965e7f7eff764"
+    )
+
+    traffic = report["traffic"]
+    assert traffic["logical_calls"] == 4
+    assert traffic["cache_hits"] == 0
+    assert traffic["circuit_skips"] == 0
+    assert traffic["adapter_invocations"] == 4
+    assert traffic["http_attempts"] == 4
+    assert traffic["http_responses"] == 3
+    assert traffic["http_failures_without_response"] == 1
+    assert traffic["http_status_counts"] == {"200": 3}
+    assert traffic["failure_kind_counts"] == {"timeout": 1}
+    assert traffic["paid_provider_requests"] == 0
+    assert traffic["tavily_requests"] == 0
+    assert traffic["gemini_requests"] == 0
+    assert traffic["retries"] == 0
+
+    assert [item["probe_id"] for item in report["observations"]] == [
+        "probe-01",
+        "probe-02",
+        "probe-03",
+        "probe-04",
+    ]
+    assert [item["result_count"] for item in report["observations"]] == [10, 0, 10, 10]
+    assert report["diagnosis"] == {
+        "classification": "public_endpoint_returned_results",
+        "failure_cases": 1,
+        "result_cases": 3,
+    }
+    assert report["decision"]["retrieval_candidate_evaluated"] is False
+    assert report["decision"]["quality_claim_allowed"] is False
+    assert report["decision"]["default_bundle_eligible"] is False
+    assert report["decision"]["phase12_untouched_evaluation_allowed"] is False
+    assert report["decision"]["release_ready"] is False
+    assert report["decision"]["release_decision"] == "no-go"
+
+    forbidden_keys = {
+        "query",
+        "question",
+        "target_domains",
+        "title",
+        "url",
+        "snippet",
+        "content",
+        "evidence",
+        "exception_message",
+        "headers",
+    }
+
+    def keys(value: object) -> set[str]:
+        if isinstance(value, dict):
+            return set(value) | {nested for item in value.values() for nested in keys(item)}
+        if isinstance(value, list):
+            return {nested for item in value for nested in keys(item)}
+        return set()
+
+    serialized = json.dumps(report, ensure_ascii=False)
+    assert not forbidden_keys & keys(report)
+    assert all(query not in serialized for _, query in PROBES)
