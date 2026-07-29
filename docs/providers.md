@@ -5,8 +5,8 @@
 `community` is the default and contains `searxng`, bounded one-query `ddgs`,
 `wikipedia`, `crossref`, `arxiv` and `github`. It requires no key, but internet
 access, compute and storage are not cost-free infrastructure. The independently
-crawled Wiby adapter is an explicit opt-in after failing its Phase 11.1
-candidate gates.
+crawled Mwmbl and Wiby adapters and the self-hosted YaCy adapter are explicit
+opt-ins. None is silently promoted by Phase 11.2.
 
 `quality` includes the community set plus Tavily, the current recommended
 general-web candidate. Tavily is enabled only when `TAVILY_API_KEY` is
@@ -65,6 +65,16 @@ results in 4/12 cases and survived community selection in 0/12. Its attribution
 was present in all four applicable cases. The candidate failed, so Wiby remains
 opt-in and Phase 12 remains blocked.
 
+The [Phase 11.2 protocol](benchmark-protocol-v11.md) evaluates Mwmbl as a
+larger public independent-index candidate and contract-tests YaCy as a
+self-hosted path. It uses a new frozen 16-case suite, one request per public
+provider and no paid API, model or retry. The
+[architecture assessment](independent-index-assessment-v1.md) compares the
+current alternatives. Retrieval performance and default eligibility are
+separate gates: Mwmbl's result-license boundary and the absence of a measured,
+reproducibly populated YaCy index keep both adapters opt-in even if retrieval
+passes.
+
 ## Zero-key community providers
 
 ### SearXNG
@@ -118,6 +128,37 @@ best effort and must not be load-tested. The
 [GPLv2 installation guide](https://wiby.me/about/guide.html) supports
 self-hosting; point EvidenceMesh at a compatible deployment with
 `EVIDENCEMESH_WIBY_URL`.
+
+### Mwmbl
+
+[Mwmbl](https://mwmbl.org/) is an open-source nonprofit search engine with its
+own community-crawled index. EvidenceMesh calls the anonymous v2 endpoint once
+per base Web query and enforces a 24-hour minimum search-cache lifetime. The
+public service documents a 1,000-request monthly anonymous tier and a
+one-request-per-second rate, so it is unsuitable for load testing.
+
+Mwmbl marks returned search results as
+[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+EvidenceMesh emits that fixed URL in
+`metadata.provider_result_licenses["mwmbl"]` whenever Mwmbl returns results.
+This makes the constraint visible but does not resolve its downstream
+application. Mwmbl is therefore absent from named bundles. Opt in with
+`EVIDENCEMESH_PROVIDERS=mwmbl`; a compatible endpoint can be selected with
+`EVIDENCEMESH_MWMBL_URL`.
+
+### YaCy
+
+[YaCy](https://yacy.net/) crawls and indexes pages under operator control and
+can query a local index or its peer network. EvidenceMesh calls
+`/yacysearch.json` once per base Web query. The default resource is `local`;
+select `global` explicitly with `EVIDENCEMESH_YACY_RESOURCE`.
+
+Start the checksum-pinned optional service with
+`docker compose --profile independent-index up -d yacy`, then populate and
+administer its index according to YaCy's documentation. Adapter correctness
+does not imply useful coverage: storage, bandwidth, crawl policy and ranking
+quality remain operator responsibilities. Configure
+`EVIDENCEMESH_PROVIDERS=yacy` and `EVIDENCEMESH_YACY_URL`.
 
 ### Wikipedia
 
@@ -200,7 +241,7 @@ The public search profile selects compatible source types:
 
 | Profile | Community route | Maximum query variants per provider | Default maximum per domain |
 |---|---|---|---:|
-| Web | SearXNG, DDGS, Wikipedia; quality adds Tavily; Wiby is opt-in | unlimited, 1, 2 and 1; Wiby 1 | 3 |
+| Web | SearXNG, DDGS, Wikipedia; quality adds Tavily; Mwmbl, Wiby and YaCy are opt-in | unlimited, 1, 2 and 1; each independent adapter 1 | 3 |
 | Reference | Wikipedia | 2 | 10 |
 | News | SearXNG, DDGS | unlimited and 1 | 3 |
 | Academic | Crossref, arXiv, Wikipedia | 2, 1 and 2 | 10 |
@@ -217,9 +258,9 @@ request override are also reported. Provider lineage is counted at raw, fused,
 eligible, selected and evidence stages, with adjacent loss counts. Metadata also
 reports quality reservation request, eligibility, domain-feasible target,
 fulfillment and shortfall reason, plus SearXNG contributing or unresponsive
-engine query counts. Provider attribution links are explicit. Total upstream
-failures retain a sanitized failure kind and unavailable-engine counts,
-including calls that returned no result.
+engine query counts. Provider attribution and provider-result-license links are
+explicit. Total upstream failures retain a sanitized failure kind and
+unavailable-engine counts, including calls that returned no result.
 
 ## Runtime reliability
 
@@ -244,7 +285,8 @@ remaining recovery delay without making a network request.
 
 ## Custom/self-hosted services
 
-Use `EVIDENCEMESH_SEARXNG_URL`, `EVIDENCEMESH_WIBY_URL` and
+Use `EVIDENCEMESH_SEARXNG_URL`, `EVIDENCEMESH_MWMBL_URL`,
+`EVIDENCEMESH_WIBY_URL`, `EVIDENCEMESH_YACY_URL` and
 `EVIDENCEMESH_FIRECRAWL_URL`. Additional
 operator-controlled SearXNG endpoints can be supplied as a comma-separated
 `EVIDENCEMESH_SEARXNG_FALLBACK_URLS` list. Each endpoint receives its own
