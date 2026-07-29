@@ -98,3 +98,8 @@ All notable changes to EvidenceMesh are documented here.
   ceiling, no retries, privacy-safe output and explicitly labeled
   answer/evidence/citation substring proxies. External replication and the
   unavailable second network keep Stage B and release blocked.
+- Published the Phase 10 result: Tavily direct reached 27/36 strict
+  answer-key-covered outputs, quality 13/36 and community 6/36. SearXNG
+  degraded in all EvidenceMesh web cases, quality lost 14 net pairs to Tavily
+  direct and missed retrieval, generation and citation gates. The functional
+  gate failed and release remains no-go.

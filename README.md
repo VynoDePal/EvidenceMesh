@@ -320,6 +320,17 @@ not official SimpleQA accuracy or semantic citation judgments. External-agent
 replication was deferred, the second network remains unavailable and the PR
 stays draft regardless of the pilot result.
 
+The
+[Phase 10 result](benchmarks/results/end_to_end_phase10_2026-07-29.md)
+failed the functional gate. One-query Tavily direct reached 27/36 generated
+answer-key hits, versus 13/36 for EvidenceMesh quality, 6/36 for community and
+0/36 closed-book. SearXNG degraded in every community and quality case;
+community evidence was available for only 5/12 cases. Quality improved over
+community by a paired net +7, but lost to Tavily direct by a paired net -14 and
+missed its retrieval, answer and citation thresholds. The result identifies
+provider reliability, fused-evidence retention and citation adherence as the
+next engineering targets; release and superiority claims remain no-go.
+
 ## Security
 
 EvidenceMesh blocks private, loopback, link-local and reserved fetch targets by

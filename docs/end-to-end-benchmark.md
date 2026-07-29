@@ -110,3 +110,11 @@ still excludes questions, references, evidence and generated answer text.
 The exact sample, prompt, API settings, traffic cap and pre-registered gates are
 frozen in [benchmark protocol v8](benchmark-protocol-v8.md). A passing pilot
 cannot establish external-agent superiority or release readiness.
+
+The published
+[Phase 10 result](../benchmarks/results/end_to_end_phase10_2026-07-29.md)
+failed the functional gate. `tavily_direct` reached 27/36 strict answer-key
+hits, `quality` 13/36, `community` 6/36 and `closed_book` 0/36. SearXNG
+degraded in every EvidenceMesh web case; quality remained available through
+other providers but retained the answer key in only 5/12 evidence packets.
+The raw privacy-safe report is committed beside the interpreted result.

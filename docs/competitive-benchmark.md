@@ -163,6 +163,16 @@ under a fixed run, but cannot establish that EvidenceMesh is better than GPT
 Researcher, Open Deep Research, Local Deep Research, Vane or another complete
 agent.
 
+The
+[Phase 10 result](../benchmarks/results/end_to_end_phase10_2026-07-29.md)
+does not support a competitive claim. Tavily direct produced 27/36 strict
+answer-key hits, EvidenceMesh quality 13/36 and community 6/36. Quality gained
+seven paired hits over community but lost 14 net pairs to Tavily direct.
+SearXNG degraded in all EvidenceMesh web cases, and quality missed both
+retrieval and citation gates. This failed pilot narrows the next work to
+reliable free web retrieval, provider-aware evidence retention and citation
+enforcement before an external-agent comparison is justified.
+
 ## Fair next comparison
 
 Use EvidenceMesh as the retrieval MCP for a fixed external model, then compare

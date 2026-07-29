@@ -260,6 +260,16 @@ under the same strict proxy, including known false negatives from harmless
 formatting differences. That diagnostic is not a benchmark arm because its
 search backend and budget are not reproducible from this repository.
 
+The
+[Phase 10 result](../benchmarks/results/end_to_end_phase10_2026-07-29.md)
+completed all 36 retrieval operations and 144 model requests without retries.
+Tavily direct retained answer-key evidence in 10/12 packets and produced 27/36
+answer-key-covered outputs. Quality retained it in 5/12 packets and produced
+13/36; community reached 1/12 and 6/36. Quality improved over community by a
+paired net +7 but lost to Tavily direct by -14. SearXNG degraded in every
+community and quality case, and quality citation presence reached only 14/34.
+The frozen functional gate therefore failed and release remains no-go.
+
 ## Planned standard evaluations
 
 - SimpleQA answer accuracy with the official judge over the new generation

@@ -514,3 +514,128 @@ def test_committed_phase9_result_matches_locked_protocol() -> None:
     }
     assert all(not private_fields & set(outcome) for outcome in report["outcomes"])
     assert all(diagnostic_fields <= set(outcome) for outcome in report["outcomes"])
+
+
+def test_committed_phase10_result_matches_locked_protocol() -> None:
+    root = Path(__file__).parents[1]
+    result_path = root / "benchmarks" / "results" / "end_to_end_phase10_2026-07-29.json"
+    result_bytes = result_path.read_bytes()
+    assert hashlib.sha256(result_bytes).hexdigest() == (
+        "95259c697c7b511dec0075a7782f07023f7e5ee48f8b863363794ec44c8bf263"
+    )
+    report = json.loads(result_bytes)
+
+    assert report["schema_version"] == 1
+    assert report["benchmark"] == "evidencemesh-end-to-end-phase10-v1"
+    assert report["environment"]["commit_sha"] == ("ae9a0191dd01a175da649fe0b12dfb0424f905f6")
+    assert report["dataset"]["sha256"] == (
+        "feee3f7e7db3617e94e8fcf1977b756ec420ef8568f4e0fcbbe0e92e9d5fc032"
+    )
+    assert report["suite"]["manifest_sha256"] == (
+        "b38b89d316219be7dbd249f4365e0801330eb469ff6cc9b4fdaffebe6510134f"
+    )
+    assert report["suite"]["sample_count"] == 12
+
+    protocol = report["protocol"]
+    assert protocol["models"] == [
+        "gemma-4-31b-it",
+        "gemma-4-26b-a4b-it",
+        "gemini-3.5-flash-lite",
+    ]
+    assert protocol["arms"] == [
+        "closed_book",
+        "tavily_direct",
+        "community",
+        "quality",
+    ]
+    assert protocol["cache"] is False
+    assert protocol["retry_policy"] == "none; no selective retry"
+    assert report["traffic"] == {
+        "generation_requests": 144,
+        "generation_requests_expected": 144,
+        "maximum_tavily_credits": 24,
+        "maximum_tavily_requests": 24,
+        "recorded_tavily_provider_queries": 24,
+        "retries": 0,
+        "retrieval_case_arm_operations": 36,
+        "tavily_requests": 24,
+    }
+
+    retrieval = report["retrieval_metrics"]
+    assert retrieval["tavily_direct"]["availability"]["numerator"] == 12
+    assert retrieval["tavily_direct"]["answer_key_in_evidence"]["numerator"] == 10
+    assert retrieval["community"]["availability"]["numerator"] == 5
+    assert retrieval["community"]["answer_key_in_evidence"]["numerator"] == 1
+    assert retrieval["quality"]["availability"]["numerator"] == 12
+    assert retrieval["quality"]["answer_key_in_evidence"]["numerator"] == 5
+
+    generated = report["generation_metrics"]["aggregate"]
+    assert generated["closed_book"]["answer_key_covered"]["numerator"] == 0
+    assert generated["tavily_direct"]["answer_key_covered"]["numerator"] == 27
+    assert generated["community"]["answer_key_covered"]["numerator"] == 6
+    assert generated["quality"]["answer_key_covered"]["numerator"] == 13
+    assert generated["quality"]["citation_presence"]["numerator"] == 14
+    assert generated["quality"]["citation_ids_valid"] == {
+        "denominator": 14,
+        "numerator": 14,
+        "rate": 1.0,
+    }
+
+    paired = report["paired_answer_key_coverage"]
+    assert paired["quality_vs_community"]["overall"] == {
+        "baseline_wins": 1,
+        "candidate_wins": 8,
+        "net_gain": 7,
+        "shared_hits": 5,
+        "shared_misses": 22,
+    }
+    assert paired["quality_vs_tavily_direct"]["overall"] == {
+        "baseline_wins": 14,
+        "candidate_wins": 0,
+        "net_gain": -14,
+        "shared_hits": 13,
+        "shared_misses": 9,
+    }
+
+    decision = report["decision"]
+    assert decision["functional_gate_passed"] is False
+    assert decision["cross_network_gate"] == {
+        "completed_independent_networks": 1,
+        "required_independent_networks": 2,
+        "status": "not_testable",
+    }
+    assert decision["external_competitor_replication"] == "deferred_by_user"
+    assert decision["stage_b_allowed"] is False
+    assert decision["release_ready"] is False
+    assert decision["release_decision"] == "no-go"
+
+    prompt_groups: dict[tuple[str, str], set[tuple[str, int]]] = {}
+    for outcome in report["generation_outcomes"]:
+        key = (outcome["case_id"], outcome["arm"])
+        prompt_groups.setdefault(key, set()).add(
+            (outcome["prompt_sha256"], outcome["prompt_evidence_count"])
+        )
+    assert len(prompt_groups) == 48
+    assert all(len(values) == 1 for values in prompt_groups.values())
+
+    private_fields = {
+        "question",
+        "answer",
+        "reference_answer",
+        "title",
+        "snippet",
+        "content",
+        "url",
+        "evidence",
+        "generated_answer",
+    }
+    assert all(not private_fields & set(outcome) for outcome in report["retrieval_outcomes"])
+    assert all(not private_fields & set(outcome) for outcome in report["generation_outcomes"])
+    assert report["privacy"] == {
+        "answer_hashes_in_report": True,
+        "evidence_text_in_report": False,
+        "generated_answers_in_report": False,
+        "questions_in_report": False,
+        "reference_answers_in_report": False,
+        "source_titles_or_urls_in_report": False,
+    }
