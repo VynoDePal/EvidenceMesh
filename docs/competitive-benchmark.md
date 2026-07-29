@@ -222,6 +222,15 @@ authorization. It cannot execute Phase 12, start the external-agent comparison
 or support a “best” claim. Provider and model choices remain user-controlled,
 and the zero-key community track stays distinct.
 
+The
+[Phase 11.7 result](../benchmarks/results/phase11_7_fresh_confirmation_2026-07-29.md)
+passed seven of ten gates. Strict and legacy answer-key proxies tied at 32/48,
+but the fresh Tavily prompt packet was answer-bearing for only 18/24 cases.
+Strict citation presence reached 45/48 and support proxy reached 33/48, below
+their frozen 95% and 75% gates. The optional quality default was not promoted,
+the sealed Phase 12 evaluation remains blocked, and an external-agent
+comparison or competitive claim is still unauthorized.
+
 ## Fair next comparison
 
 Use EvidenceMesh as the retrieval MCP for a fixed external model, then compare

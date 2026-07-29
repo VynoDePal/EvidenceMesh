@@ -206,3 +206,9 @@ All notable changes to EvidenceMesh are documented here.
   or distributions. The Phase 11.7 loader may materialize only its own 24
   selectors. The zero-key community profile, draft PR, release boundary and
   user-controlled provider/model choices remain unchanged.
+- Recorded the audited Phase 11.7 no-go. Seven of ten gates passed: all 96
+  generations completed, strict and legacy answer-key coverage tied at 32/48,
+  and strict citation identifiers were 45/45 valid. Prompt evidence was
+  answer-bearing for 18/24 cases, strict citation presence reached 45/48 and
+  support proxy reached 33/48, below the frozen 20/24, 95% and 75% gates. The
+  quality profile is unchanged and Phase 12 remains sealed and blocked.

@@ -365,6 +365,19 @@ commit can make the optional `quality` profile Tavily-only. The zero-key
 `community` profile remains unchanged. Phase 11.7 does not run the sealed
 Phase 12 suite, merge the PR, publish a package or support a superiority claim.
 
+The
+[audited result](../benchmarks/results/phase11_7_fresh_confirmation_2026-07-29.md)
+made exactly 24 Tavily and 96 generation requests with no retry or repair.
+Every model-arm pair completed 24/24 requests, the shared packets matched in
+24/24 cases, and strict and legacy answer-key coverage tied at 32/48.
+
+Seven of ten gates passed. Prompt evidence contained the answer-key proxy for
+18/24 cases, below the 20/24 floor. The strict arm reached 45/48 citation
+presence and 33/48 support proxy, below the respective 95% and 75% floors,
+while all 45 emitted citation identifiers were valid. The optional quality
+profile therefore remains mixed, the free community profile is unchanged and
+Phase 12 remains sealed and blocked.
+
 ## Planned standard evaluations
 
 - SimpleQA answer accuracy with the official judge over the new generation

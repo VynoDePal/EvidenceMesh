@@ -39,7 +39,7 @@ from benchmarks.run_phase11_7_fresh_confirmation import (
     public_retrieval_outcome,
     validate_arguments,
 )
-from evidencemesh.config import COMMUNITY_PROVIDERS, QUALITY_PROVIDERS
+from evidencemesh.config import COMMUNITY_PROVIDERS, QUALITY_PROVIDERS, Settings
 
 
 def row(case_id: str = "case-1", answer: str = "42") -> BenchmarkRow:
@@ -401,12 +401,30 @@ def test_result_boundary_is_absent_before_the_single_live_run() -> None:
 
     result = json.loads(result_path.read_bytes())
     assert report_path.exists()
+    assert hashlib.sha256(result_path.read_bytes()).hexdigest() == (
+        "783fdaa60b351f975632b9cf23b57bab8766e39a8d81fabdead590962deea6de"
+    )
     assert result["benchmark"] == PHASE11_7_SUITE
     assert result["traffic"]["case_retrieval_operations"] == 24
     assert result["traffic"]["tavily_requests"] == 24
     assert result["traffic"]["generation_requests"] == 96
+    assert result["traffic"]["retries"] == 0
+    assert result["traffic"]["repair_requests"] == 0
     assert result["phase12_reserve"]["case_count"] == 96
     assert result["phase12_reserve"]["questions_or_answers_materialized"] is False
+    assert result["phase12_reserve"]["used_by_phase11_7"] is False
+    assert sum(bool(gate["passed"]) for gate in result["decision"]["gates"].values()) == 7
+    assert {name for name, gate in result["decision"]["gates"].items() if not gate["passed"]} == {
+        "tavily_packet_available_and_answer_bearing",
+        "strict_citation_presence_at_least_95_percent",
+        "strict_citation_support_at_least_75_percent",
+    }
+    assert result["decision"]["phase11_7_candidate_passed"] is False
+    assert result["decision"]["quality_profile_promotion_allowed"] is False
+    assert result["decision"]["quality_profile_promoted"] is False
+    assert result["decision"]["phase12_untouched_evaluation_allowed"] is False
     assert result["decision"]["phase12_executed"] is False
     assert result["decision"]["merge_allowed"] is False
     assert result["decision"]["release_decision"] == "no-go"
+    assert (*COMMUNITY_PROVIDERS, "tavily") == QUALITY_PROVIDERS
+    assert Settings().quality_primary_provider_share == 0.8

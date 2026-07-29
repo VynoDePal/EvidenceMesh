@@ -482,6 +482,16 @@ Tavily only in a separate result commit. The zero-key `community` profile
 stays unchanged; the PR remains draft and the sealed Phase 12 evaluation is
 not executed.
 
+The
+[audited result](benchmarks/results/phase11_7_fresh_confirmation_2026-07-29.md)
+passed seven of ten gates. Both blocking models completed 24/24 calls per arm,
+and strict versus legacy answer-key coverage tied at 32/48 with paired net
+zero. Strict citations improved to 45/48 presence with 45/45 valid IDs, but
+missed the frozen 95% presence floor; support proxy reached 33/48 against a
+36/48 minimum, and prompt evidence was answer-bearing for 18/24 cases against
+a 20/24 minimum. The quality profile was not promoted and Phase 12 remains
+blocked.
+
 ## Security
 
 EvidenceMesh blocks private, loopback, link-local and reserved fetch targets by
