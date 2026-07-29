@@ -54,12 +54,35 @@ jobs:
   package:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           version: "0.11.33"
-      - run: uv build
-      - run: uvx twine==7.0.0 check dist/*
+      - run: uv python install 3.11
+      - name: Build and validate distributions
+        run: |
+          uv build
+          uvx twine==7.0.0 check dist/*
+      - name: Install and exercise the built wheel
+        shell: bash
+        run: |
+          install_env=/tmp/evidencemesh-wheel-smoke
+          wheels=(dist/evidencemesh-0.1.0-*.whl)
+          if [[ "${#wheels[@]}" -ne 1 ]]; then
+            echo "Expected exactly one EvidenceMesh wheel" >&2
+            exit 1
+          fi
+          uv venv --python 3.11 "$install_env"
+          uv pip install --python "$install_env/bin/python" "${wheels[0]}"
+          "$install_env/bin/evidencemesh" benchmark-offline \
+            > /tmp/evidencemesh-installed-wheel-offline.json
+          "$install_env/bin/python" scripts/smoke_installed_mcp.py \
+            --command "$install_env/bin/evidencemesh-mcp" \
+            --cache-path /tmp/evidencemesh-installed-wheel-mcp.sqlite3 \
+            --expected-version 0.1.0 \
+            --output /tmp/evidencemesh-installed-wheel-mcp.json
 
   container:
     runs-on: ubuntu-latest

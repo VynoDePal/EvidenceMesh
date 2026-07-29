@@ -157,3 +157,12 @@ All notable changes to EvidenceMesh are documented here.
   timed out without a response at the 15-second deadline. The diagnostic
   validates the observability contract and identifies intermittent endpoint
   reliability without scoring retrieval quality or changing any release gate.
+- Locked the Phase 11.4 technical alpha protocol separately from quality
+  evaluation. The permanent package CI now installs the built wheel and
+  exercises the installed CLI and MCP STDIO subprocess instead of only
+  inspecting distribution metadata.
+- Added an ephemeral alpha RC workflow with an isolated wheel installation,
+  CycloneDX 1.7 SBOM, SHA-256 bundle manifest, immutable action references,
+  GitHub keyless SLSA provenance and SBOM attestations, and in-workflow GitHub
+  CLI verification. PyPI, GitHub Release, merge, Phase 12 and quality claims
+  remain blocked independently of the technical result.

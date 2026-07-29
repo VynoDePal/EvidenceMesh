@@ -16,6 +16,10 @@ The core works without a paid API or a bundled language model.
 > **Status:** `0.1.0` alpha. The implementation is tested, but no claim of
 > superior end-to-end research quality is made until comparable public
 > benchmark runs are available.
+>
+> **Distribution:** source checkout is currently the supported route. No PyPI
+> package or GitHub Release has been published. Phase 11.4 validates a
+> temporary, attested alpha candidate without authorizing public distribution.
 
 ## Why another search MCP?
 
@@ -426,6 +430,17 @@ timeout. No call came from cache or was skipped by the circuit. This validates
 the observability contract and shows intermittent Mwmbl endpoint behavior; it
 does not measure relevance or change any default, Phase 12 or release decision.
 
+The [Phase 11.4 alpha RC protocol](docs/alpha-rc-protocol-v1.md) is a separate
+distribution-engineering gate. It builds a wheel and source distribution,
+installs the wheel in an isolated environment, negotiates MCP through the
+installed `evidencemesh-mcp` command over a real STDIO subprocess, generates a
+CycloneDX 1.7 SBOM and has GitHub create and verify keyless SLSA provenance
+and SBOM attestations. It makes no provider or model request. A technical pass
+does not score search quality and cannot authorize PyPI, a GitHub Release,
+merge, Phase 12 or a superiority claim. See the
+[alpha distribution guide](docs/alpha-release-v0.1.md) for the exact boundary
+and verification procedure.
+
 ## Security
 
 EvidenceMesh blocks private, loopback, link-local and reserved fetch targets by
@@ -452,8 +467,9 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current suite contains 308 tests and reports 91.48% branch-aware coverage
-locally. CI repeats the suite on Python 3.11, 3.12 and 3.13.
+The current suite contains 314 tests and reports 91.48% branch-aware coverage
+locally. CI repeats the suite on Python 3.11, 3.12 and 3.13 and installs the
+built wheel before exercising its CLI and real MCP STDIO entry point.
 
 ## License
 
