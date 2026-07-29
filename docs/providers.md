@@ -94,6 +94,14 @@ shared-client HTTP attempts and responses. It publishes only bounded failure
 classes and latency/status counts. The four fixed Mwmbl probes are non-scored:
 they cannot change bundles, unlock Phase 12 or support a quality claim.
 
+The [published diagnostic](../benchmarks/results/phase11_3_network_diagnostic_2026-07-29.md)
+confirmed four adapter invocations and four HTTP attempts. Three received valid
+HTTP 200 responses and returned results; one reached the 15-second provider
+deadline without a response. There were no cache hits or circuit skips. This
+rules out a universally broken adapter in the measured GitHub environment but
+also records intermittent endpoint reliability. It is not a retrieval-quality
+evaluation.
+
 ## Zero-key community providers
 
 ### SearXNG
