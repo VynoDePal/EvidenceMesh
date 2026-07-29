@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 from typing import Any
@@ -337,3 +338,60 @@ def test_locked_argument_validation_rejects_extra_model_calls(tmp_path: Path) ->
 
     with pytest.raises(ValueError, match="exact locked model order"):
         validate_arguments(arguments)
+
+
+def test_committed_phase11_5_result_is_the_audited_no_go() -> None:
+    root = Path(__file__).parents[1]
+    result_path = root / "benchmarks" / "results" / "phase11_5_quality_recovery_2026-07-29.json"
+    report_path = root / "benchmarks" / "results" / "phase11_5_quality_recovery_2026-07-29.md"
+    result = json.loads(result_path.read_bytes())
+    report = report_path.read_text(encoding="utf-8")
+
+    assert hashlib.sha256(result_path.read_bytes()).hexdigest() == (
+        "7c9716cd970c3f955934ccf218ecbd835b261f1cf885c2b749217452b90af29c"
+    )
+    assert result["environment"]["commit_sha"] == ("c496186b64a07db035f96898cb0c9ec45e573833")
+    assert result["traffic"] == {
+        "case_retrieval_operations": 12,
+        "expected_generation_requests": 108,
+        "expected_retrieval_operations": 12,
+        "generation_requests": 108,
+        "maximum_tavily_requests": 12,
+        "provider_query_calls": 48,
+        "repair_requests": 0,
+        "retries": 0,
+        "tavily_requests": 12,
+    }
+    assert result["privacy"] == {
+        "answer_hashes_in_report": True,
+        "api_keys_in_report": False,
+        "generated_answers_in_report": False,
+        "questions_in_report": False,
+        "reference_answers_in_report": False,
+        "source_snippets_or_evidence_in_report": False,
+        "source_titles_or_urls_in_report": False,
+        "system_or_user_prompts_in_report": False,
+    }
+
+    gates = result["decision"]["gates"]
+    assert sum(gate["passed"] for gate in gates.values()) == 6
+    assert gates["completion_at_least_11_of_12_per_model_arm"]["passed"] is False
+    assert gates["candidate_no_net_answer_regression_vs_tavily_direct"]["paired"]["net_gain"] == -3
+    assert gates["candidate_no_net_answer_regression_vs_tavily_direct"]["passed"] is False
+    assert gates["candidate_no_net_answer_regression_vs_current_8_2"]["passed"] is True
+    assert gates["candidate_citation_presence_at_least_90_percent"]["passed"] is True
+    assert gates["candidate_citation_ids_100_percent_valid"]["passed"] is True
+    assert gates["candidate_citation_support_at_least_70_percent"]["passed"] is True
+
+    decision = result["decision"]
+    assert decision["phase11_5_candidate_passed"] is False
+    assert decision["phase12_untouched_evaluation_allowed"] is False
+    assert decision["phase12_executed"] is False
+    assert decision["merge_allowed"] is False
+    assert decision["release_ready"] is False
+    assert decision["release_decision"] == "no-go"
+    assert decision["superiority_claim_allowed"] is False
+
+    assert "30482256579" in report
+    assert "candidate failed; Phase 12 remains blocked" in report
+    assert "25/36 vs 28/36" in report

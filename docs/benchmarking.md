@@ -300,6 +300,17 @@ A pass can only unblock a separately authorized untouched Phase 12 run. It
 cannot authorize merge, public distribution, an external-agent comparison or
 a superiority claim.
 
+The
+[audited Phase 11.5 result](../benchmarks/results/phase11_5_quality_recovery_2026-07-29.md)
+made exactly 12 Tavily and 108 model requests with no retry or repair. Six of
+eight gates passed. The candidate recovered citation presence to 32/34
+(94.1%), exact citation-ID integrity to 32/32 and support proxy to 26/34
+(76.5%). It did not recover answer quality: candidate and current 8/2 each
+produced 25/36 answer-key hits versus 28/36 for Tavily direct, a paired
+candidate net of `-3`. Gemma 26B also missed the 11/12 completion floor on all
+three arms. The candidate failed, Phase 12 remains blocked and release remains
+no-go.
+
 ## Planned standard evaluations
 
 - SimpleQA answer accuracy with the official judge over the new generation

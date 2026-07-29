@@ -178,9 +178,17 @@ new evaluation independence. Its
 [locked protocol](benchmark-protocol-v13.md) reuses the Phase 10 cases, shares
 one raw provider pool per case, and compares Tavily direct, current 8/2 quality
 and a provider-aware prompt candidate under the same three answer models. The
-community pool remains observable but non-blocking. Even a complete gate pass
-only permits a later untouched Phase 12 run; it cannot establish competitive
-superiority.
+community pool remains observable but non-blocking.
+
+The
+[Phase 11.5 result](../benchmarks/results/phase11_5_quality_recovery_2026-07-29.md)
+passed the protocol, prompt-evidence and three citation gates, but failed two
+blocking gates. The candidate produced 25/36 strict answer-key hits against
+28/36 for Tavily direct, a paired net `-3`. Gemma 26B also completed only
+10/12, 9/12 and 10/12 requests across the three arms. Citation presence
+recovered to 94.1%, identifier validity to 100% and support proxy to 76.5%.
+The candidate is therefore a no-go; Phase 12 and an external-agent comparison
+remain blocked, and no competitive superiority follows.
 
 ## Fair next comparison
 

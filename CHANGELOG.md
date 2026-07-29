@@ -179,3 +179,8 @@ All notable changes to EvidenceMesh are documented here.
   the same three Gemini API models, with exactly 12 Tavily requests, 108 model
   requests, no retry or repair, a non-blocking community observability arm and
   no access to Phase 12.
+- Recorded the audited Phase 11.5 no-go. Six of eight gates passed, including
+  94.1% candidate citation presence, 100% citation-ID integrity and 76.5%
+  support proxy. Candidate answer-key coverage remained 25/36 versus 28/36
+  for Tavily direct, while Gemma 26B missed the completion floor on every arm.
+  Phase 12, merge, publication and superiority claims remain blocked.

@@ -448,9 +448,12 @@ collects one raw provider pool per case, and compares Tavily direct, current
 models. The candidate balances prompt space across all selected blocks and
 enforces exact packet-local citations with deterministic ID validation.
 Traffic is capped at 12 Tavily and 108 model requests with no retry or repair.
+The [audited result](benchmarks/results/phase11_5_quality_recovery_2026-07-29.md)
+passed six of eight gates but failed completion and answer non-regression.
+Candidate citations reached 94.1% presence, 100% valid IDs and 76.5% support
+proxy, while answer-key hits remained 25/36 versus 28/36 for Tavily direct.
 Community retrieval remains visible but non-blocking; Phase 12, merge,
-publication and superiority claims remain blocked until the result and a
-separate authorization.
+publication and superiority claims remain blocked.
 
 ## Security
 
@@ -478,7 +481,7 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current suite contains 326 tests and reports 91.55% branch-aware coverage
+The current suite contains 327 tests and reports 91.55% branch-aware coverage
 locally. CI repeats the suite on Python 3.11, 3.12 and 3.13 and installs the
 built wheel before exercising its CLI and real MCP STDIO entry point.
 
