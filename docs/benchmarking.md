@@ -223,6 +223,14 @@ the final top ten. It must gain at least four paired targets with no regression
 against the baseline. The complete traffic, privacy and decision contract is
 frozen in [benchmark protocol v7](benchmark-protocol-v7.md).
 
+The committed
+[Phase 9 result](../benchmarks/results/github_recall_phase9_2026-07-29.md)
+passed every functional condition. The candidate found 24/24 targets at ten
+against 4/24 for the baseline, with 20 paired gains, no regression and no
+additional queries. This validates the repository-query correction on the
+locked suite only. The cross-network gate remains `not_testable` at 1/2, so
+Stage B and release remain blocked.
+
 ## End-to-end generation
 
 `benchmarks/run_end_to_end.py` now fixes the evidence-to-answer prompt and

@@ -1,0 +1,1646 @@
+{
+  "benchmark": "evidencemesh-github-recall-paired-v1",
+  "decision": {
+    "checks": {
+      "candidate": {
+        "availability": true,
+        "one_query_per_case": true,
+        "p95_latency": true,
+        "raw_target_seen": true,
+        "request_success": true,
+        "target_hit_at_10": true,
+        "zero_cache_hits": true
+      },
+      "paired": {
+        "minimum_net_target_gain": true,
+        "no_target_regressions": true,
+        "raw_recall_not_worse": true
+      }
+    },
+    "cross_network_gate": {
+      "completed": 1,
+      "required": 2,
+      "status": "not_testable"
+    },
+    "functional_gate_passed": true,
+    "release_decision": "no-go",
+    "release_ready": false,
+    "stage_b_200_case_run_allowed": false
+  },
+  "environment": {
+    "commit_sha": "71bb02c8580bc2dff9dc651514ce0098d17eea22",
+    "evidencemesh": "0.1.0",
+    "httpx": "0.28.1",
+    "network_region": "GitHub-hosted ubuntu-latest; physical region not exposed",
+    "platform": "Linux-6.17.0-1020-azure-x86_64-with-glibc2.39",
+    "python": "3.11.15"
+  },
+  "generated_at": "2026-07-29T10:48:21.868051+00:00",
+  "metrics": {
+    "arms": {
+      "baseline": {
+        "availability": {
+          "denominator": 24,
+          "numerator": 8,
+          "rate": 0.333333,
+          "wilson_95": [
+            0.179722,
+            0.532937
+          ]
+        },
+        "cache_hits": 0,
+        "latency_ms": {
+          "maximum": 1257.207,
+          "p50": 337.837,
+          "p95": 1086.413
+        },
+        "provider_query_count": 24,
+        "raw_target_rank": {
+          "at_10": 4,
+          "at_20": 4,
+          "observed": 4
+        },
+        "raw_target_seen": {
+          "denominator": 24,
+          "numerator": 4,
+          "rate": 0.166667,
+          "wilson_95": [
+            0.066787,
+            0.358531
+          ]
+        },
+        "request_success": {
+          "denominator": 24,
+          "numerator": 23,
+          "rate": 0.958333,
+          "wilson_95": [
+            0.797582,
+            0.992607
+          ]
+        },
+        "result_count": {
+          "mean": 2.75,
+          "total": 66
+        },
+        "target_dropped_by_ranking": {
+          "denominator": 24,
+          "numerator": 0,
+          "rate": 0.0,
+          "wilson_95": [
+            0.0,
+            0.137976
+          ]
+        },
+        "target_hit_at_10": {
+          "denominator": 24,
+          "numerator": 4,
+          "rate": 0.166667,
+          "wilson_95": [
+            0.066787,
+            0.358531
+          ]
+        },
+        "target_rank": {
+          "at_1": 3,
+          "at_10": 4,
+          "at_3": 4,
+          "at_5": 4,
+          "mean": 1.25,
+          "observed": 4,
+          "p50": 1,
+          "p95": 2
+        }
+      },
+      "candidate": {
+        "availability": {
+          "denominator": 24,
+          "numerator": 24,
+          "rate": 1.0,
+          "wilson_95": [
+            0.862024,
+            1.0
+          ]
+        },
+        "cache_hits": 0,
+        "latency_ms": {
+          "maximum": 898.733,
+          "p50": 708.522,
+          "p95": 864.937
+        },
+        "provider_query_count": 24,
+        "raw_target_rank": {
+          "at_10": 24,
+          "at_20": 24,
+          "observed": 24
+        },
+        "raw_target_seen": {
+          "denominator": 24,
+          "numerator": 24,
+          "rate": 1.0,
+          "wilson_95": [
+            0.862024,
+            1.0
+          ]
+        },
+        "request_success": {
+          "denominator": 24,
+          "numerator": 24,
+          "rate": 1.0,
+          "wilson_95": [
+            0.862024,
+            1.0
+          ]
+        },
+        "result_count": {
+          "mean": 10.0,
+          "total": 240
+        },
+        "target_dropped_by_ranking": {
+          "denominator": 24,
+          "numerator": 0,
+          "rate": 0.0,
+          "wilson_95": [
+            0.0,
+            0.137976
+          ]
+        },
+        "target_hit_at_10": {
+          "denominator": 24,
+          "numerator": 24,
+          "rate": 1.0,
+          "wilson_95": [
+            0.862024,
+            1.0
+          ]
+        },
+        "target_rank": {
+          "at_1": 21,
+          "at_10": 24,
+          "at_3": 24,
+          "at_5": 24,
+          "mean": 1.125,
+          "observed": 24,
+          "p50": 1,
+          "p95": 2
+        }
+      }
+    },
+    "by_difficulty": {
+      "baseline": {
+        "high": {
+          "availability": {
+            "denominator": 8,
+            "numerator": 4,
+            "rate": 0.5,
+            "wilson_95": [
+              0.215216,
+              0.784784
+            ]
+          },
+          "cache_hits": 0,
+          "latency_ms": {
+            "maximum": 1257.207,
+            "p50": 524.969,
+            "p95": 1257.207
+          },
+          "provider_query_count": 8,
+          "raw_target_rank": {
+            "at_10": 2,
+            "at_20": 2,
+            "observed": 2
+          },
+          "raw_target_seen": {
+            "denominator": 8,
+            "numerator": 2,
+            "rate": 0.25,
+            "wilson_95": [
+              0.071479,
+              0.590725
+            ]
+          },
+          "request_success": {
+            "denominator": 8,
+            "numerator": 8,
+            "rate": 1.0,
+            "wilson_95": [
+              0.675592,
+              1.0
+            ]
+          },
+          "result_count": {
+            "mean": 4.625,
+            "total": 37
+          },
+          "target_dropped_by_ranking": {
+            "denominator": 8,
+            "numerator": 0,
+            "rate": 0.0,
+            "wilson_95": [
+              0.0,
+              0.324408
+            ]
+          },
+          "target_hit_at_10": {
+            "denominator": 8,
+            "numerator": 2,
+            "rate": 0.25,
+            "wilson_95": [
+              0.071479,
+              0.590725
+            ]
+          },
+          "target_rank": {
+            "at_1": 2,
+            "at_10": 2,
+            "at_3": 2,
+            "at_5": 2,
+            "mean": 1.0,
+            "observed": 2,
+            "p50": 1,
+            "p95": 1
+          }
+        },
+        "low": {
+          "availability": {
+            "denominator": 8,
+            "numerator": 2,
+            "rate": 0.25,
+            "wilson_95": [
+              0.071479,
+              0.590725
+            ]
+          },
+          "cache_hits": 0,
+          "latency_ms": {
+            "maximum": 1086.413,
+            "p50": 289.966,
+            "p95": 1086.413
+          },
+          "provider_query_count": 8,
+          "raw_target_rank": {
+            "at_10": 0,
+            "at_20": 0,
+            "observed": 0
+          },
+          "raw_target_seen": {
+            "denominator": 8,
+            "numerator": 0,
+            "rate": 0.0,
+            "wilson_95": [
+              0.0,
+              0.324408
+            ]
+          },
+          "request_success": {
+            "denominator": 8,
+            "numerator": 8,
+            "rate": 1.0,
+            "wilson_95": [
+              0.675592,
+              1.0
+            ]
+          },
+          "result_count": {
+            "mean": 1.625,
+            "total": 13
+          },
+          "target_dropped_by_ranking": {
+            "denominator": 8,
+            "numerator": 0,
+            "rate": 0.0,
+            "wilson_95": [
+              0.0,
+              0.324408
+            ]
+          },
+          "target_hit_at_10": {
+            "denominator": 8,
+            "numerator": 0,
+            "rate": 0.0,
+            "wilson_95": [
+              0.0,
+              0.324408
+            ]
+          },
+          "target_rank": {
+            "at_1": 0,
+            "at_10": 0,
+            "at_3": 0,
+            "at_5": 0,
+            "mean": null,
+            "observed": 0,
+            "p50": null,
+            "p95": null
+          }
+        },
+        "medium": {
+          "availability": {
+            "denominator": 8,
+            "numerator": 2,
+            "rate": 0.25,
+            "wilson_95": [
+              0.071479,
+              0.590725
+            ]
+          },
+          "cache_hits": 0,
+          "latency_ms": {
+            "maximum": 985.312,
+            "p50": 399.975,
+            "p95": 985.312
+          },
+          "provider_query_count": 8,
+          "raw_target_rank": {
+            "at_10": 2,
+            "at_20": 2,
+            "observed": 2
+          },
+          "raw_target_seen": {
+            "denominator": 8,
+            "numerator": 2,
+            "rate": 0.25,
+            "wilson_95": [
+              0.071479,
+              0.590725
+            ]
+          },
+          "request_success": {
+            "denominator": 8,
+            "numerator": 7,
+            "rate": 0.875,
+            "wilson_95": [
+              0.529112,
+              0.977583
+            ]
+          },
+          "result_count": {
+            "mean": 2.0,
+            "total": 16
+          },
+          "target_dropped_by_ranking": {
+            "denominator": 8,
+            "numerator": 0,
+            "rate": 0.0,
+            "wilson_95": [
+              0.0,
+              0.324408
+            ]
+          },
+          "target_hit_at_10": {
+            "denominator": 8,
+            "numerator": 2,
+            "rate": 0.25,
+            "wilson_95": [
+              0.071479,
+              0.590725
+            ]
+          },
+          "target_rank": {
+            "at_1": 1,
+            "at_10": 2,
+            "at_3": 2,
+            "at_5": 2,
+            "mean": 1.5,
+            "observed": 2,
+            "p50": 1,
+            "p95": 2
+          }
+        }
+      },
+      "candidate": {
+        "high": {
+          "availability": {
+            "denominator": 8,
+            "numerator": 8,
+            "rate": 1.0,
+            "wilson_95": [
+              0.675592,
+              1.0
+            ]
+          },
+          "cache_hits": 0,
+          "latency_ms": {
+            "maximum": 864.937,
+            "p50": 728.814,
+            "p95": 864.937
+          },
+          "provider_query_count": 8,
+          "raw_target_rank": {
+            "at_10": 8,
+            "at_20": 8,
+            "observed": 8
+          },
+          "raw_target_seen": {
+            "denominator": 8,
+            "numerator": 8,
+            "rate": 1.0,
+            "wilson_95": [
+              0.675592,
+              1.0
+            ]
+          },
+          "request_success": {
+            "denominator": 8,
+            "numerator": 8,
+            "rate": 1.0,
+            "wilson_95": [
+              0.675592,
+              1.0
+            ]
+          },
+          "result_count": {
+            "mean": 10.0,
+            "total": 80
+          },
+          "target_dropped_by_ranking": {
+            "denominator": 8,
+            "numerator": 0,
+            "rate": 0.0,
+            "wilson_95": [
+              0.0,
+              0.324408
+            ]
+          },
+          "target_hit_at_10": {
+            "denominator": 8,
+            "numerator": 8,
+            "rate": 1.0,
+            "wilson_95": [
+              0.675592,
+              1.0
+            ]
+          },
+          "target_rank": {
+            "at_1": 8,
+            "at_10": 8,
+            "at_3": 8,
+            "at_5": 8,
+            "mean": 1.0,
+            "observed": 8,
+            "p50": 1,
+            "p95": 1
+          }
+        },
+        "low": {
+          "availability": {
+            "denominator": 8,
+            "numerator": 8,
+            "rate": 1.0,
+            "wilson_95": [
+              0.675592,
+              1.0
+            ]
+          },
+          "cache_hits": 0,
+          "latency_ms": {
+            "maximum": 752.189,
+            "p50": 697.732,
+            "p95": 752.189
+          },
+          "provider_query_count": 8,
+          "raw_target_rank": {
+            "at_10": 8,
+            "at_20": 8,
+            "observed": 8
+          },
+          "raw_target_seen": {
+            "denominator": 8,
+            "numerator": 8,
+            "rate": 1.0,
+            "wilson_95": [
+              0.675592,
+              1.0
+            ]
+          },
+          "request_success": {
+            "denominator": 8,
+            "numerator": 8,
+            "rate": 1.0,
+            "wilson_95": [
+              0.675592,
+              1.0
+            ]
+          },
+          "result_count": {
+            "mean": 10.0,
+            "total": 80
+          },
+          "target_dropped_by_ranking": {
+            "denominator": 8,
+            "numerator": 0,
+            "rate": 0.0,
+            "wilson_95": [
+              0.0,
+              0.324408
+            ]
+          },
+          "target_hit_at_10": {
+            "denominator": 8,
+            "numerator": 8,
+            "rate": 1.0,
+            "wilson_95": [
+              0.675592,
+              1.0
+            ]
+          },
+          "target_rank": {
+            "at_1": 6,
+            "at_10": 8,
+            "at_3": 8,
+            "at_5": 8,
+            "mean": 1.25,
+            "observed": 8,
+            "p50": 1,
+            "p95": 2
+          }
+        },
+        "medium": {
+          "availability": {
+            "denominator": 8,
+            "numerator": 8,
+            "rate": 1.0,
+            "wilson_95": [
+              0.675592,
+              1.0
+            ]
+          },
+          "cache_hits": 0,
+          "latency_ms": {
+            "maximum": 898.733,
+            "p50": 709.852,
+            "p95": 898.733
+          },
+          "provider_query_count": 8,
+          "raw_target_rank": {
+            "at_10": 8,
+            "at_20": 8,
+            "observed": 8
+          },
+          "raw_target_seen": {
+            "denominator": 8,
+            "numerator": 8,
+            "rate": 1.0,
+            "wilson_95": [
+              0.675592,
+              1.0
+            ]
+          },
+          "request_success": {
+            "denominator": 8,
+            "numerator": 8,
+            "rate": 1.0,
+            "wilson_95": [
+              0.675592,
+              1.0
+            ]
+          },
+          "result_count": {
+            "mean": 10.0,
+            "total": 80
+          },
+          "target_dropped_by_ranking": {
+            "denominator": 8,
+            "numerator": 0,
+            "rate": 0.0,
+            "wilson_95": [
+              0.0,
+              0.324408
+            ]
+          },
+          "target_hit_at_10": {
+            "denominator": 8,
+            "numerator": 8,
+            "rate": 1.0,
+            "wilson_95": [
+              0.675592,
+              1.0
+            ]
+          },
+          "target_rank": {
+            "at_1": 7,
+            "at_10": 8,
+            "at_3": 8,
+            "at_5": 8,
+            "mean": 1.125,
+            "observed": 8,
+            "p50": 1,
+            "p95": 2
+          }
+        }
+      }
+    },
+    "paired": {
+      "raw_target_seen": {
+        "baseline_wins": 0,
+        "both_false": 0,
+        "both_true": 4,
+        "candidate_wins": 20,
+        "discordant_pairs": 20,
+        "mcnemar_exact_two_sided_p": 2e-06,
+        "net_gain": 20
+      },
+      "target_hit_at_10": {
+        "baseline_wins": 0,
+        "both_false": 0,
+        "both_true": 4,
+        "candidate_wins": 20,
+        "discordant_pairs": 20,
+        "mcnemar_exact_two_sided_p": 2e-06,
+        "net_gain": 20
+      }
+    }
+  },
+  "outcomes": [
+    {
+      "arm": "baseline",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-01",
+      "difficulty": "low",
+      "error_type": null,
+      "latency_ms": 1086.413,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "entity_first",
+      "raw_target_rank": null,
+      "raw_target_seen": false,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": false,
+      "target_rank": null
+    },
+    {
+      "arm": "candidate",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-01",
+      "difficulty": "low",
+      "error_type": null,
+      "latency_ms": 580.394,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "entity_first",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1
+    },
+    {
+      "arm": "baseline",
+      "available": false,
+      "cache_hits": 0,
+      "case_id": "p9-code-02",
+      "difficulty": "low",
+      "error_type": null,
+      "latency_ms": 337.837,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "intent_prefix",
+      "raw_target_rank": null,
+      "raw_target_seen": false,
+      "request_succeeded": true,
+      "result_count": 0,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": false,
+      "target_rank": null
+    },
+    {
+      "arm": "candidate",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-02",
+      "difficulty": "low",
+      "error_type": null,
+      "latency_ms": 594.931,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "intent_prefix",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1
+    },
+    {
+      "arm": "baseline",
+      "available": false,
+      "cache_hits": 0,
+      "case_id": "p9-code-03",
+      "difficulty": "low",
+      "error_type": null,
+      "latency_ms": 261.133,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "entity_first",
+      "raw_target_rank": null,
+      "raw_target_seen": false,
+      "request_succeeded": true,
+      "result_count": 0,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": false,
+      "target_rank": null
+    },
+    {
+      "arm": "candidate",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-03",
+      "difficulty": "low",
+      "error_type": null,
+      "latency_ms": 714.938,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "entity_first",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 2
+    },
+    {
+      "arm": "baseline",
+      "available": false,
+      "cache_hits": 0,
+      "case_id": "p9-code-04",
+      "difficulty": "low",
+      "error_type": null,
+      "latency_ms": 259.864,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "intent_prefix",
+      "raw_target_rank": null,
+      "raw_target_seen": false,
+      "request_succeeded": true,
+      "result_count": 0,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": false,
+      "target_rank": null
+    },
+    {
+      "arm": "candidate",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-04",
+      "difficulty": "low",
+      "error_type": null,
+      "latency_ms": 635.229,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "intent_prefix",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1
+    },
+    {
+      "arm": "baseline",
+      "available": false,
+      "cache_hits": 0,
+      "case_id": "p9-code-05",
+      "difficulty": "low",
+      "error_type": null,
+      "latency_ms": 277.327,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "entity_first",
+      "raw_target_rank": null,
+      "raw_target_seen": false,
+      "request_succeeded": true,
+      "result_count": 0,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": false,
+      "target_rank": null
+    },
+    {
+      "arm": "candidate",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-05",
+      "difficulty": "low",
+      "error_type": null,
+      "latency_ms": 700.198,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "entity_first",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 2
+    },
+    {
+      "arm": "baseline",
+      "available": false,
+      "cache_hits": 0,
+      "case_id": "p9-code-06",
+      "difficulty": "low",
+      "error_type": null,
+      "latency_ms": 258.377,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "intent_prefix",
+      "raw_target_rank": null,
+      "raw_target_seen": false,
+      "request_succeeded": true,
+      "result_count": 0,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": false,
+      "target_rank": null
+    },
+    {
+      "arm": "candidate",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-06",
+      "difficulty": "low",
+      "error_type": null,
+      "latency_ms": 594.205,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "intent_prefix",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1
+    },
+    {
+      "arm": "baseline",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-07",
+      "difficulty": "low",
+      "error_type": null,
+      "latency_ms": 410.559,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "entity_first",
+      "raw_target_rank": null,
+      "raw_target_seen": false,
+      "request_succeeded": true,
+      "result_count": 3,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": false,
+      "target_rank": null
+    },
+    {
+      "arm": "candidate",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-07",
+      "difficulty": "low",
+      "error_type": null,
+      "latency_ms": 752.189,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "entity_first",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1
+    },
+    {
+      "arm": "baseline",
+      "available": false,
+      "cache_hits": 0,
+      "case_id": "p9-code-08",
+      "difficulty": "low",
+      "error_type": null,
+      "latency_ms": 289.966,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "intent_prefix",
+      "raw_target_rank": null,
+      "raw_target_seen": false,
+      "request_succeeded": true,
+      "result_count": 0,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": false,
+      "target_rank": null
+    },
+    {
+      "arm": "candidate",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-08",
+      "difficulty": "low",
+      "error_type": null,
+      "latency_ms": 697.732,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "intent_prefix",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1
+    },
+    {
+      "arm": "baseline",
+      "available": false,
+      "cache_hits": 0,
+      "case_id": "p9-code-09",
+      "difficulty": "medium",
+      "error_type": null,
+      "latency_ms": 559.083,
+      "provider_failed": true,
+      "provider_query_count": 1,
+      "query_form": "entity_first",
+      "raw_target_rank": null,
+      "raw_target_seen": false,
+      "request_succeeded": false,
+      "result_count": 0,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": false,
+      "target_rank": null
+    },
+    {
+      "arm": "candidate",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-09",
+      "difficulty": "medium",
+      "error_type": null,
+      "latency_ms": 648.803,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "entity_first",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1
+    },
+    {
+      "arm": "baseline",
+      "available": false,
+      "cache_hits": 0,
+      "case_id": "p9-code-10",
+      "difficulty": "medium",
+      "error_type": null,
+      "latency_ms": 267.834,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "intent_prefix",
+      "raw_target_rank": null,
+      "raw_target_seen": false,
+      "request_succeeded": true,
+      "result_count": 0,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": false,
+      "target_rank": null
+    },
+    {
+      "arm": "candidate",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-10",
+      "difficulty": "medium",
+      "error_type": null,
+      "latency_ms": 709.852,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "intent_prefix",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1
+    },
+    {
+      "arm": "baseline",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-11",
+      "difficulty": "medium",
+      "error_type": null,
+      "latency_ms": 985.312,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "entity_first",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1
+    },
+    {
+      "arm": "candidate",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-11",
+      "difficulty": "medium",
+      "error_type": null,
+      "latency_ms": 771.026,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "entity_first",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1
+    },
+    {
+      "arm": "baseline",
+      "available": false,
+      "cache_hits": 0,
+      "case_id": "p9-code-12",
+      "difficulty": "medium",
+      "error_type": null,
+      "latency_ms": 273.702,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "intent_prefix",
+      "raw_target_rank": null,
+      "raw_target_seen": false,
+      "request_succeeded": true,
+      "result_count": 0,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": false,
+      "target_rank": null
+    },
+    {
+      "arm": "candidate",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-12",
+      "difficulty": "medium",
+      "error_type": null,
+      "latency_ms": 697.829,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "intent_prefix",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1
+    },
+    {
+      "arm": "baseline",
+      "available": false,
+      "cache_hits": 0,
+      "case_id": "p9-code-13",
+      "difficulty": "medium",
+      "error_type": null,
+      "latency_ms": 245.832,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "entity_first",
+      "raw_target_rank": null,
+      "raw_target_seen": false,
+      "request_succeeded": true,
+      "result_count": 0,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": false,
+      "target_rank": null
+    },
+    {
+      "arm": "candidate",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-13",
+      "difficulty": "medium",
+      "error_type": null,
+      "latency_ms": 708.522,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "entity_first",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1
+    },
+    {
+      "arm": "baseline",
+      "available": false,
+      "cache_hits": 0,
+      "case_id": "p9-code-14",
+      "difficulty": "medium",
+      "error_type": null,
+      "latency_ms": 399.975,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "intent_prefix",
+      "raw_target_rank": null,
+      "raw_target_seen": false,
+      "request_succeeded": true,
+      "result_count": 0,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": false,
+      "target_rank": null
+    },
+    {
+      "arm": "candidate",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-14",
+      "difficulty": "medium",
+      "error_type": null,
+      "latency_ms": 723.7,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "intent_prefix",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 2
+    },
+    {
+      "arm": "baseline",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-15",
+      "difficulty": "medium",
+      "error_type": null,
+      "latency_ms": 473.43,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "entity_first",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 6,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 2
+    },
+    {
+      "arm": "candidate",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-15",
+      "difficulty": "medium",
+      "error_type": null,
+      "latency_ms": 898.733,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "entity_first",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1
+    },
+    {
+      "arm": "baseline",
+      "available": false,
+      "cache_hits": 0,
+      "case_id": "p9-code-16",
+      "difficulty": "medium",
+      "error_type": null,
+      "latency_ms": 279.886,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "intent_prefix",
+      "raw_target_rank": null,
+      "raw_target_seen": false,
+      "request_succeeded": true,
+      "result_count": 0,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": false,
+      "target_rank": null
+    },
+    {
+      "arm": "candidate",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-16",
+      "difficulty": "medium",
+      "error_type": null,
+      "latency_ms": 604.793,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "intent_prefix",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1
+    },
+    {
+      "arm": "baseline",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-17",
+      "difficulty": "high",
+      "error_type": null,
+      "latency_ms": 524.969,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "entity_first",
+      "raw_target_rank": null,
+      "raw_target_seen": false,
+      "request_succeeded": true,
+      "result_count": 7,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": false,
+      "target_rank": null
+    },
+    {
+      "arm": "candidate",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-17",
+      "difficulty": "high",
+      "error_type": null,
+      "latency_ms": 750.933,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "entity_first",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1
+    },
+    {
+      "arm": "baseline",
+      "available": false,
+      "cache_hits": 0,
+      "case_id": "p9-code-18",
+      "difficulty": "high",
+      "error_type": null,
+      "latency_ms": 421.258,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "intent_prefix",
+      "raw_target_rank": null,
+      "raw_target_seen": false,
+      "request_succeeded": true,
+      "result_count": 0,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": false,
+      "target_rank": null
+    },
+    {
+      "arm": "candidate",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-18",
+      "difficulty": "high",
+      "error_type": null,
+      "latency_ms": 728.814,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "intent_prefix",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1
+    },
+    {
+      "arm": "baseline",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-19",
+      "difficulty": "high",
+      "error_type": null,
+      "latency_ms": 982.272,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "entity_first",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1
+    },
+    {
+      "arm": "candidate",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-19",
+      "difficulty": "high",
+      "error_type": null,
+      "latency_ms": 711.653,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "entity_first",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1
+    },
+    {
+      "arm": "baseline",
+      "available": false,
+      "cache_hits": 0,
+      "case_id": "p9-code-20",
+      "difficulty": "high",
+      "error_type": null,
+      "latency_ms": 287.602,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "intent_prefix",
+      "raw_target_rank": null,
+      "raw_target_seen": false,
+      "request_succeeded": true,
+      "result_count": 0,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": false,
+      "target_rank": null
+    },
+    {
+      "arm": "candidate",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-20",
+      "difficulty": "high",
+      "error_type": null,
+      "latency_ms": 755.421,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "intent_prefix",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1
+    },
+    {
+      "arm": "baseline",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-21",
+      "difficulty": "high",
+      "error_type": null,
+      "latency_ms": 1257.207,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "entity_first",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1
+    },
+    {
+      "arm": "candidate",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-21",
+      "difficulty": "high",
+      "error_type": null,
+      "latency_ms": 687.245,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "entity_first",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1
+    },
+    {
+      "arm": "baseline",
+      "available": false,
+      "cache_hits": 0,
+      "case_id": "p9-code-22",
+      "difficulty": "high",
+      "error_type": null,
+      "latency_ms": 268.071,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "intent_prefix",
+      "raw_target_rank": null,
+      "raw_target_seen": false,
+      "request_succeeded": true,
+      "result_count": 0,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": false,
+      "target_rank": null
+    },
+    {
+      "arm": "candidate",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-22",
+      "difficulty": "high",
+      "error_type": null,
+      "latency_ms": 864.937,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "intent_prefix",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1
+    },
+    {
+      "arm": "baseline",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-23",
+      "difficulty": "high",
+      "error_type": null,
+      "latency_ms": 1001.689,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "entity_first",
+      "raw_target_rank": null,
+      "raw_target_seen": false,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": false,
+      "target_rank": null
+    },
+    {
+      "arm": "candidate",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-23",
+      "difficulty": "high",
+      "error_type": null,
+      "latency_ms": 695.632,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "entity_first",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1
+    },
+    {
+      "arm": "baseline",
+      "available": false,
+      "cache_hits": 0,
+      "case_id": "p9-code-24",
+      "difficulty": "high",
+      "error_type": null,
+      "latency_ms": 287.864,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "intent_prefix",
+      "raw_target_rank": null,
+      "raw_target_seen": false,
+      "request_succeeded": true,
+      "result_count": 0,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": false,
+      "target_rank": null
+    },
+    {
+      "arm": "candidate",
+      "available": true,
+      "cache_hits": 0,
+      "case_id": "p9-code-24",
+      "difficulty": "high",
+      "error_type": null,
+      "latency_ms": 607.546,
+      "provider_failed": false,
+      "provider_query_count": 1,
+      "query_form": "intent_prefix",
+      "raw_target_rank": 1,
+      "raw_target_seen": true,
+      "request_succeeded": true,
+      "result_count": 10,
+      "target_dropped_by_ranking": false,
+      "target_hit_at_10": true,
+      "target_rank": 1
+    }
+  ],
+  "protocol": {
+    "arm_count": 2,
+    "cache": false,
+    "case_count": 24,
+    "content_fetching": false,
+    "interleaving": "alternating arm order by case",
+    "max_results": 10,
+    "maximum_queries_per_arm_case": 1,
+    "new_user_secrets": 0,
+    "pause_seconds": 6.5,
+    "raw_target_rank_capture": "in-memory adapter wrapper; no additional requests",
+    "request_count": 48,
+    "request_timeout_seconds": 20.0,
+    "requests_per_arm": 24,
+    "retry_policy": "none",
+    "target_identity_schema": 1,
+    "tavily_requests": 0,
+    "version": 7
+  },
+  "provider_configuration": {
+    "api_version": "2022-11-28",
+    "arms": {
+      "baseline": {
+        "description": "Phase 8 intent trimming plus in:name,description",
+        "query_strategy": "legacy-v1"
+      },
+      "candidate": {
+        "description": "repository entity anchor plus in:name,description,topics",
+        "query_strategy": "entity-anchor-v2"
+      }
+    },
+    "authentication": "anonymous",
+    "endpoint": "https://api.github.com/search/repositories",
+    "maximum_provider_results": 20,
+    "provider": "github"
+  },
+  "schema_version": 1,
+  "suite": {
+    "count": 24,
+    "difficulty_distribution": {
+      "high": 8,
+      "low": 8,
+      "medium": 8
+    },
+    "file": "github_recall_v1.json",
+    "ids": [
+      "p9-code-01",
+      "p9-code-02",
+      "p9-code-03",
+      "p9-code-04",
+      "p9-code-05",
+      "p9-code-06",
+      "p9-code-07",
+      "p9-code-08",
+      "p9-code-09",
+      "p9-code-10",
+      "p9-code-11",
+      "p9-code-12",
+      "p9-code-13",
+      "p9-code-14",
+      "p9-code-15",
+      "p9-code-16",
+      "p9-code-17",
+      "p9-code-18",
+      "p9-code-19",
+      "p9-code-20",
+      "p9-code-21",
+      "p9-code-22",
+      "p9-code-23",
+      "p9-code-24"
+    ],
+    "manifest_sha256": "7369c9a0f47e4dbf4f752885f32bdf28e44b0472a5129353e75f4da616d20e57",
+    "query_form_distribution": {
+      "entity_first": 12,
+      "intent_prefix": 12
+    },
+    "sha256": "0cfafa78e44662af47e51f26775593af0e3e9d6dbbc417d18178f1218f5ad61a",
+    "target_identity_schema": 1
+  }
+}

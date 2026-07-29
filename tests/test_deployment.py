@@ -382,3 +382,107 @@ def test_committed_phase8_result_matches_locked_protocol() -> None:
         outcome["effective_max_per_domain"] == (3 if outcome["topic"] == "web" else 10)
         for outcome in report["outcomes"]
     )
+
+
+def test_committed_phase9_result_matches_locked_protocol() -> None:
+    root = Path(__file__).parents[1]
+    result_path = root / "benchmarks" / "results" / "github_recall_phase9_2026-07-29.json"
+    result_bytes = result_path.read_bytes()
+    assert hashlib.sha256(result_bytes).hexdigest() == (
+        "17b6f266d6d828b8f013b460810143a1cb02f98c52fea28a1c3811af844e5aab"
+    )
+    report = json.loads(result_bytes)
+
+    assert report["schema_version"] == 1
+    assert report["benchmark"] == "evidencemesh-github-recall-paired-v1"
+    assert report["environment"]["commit_sha"] == ("71bb02c8580bc2dff9dc651514ce0098d17eea22")
+    assert report["suite"]["sha256"] == (
+        "0cfafa78e44662af47e51f26775593af0e3e9d6dbbc417d18178f1218f5ad61a"
+    )
+    assert report["suite"]["manifest_sha256"] == (
+        "7369c9a0f47e4dbf4f752885f32bdf28e44b0472a5129353e75f4da616d20e57"
+    )
+    assert report["suite"]["count"] == 24
+
+    provider = report["provider_configuration"]
+    assert provider["authentication"] == "anonymous"
+    assert provider["arms"]["baseline"]["query_strategy"] == "legacy-v1"
+    assert provider["arms"]["candidate"]["query_strategy"] == "entity-anchor-v2"
+
+    protocol = report["protocol"]
+    assert protocol["version"] == 7
+    assert protocol["case_count"] == 24
+    assert protocol["request_count"] == 48
+    assert protocol["requests_per_arm"] == 24
+    assert protocol["maximum_queries_per_arm_case"] == 1
+    assert protocol["pause_seconds"] == 6.5
+    assert protocol["retry_policy"] == "none"
+    assert protocol["cache"] is False
+    assert protocol["content_fetching"] is False
+    assert protocol["tavily_requests"] == 0
+    assert protocol["new_user_secrets"] == 0
+
+    assert len(report["outcomes"]) == 48
+    assert sum(outcome["arm"] == "baseline" for outcome in report["outcomes"]) == 24
+    assert sum(outcome["arm"] == "candidate" for outcome in report["outcomes"]) == 24
+    assert all(outcome["provider_query_count"] == 1 for outcome in report["outcomes"])
+    assert all(outcome["cache_hits"] == 0 for outcome in report["outcomes"])
+
+    baseline = report["metrics"]["arms"]["baseline"]
+    assert baseline["request_success"]["numerator"] == 23
+    assert baseline["availability"]["numerator"] == 8
+    assert baseline["raw_target_seen"]["numerator"] == 4
+    assert baseline["target_hit_at_10"]["numerator"] == 4
+
+    candidate = report["metrics"]["arms"]["candidate"]
+    assert candidate["request_success"]["numerator"] == 24
+    assert candidate["availability"]["numerator"] == 24
+    assert candidate["raw_target_seen"]["numerator"] == 24
+    assert candidate["target_hit_at_10"]["numerator"] == 24
+    assert candidate["target_rank"]["at_1"] == 21
+    assert candidate["latency_ms"]["p95"] == 864.937
+
+    paired = report["metrics"]["paired"]["target_hit_at_10"]
+    assert paired == {
+        "baseline_wins": 0,
+        "both_false": 0,
+        "both_true": 4,
+        "candidate_wins": 20,
+        "discordant_pairs": 20,
+        "mcnemar_exact_two_sided_p": 0.000002,
+        "net_gain": 20,
+    }
+
+    decision = report["decision"]
+    assert all(decision["checks"]["candidate"].values())
+    assert all(decision["checks"]["paired"].values())
+    assert decision["functional_gate_passed"] is True
+    assert decision["cross_network_gate"] == {
+        "completed": 1,
+        "required": 2,
+        "status": "not_testable",
+    }
+    assert decision["stage_b_200_case_run_allowed"] is False
+    assert decision["release_ready"] is False
+    assert decision["release_decision"] == "no-go"
+
+    private_fields = {
+        "query",
+        "normalized_query",
+        "target",
+        "target_identity",
+        "target_repository",
+        "title",
+        "snippet",
+        "content",
+        "url",
+        "results",
+    }
+    diagnostic_fields = {
+        "target_rank",
+        "raw_target_rank",
+        "raw_target_seen",
+        "target_dropped_by_ranking",
+    }
+    assert all(not private_fields & set(outcome) for outcome in report["outcomes"])
+    assert all(diagnostic_fields <= set(outcome) for outcome in report["outcomes"])

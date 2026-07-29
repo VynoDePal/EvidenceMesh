@@ -217,6 +217,7 @@ See the [benchmark methodology](docs/benchmarking.md), the
 [locked Phase 6 protocol](docs/benchmark-protocol-v4.md), the
 [locked Phase 7 protocol](docs/benchmark-protocol-v5.md), the
 [locked Phase 8 protocol](docs/benchmark-protocol-v6.md), the
+[locked Phase 9 protocol](docs/benchmark-protocol-v7.md), the
 [end-to-end guide](docs/end-to-end-benchmark.md), the
 [competitive snapshot](docs/competitive-benchmark.md) and the committed
 [offline v1 result](benchmarks/results/offline_v1.md). A
@@ -293,6 +294,16 @@ privacy rules are frozen in
 [benchmark protocol v7](docs/benchmark-protocol-v7.md). The PR remains draft
 regardless of the single-network result.
 
+The
+[Phase 9 result](benchmarks/results/github_recall_phase9_2026-07-29.md)
+passed every functional gate. The entity-anchor candidate found 24/24
+repositories in both GitHub's first 20 results and EvidenceMesh's final top
+ten, versus 4/24 for the frozen Phase 8 strategy: 20 paired gains, zero
+regressions and an exact two-sided McNemar p-value of 0.000002. This establishes
+the narrow repository-query improvement on the locked suite, not general
+search or deep-research superiority. The second-network gate remains
+`not_testable`, Stage B remains blocked and release remains no-go.
+
 ## Security
 
 EvidenceMesh blocks private, loopback, link-local and reserved fetch targets by
@@ -319,7 +330,7 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current suite contains 237 tests and reports 91.47% branch-aware coverage
+The current suite contains 238 tests and reports 91.47% branch-aware coverage
 locally. CI repeats the suite on Python 3.11, 3.12 and 3.13.
 
 ## License

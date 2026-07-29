@@ -24,10 +24,16 @@ suite. Its
 [committed result](../benchmarks/results/quality_calibration_phase8_2026-07-29.md)
 retrieved 7/8 academic targets but only 4/8 repository targets. All four
 repository misses were absent from GitHub's provider-native result list rather
-than removed by EvidenceMesh ranking, so repository-query recall remains an
-open limitation. The locked
+than removed by EvidenceMesh ranking, identifying repository-query recall as
+the next isolated defect. The locked
 [Phase 9 protocol](benchmark-protocol-v7.md) compares that Phase 8 strategy
 against the default entity-anchor planner on the same 24 new repository cases.
+Its
+[committed result](../benchmarks/results/github_recall_phase9_2026-07-29.md)
+found 24/24 targets for the candidate against 4/24 for the baseline, with 20
+paired gains and no regression. That resolves the measured query-planning
+defect on the locked repository suite; it does not establish general search
+quality, and the second-network release gate remains unavailable.
 
 ## Zero-key community providers
 

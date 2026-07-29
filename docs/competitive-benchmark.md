@@ -138,6 +138,15 @@ whether the entity-anchor planner improves the measured failure mode, but it
 cannot establish overall search quality, deep-research quality or competitive
 superiority.
 
+The
+[Phase 9 result](../benchmarks/results/github_recall_phase9_2026-07-29.md)
+found 24/24 targets at ten for the entity-anchor candidate and 4/24 for the
+frozen baseline, with 20 paired gains and zero regressions. This passes the
+pre-registered functional gate and resolves the measured repository-query
+defect on that suite. It does not change the competitive claim boundary:
+replication is available from only one network, Stage B was not run and no
+end-to-end agent comparison exists.
+
 ## Fair next comparison
 
 Use EvidenceMesh as the retrieval MCP for a fixed external model, then compare

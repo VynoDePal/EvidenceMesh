@@ -84,3 +84,8 @@ All notable changes to EvidenceMesh are documented here.
   Phase 8 baseline and candidate run on the same cases with anonymous,
   rate-paced traffic, no Tavily calls, no cache and no retries; the
   independent-network and release gates remain closed.
+- Published the Phase 9 result: the entity-anchor candidate retrieved 24/24
+  repository targets at ten against 4/24 for the frozen baseline, producing 20
+  paired gains and zero regressions while staying within one query per case.
+  Every functional gate passed, but the unavailable second network keeps Stage
+  B blocked and the release decision at no-go.
