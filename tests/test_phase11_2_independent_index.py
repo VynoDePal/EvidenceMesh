@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 from pathlib import Path
 
 from benchmarks.run_phase11_2_independent_index import (
@@ -135,3 +137,70 @@ def test_phase11_2_workflow_locks_zero_paid_and_zero_model_traffic() -> None:
     assert 'report["traffic"]["gemini_requests"] == 0' in workflow
     assert 'report["decision"]["default_bundle_eligible"] is False' in workflow
     assert 'report["decision"]["release_decision"] == "no-go"' in workflow
+
+
+def test_committed_phase11_2_result_matches_frozen_protocol() -> None:
+    root = Path(__file__).parents[1]
+    result_path = root / "benchmarks" / "results" / "phase11_2_independent_index_2026-07-29.json"
+    result_bytes = result_path.read_bytes()
+    assert hashlib.sha256(result_bytes).hexdigest() == (
+        "ae0a09bf789881177e53b7ce0f294bc67335d00ba91fc46b4abe5ba36ab961a7"
+    )
+    report = json.loads(result_bytes)
+
+    assert report["benchmark"] == "evidencemesh-phase11-2-independent-index-calibration-v1"
+    assert report["environment"]["commit_sha"] == ("de3407470d610c5bde67ab1d8c00ff5e30f76a7b")
+    assert report["suite"]["sha256"] == (
+        "670454d6c6bdb93a21bc1ea81f28003e08cac9d24c1663aba53fea50d3ac2423"
+    )
+    assert report["suite"]["stratum_distribution"] == {
+        "broad_web": 8,
+        "long_tail": 8,
+    }
+    assert report["traffic"] == {
+        "case_retrieval_operations": 16,
+        "gemini_requests": 0,
+        "maximum_mwmbl_requests": 16,
+        "maximum_wiby_requests": 16,
+        "mwmbl_requests": 16,
+        "paid_provider_requests": 0,
+        "provider_query_calls": 80,
+        "retries": 0,
+        "tavily_requests": 0,
+        "wiby_requests": 16,
+    }
+    assert len(report["retrieval_diagnostics"]) == 16
+    assert len(report["outcomes"]) == 80
+
+    metrics = report["metrics"]
+    assert metrics["legacy_community"]["availability"]["numerator"] == 16
+    assert metrics["legacy_community"]["target_domain_hit_at_10"]["numerator"] == 15
+    assert metrics["candidate_community"]["availability"]["numerator"] == 16
+    assert metrics["candidate_community"]["target_domain_hit_at_10"]["numerator"] == 15
+    assert metrics["candidate_community"]["cases_with_selected_mwmbl"]["numerator"] == 0
+    assert metrics["mwmbl_direct"]["availability"]["numerator"] == 0
+    assert metrics["wiby_direct"]["availability"]["numerator"] == 7
+    assert metrics["independent_fused"]["availability"]["numerator"] == 7
+
+    gates = report["decision"]["gates"]
+    assert gates["mwmbl_independent_index_available"]["passed"] is False
+    assert gates["mwmbl_survives_candidate_ranking"]["passed"] is False
+    assert gates["mwmbl_direct_target_coverage"]["passed"] is False
+    assert gates["independent_fused_availability"]["passed"] is False
+    assert gates["traffic_matches_locked_zero_paid_budget"]["passed"] is True
+    assert report["decision"]["retrieval_candidate_passed"] is False
+    assert report["decision"]["default_bundle_eligible"] is False
+    assert report["decision"]["phase12_untouched_evaluation_allowed"] is False
+    assert report["decision"]["release_decision"] == "no-go"
+
+    private_fields = {
+        "query",
+        "question",
+        "target_domains",
+        "title",
+        "url",
+        "snippet",
+        "content",
+        "evidence",
+    }
+    assert all(not private_fields & set(outcome) for outcome in report["outcomes"])
