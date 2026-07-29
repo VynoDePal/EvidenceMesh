@@ -1,0 +1,114 @@
+[
+  {
+    "id": "p11-2-001",
+    "query": "WHO official malaria fact sheet",
+    "target_domains": ["who.int"],
+    "stratum": "broad_web",
+    "topic": "public_health"
+  },
+  {
+    "id": "p11-2-002",
+    "query": "NASA James Webb Space Telescope official mission",
+    "target_domains": ["nasa.gov"],
+    "stratum": "broad_web",
+    "topic": "science"
+  },
+  {
+    "id": "p11-2-003",
+    "query": "World Bank Benin country data official",
+    "target_domains": ["worldbank.org"],
+    "stratum": "broad_web",
+    "topic": "public_data"
+  },
+  {
+    "id": "p11-2-004",
+    "query": "Paris Agreement UNFCCC official text",
+    "target_domains": ["unfccc.int"],
+    "stratum": "broad_web",
+    "topic": "public_policy"
+  },
+  {
+    "id": "p11-2-005",
+    "query": "Python asyncio official documentation",
+    "target_domains": ["docs.python.org"],
+    "stratum": "broad_web",
+    "topic": "developer_docs"
+  },
+  {
+    "id": "p11-2-006",
+    "query": "RFC 9110 HTTP Semantics official",
+    "target_domains": ["rfc-editor.org"],
+    "stratum": "broad_web",
+    "topic": "protocol"
+  },
+  {
+    "id": "p11-2-007",
+    "query": "OpenStreetMap Nominatim official documentation",
+    "target_domains": ["nominatim.org"],
+    "stratum": "broad_web",
+    "topic": "developer_docs"
+  },
+  {
+    "id": "p11-2-008",
+    "query": "Benin government digital public services portal",
+    "target_domains": ["service-public.bj", "gouv.bj"],
+    "stratum": "broad_web",
+    "topic": "regional_public_service"
+  },
+  {
+    "id": "p11-2-009",
+    "query": "Mwmbl independent nonprofit web search project",
+    "target_domains": ["mwmbl.org"],
+    "stratum": "long_tail",
+    "topic": "independent_search"
+  },
+  {
+    "id": "p11-2-010",
+    "query": "YaCy peer to peer search engine official",
+    "target_domains": ["yacy.net"],
+    "stratum": "long_tail",
+    "topic": "independent_search"
+  },
+  {
+    "id": "p11-2-011",
+    "query": "Marginalia text oriented small web search official",
+    "target_domains": ["marginalia-search.com", "marginalia.nu"],
+    "stratum": "long_tail",
+    "topic": "independent_search"
+  },
+  {
+    "id": "p11-2-012",
+    "query": "Wiby classic small web search official",
+    "target_domains": ["wiby.me"],
+    "stratum": "long_tail",
+    "topic": "independent_search"
+  },
+  {
+    "id": "p11-2-013",
+    "query": "Common Crawl CDXJ URL index official documentation",
+    "target_domains": ["commoncrawl.org"],
+    "stratum": "long_tail",
+    "topic": "web_corpus"
+  },
+  {
+    "id": "p11-2-014",
+    "query": "FastMCP Python server official documentation",
+    "target_domains": ["gofastmcp.com"],
+    "stratum": "long_tail",
+    "topic": "developer_docs"
+  },
+  {
+    "id": "p11-2-015",
+    "query": "Crossref REST API polite pool official documentation",
+    "target_domains": ["crossref.org"],
+    "stratum": "long_tail",
+    "topic": "research_api"
+  },
+  {
+    "id": "p11-2-016",
+    "query": "OpenAlex API official documentation",
+    "target_domains": ["docs.openalex.org", "openalex.org"],
+    "stratum": "long_tail",
+    "topic": "research_api"
+  }
+]
