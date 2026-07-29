@@ -119,6 +119,9 @@ def test_settings_from_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> N
         "https://one.example/, https://two.example,https://one.example",
     )
     monkeypatch.setenv("EVIDENCEMESH_WIBY_URL", "https://wiby.example/api/")
+    monkeypatch.setenv("EVIDENCEMESH_MWMBL_URL", "https://mwmbl.example/search")
+    monkeypatch.setenv("EVIDENCEMESH_YACY_URL", "http://yacy.example:8090/")
+    monkeypatch.setenv("EVIDENCEMESH_YACY_RESOURCE", "GLOBAL")
     monkeypatch.setenv("EVIDENCEMESH_QUALITY_PRIMARY_PROVIDER_SHARE", "0.6")
     settings = Settings.from_env()
     assert settings.enabled_providers == ["ddgs", "wikipedia"]
@@ -135,12 +138,32 @@ def test_settings_from_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> N
         "https://two.example",
     ]
     assert settings.wiby_url == "https://wiby.example/api/"
+    assert settings.mwmbl_url == "https://mwmbl.example/search/"
+    assert settings.yacy_url == "http://yacy.example:8090"
+    assert settings.yacy_resource == "global"
     assert settings.quality_primary_provider_share == 0.6
 
 
 def test_settings_reject_unknown_provider() -> None:
     with pytest.raises(ValidationError, match="unknown providers"):
         Settings(enabled_providers=["unknown"])
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("mwmbl_url", "ftp://mwmbl.example", "Mwmbl URL"),
+        ("yacy_url", "file:///tmp/index", "YaCy URL"),
+        ("yacy_resource", "remote", "YaCy resource"),
+    ],
+)
+def test_settings_reject_invalid_independent_index_settings(
+    field: str,
+    value: str,
+    message: str,
+) -> None:
+    with pytest.raises(ValidationError, match=message):
+        Settings(enabled_providers=[], **{field: value})
 
 
 def test_settings_default_to_self_hosted_zero_key_profile(
