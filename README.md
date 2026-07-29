@@ -393,6 +393,17 @@ the alternatives and rejection reasons. Both providers stay outside named
 defaults, Phase 12 stays blocked, and release remains no-go regardless of this
 calibration's retrieval score.
 
+The published
+[Phase 11.2 result](benchmarks/results/phase11_2_independent_index_2026-07-29.md)
+failed its retrieval gates. Legacy and candidate community both reached 16/16
+availability and 15/16 target-domain hit@10, with 16 paired ties. Mwmbl
+returned no raw result in 16 routed cases, while Wiby provided prompt evidence
+in 7/16 and hit one target domain. The independent fused arm therefore reached
+only 7/16 availability against the frozen 12/16 minimum. The report also
+identifies a telemetry gap: routed calls were counted, but actual HTTP attempts
+and circuit-open skips were not separated. No opportunistic rerun was made;
+named bundles remain unchanged and Phase 12 remains blocked.
+
 ## Security
 
 EvidenceMesh blocks private, loopback, link-local and reserved fetch targets by
@@ -419,7 +430,7 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current suite contains 286 tests and reports 91.69% branch-aware coverage
+The current suite contains 287 tests and reports 91.69% branch-aware coverage
 locally. CI repeats the suite on Python 3.11, 3.12 and 3.13.
 
 ## License
