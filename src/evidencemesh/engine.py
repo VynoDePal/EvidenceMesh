@@ -6,8 +6,9 @@ import asyncio
 import hashlib
 import json
 import time
-from collections import Counter
+from collections import Counter, defaultdict
 from datetime import UTC, datetime
+from itertools import pairwise
 from typing import Any
 
 import httpx
@@ -38,7 +39,7 @@ from evidencemesh.models import (
 from evidencemesh.providers import build_providers
 from evidencemesh.providers.base import SearchProvider
 from evidencemesh.query import build_query_plan
-from evidencemesh.ranking import rank_results
+from evidencemesh.ranking import rank_results_with_diagnostics
 from evidencemesh.reliability import ProviderCircuitBreaker
 from evidencemesh.routing import build_provider_routes
 from evidencemesh.urls import PinnedURLResolver, canonicalize_url
@@ -47,6 +48,28 @@ from evidencemesh.urls import PinnedURLResolver, canonicalize_url
 def _cache_key(payload: Any) -> str:
     encoded = json.dumps(payload, sort_keys=True, ensure_ascii=False, default=str).encode()
     return hashlib.sha256(encoded).hexdigest()
+
+
+def _provider_stage_loss_counts(
+    provider_stage_counts: dict[str, dict[str, int]],
+) -> dict[str, dict[str, int]]:
+    stages = ("raw", "fused", "eligible", "selected", "evidence")
+    losses: dict[str, dict[str, int]] = {}
+    for left, right in pairwise(stages):
+        left_counts = provider_stage_counts.get(left, {})
+        right_counts = provider_stage_counts.get(right, {})
+        providers = sorted(set(left_counts) | set(right_counts))
+        losses[f"{left}_to_{right}"] = {
+            provider: max(0, left_counts.get(provider, 0) - right_counts.get(provider, 0))
+            for provider in providers
+        }
+    return losses
+
+
+def _metadata_strings(value: object) -> tuple[str, ...]:
+    if not isinstance(value, list):
+        return ()
+    return tuple(item for item in value if isinstance(item, str) and item)
 
 
 class EvidenceMesh:
@@ -175,6 +198,10 @@ class EvidenceMesh:
         family_success_counts: Counter[str] = Counter()
         family_failure_counts: Counter[str] = Counter()
         family_result_counts: Counter[str] = Counter()
+        upstream_engine_query_counts: defaultdict[str, Counter[str]] = defaultdict(Counter)
+        unresponsive_engine_query_counts: defaultdict[str, Counter[str]] = defaultdict(Counter)
+        unavailable_engine_query_counts: defaultdict[str, Counter[str]] = defaultdict(Counter)
+        provider_failure_kind_counts: defaultdict[str, Counter[str]] = defaultdict(Counter)
         for route in routes:
             family_call_counts[route.source_family.value] += len(route.queries)
 
@@ -182,12 +209,39 @@ class EvidenceMesh:
             provider: SearchProvider,
             query: str,
             source_family: SourceType,
-        ) -> tuple[str, str, SourceType, list[ProviderResult], bool, str | None]:
+        ) -> tuple[
+            str,
+            str,
+            SourceType,
+            list[ProviderResult],
+            bool,
+            str | None,
+            str | None,
+            tuple[str, ...],
+        ]:
             try:
                 results, cache_hit = await self._provider_search(provider, query, request)
-                return provider.name, query, source_family, results, cache_hit, None
+                return (
+                    provider.name,
+                    query,
+                    source_family,
+                    results,
+                    cache_hit,
+                    None,
+                    None,
+                    (),
+                )
             except (ProviderError, httpx.HTTPError, ValueError) as exc:
-                return provider.name, query, source_family, [], False, str(exc)
+                return (
+                    provider.name,
+                    query,
+                    source_family,
+                    [],
+                    False,
+                    str(exc),
+                    exc.kind if isinstance(exc, ProviderError) else type(exc).__name__,
+                    exc.upstream_engines if isinstance(exc, ProviderError) else (),
+                )
             except Exception as exc:  # Provider plugins must not collapse the whole federation.
                 return (
                     provider.name,
@@ -196,6 +250,8 @@ class EvidenceMesh:
                     [],
                     False,
                     f"unexpected {type(exc).__name__}",
+                    f"unexpected_{type(exc).__name__}",
+                    (),
                 )
 
         tasks = [
@@ -204,17 +260,51 @@ class EvidenceMesh:
             for query in route.queries
         ]
         outcomes = await asyncio.gather(*tasks) if tasks else []
-        for provider_name, query, source_family, results, cache_hit, error in outcomes:
+        for (
+            provider_name,
+            query,
+            source_family,
+            results,
+            cache_hit,
+            error,
+            error_kind,
+            unavailable_engines,
+        ) in outcomes:
             if error:
                 failures[f"{provider_name}:{query}"] = error
                 family_failure_counts[source_family.value] += 1
+                if error_kind:
+                    provider_failure_kind_counts[provider_name][error_kind] += 1
+                unavailable_engine_query_counts[provider_name].update(set(unavailable_engines))
                 continue
             succeeded.add(provider_name)
             family_success_counts[source_family.value] += 1
             raw_results.extend(results)
             cache_hits += int(cache_hit)
+            contributing_engines = {
+                engine
+                for result in results
+                for engine in _metadata_strings(result.metadata.get("engines"))
+            }
+            unresponsive_engines = {
+                engine
+                for result in results
+                for engine in _metadata_strings(result.metadata.get("unresponsive_engines"))
+            }
+            upstream_engine_query_counts[provider_name].update(contributing_engines)
+            unresponsive_engine_query_counts[provider_name].update(unresponsive_engines)
 
-        hits, deduplicated_count = rank_results(
+        primary_provider: str | None = None
+        primary_provider_share = 0.0
+        if (
+            self.settings.deployment_profile.value == "quality"
+            and request.profile.value in {"web", "news"}
+            and self.settings.quality_primary_provider
+        ):
+            primary_provider = self.settings.quality_primary_provider
+            primary_provider_share = self.settings.quality_primary_provider_share
+
+        hits, deduplicated_count, ranking_diagnostics = rank_results_with_diagnostics(
             raw_results,
             query=request.query,
             profile=request.profile,
@@ -222,6 +312,8 @@ class EvidenceMesh:
             max_per_domain=request.effective_max_per_domain,
             domains=request.domains,
             exclude_domains=request.exclude_domains,
+            primary_provider=primary_provider,
+            primary_provider_share=primary_provider_share,
         )
         family_result_counts.update(hit.source_type.value for hit in hits)
         evidence: list[EvidenceItem] = []
@@ -263,6 +355,14 @@ class EvidenceMesh:
             warnings.extend(fetch_warnings)
         else:
             evidence = [self._snippet_evidence(hit) for hit in hits if hit.snippet]
+        provider_stage_counts = {
+            **ranking_diagnostics.provider_stage_counts,
+            "evidence": dict(
+                sorted(
+                    Counter(provider for item in evidence for provider in item.providers).items()
+                )
+            ),
+        }
 
         metadata = SearchMetadata(
             query=request.query,
@@ -281,6 +381,31 @@ class EvidenceMesh:
             source_family_success_counts=dict(sorted(family_success_counts.items())),
             source_family_failure_counts=dict(sorted(family_failure_counts.items())),
             source_family_result_counts=dict(sorted(family_result_counts.items())),
+            provider_stage_counts=provider_stage_counts,
+            provider_stage_loss_counts=_provider_stage_loss_counts(provider_stage_counts),
+            provider_upstream_engine_query_counts={
+                provider: dict(sorted(counts.items()))
+                for provider, counts in sorted(upstream_engine_query_counts.items())
+                if counts
+            },
+            provider_unresponsive_engine_query_counts={
+                provider: dict(sorted(counts.items()))
+                for provider, counts in sorted(unresponsive_engine_query_counts.items())
+                if counts
+            },
+            provider_unavailable_engine_query_counts={
+                provider: dict(sorted(counts.items()))
+                for provider, counts in sorted(unavailable_engine_query_counts.items())
+                if counts
+            },
+            provider_failure_kind_counts={
+                provider: dict(sorted(counts.items()))
+                for provider, counts in sorted(provider_failure_kind_counts.items())
+                if counts
+            },
+            ranking_reservation_policy=ranking_diagnostics.reservation_policy,
+            ranking_reservation_requested=ranking_diagnostics.reservation_requested,
+            ranking_reservation_fulfilled=ranking_diagnostics.reservation_fulfilled,
             degraded_source_families=degraded_families,
             failed_source_families=failed_families,
             effective_max_per_domain=request.effective_max_per_domain,

@@ -2,9 +2,10 @@
 
 ## Deployment profiles
 
-`community` is the default and contains `searxng`, `wikipedia`, `crossref`,
-`arxiv` and `github`. It requires no key and is self-hostable, but internet
-access, compute and storage are not cost-free infrastructure.
+`community` is the default and contains `searxng`, bounded one-query `ddgs`,
+`wikipedia`, `crossref`, `arxiv` and `github`. It requires no key and is
+self-hostable, but internet access, compute and storage are not cost-free
+infrastructure.
 
 `quality` includes the community set plus Tavily, the current recommended
 general-web candidate. Tavily is enabled only when `TAVILY_API_KEY` is
@@ -33,7 +34,12 @@ Its
 found 24/24 targets for the candidate against 4/24 for the baseline, with 20
 paired gains and no regression. That resolves the measured query-planning
 defect on the locked repository suite; it does not establish general search
-quality, and the second-network release gate remains unavailable.
+quality, and the second-network release gate remains unavailable. Phase 10 then
+showed a separate general-web regression: the one-query Tavily arm retained
+substantially more useful evidence than the full quality route. The
+[Phase 11 protocol](benchmark-protocol-v9.md) freezes provider-lineage
+instrumentation, a temporary Tavily-first policy and community resilience tests
+without making any model call.
 
 ## Zero-key community providers
 
@@ -52,6 +58,12 @@ The isolated DuckDuckGo candidate still failed 8/12 routed calls in the Phase 6
 GitHub calibration, so it must be treated as a degradable path rather than a
 reliable sole web backend.
 
+The historical Phase 6/10 calibration file intentionally isolated DuckDuckGo,
+but Phase 10 reused that single-engine file while the documentation described a
+multi-engine route. Phase 11 corrects the mismatch with a new checksum-pinned
+configuration containing Brave, DuckDuckGo, Startpage and Wikimedia web/news
+engines. Historical files and results remain unchanged for reproducibility.
+
 If every result is absent while SearXNG reports unresponsive upstream engines,
 the adapter returns a provider failure. When results survive a partial upstream
 failure, the raw provider records retain the unavailable engine names for
@@ -59,11 +71,12 @@ benchmark diagnostics.
 
 ### DDGS
 
-DDGS is an opt-in experimental fallback, not a default. Upstream engines can
-rate-limit automated traffic and behavior can differ by network. Phase 2 and
-Phase 3 observed persistent failure in one managed environment, so enabling it
-requires an explicit `EVIDENCEMESH_PROVIDERS` value. Failures remain isolated as
-partial-provider warnings.
+DDGS is a bounded one-query best-effort fallback in the community bundle.
+Upstream engines can rate-limit automated traffic and behavior can differ by
+network. Phase 2 and Phase 3 observed persistent failure in one managed
+environment, so DDGS is redundancy rather than a guaranteed independent search
+index. Failures remain isolated as partial-provider warnings, and operators can
+remove it with an explicit `EVIDENCEMESH_PROVIDERS` value.
 
 ### Wikipedia
 
@@ -122,6 +135,14 @@ basic depth, disables generated answers and raw content, and caps the API
 response at 20 results. Basic Tavily search currently consumes one credit per
 request; provider terms and quotas can change independently.
 
+For web and news in the named `quality` profile, ranking temporarily reserves
+80% of the requested slots for eligible Tavily results before filling from the
+global fused ranking. URL filtering and the per-domain cap still apply. Configure
+or disable the policy with
+`EVIDENCEMESH_QUALITY_PRIMARY_PROVIDER` and
+`EVIDENCEMESH_QUALITY_PRIMARY_PROVIDER_SHARE`. This is a Phase 11 safety policy,
+not evidence that Tavily results are intrinsically correct.
+
 ## Deliberate exclusions
 
 Common Crawl's CDX API searches archived URL patterns rather than arbitrary page
@@ -136,9 +157,9 @@ The public search profile selects compatible source types:
 
 | Profile | Community route | Maximum query variants per provider | Default maximum per domain |
 |---|---|---|---:|
-| Web | SearXNG, Wikipedia; quality adds Tavily | unlimited, 2 and 1 | 3 |
+| Web | SearXNG, DDGS, Wikipedia; quality adds Tavily | unlimited, 1, 2 and 1 | 3 |
 | Reference | Wikipedia | 2 | 10 |
-| News | SearXNG | unlimited | 3 |
+| News | SearXNG, DDGS | unlimited and 1 | 3 |
 | Academic | Crossref, arXiv, Wikipedia | 2, 1 and 2 | 10 |
 | Code | GitHub repositories | 1 | 10 |
 
@@ -149,7 +170,12 @@ lists degraded and fully failed families, and reports the required family as
 `satisfied`, `empty`, `failed` or `not_configured`. Raw provider failures remain
 available even when another route satisfies the request. The effective
 per-domain maximum and whether it came from the profile default or an explicit
-request override are also reported.
+request override are also reported. Provider lineage is counted at raw, fused,
+eligible, selected and evidence stages, with adjacent loss counts. Metadata also
+reports quality reservation demand/fulfillment and SearXNG contributing or
+unresponsive engine query counts. Total upstream failures retain a sanitized
+failure kind and unavailable-engine counts, including calls that returned no
+result.
 
 ## Runtime reliability
 
@@ -174,6 +200,9 @@ remaining recovery delay without making a network request.
 
 ## Custom/self-hosted services
 
-Use `EVIDENCEMESH_SEARXNG_URL` and `EVIDENCEMESH_FIRECRAWL_URL`. Provider
-service URLs are trusted administrator configuration, while document URLs
-returned by search are still subject to the outbound safety policy.
+Use `EVIDENCEMESH_SEARXNG_URL` and `EVIDENCEMESH_FIRECRAWL_URL`. Additional
+operator-controlled SearXNG endpoints can be supplied as a comma-separated
+`EVIDENCEMESH_SEARXNG_FALLBACK_URLS` list. Each endpoint receives its own
+provider name and circuit state. Provider service URLs are trusted administrator
+configuration, while document URLs returned by search are still subject to the
+outbound safety policy.

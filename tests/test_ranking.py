@@ -7,6 +7,7 @@ from evidencemesh.ranking import (
     freshness_score,
     lexical_relevance,
     rank_results,
+    rank_results_with_diagnostics,
     source_signal,
     tokenize,
 )
@@ -192,3 +193,109 @@ def test_untrusted_non_http_and_malformed_urls_are_filtered() -> None:
     )
     assert count == 1
     assert [hit.canonical_url for hit in hits] == ["https://example.org/evidence"]
+
+
+def test_primary_provider_reservation_preserves_configured_share_and_lineage() -> None:
+    results: list[ProviderResult] = []
+    for rank in range(1, 11):
+        url = f"https://community-{rank}.org/result"
+        results.extend(
+            [
+                make_result(
+                    title=f"Community consensus {rank}",
+                    url=url,
+                    provider="searxng",
+                    rank=rank,
+                ),
+                make_result(
+                    title=f"Community consensus {rank}",
+                    url=url,
+                    provider="ddgs",
+                    rank=rank,
+                ),
+            ]
+        )
+        results.append(
+            make_result(
+                title=f"Tavily candidate {rank}",
+                url=f"https://tavily-{rank}.net/result",
+                provider="tavily",
+                rank=rank,
+            )
+        )
+
+    for share, expected in ((0.4, 4), (0.6, 6), (0.8, 8)):
+        hits, fused_count, diagnostics = rank_results_with_diagnostics(
+            results,
+            query="alpha evidence",
+            profile=SearchProfile.WEB,
+            limit=10,
+            max_per_domain=3,
+            primary_provider="tavily",
+            primary_provider_share=share,
+        )
+        assert fused_count == 20
+        assert sum("tavily" in hit.providers for hit in hits) >= expected
+        assert diagnostics.reservation_requested == expected
+        assert diagnostics.reservation_fulfilled == expected
+        assert diagnostics.provider_stage_counts["raw"] == {
+            "ddgs": 10,
+            "searxng": 10,
+            "tavily": 10,
+        }
+        assert diagnostics.provider_stage_counts["fused"] == {
+            "ddgs": 10,
+            "searxng": 10,
+            "tavily": 10,
+        }
+        assert diagnostics.reservation_policy == f"provider_share:tavily:{share:.3f}"
+
+
+def test_primary_provider_reservation_keeps_domain_diversity_cap() -> None:
+    results = [
+        make_result(
+            title=f"Tavily same domain {rank}",
+            url=f"https://same.example/result-{rank}",
+            provider="tavily",
+            rank=rank,
+        )
+        for rank in range(1, 6)
+    ]
+    results.extend(
+        make_result(
+            title=f"Community {rank}",
+            url=f"https://community-{rank}.org/result",
+            provider="searxng",
+            rank=rank,
+        )
+        for rank in range(1, 6)
+    )
+    hits, _, diagnostics = rank_results_with_diagnostics(
+        results,
+        query="alpha evidence",
+        profile=SearchProfile.WEB,
+        limit=5,
+        max_per_domain=1,
+        primary_provider="tavily",
+        primary_provider_share=0.8,
+    )
+    assert diagnostics.reservation_requested == 4
+    assert diagnostics.reservation_fulfilled == 1
+    assert sum("tavily" in hit.providers for hit in hits) == 1
+
+
+def test_primary_provider_reservation_remains_observable_with_no_results() -> None:
+    hits, fused_count, diagnostics = rank_results_with_diagnostics(
+        [],
+        query="alpha evidence",
+        profile=SearchProfile.WEB,
+        limit=10,
+        max_per_domain=3,
+        primary_provider="tavily",
+        primary_provider_share=0.8,
+    )
+    assert hits == []
+    assert fused_count == 0
+    assert diagnostics.reservation_policy == "provider_share:tavily:0.800"
+    assert diagnostics.reservation_requested == 8
+    assert diagnostics.reservation_fulfilled == 0

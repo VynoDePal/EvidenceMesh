@@ -161,6 +161,46 @@ def test_phase10_workflow_locks_models_secrets_traffic_privacy_and_release_gate(
     assert "searxng/searxng:2026.7.26-b060c780d@sha256:" in workflow
 
 
+def test_phase11_community_config_is_multi_engine_and_zero_key() -> None:
+    root = Path(__file__).parents[1]
+    settings = yaml.safe_load(
+        (root / "docker" / "searxng" / "phase11-community-settings.yml").read_text(encoding="utf-8")
+    )
+    engines = settings["use_default_settings"]["engines"]["keep_only"]
+    assert {
+        "brave",
+        "duckduckgo",
+        "startpage",
+        "wikipedia",
+    } <= set(engines)
+    assert settings["search"]["formats"] == ["html", "json"]
+    assert len(engines) == len(set(engines))
+    assert "secret_key" not in settings["server"]
+
+
+def test_phase11_workflow_locks_shared_pool_traffic_and_no_model_calls() -> None:
+    root = Path(__file__).parents[1]
+    workflow = (root / ".github" / "workflows" / "phase11-calibration.yml").read_text(
+        encoding="utf-8"
+    )
+    assert "run_phase11_calibration.py" in workflow
+    assert "phase11_calibration_v1.json" in workflow
+    assert "EVIDENCE_MESH_TAVILY_KEY" in workflow
+    assert "EVIDENCE_MESH_GEMINI_KEY" not in workflow
+    assert "GEMINI_API_KEY" not in workflow
+    assert "--max-results 10" in workflow
+    assert "--prompt-budget-chars 12000" in workflow
+    assert 'report["traffic"]["provider_query_calls"] == 48' in workflow
+    assert 'report["traffic"]["tavily_requests"] == 12' in workflow
+    assert 'report["traffic"]["gemini_requests"] == 0' in workflow
+    assert 'report["traffic"]["retries"] == 0' in workflow
+    assert 'report["protocol"]["shared_raw_pool_per_case"] is True' in workflow
+    assert 'report["decision"]["release_ready"] is False' in workflow
+    assert 'report["decision"]["release_decision"] == "no-go"' in workflow
+    assert 'echo "$TAVILY_API_KEY"' not in workflow
+    assert "searxng/searxng:2026.7.26-b060c780d@sha256:" in workflow
+
+
 def test_committed_phase4_result_matches_locked_protocol() -> None:
     root = Path(__file__).parents[1]
     result_path = root / "benchmarks" / "results" / "simpleqa_retrieval_phase4_2026-07-28.json"

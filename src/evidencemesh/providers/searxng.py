@@ -22,7 +22,14 @@ class SearxngProvider(SearchProvider):
     name = "searxng"
     supported_profiles = frozenset({SearchProfile.WEB, SearchProfile.NEWS})
 
-    def __init__(self, base_url: str, client: httpx.AsyncClient) -> None:
+    def __init__(
+        self,
+        base_url: str,
+        client: httpx.AsyncClient,
+        *,
+        name: str = "searxng",
+    ) -> None:
+        self.name = name
         self.base_url = base_url.rstrip("/")
         self.client = client
 
@@ -74,7 +81,10 @@ class SearxngProvider(SearchProvider):
         if not items and unresponsive_values:
             raise ProviderError(
                 "SearXNG returned no results while "
-                f"{len(unresponsive_values)} upstream engine(s) were unavailable"
+                f"{len(unresponsive_values)} upstream engine(s) were unavailable: "
+                f"{', '.join(unresponsive_engines) or 'unknown'}",
+                kind="upstream_unavailable",
+                upstream_engines=tuple(unresponsive_engines),
             )
         source_type = SourceType(request.profile.value)
         results: list[ProviderResult] = []

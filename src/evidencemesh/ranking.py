@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import math
 import re
-from collections import defaultdict
+from collections import Counter, defaultdict
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
@@ -35,6 +36,14 @@ _PROVIDER_WEIGHTS = {
     "tavily": 1.05,
     "wikipedia": 1.00,
 }
+
+
+def _provider_weight(provider: str) -> float:
+    """Resolve weights for named instances such as ``searxng-2``."""
+
+    if provider.startswith("searxng-"):
+        return _PROVIDER_WEIGHTS["searxng"]
+    return _PROVIDER_WEIGHTS.get(provider, 1.0)
 
 
 def tokenize(text: str) -> set[str]:
@@ -105,6 +114,24 @@ class _Aggregate:
     rrf: float = 0.0
 
 
+@dataclass(frozen=True, slots=True)
+class RankingDiagnostics:
+    """Provider lineage and reservation outcomes for one ranking operation."""
+
+    provider_stage_counts: dict[str, dict[str, int]]
+    reservation_policy: str
+    reservation_requested: int
+    reservation_fulfilled: int
+
+
+_ScoredAggregate = tuple[float, _Aggregate, float, float, float]
+
+
+def _provider_presence_counts(aggregates: Iterable[_Aggregate]) -> dict[str, int]:
+    counts = Counter(provider for aggregate in aggregates for provider in aggregate.providers)
+    return dict(sorted(counts.items()))
+
+
 def _title_similarity(left: str, right: str) -> float:
     left_tokens = tokenize(left)
     right_tokens = tokenize(right)
@@ -149,7 +176,7 @@ def _merge_results(results: list[ProviderResult], rrf_k: int = 60) -> list[_Aggr
             min(current_rank, result.rank) if current_rank else result.rank
         )
         aggregate.matched_queries.add(result.query)
-        weight = _PROVIDER_WEIGHTS.get(result.provider, 1.0)
+        weight = _provider_weight(result.provider)
         aggregate.rrf += weight / (rrf_k + result.rank)
         if len(result.snippet) > len(aggregate.snippet):
             aggregate.snippet = result.snippet.strip()
@@ -160,7 +187,7 @@ def _merge_results(results: list[ProviderResult], rrf_k: int = 60) -> list[_Aggr
     return list(aggregates.values())
 
 
-def rank_results(
+def rank_results_with_diagnostics(
     results: list[ProviderResult],
     *,
     query: str,
@@ -169,12 +196,36 @@ def rank_results(
     max_per_domain: int,
     domains: list[str] | None = None,
     exclude_domains: list[str] | None = None,
-) -> tuple[list[SearchHit], int]:
+    primary_provider: str | None = None,
+    primary_provider_share: float = 0.0,
+) -> tuple[list[SearchHit], int, RankingDiagnostics]:
+    raw_counts = dict(sorted(Counter(result.provider for result in results).items()))
+    reservation_requested = 0
+    reservation_fulfilled = 0
+    reservation_policy = "none"
+    if primary_provider and primary_provider_share > 0:
+        bounded_share = min(1.0, primary_provider_share)
+        reservation_requested = min(limit, max(1, int(limit * bounded_share)))
+        reservation_policy = f"provider_share:{primary_provider}:{bounded_share:.3f}"
     aggregates = _merge_results(results)
     if not aggregates:
-        return [], 0
+        return (
+            [],
+            0,
+            RankingDiagnostics(
+                provider_stage_counts={
+                    "raw": raw_counts,
+                    "fused": {},
+                    "eligible": {},
+                    "selected": {},
+                },
+                reservation_policy=reservation_policy,
+                reservation_requested=reservation_requested,
+                reservation_fulfilled=0,
+            ),
+        )
     max_rrf = max(aggregate.rrf for aggregate in aggregates) or 1.0
-    scored: list[tuple[float, _Aggregate, float, float, float]] = []
+    scored: list[_ScoredAggregate] = []
     for aggregate in aggregates:
         hostname = hostname_from_url(aggregate.canonical_url)
         if domains and not domain_matches(hostname, domains):
@@ -202,16 +253,35 @@ def rank_results(
         )
     )
 
-    selected: list[tuple[float, _Aggregate, float, float, float]] = []
+    selected: list[_ScoredAggregate] = []
+    selected_urls: set[str] = set()
     domain_counts: dict[str, int] = defaultdict(int)
-    for item in scored:
+
+    def select(item: _ScoredAggregate) -> bool:
+        canonical_url = item[1].canonical_url
+        if canonical_url in selected_urls:
+            return False
         domain_key = registrable_domain_hint(hostname_from_url(item[1].canonical_url))
         if domain_counts[domain_key] >= max_per_domain:
-            continue
+            return False
         selected.append(item)
+        selected_urls.add(canonical_url)
         domain_counts[domain_key] += 1
+        return True
+
+    if reservation_requested and primary_provider:
+        for item in scored:
+            if primary_provider not in item[1].providers:
+                continue
+            reservation_fulfilled += int(select(item))
+            if reservation_fulfilled >= reservation_requested:
+                break
+
+    for item in scored:
+        select(item)
         if len(selected) >= limit:
             break
+    selected.sort(key=lambda item: (-item[0], item[1].canonical_url))
 
     hits = [
         SearchHit(
@@ -236,4 +306,43 @@ def rank_results(
             start=1,
         )
     ]
-    return hits, len(aggregates)
+    diagnostics = RankingDiagnostics(
+        provider_stage_counts={
+            "raw": raw_counts,
+            "fused": _provider_presence_counts(aggregates),
+            "eligible": _provider_presence_counts(item[1] for item in scored),
+            "selected": _provider_presence_counts(item[1] for item in selected),
+        },
+        reservation_policy=reservation_policy,
+        reservation_requested=reservation_requested,
+        reservation_fulfilled=reservation_fulfilled,
+    )
+    return hits, len(aggregates), diagnostics
+
+
+def rank_results(
+    results: list[ProviderResult],
+    *,
+    query: str,
+    profile: SearchProfile,
+    limit: int,
+    max_per_domain: int,
+    domains: list[str] | None = None,
+    exclude_domains: list[str] | None = None,
+    primary_provider: str | None = None,
+    primary_provider_share: float = 0.0,
+) -> tuple[list[SearchHit], int]:
+    """Rank results while preserving the original two-value public contract."""
+
+    hits, deduplicated_count, _ = rank_results_with_diagnostics(
+        results,
+        query=query,
+        profile=profile,
+        limit=limit,
+        max_per_domain=max_per_domain,
+        domains=domains,
+        exclude_domains=exclude_domains,
+        primary_provider=primary_provider,
+        primary_provider_share=primary_provider_share,
+    )
+    return hits, deduplicated_count

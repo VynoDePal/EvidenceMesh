@@ -178,8 +178,10 @@ async def test_searxng_provider_rejects_total_upstream_failure() -> None:
         }
     )
     provider = SearxngProvider("https://search.example", client)
-    with pytest.raises(ProviderError, match="2 upstream engine"):
+    with pytest.raises(ProviderError, match="2 upstream engine") as error:
         await provider.search("alpha", SearchRequest(query="alpha"))
+    assert error.value.kind == "upstream_unavailable"
+    assert error.value.upstream_engines == ("brave", "duckduckgo")
     await client.aclose()
 
 
@@ -694,6 +696,37 @@ async def test_provider_factory_keys_and_self_hosted_firecrawl(tmp_path: Path) -
     client = httpx.AsyncClient()
     providers, warnings = build_providers(settings, client)
     assert [provider.name for provider in providers] == settings.enabled_providers
+    assert warnings == []
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_provider_factory_builds_independent_searxng_fallbacks(
+    tmp_path: Path,
+) -> None:
+    settings = Settings(
+        enabled_providers=["searxng"],
+        searxng_url="http://127.0.0.1:8888/",
+        searxng_fallback_urls=[
+            "https://search-one.example",
+            "https://search-two.example/",
+        ],
+        cache_path=tmp_path / "cache.sqlite3",
+    )
+    client = httpx.AsyncClient()
+    providers, warnings = build_providers(settings, client)
+    assert [provider.name for provider in providers] == [
+        "searxng",
+        "searxng-2",
+        "searxng-3",
+    ]
+    assert [
+        provider.base_url for provider in providers if isinstance(provider, SearxngProvider)
+    ] == [
+        "http://127.0.0.1:8888",
+        "https://search-one.example",
+        "https://search-two.example",
+    ]
     assert warnings == []
     await client.aclose()
 

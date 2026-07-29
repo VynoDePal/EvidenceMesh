@@ -114,6 +114,11 @@ def test_settings_from_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> N
     monkeypatch.setenv("EVIDENCEMESH_PROVIDER_RECOVERY_SECONDS", "45")
     monkeypatch.setenv("EVIDENCEMESH_DNS_TIMEOUT", "4")
     monkeypatch.setenv("EVIDENCEMESH_MAX_PDF_PAGES", "25")
+    monkeypatch.setenv(
+        "EVIDENCEMESH_SEARXNG_FALLBACK_URLS",
+        "https://one.example/, https://two.example,https://one.example",
+    )
+    monkeypatch.setenv("EVIDENCEMESH_QUALITY_PRIMARY_PROVIDER_SHARE", "0.6")
     settings = Settings.from_env()
     assert settings.enabled_providers == ["ddgs", "wikipedia"]
     assert settings.cache_path == cache_path
@@ -124,6 +129,11 @@ def test_settings_from_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> N
     assert settings.provider_recovery_seconds == 45
     assert settings.dns_timeout_seconds == 4
     assert settings.max_pdf_pages == 25
+    assert settings.searxng_fallback_urls == [
+        "https://one.example",
+        "https://two.example",
+    ]
+    assert settings.quality_primary_provider_share == 0.6
 
 
 def test_settings_reject_unknown_provider() -> None:
@@ -137,6 +147,7 @@ def test_settings_default_to_self_hosted_zero_key_profile(
     monkeypatch.delenv("EVIDENCEMESH_PROVIDERS", raising=False)
     assert Settings.from_env().enabled_providers == [
         "searxng",
+        "ddgs",
         "wikipedia",
         "crossref",
         "arxiv",
@@ -153,6 +164,7 @@ def test_settings_quality_profile_adds_optional_providers(
     assert settings.deployment_profile is DeploymentProfile.QUALITY
     assert settings.enabled_providers == [
         "searxng",
+        "ddgs",
         "wikipedia",
         "crossref",
         "arxiv",

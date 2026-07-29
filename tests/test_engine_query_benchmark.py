@@ -122,6 +122,98 @@ async def test_search_isolates_provider_failures(settings, result: ProviderResul
     assert response.metadata.source_family_result_counts == {"web": 1}
     assert response.metadata.degraded_source_families == ["web"]
     assert response.metadata.failed_source_families == []
+    assert response.metadata.provider_failure_kind_counts == {
+        "bad": {"provider_error": 1},
+        "unexpected": {"unexpected_RuntimeError": 1},
+    }
+    await engine.aclose()
+
+
+@pytest.mark.asyncio
+async def test_search_reports_total_upstream_engine_failures(settings) -> None:
+    unavailable = ProviderError(
+        "all upstream engines failed",
+        kind="upstream_unavailable",
+        upstream_engines=("brave", "duckduckgo"),
+    )
+    engine = EvidenceMesh(
+        settings,
+        providers=[StaticProvider("searxng", error=unavailable)],
+    )
+    response = await engine.search(SearchRequest(query="upstream failure", use_cache=False))
+    assert response.metadata.provider_failure_kind_counts == {
+        "searxng": {"upstream_unavailable": 1}
+    }
+    assert response.metadata.provider_unavailable_engine_query_counts == {
+        "searxng": {"brave": 1, "duckduckgo": 1}
+    }
+    await engine.aclose()
+
+
+@pytest.mark.asyncio
+async def test_quality_search_reports_provider_lineage_and_reservation(settings) -> None:
+    quality_settings = settings.model_copy(
+        update={
+            "deployment_profile": DeploymentProfile.QUALITY,
+            "quality_primary_provider": "tavily",
+            "quality_primary_provider_share": 0.5,
+        }
+    )
+    tavily_results = [
+        ProviderResult(
+            title=f"Tavily source {rank}",
+            url=f"https://tavily-{rank}.example/source",
+            snippet="EvidenceMesh source evidence.",
+            provider="tavily",
+            rank=rank,
+            query="EvidenceMesh",
+        )
+        for rank in range(1, 5)
+    ]
+    community_results = [
+        ProviderResult(
+            title=f"Community source {rank}",
+            url=f"https://community-{rank}.example/source",
+            snippet="EvidenceMesh source evidence.",
+            provider="searxng",
+            rank=rank,
+            query="EvidenceMesh",
+            metadata={
+                "engines": ["brave", "startpage"],
+                "unresponsive_engines": ["duckduckgo"],
+            },
+        )
+        for rank in range(1, 5)
+    ]
+    engine = EvidenceMesh(
+        quality_settings,
+        providers=[
+            StaticProvider("tavily", tavily_results),
+            StaticProvider("searxng", community_results),
+        ],
+    )
+    response = await engine.search(SearchRequest(query="EvidenceMesh", limit=4, use_cache=False))
+    assert response.metadata.ranking_reservation_policy == ("provider_share:tavily:0.500")
+    assert response.metadata.ranking_reservation_requested == 2
+    assert response.metadata.ranking_reservation_fulfilled == 2
+    assert response.metadata.provider_stage_counts["raw"] == {
+        "searxng": 4,
+        "tavily": 4,
+    }
+    assert response.metadata.provider_stage_counts["selected"]["tavily"] >= 2
+    assert response.metadata.provider_stage_counts["evidence"]["tavily"] >= 2
+    assert response.metadata.provider_upstream_engine_query_counts == {
+        "searxng": {"brave": 1, "startpage": 1}
+    }
+    assert response.metadata.provider_unresponsive_engine_query_counts == {
+        "searxng": {"duckduckgo": 1}
+    }
+    assert set(response.metadata.provider_stage_loss_counts) == {
+        "raw_to_fused",
+        "fused_to_eligible",
+        "eligible_to_selected",
+        "selected_to_evidence",
+    }
     await engine.aclose()
 
 

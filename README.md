@@ -23,8 +23,8 @@ Most search MCPs are thin wrappers around one paid API. Most deep-research
 projects bundle a particular model, search service and report writer.
 EvidenceMesh separates those concerns:
 
-- **Free core:** self-hosted SearXNG plus direct Wikipedia, Crossref, arXiv and
-  GitHub repository adapters; DDGS is an environment-sensitive opt-in.
+- **Free core:** self-hosted SearXNG plus bounded DDGS fallback and direct
+  Wikipedia, Crossref, arXiv and GitHub repository adapters.
 - **Deterministic routing:** web, reference, academic and code sources receive
   only compatible queries, with conservative budgets for rate-limited APIs and
   profile-aware domain diversity.
@@ -136,7 +136,7 @@ research workflow.
 | Brave | Yes | No | Explicit opt-in | Web, news, academic, code |
 | Exa | Yes | No | Explicit opt-in | Web, news, academic, code |
 | Firecrawl | Cloud only | No | Explicit opt-in | Web, news, academic, code |
-| DDGS | No | No | No | Web, news, academic, code |
+| DDGS | No | Yes | Yes | Web, news |
 
 The default `community` profile requires no API key and remains a best-effort
 self-hosted route. The recommended `quality` profile adds Tavily when
@@ -153,10 +153,15 @@ export EVIDENCEMESH_DEPLOYMENT_PROFILE=community  # or quality
 export TAVILY_API_KEY=...
 
 # An explicit list overrides the selected bundle.
-export EVIDENCEMESH_PROVIDERS=searxng,wikipedia,crossref,arxiv,github
+export EVIDENCEMESH_PROVIDERS=searxng,ddgs,wikipedia,crossref,arxiv,github
 export EVIDENCEMESH_SEARXNG_URL=http://127.0.0.1:8888
+export EVIDENCEMESH_SEARXNG_FALLBACK_URLS=https://search-2.example
 export EVIDENCEMESH_PROVIDER_FAILURE_THRESHOLD=3
 export EVIDENCEMESH_PROVIDER_RECOVERY_SECONDS=60
+
+# Temporary Phase 11 quality retention policy (8 Tavily / 2 federation at limit 10).
+export EVIDENCEMESH_QUALITY_PRIMARY_PROVIDER=tavily
+export EVIDENCEMESH_QUALITY_PRIMARY_PROVIDER_SHARE=0.8
 ```
 
 Optional keys use `OPENALEX_API_KEY`, `GITHUB_TOKEN`, `BRAVE_API_KEY`,
@@ -330,6 +335,15 @@ community by a paired net +7, but lost to Tavily direct by a paired net -14 and
 missed its retrieval, answer and citation thresholds. The result identifies
 provider reliability, fused-evidence retention and citation adherence as the
 next engineering targets; release and superiority claims remain no-go.
+
+The [Phase 11 protocol](docs/benchmark-protocol-v9.md) addresses those first two
+retrieval defects without calling Gemini. It adds raw-to-prompt provider
+lineage, compares 4/6, 6/4 and 8/2 Tavily reservations on one shared raw pool,
+adds bounded DDGS redundancy and restores a checksum-pinned multi-engine
+SearXNG configuration. The authored 12-case calibration uses at most 12 Tavily
+requests. The Phase 10 sample is retired from future final evaluation, and
+release remains no-go until a new untouched Phase 12 run and later external
+agent replication.
 
 ## Security
 

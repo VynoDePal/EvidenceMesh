@@ -1,0 +1,74 @@
+[
+  {
+    "id": "p11-001",
+    "query": "FastMCP official documentation MCP server transports",
+    "target_domains": ["gofastmcp.com"],
+    "topic": "developer_docs"
+  },
+  {
+    "id": "p11-002",
+    "query": "Python official documentation asyncio TaskGroup",
+    "target_domains": ["docs.python.org"],
+    "topic": "developer_docs"
+  },
+  {
+    "id": "p11-003",
+    "query": "Model Context Protocol official specification transports",
+    "target_domains": ["modelcontextprotocol.io"],
+    "topic": "protocol"
+  },
+  {
+    "id": "p11-004",
+    "query": "SearXNG official documentation JSON search format settings",
+    "target_domains": ["docs.searxng.org"],
+    "topic": "developer_docs"
+  },
+  {
+    "id": "p11-005",
+    "query": "GitHub CLI official manual auth login",
+    "target_domains": ["cli.github.com"],
+    "topic": "developer_docs"
+  },
+  {
+    "id": "p11-006",
+    "query": "RFC 9110 HTTP Semantics official",
+    "target_domains": ["rfc-editor.org"],
+    "topic": "protocol"
+  },
+  {
+    "id": "p11-007",
+    "query": "OWASP Top 10 for LLM Applications official 2025",
+    "target_domains": ["genai.owasp.org"],
+    "topic": "security"
+  },
+  {
+    "id": "p11-008",
+    "query": "UNESCO Recommendation on the Ethics of Artificial Intelligence official",
+    "target_domains": ["unesco.org"],
+    "topic": "public_policy"
+  },
+  {
+    "id": "p11-009",
+    "query": "World Bank official Benin population data",
+    "target_domains": ["data.worldbank.org"],
+    "topic": "public_data"
+  },
+  {
+    "id": "p11-010",
+    "query": "Kubernetes official documentation liveness readiness startup probes",
+    "target_domains": ["kubernetes.io"],
+    "topic": "developer_docs"
+  },
+  {
+    "id": "p11-011",
+    "query": "PostgreSQL official documentation row security policies",
+    "target_domains": ["postgresql.org"],
+    "topic": "developer_docs"
+  },
+  {
+    "id": "p11-012",
+    "query": "Attention Is All You Need arXiv 1706.03762",
+    "target_domains": ["arxiv.org"],
+    "topic": "research"
+  }
+]

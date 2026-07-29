@@ -27,7 +27,22 @@ def build_providers(
         if name == "arxiv":
             providers.append(ArxivProvider(settings.arxiv_url, client))
         elif name == "searxng":
-            providers.append(SearxngProvider(settings.searxng_url, client))
+            urls = list(
+                dict.fromkeys(
+                    [
+                        settings.searxng_url.rstrip("/"),
+                        *settings.searxng_fallback_urls,
+                    ]
+                )
+            )
+            providers.extend(
+                SearxngProvider(
+                    url,
+                    client,
+                    name="searxng" if index == 1 else f"searxng-{index}",
+                )
+                for index, url in enumerate(urls, start=1)
+            )
         elif name == "ddgs":
             providers.append(DDGSProvider())
         elif name == "wikipedia":

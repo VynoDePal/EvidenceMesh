@@ -18,6 +18,8 @@ from evidencemesh.providers.base import SearchProvider, parse_datetime, strip_ma
 
 class DDGSProvider(SearchProvider):
     name = "ddgs"
+    supported_profiles = frozenset({SearchProfile.WEB, SearchProfile.NEWS})
+    query_budget = 1
 
     def _search_sync(self, query: str, request: SearchRequest) -> list[dict[str, Any]]:
         safe = {

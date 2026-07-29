@@ -250,6 +250,19 @@ class SearchMetadata(StrictModel):
     source_family_success_counts: dict[str, int] = Field(default_factory=dict)
     source_family_failure_counts: dict[str, int] = Field(default_factory=dict)
     source_family_result_counts: dict[str, int] = Field(default_factory=dict)
+    provider_stage_counts: dict[str, dict[str, int]] = Field(default_factory=dict)
+    provider_stage_loss_counts: dict[str, dict[str, int]] = Field(default_factory=dict)
+    provider_upstream_engine_query_counts: dict[str, dict[str, int]] = Field(default_factory=dict)
+    provider_unresponsive_engine_query_counts: dict[str, dict[str, int]] = Field(
+        default_factory=dict
+    )
+    provider_unavailable_engine_query_counts: dict[str, dict[str, int]] = Field(
+        default_factory=dict
+    )
+    provider_failure_kind_counts: dict[str, dict[str, int]] = Field(default_factory=dict)
+    ranking_reservation_policy: str = "none"
+    ranking_reservation_requested: int = Field(default=0, ge=0)
+    ranking_reservation_fulfilled: int = Field(default=0, ge=0)
     degraded_source_families: list[str] = Field(default_factory=list)
     failed_source_families: list[str] = Field(default_factory=list)
     effective_max_per_domain: int = Field(default=3, ge=1, le=10)

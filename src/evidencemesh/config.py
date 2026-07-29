@@ -19,6 +19,7 @@ class DeploymentProfile(StrEnum):
 
 COMMUNITY_PROVIDERS = (
     "searxng",
+    "ddgs",
     "wikipedia",
     "crossref",
     "arxiv",
@@ -48,6 +49,7 @@ class Settings(BaseModel):
     deployment_profile: DeploymentProfile = DeploymentProfile.COMMUNITY
     enabled_providers: list[str]
     searxng_url: str = "http://127.0.0.1:8888"
+    searxng_fallback_urls: list[str] = Field(default_factory=list)
     wikipedia_url_template: str = "https://{language}.wikipedia.org/w/api.php"
     crossref_url: str = "https://api.crossref.org/works"
     arxiv_url: str = "https://export.arxiv.org/api/query"
@@ -78,6 +80,8 @@ class Settings(BaseModel):
     respect_robots_txt: bool = True
     user_agent: str = "EvidenceMesh/0.1 (+https://github.com/VynoDePal/EvidenceMesh)"
     crossref_mailto: str | None = None
+    quality_primary_provider: str | None = "tavily"
+    quality_primary_provider_share: float = Field(default=0.8, ge=0.0, le=1.0)
 
     @model_validator(mode="before")
     @classmethod
@@ -113,6 +117,27 @@ class Settings(BaseModel):
             raise ValueError(f"unknown providers: {sorted(unknown)}")
         return normalised
 
+    @field_validator("searxng_fallback_urls")
+    @classmethod
+    def normalise_searxng_fallback_urls(cls, values: list[str]) -> list[str]:
+        normalised: list[str] = []
+        for value in values:
+            url = value.strip().rstrip("/")
+            if not url:
+                continue
+            if not url.startswith(("http://", "https://")):
+                raise ValueError("SearXNG fallback URLs must use http or https")
+            normalised.append(url)
+        return list(dict.fromkeys(normalised))
+
+    @field_validator("quality_primary_provider")
+    @classmethod
+    def normalise_quality_primary_provider(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalised = value.strip().lower()
+        return normalised or None
+
     @classmethod
     def from_env(cls, **overrides: Any) -> Settings:
         providers = os.getenv("EVIDENCEMESH_PROVIDERS")
@@ -126,6 +151,10 @@ class Settings(BaseModel):
                 "EVIDENCEMESH_SEARXNG_URL",
                 "http://127.0.0.1:8888",
             ),
+            "searxng_fallback_urls": os.getenv(
+                "EVIDENCEMESH_SEARXNG_FALLBACK_URLS",
+                "",
+            ).split(","),
             "arxiv_url": os.getenv(
                 "EVIDENCEMESH_ARXIV_URL",
                 "https://export.arxiv.org/api/query",
@@ -167,6 +196,9 @@ class Settings(BaseModel):
                 True,
             ),
             "crossref_mailto": os.getenv("CROSSREF_MAILTO"),
+            "quality_primary_provider": (
+                os.getenv("EVIDENCEMESH_QUALITY_PRIMARY_PROVIDER", "tavily") or None
+            ),
         }
         if providers:
             data["enabled_providers"] = providers.split(",")
@@ -188,6 +220,10 @@ class Settings(BaseModel):
             "EVIDENCEMESH_MAX_DOWNLOAD_BYTES": ("max_download_bytes", int),
             "EVIDENCEMESH_MAX_PDF_PAGES": ("max_pdf_pages", int),
             "EVIDENCEMESH_MAX_CONCURRENCY": ("max_concurrency", int),
+            "EVIDENCEMESH_QUALITY_PRIMARY_PROVIDER_SHARE": (
+                "quality_primary_provider_share",
+                float,
+            ),
         }
         for env_name, (field_name, cast) in numeric_env.items():
             if value := os.getenv(env_name):
