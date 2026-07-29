@@ -55,3 +55,11 @@ Mwmbl can only be considered for a default bundle after:
 YaCy can only support a broad-coverage claim after a reproducible snapshot or
 crawl recipe is published and evaluated. Adapter correctness alone is not
 evidence of search quality.
+
+## Phase 11.3 policy note
+
+No persistent, reproducibly populated YaCy index is available for the next
+diagnostic. An ephemeral empty node is therefore excluded. Mwmbl also remains
+outside named defaults under its current CC BY-NC-SA result boundary,
+independently of endpoint health. Phase 11.3 measures network behavior only and
+does not revise this dated architecture assessment's Phase 11.2 evidence.
