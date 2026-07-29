@@ -343,6 +343,28 @@ below its blocking 11/12 floor. The candidate therefore failed: the paid
 quality profile remains mixed, the free community profile is unchanged and
 Phase 12 remains blocked.
 
+## Phase 11.7 fresh confirmation and Phase 12 seal
+
+`benchmarks/phase11_7_dataset.py` deterministically excludes the 212
+SimpleQA identifiers found in frozen prior inputs, selects 24 fresh
+confirmation cases, and seals 96 disjoint cases for Phase 12. The committed
+reserve contains only opaque row positions and stable identifiers; it omits
+questions, answers and distributions. The Phase 11.7 loader materializes only
+the 24 scored selectors.
+
+The [frozen protocol](benchmark-protocol-v15.md) compares legacy and strict
+prompts over one shared Tavily packet per case. Its blocking matrix is
+`gemma-4-31b-it` plus `gemini-3.5-flash-lite`, producing exactly 24 Tavily and
+96 generation requests with no retry, fallback or repair. Gemma 26B is not
+called and is not a release gate; users remain free to choose it or any other
+supported model with their own client and credentials.
+
+All ten pre-registered accounting, packet-identity, retrieval, completion,
+answer non-regression and citation gates must pass before a separate result
+commit can make the optional `quality` profile Tavily-only. The zero-key
+`community` profile remains unchanged. Phase 11.7 does not run the sealed
+Phase 12 suite, merge the PR, publish a package or support a superiority claim.
+
 ## Planned standard evaluations
 
 - SimpleQA answer accuracy with the official judge over the new generation

@@ -294,6 +294,64 @@ def test_phase11_6_protocol_and_workflow_lock_citation_isolation_budget() -> Non
     assert "phase12-" not in workflow.lower()
 
 
+def test_phase11_7_protocol_workflow_and_sealed_reserve_lock_fresh_budget() -> None:
+    root = Path(__file__).parents[1]
+    protocol_path = root / "docs" / "benchmark-protocol-v15.md"
+    workflow = (root / ".github" / "workflows" / "phase11-7-fresh-confirmation.yml").read_text(
+        encoding="utf-8"
+    )
+    protocol = protocol_path.read_text(encoding="utf-8")
+    fresh_path = root / "benchmarks" / "data" / "phase11_7_fresh_confirmation_v1.json"
+    reserve_path = root / "benchmarks" / "data" / "phase12_untouched_reserve_v1.json"
+
+    assert hashlib.sha256(protocol_path.read_bytes()).hexdigest() == (
+        "a38cfdd9f8bb4ca9ebf39caac212e7868a773b62c874e1738bc8a5ff9ea1088e"
+    )
+    assert hashlib.sha256(fresh_path.read_bytes()).hexdigest() == (
+        "da6d1e21c3c1d53539f481fe6789eedc55359bb3b9d32b0be73f96bc693da79e"
+    )
+    assert hashlib.sha256(reserve_path.read_bytes()).hexdigest() == (
+        "472ec47a21b99f14ab05c4e7b79d179034fc42558910c0bf2ef053b0d25411ee"
+    )
+    assert "fresh, pre-registered confirmation calibration" in protocol
+    assert "case count: exactly 24" in protocol
+    assert "case count: exactly 96" in protocol
+    assert "exactly 96 native Gemini API generation" in protocol
+    assert "`gemma-4-26b-a4b-it` is not called and is not blocking" in protocol
+    assert "Users choose their provider bundle, model client and API keys" in protocol
+    assert "pull request remains draft" in protocol
+
+    assert "run_phase11_7_fresh_confirmation.py" in workflow
+    assert "phase11_7_fresh_confirmation_v1.json" in workflow
+    assert "phase12_untouched_reserve_v1.json" in workflow
+    assert "EVIDENCE_MESH_GEMINI_KEY" in workflow
+    assert "EVIDENCE_MESH_TAVILY_KEY" in workflow
+    assert "gemma-4-31b-it" in workflow
+    assert "gemma-4-26b-a4b-it" not in workflow
+    assert "gemini-3.5-flash-lite" in workflow
+    assert "--model-pause-seconds 2.0" in workflow
+    assert "--max-output-tokens 2048" in workflow
+    assert "--retrieval-wall-time-seconds 30" in workflow
+    assert "--generation-wall-time-seconds 60" in workflow
+    assert "timeout-minutes: 120" in workflow
+    assert 'traffic["case_retrieval_operations"] == 24' in workflow
+    assert 'traffic["generation_requests"] == 96' in workflow
+    assert 'traffic["tavily_requests"] == 24' in workflow
+    assert 'traffic["retries"] == 0' in workflow
+    assert 'traffic["repair_requests"] == 0' in workflow
+    assert 'decision["quality_profile_promoted"] is False' in workflow
+    assert 'decision["phase12_executed"] is False' in workflow
+    assert 'decision["public_alpha_allowed"] is False' in workflow
+    assert 'decision["superiority_claim_allowed"] is False' in workflow
+    assert 'decision["merge_allowed"] is False' in workflow
+    assert 'decision["release_decision"] == "no-go"' in workflow
+    assert 'echo "$GEMINI_API_KEY"' not in workflow
+    assert 'echo "$TAVILY_API_KEY"' not in workflow
+    assert "gh release create" not in workflow.lower()
+    assert "pypi publish" not in workflow.lower()
+    assert "run_phase12" not in workflow.lower()
+
+
 def test_committed_phase4_result_matches_locked_protocol() -> None:
     root = Path(__file__).parents[1]
     result_path = root / "benchmarks" / "results" / "simpleqa_retrieval_phase4_2026-07-28.json"

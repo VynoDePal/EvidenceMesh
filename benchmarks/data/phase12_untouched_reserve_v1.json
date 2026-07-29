@@ -1,0 +1,416 @@
+{
+  "dataset": {
+    "license": "MIT (openai/simple-evals)",
+    "name": "SimpleQA test set",
+    "reference_file_blob": "0fc266800a87ace55ec192c9a91cafe92fef7b48",
+    "reference_repository_commit": "652c89d0ca9df547706735883097e9537d40dc47",
+    "sha256": "feee3f7e7db3617e94e8fcf1977b756ec420ef8568f4e0fcbbe0e92e9d5fc032",
+    "source_url": "https://openaipublic.blob.core.windows.net/simple-evals/simple_qa_test_set.csv"
+  },
+  "schema_version": 1,
+  "seal": {
+    "answer_type_distribution_committed": false,
+    "phase11_7_loader_may_materialize_reserved_rows": false,
+    "questions_committed": false,
+    "reference_answers_committed": false,
+    "topic_distribution_committed": false
+  },
+  "sealed_case_ids_sha256": "fa0d1da49dbf72fdc630fac0f59cd03591a5c041ab45f9bd61f12ef457f317e1",
+  "sealed_cases": [
+    {
+      "case_id": "e37431577d7fe1c9",
+      "row_index": 2346
+    },
+    {
+      "case_id": "a2abb1d2e103561a",
+      "row_index": 2950
+    },
+    {
+      "case_id": "0fb977850db01ef0",
+      "row_index": 1186
+    },
+    {
+      "case_id": "a8f979160cdf07e8",
+      "row_index": 1673
+    },
+    {
+      "case_id": "f2e46a88c92c6723",
+      "row_index": 3370
+    },
+    {
+      "case_id": "1c48a93cda49cfb9",
+      "row_index": 1121
+    },
+    {
+      "case_id": "2b6222ca3ec791b6",
+      "row_index": 3811
+    },
+    {
+      "case_id": "f954312d042ebe6f",
+      "row_index": 3080
+    },
+    {
+      "case_id": "a31364b520fae2a4",
+      "row_index": 1474
+    },
+    {
+      "case_id": "c263b91e966b44d2",
+      "row_index": 2722
+    },
+    {
+      "case_id": "8760827d3f39748b",
+      "row_index": 2376
+    },
+    {
+      "case_id": "252360cfa905c463",
+      "row_index": 4205
+    },
+    {
+      "case_id": "b5096830c182dfe8",
+      "row_index": 1841
+    },
+    {
+      "case_id": "c2997351b04fb522",
+      "row_index": 2242
+    },
+    {
+      "case_id": "c1f8e6821d50d62a",
+      "row_index": 2753
+    },
+    {
+      "case_id": "fe5d733598f2b250",
+      "row_index": 2435
+    },
+    {
+      "case_id": "6d399673ebd1b83f",
+      "row_index": 3824
+    },
+    {
+      "case_id": "291497ec250d0d30",
+      "row_index": 4050
+    },
+    {
+      "case_id": "385de9b479f92323",
+      "row_index": 4195
+    },
+    {
+      "case_id": "91af251140977d62",
+      "row_index": 3284
+    },
+    {
+      "case_id": "cc90aec43b19bfa9",
+      "row_index": 2882
+    },
+    {
+      "case_id": "2160f1aa4aa2ca70",
+      "row_index": 2367
+    },
+    {
+      "case_id": "2fa09c091e6b1304",
+      "row_index": 2070
+    },
+    {
+      "case_id": "6c15887a4d610021",
+      "row_index": 2824
+    },
+    {
+      "case_id": "23d44f276dd42faf",
+      "row_index": 888
+    },
+    {
+      "case_id": "ebe0bad3b8c33560",
+      "row_index": 4219
+    },
+    {
+      "case_id": "fd8ebb66b0265440",
+      "row_index": 1850
+    },
+    {
+      "case_id": "a374f9cce21f66d8",
+      "row_index": 2303
+    },
+    {
+      "case_id": "a335208cfc59214c",
+      "row_index": 442
+    },
+    {
+      "case_id": "c94b1a17b966eb71",
+      "row_index": 1243
+    },
+    {
+      "case_id": "c0528728eb0c7d5d",
+      "row_index": 1085
+    },
+    {
+      "case_id": "afb11a121d2a7f20",
+      "row_index": 2024
+    },
+    {
+      "case_id": "dfca24e903bea509",
+      "row_index": 1188
+    },
+    {
+      "case_id": "e735da904a8566ea",
+      "row_index": 2007
+    },
+    {
+      "case_id": "8116fa9243596349",
+      "row_index": 2503
+    },
+    {
+      "case_id": "866ead2702cf9b68",
+      "row_index": 3528
+    },
+    {
+      "case_id": "28bc519a0b162337",
+      "row_index": 742
+    },
+    {
+      "case_id": "cff1c05ace5e28d7",
+      "row_index": 1423
+    },
+    {
+      "case_id": "c0e9703907d2a113",
+      "row_index": 1836
+    },
+    {
+      "case_id": "f6c3ed9e5a3f5c59",
+      "row_index": 2290
+    },
+    {
+      "case_id": "7983737a6789dc0e",
+      "row_index": 232
+    },
+    {
+      "case_id": "a0e2c7334badda00",
+      "row_index": 3225
+    },
+    {
+      "case_id": "5e10bcb20d57e62c",
+      "row_index": 1894
+    },
+    {
+      "case_id": "d600537a050ef43c",
+      "row_index": 3898
+    },
+    {
+      "case_id": "dcca96b0ad3e5448",
+      "row_index": 3487
+    },
+    {
+      "case_id": "e32645ffa4472484",
+      "row_index": 1692
+    },
+    {
+      "case_id": "a3e47ec8e7e816f8",
+      "row_index": 1790
+    },
+    {
+      "case_id": "45dffe3d8d22dbfb",
+      "row_index": 2432
+    },
+    {
+      "case_id": "507918567e819440",
+      "row_index": 2218
+    },
+    {
+      "case_id": "7ebc655fd46f35d3",
+      "row_index": 3143
+    },
+    {
+      "case_id": "ecfdb6c1b13ffdb4",
+      "row_index": 1156
+    },
+    {
+      "case_id": "4066c6861e5f2fcd",
+      "row_index": 2196
+    },
+    {
+      "case_id": "ce118400d237de88",
+      "row_index": 2412
+    },
+    {
+      "case_id": "e5f6ee8a16a7f39d",
+      "row_index": 2360
+    },
+    {
+      "case_id": "5d3e0788f494dc79",
+      "row_index": 94
+    },
+    {
+      "case_id": "08e8a71954e4d666",
+      "row_index": 788
+    },
+    {
+      "case_id": "1a80dd80a0ae8830",
+      "row_index": 1189
+    },
+    {
+      "case_id": "9799213076af12c2",
+      "row_index": 1042
+    },
+    {
+      "case_id": "9f39ae61ecf15446",
+      "row_index": 399
+    },
+    {
+      "case_id": "4c79fe3c3a7c5147",
+      "row_index": 3814
+    },
+    {
+      "case_id": "e77c27459347543e",
+      "row_index": 2819
+    },
+    {
+      "case_id": "1374522adc8bd76f",
+      "row_index": 440
+    },
+    {
+      "case_id": "7a174e7112e5a499",
+      "row_index": 1406
+    },
+    {
+      "case_id": "9079df29cda14463",
+      "row_index": 1414
+    },
+    {
+      "case_id": "c146216cdaad0ae8",
+      "row_index": 653
+    },
+    {
+      "case_id": "262c763ebfaa044e",
+      "row_index": 1688
+    },
+    {
+      "case_id": "60fc80951d1abda9",
+      "row_index": 3497
+    },
+    {
+      "case_id": "60dc1e4682e6e0f9",
+      "row_index": 159
+    },
+    {
+      "case_id": "a1639e297a7e5ed8",
+      "row_index": 1034
+    },
+    {
+      "case_id": "340abdbdc9f04e53",
+      "row_index": 3682
+    },
+    {
+      "case_id": "61f7f5d9aac1de45",
+      "row_index": 1502
+    },
+    {
+      "case_id": "f6351459ce04d812",
+      "row_index": 2042
+    },
+    {
+      "case_id": "bbe2eeed87374604",
+      "row_index": 3541
+    },
+    {
+      "case_id": "5e11b2fcbff88a7a",
+      "row_index": 2401
+    },
+    {
+      "case_id": "f42091a348b59c70",
+      "row_index": 697
+    },
+    {
+      "case_id": "96cc09a1c408a3ee",
+      "row_index": 2888
+    },
+    {
+      "case_id": "d007beb5365b1da5",
+      "row_index": 82
+    },
+    {
+      "case_id": "94f9bfd516e3ed1e",
+      "row_index": 3551
+    },
+    {
+      "case_id": "a6b1fe3fc5fb1a66",
+      "row_index": 3810
+    },
+    {
+      "case_id": "8a3f086839d9758c",
+      "row_index": 3442
+    },
+    {
+      "case_id": "6526110e8d3a2287",
+      "row_index": 3128
+    },
+    {
+      "case_id": "6a299ef1f2b660ae",
+      "row_index": 407
+    },
+    {
+      "case_id": "7e04b11ddff640d2",
+      "row_index": 3531
+    },
+    {
+      "case_id": "1c5c8e1e8432806b",
+      "row_index": 2227
+    },
+    {
+      "case_id": "632ce6ce0db05e84",
+      "row_index": 3248
+    },
+    {
+      "case_id": "97e5231b15590d79",
+      "row_index": 4
+    },
+    {
+      "case_id": "5b18e3f536ebca03",
+      "row_index": 1528
+    },
+    {
+      "case_id": "8de048e514e7eff5",
+      "row_index": 1400
+    },
+    {
+      "case_id": "782f73a0ecf5ebce",
+      "row_index": 3946
+    },
+    {
+      "case_id": "afbb87329f3c0f40",
+      "row_index": 914
+    },
+    {
+      "case_id": "c944ca806fee1124",
+      "row_index": 4221
+    },
+    {
+      "case_id": "18b9560099a9f472",
+      "row_index": 3504
+    },
+    {
+      "case_id": "e6e81424a479e5d7",
+      "row_index": 3768
+    },
+    {
+      "case_id": "7e08bdedbdc894d4",
+      "row_index": 4016
+    },
+    {
+      "case_id": "6c469bd0293ccbb6",
+      "row_index": 4122
+    },
+    {
+      "case_id": "b419cb8df883e0db",
+      "row_index": 598
+    }
+  ],
+  "selection": {
+    "case_count": 96,
+    "eligible_row_count": 4090,
+    "excluded_prior_and_phase11_7_case_count": 236,
+    "excluded_prior_case_ids_sha256": "f825e97484c591d1534fcebd4167ef481c18ff836eb75aba3dbcf45be6efc6c6",
+    "method": "ascending SHA-256(namespace + NUL + stable case ID)",
+    "namespace": "EvidenceMesh/phase12/untouched-reserve/v1",
+    "phase11_7_case_ids_sha256": "51b73207fcfdad9df217c1b208658be84ecb4355ff8ec29814cff8b1c9560adb",
+    "row_index_semantics": "zero-based data-row index after the CSV header"
+  },
+  "suite": "evidencemesh-phase12-untouched-reserve-v1"
+}

@@ -208,6 +208,20 @@ because blocking Gemma 26B completed 10/12 requests in each arm. No provider
 default or evaluation boundary changed, so an external-agent comparison and
 competitive claim remain blocked.
 
+Phase 11.7 is a fresh confirmation calibration, not the competitive benchmark
+itself. Its [frozen protocol](benchmark-protocol-v15.md) excludes every prior
+SimpleQA identifier, evaluates 24 new cases with shared Tavily packets, and
+seals a separate 96-case Phase 12 reserve without exposing questions, answers
+or distributions. The blocking models are Gemma 4 31B and Gemini 3.5 Flash
+Lite; Gemma 26B is not called and no longer gates the experiment. Exactly 24
+Tavily and 96 generation requests are allowed, with no selective retry.
+
+Even a ten-gate pass can only promote the optional paid-provider `quality`
+default in a separate commit and make the sealed suite eligible for later
+authorization. It cannot execute Phase 12, start the external-agent comparison
+or support a “best” claim. Provider and model choices remain user-controlled,
+and the zero-key community track stays distinct.
+
 ## Fair next comparison
 
 Use EvidenceMesh as the retrieval MCP for a fixed external model, then compare

@@ -197,3 +197,12 @@ All notable changes to EvidenceMesh are documented here.
   Blocking Gemma 26B completed 10/12 requests in both arms, below the frozen
   11/12 floor. The quality and community defaults are unchanged and Phase 12
   remains blocked.
+- Locked Phase 11.7 before its first request as a fresh 24-case Tavily
+  confirmation across blocking Gemma 4 31B and Gemini 3.5 Flash Lite. The
+  exact budget is 24 Tavily and 96 generation requests with no retry,
+  fallback or repair; Gemma 26B is not called and is not blocking.
+- Deterministically excluded 212 previously observed SimpleQA identifiers and
+  sealed a disjoint 96-case Phase 12 reserve containing no questions, answers
+  or distributions. The Phase 11.7 loader may materialize only its own 24
+  selectors. The zero-key community profile, draft PR, release boundary and
+  user-controlled provider/model choices remain unchanged.

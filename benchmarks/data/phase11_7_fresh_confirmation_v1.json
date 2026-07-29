@@ -1,0 +1,172 @@
+{
+  "answer_type_distribution": {
+    "Date": 5,
+    "Number": 7,
+    "Other": 1,
+    "Person": 8,
+    "Place": 3
+  },
+  "case_ids_sha256": "51b73207fcfdad9df217c1b208658be84ecb4355ff8ec29814cff8b1c9560adb",
+  "cases": [
+    {
+      "case_id": "65a135efe7523fd5",
+      "row_index": 3502
+    },
+    {
+      "case_id": "6713e0222b23e8aa",
+      "row_index": 928
+    },
+    {
+      "case_id": "b650696aa736cfe0",
+      "row_index": 2628
+    },
+    {
+      "case_id": "9ed3c4e4378ad7a0",
+      "row_index": 2209
+    },
+    {
+      "case_id": "ac436a4276019a6c",
+      "row_index": 1492
+    },
+    {
+      "case_id": "82064f9835db73e2",
+      "row_index": 4131
+    },
+    {
+      "case_id": "d9c547d79b18b8db",
+      "row_index": 3571
+    },
+    {
+      "case_id": "4b0cba8b2571ff3c",
+      "row_index": 4143
+    },
+    {
+      "case_id": "d9feaa68e33b31fd",
+      "row_index": 3641
+    },
+    {
+      "case_id": "8d96ded65ac2f1ae",
+      "row_index": 3090
+    },
+    {
+      "case_id": "18d1ddefe6805891",
+      "row_index": 4260
+    },
+    {
+      "case_id": "b8274beae45b137d",
+      "row_index": 426
+    },
+    {
+      "case_id": "6cafe5fa94e4780a",
+      "row_index": 4075
+    },
+    {
+      "case_id": "cdf9d49de42c1559",
+      "row_index": 1757
+    },
+    {
+      "case_id": "726af04f2c24b1a3",
+      "row_index": 349
+    },
+    {
+      "case_id": "79a534054ec8100b",
+      "row_index": 1651
+    },
+    {
+      "case_id": "2249b37af18e588a",
+      "row_index": 381
+    },
+    {
+      "case_id": "c677b82ccb9c95a8",
+      "row_index": 1090
+    },
+    {
+      "case_id": "077b696d5f577f47",
+      "row_index": 403
+    },
+    {
+      "case_id": "1da6f88c949ac2c5",
+      "row_index": 2837
+    },
+    {
+      "case_id": "86399e331751fcb1",
+      "row_index": 2392
+    },
+    {
+      "case_id": "e3ddac95b1abdaa8",
+      "row_index": 3051
+    },
+    {
+      "case_id": "6128d00fc8000d50",
+      "row_index": 2733
+    },
+    {
+      "case_id": "48182a6ee5fa02f5",
+      "row_index": 268
+    }
+  ],
+  "dataset": {
+    "license": "MIT (openai/simple-evals)",
+    "name": "SimpleQA test set",
+    "reference_file_blob": "0fc266800a87ace55ec192c9a91cafe92fef7b48",
+    "reference_repository_commit": "652c89d0ca9df547706735883097e9537d40dc47",
+    "sha256": "feee3f7e7db3617e94e8fcf1977b756ec420ef8568f4e0fcbbe0e92e9d5fc032",
+    "source_url": "https://openaipublic.blob.core.windows.net/simple-evals/simple_qa_test_set.csv"
+  },
+  "prior_sources": [
+    {
+      "path": "benchmarks/results/simpleqa_retrieval_pilot_2026-07-28.json",
+      "sha256": "8619e64971b33da02477dd6d46da8d49e9a63ce51d3439e2b4538de89e9afd34"
+    },
+    {
+      "path": "benchmarks/results/simpleqa_retrieval_phase3_2026-07-28.json",
+      "sha256": "777157b67d35ec956d34da220e2043260476b89407d3c015c8dda5762420277c"
+    },
+    {
+      "path": "benchmarks/results/simpleqa_retrieval_phase4_2026-07-28.json",
+      "sha256": "97742a6ceff0b9943ad9dfbb9a94fb36de36f05f38a7d82ea72dc34168f3a48b"
+    },
+    {
+      "path": "benchmarks/data/end_to_end_phase10_v1.json",
+      "sha256": "b38b89d316219be7dbd249f4365e0801330eb469ff6cc9b4fdaffebe6510134f"
+    },
+    {
+      "path": "benchmarks/results/end_to_end_phase10_2026-07-29.json",
+      "sha256": "95259c697c7b511dec0075a7782f07023f7e5ee48f8b863363794ec44c8bf263"
+    },
+    {
+      "path": "benchmarks/results/phase11_5_quality_recovery_2026-07-29.json",
+      "sha256": "7c9716cd970c3f955934ccf218ecbd835b261f1cf885c2b749217452b90af29c"
+    },
+    {
+      "path": "benchmarks/results/phase11_6_tavily_citation_isolation_2026-07-29.json",
+      "sha256": "86b9eda8ecb55822bb93501dbd1d1614c84c04444d1df62fbf6252e1202d22bd"
+    }
+  ],
+  "privacy": {
+    "generated_answers_committed": false,
+    "questions_committed": false,
+    "reference_answers_committed": false,
+    "source_content_committed": false
+  },
+  "schema_version": 1,
+  "selection": {
+    "case_count": 24,
+    "eligible_row_count": 4114,
+    "excluded_prior_case_count": 212,
+    "excluded_prior_case_ids_sha256": "f825e97484c591d1534fcebd4167ef481c18ff836eb75aba3dbcf45be6efc6c6",
+    "method": "ascending SHA-256(namespace + NUL + stable case ID)",
+    "namespace": "EvidenceMesh/phase11.7/fresh-confirmation/v1",
+    "row_index_semantics": "zero-based data-row index after the CSV header"
+  },
+  "suite": "evidencemesh-phase11-7-fresh-confirmation-v1",
+  "topic_distribution": {
+    "Geography": 1,
+    "History": 1,
+    "Music": 2,
+    "Other": 4,
+    "Politics": 8,
+    "Science and technology": 6,
+    "Sports": 2
+  }
+}

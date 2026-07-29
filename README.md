@@ -470,6 +470,18 @@ while strict citations reached 100% presence, 100% identifier validity and
 82.4% support proxy. Blocking Gemma 26B completed only 10/12 calls in each
 arm, so the quality profile was not promoted and Phase 12 remains blocked.
 
+The [Phase 11.7 protocol](docs/benchmark-protocol-v15.md) freezes a fresh
+24-case confirmation before any new request and seals a disjoint 96-case
+Phase 12 reserve without committing its questions, answers or distributions.
+It repeats the byte-identical Tavily legacy/strict prompt comparison across
+blocking `gemma-4-31b-it` and `gemini-3.5-flash-lite`, for exactly 24 Tavily
+and 96 model requests with no retry or repair. Gemma 26B remains available as
+a user-chosen model but is neither called nor blocking in this calibration.
+Only a ten-gate pass may promote the optional API-backed `quality` profile to
+Tavily only in a separate result commit. The zero-key `community` profile
+stays unchanged; the PR remains draft and the sealed Phase 12 evaluation is
+not executed.
+
 ## Security
 
 EvidenceMesh blocks private, loopback, link-local and reserved fetch targets by
@@ -496,7 +508,7 @@ uv run pytest
 Contributions are welcome when benchmark claims are reproducible and provider
 costs or quotas are stated explicitly. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The current suite contains 336 tests and reports 91.55% branch-aware coverage
+The current suite contains 348 tests and reports 91.55% branch-aware coverage
 locally. CI repeats the suite on Python 3.11, 3.12 and 3.13 and installs the
 built wheel before exercising its CLI and real MCP STDIO entry point.
 
