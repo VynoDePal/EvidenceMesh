@@ -9,8 +9,6 @@ from typing import Any
 import httpx
 import pytest
 import respx
-
-from benchmarks.run_live_retrieval import BenchmarkRow
 from benchmarks.run_phase11_5_quality_recovery import ArmBundle, EvidenceBlock, gemini_endpoint
 from benchmarks.run_phase11_8_recovery import (
     BASELINE_ARM,
@@ -42,6 +40,8 @@ from benchmarks.run_phase11_8_recovery import (
     raw_pool_sha256,
     validate_arguments,
 )
+
+from benchmarks.run_live_retrieval import BenchmarkRow
 from evidencemesh.config import COMMUNITY_PROVIDERS, QUALITY_PROVIDERS, Settings
 from evidencemesh.models import ProviderResult
 
@@ -584,9 +584,7 @@ def test_committed_no_go_result_preserves_product_defaults_and_boundary() -> Non
     gates = decision["gates"]
 
     assert payload["benchmark"] == BENCHMARK_NAME
-    assert payload["environment"]["commit_sha"] == (
-        "b48fcfd6078270dac74ecb0c0c087a6c16066008"
-    )
+    assert payload["environment"]["commit_sha"] == ("b48fcfd6078270dac74ecb0c0c087a6c16066008")
     assert payload["traffic"] == {
         "case_retrieval_operations": 24,
         "expected_generation_requests": 144,
@@ -618,11 +616,7 @@ def test_committed_no_go_result_preserves_product_defaults_and_boundary() -> Non
 
     privacy = payload["privacy"]
     assert privacy["answer_hashes_in_report"] is True
-    assert all(
-        value is False
-        for key, value in privacy.items()
-        if key != "answer_hashes_in_report"
-    )
+    assert all(value is False for key, value in privacy.items() if key != "answer_hashes_in_report")
 
     report_text = report.read_text()
     for marker in (
