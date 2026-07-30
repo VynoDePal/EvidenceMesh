@@ -367,3 +367,21 @@ All notable changes to EvidenceMesh are documented here.
   17/24 for both historical projectors. Any future Tavily-only calibration
   requires a new explicit authorization, while Phase 11.9, Phase 12, product
   changes, merge, release and superiority claims remain blocked.
+- Recorded the single authorized Phase 11.8.8 live no-go at 8/13 gates after
+  24/24 Tavily HTTP 200 responses and no model, retry, fallback, repair, cache
+  or follow-up fetch. Selected/equal-cap/v1/v2 proxy coverage was
+  18/16/17/17; v2 retained 17/18 (94.4444%) with paired net gains of +1
+  versus equal-cap and 0 versus v1, so all five quality gates failed.
+- Audited GitHub Actions run 30581595206 and artifact 8774869598,
+  `phase11-8-8-live-projection-calibration-30581595206`: the 4,806-byte ZIP
+  SHA-256 is `399cbd5c4bc4d26dde687ec2523ce9fa6e1f5d942f465e60653edc0676125d02`
+  and the 13,984-byte raw JSON SHA-256 is
+  `03e0ad7ef2d4859848c3b4d4d8bf9d25714b9d311741f15a91ec9b3311aca25f`.
+- Provenance binds lock commit `d91f8a85f6e2770ecd83ca95cbc7112803d683cb`,
+  authorization commit `c1f847be04bdf5574ad80885f7e00f1fdbb0f049`,
+  protocol `e63ab4b3f25865890458abd2a001ce3428f9a3ca8c4f1a1a166f25432d1a8dc9`,
+  runner `fabad5e66246a10f0f024201c1d031de22e4958141b57cf731393bd6cc936ac3`
+  and dependency manifest
+  `0d6ee7f91689fc2679ee0e5c6a2857d25219d5a71cd559d248875d1074693a00`.
+  Phase 11.9, Phase 12, promotion, merge, release and superiority claims remain
+  blocked; no rerun is authorized.
