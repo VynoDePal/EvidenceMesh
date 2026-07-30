@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 import pytest
+
 from benchmarks.phase11_8_2_candidate import (
     DIRECT_ANSWER_INSUFFICIENT_TEXT,
     DirectAnswerResponseError,
