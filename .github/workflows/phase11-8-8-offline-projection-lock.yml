@@ -1,0 +1,100 @@
+name: Phase 11.8.8 Offline Projection Lock
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - .github/workflows/phase11-8-8-offline-projection-lock.yml
+      - benchmarks/data/phase11_7_fresh_confirmation_v1.json
+      - benchmarks/data/phase11_8_8_projection_fixtures_v1.json
+      - benchmarks/data/phase12_untouched_reserve_v1.json
+      - benchmarks/phase11_8_2_candidate.py
+      - benchmarks/phase11_8_8_projection_candidate.py
+      - benchmarks/run_phase11_8_8_offline_projection_lock.py
+      - benchmarks/run_phase11_8_8_projection_calibration.py
+      - benchmarks/results/phase11_8_3_factorial_2026-07-30.json
+      - benchmarks/results/phase11_8_8_offline_projection_lock_2026-07-30.json
+      - benchmarks/results/phase11_8_8_offline_projection_lock_2026-07-30.md
+      - docs/benchmark-protocol-v23.md
+      - tests/test_phase11_8_8_projection_lock.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase11-8-8-offline-projection-lock-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  offline-projection-lock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Verify immutable Phase 11.8.8 sources
+        run: |
+          echo \
+            "11a8fe99a3e418eb4161978928f2d682a2adcf6b59b3bcc7b7641c26b601a653  docs/benchmark-protocol-v23.md" \
+            | sha256sum --check
+          echo \
+            "117968687a0c0c150acef42f997967d10b04006d14ed0efa9de87c9c08b1909e  benchmarks/phase11_8_8_projection_candidate.py" \
+            | sha256sum --check
+          echo \
+            "8955ac33c89c2e16a474182c14eac8df5acaf649642f4dd90a313cf6227db614  benchmarks/data/phase11_8_8_projection_fixtures_v1.json" \
+            | sha256sum --check
+          echo \
+            "de3b2bf527c19b745f059aba2a895e75fa1027bd5dafe79676b804db8624fff2  benchmarks/run_phase11_8_8_offline_projection_lock.py" \
+            | sha256sum --check
+          echo \
+            "80643144da925c4b9b2d4e106a6c779ce2e6c4cf33ae5470fffe53de5a314c63  benchmarks/run_phase11_8_8_projection_calibration.py" \
+            | sha256sum --check
+          echo \
+            "9791f2e2d263f5c110c3ec8ec14b1391cf3566337bc437d980e40239561c7890  benchmarks/results/phase11_8_8_offline_projection_lock_2026-07-30.json" \
+            | sha256sum --check
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install locked test environment
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Validate the future runner without provider traffic
+        run: |
+          uv run python \
+            benchmarks/run_phase11_8_8_projection_calibration.py \
+            --check-only
+
+      - name: Reproduce the committed offline result
+        run: |
+          uv run python \
+            benchmarks/run_phase11_8_8_offline_projection_lock.py \
+            --output /tmp/phase11_8_8_offline_projection_lock_2026-07-30.json
+          cmp \
+            /tmp/phase11_8_8_offline_projection_lock_2026-07-30.json \
+            benchmarks/results/phase11_8_8_offline_projection_lock_2026-07-30.json
+
+      - name: Run projection-lock tests and static checks
+        run: |
+          uv run pytest tests/test_phase11_8_8_projection_lock.py -q
+          uv run ruff check \
+            benchmarks/phase11_8_8_projection_candidate.py \
+            benchmarks/run_phase11_8_8_offline_projection_lock.py \
+            benchmarks/run_phase11_8_8_projection_calibration.py \
+            tests/test_phase11_8_8_projection_lock.py
+          uv run ruff format --check \
+            benchmarks/phase11_8_8_projection_candidate.py \
+            benchmarks/run_phase11_8_8_offline_projection_lock.py \
+            benchmarks/run_phase11_8_8_projection_calibration.py \
+            tests/test_phase11_8_8_projection_lock.py

@@ -1,0 +1,477 @@
+{
+  "benchmark": "evidencemesh-phase11-8-8-offline-projection-lock-v1",
+  "decision": {
+    "future_tavily_calibration_authorized": false,
+    "merge_allowed": false,
+    "next_step": "Review the offline lock. A future 24-request Tavily-only calibration requires a new explicit authorization.",
+    "offline_engineering_lock_passed": true,
+    "phase11_8_3_historical_result_changed": false,
+    "phase11_9_executed": false,
+    "phase11_9_protocol_may_be_frozen": false,
+    "phase12_authorized": false,
+    "phase12_executed": false,
+    "product_profiles_changed": false,
+    "real_case_quality_improvement_proven": false,
+    "release_allowed": false,
+    "release_decision": "no-go",
+    "superiority_claim_allowed": false,
+    "users_choose_provider_model_and_credentials": true
+  },
+  "fixture_disclosure": {
+    "authored_after_phase11_8": true,
+    "case_count": 12,
+    "contains_phase11_7_or_phase12_content": false,
+    "predictive_quality_claim_allowed": false,
+    "synthetic": true
+  },
+  "gates": {
+    "adversarial_fixture_retention": {
+      "observed": 12,
+      "passed": true,
+      "required": 12
+    },
+    "answer_blind_no_io_interface": {
+      "observed": {
+        "exact_signature": true,
+        "forbidden_io_call_present": false,
+        "forbidden_parameter_present": false,
+        "imports": [
+          "__future__",
+          "dataclasses",
+          "itertools",
+          "re",
+          "typing"
+        ],
+        "signature_parameters": [
+          "blocks",
+          "question",
+          "budget_chars",
+          "max_block_chars",
+          "min_block_chars"
+        ],
+        "stdlib_only": true,
+        "tripwire_projection_completed": true
+      },
+      "passed": true
+    },
+    "deterministic_five_replays": {
+      "observed": 12,
+      "passed": true,
+      "required": 12
+    },
+    "exact_budget_and_per_block_cap": {
+      "observed": {
+        "historical_equal_cap_over_budget_cases": 4,
+        "v2_compliant_cases": 12
+      },
+      "passed": true,
+      "required_v2_cases": 12
+    },
+    "future_live_contract_locked_but_not_authorized": {
+      "observed": {
+        "default_mode_is_check_only": true,
+        "explicit_live_flag_required": true,
+        "no_live_workflow_created": true,
+        "planned_tavily_ceiling_24": true,
+        "syntax_valid": true,
+        "tavily_key_only": true,
+        "three_projection_arms": true,
+        "zero_model_contract": true
+      },
+      "passed": true
+    },
+    "historical_10_of_14_no_go_preserved": {
+      "observed": {
+        "candidate_passed": false,
+        "equal_cap_proxy_hits": 17,
+        "gate_count": 14,
+        "gate_passes": 10,
+        "phase11_9_protocol_may_be_frozen": false,
+        "release_decision": "no-go",
+        "selected_evidence_proxy_hits": 19,
+        "v1_proxy_hits": 17
+      },
+      "passed": true
+    },
+    "locked_source_integrity": {
+      "passed": true,
+      "sha256": {
+        "benchmarks/data/phase11_7_fresh_confirmation_v1.json": "da6d1e21c3c1d53539f481fe6789eedc55359bb3b9d32b0be73f96bc693da79e",
+        "benchmarks/data/phase11_8_8_offline_projection_fixtures_v1.json": "8955ac33c89c2e16a474182c14eac8df5acaf649642f4dd90a313cf6227db614",
+        "benchmarks/data/phase12_untouched_reserve_v1.json": "472ec47a21b99f14ab05c4e7b79d179034fc42558910c0bf2ef053b0d25411ee",
+        "benchmarks/phase11_8_2_candidate.py": "0eb71a0e94b7e21d33105788d05076382f96ab9e5fd6cea9d16669305d38c74e",
+        "benchmarks/phase11_8_8_projection_candidate.py": "117968687a0c0c150acef42f997967d10b04006d14ed0efa9de87c9c08b1909e",
+        "benchmarks/results/phase11_8_3_factorial_2026-07-30.json": "167a7eb531966ee0591a1ae01b2a8d9d47307cb1eb52ec152946bbe0dbc6e39c",
+        "benchmarks/results/phase11_8_7_offline_runtime_timeout_hardening_2026-07-30.json": "375718f1ba8ed4d4623bb76df3253a7d64b2dbbc813a69615488ab2e084f8fd7",
+        "benchmarks/run_phase11_8_8_projection_calibration.py": "80643144da925c4b9b2d4e106a6c779ce2e6c4cf33ae5470fffe53de5a314c63",
+        "docs/benchmark-protocol-v22.md": "e786b5b4f7ade79d40dc81ffab3a20bd0a09ffe45c7b5a8765155519e2cd1dbe",
+        "docs/benchmark-protocol-v23.md": "11a8fe99a3e418eb4161978928f2d682a2adcf6b59b3bcc7b7641c26b601a653"
+      }
+    },
+    "malformed_and_boundary_inputs_fail_closed": {
+      "observed": {
+        "bounded_error_categories": [
+          "citation identifiers must be unique",
+          "budget_chars must be positive",
+          "max_block_chars must be positive",
+          "min_block_chars must be positive and no larger than max_block_chars"
+        ],
+        "empty_packet_returns_empty": true,
+        "invalid_fixture_count": 4,
+        "invalid_rejected": 4,
+        "tiny_header_budget_returns_empty": true,
+        "whitespace_packet_returns_empty": true
+      },
+      "passed": true
+    },
+    "metadata_ids_and_order_preserved": {
+      "observed": 12,
+      "passed": true,
+      "required": 12
+    },
+    "privacy_and_release_boundaries_preserved": {
+      "fixture_text_in_public_outcomes": false,
+      "merge_allowed": false,
+      "passed": true,
+      "phase11_9_protocol_may_be_frozen": false,
+      "phase12_authorized": false,
+      "question_or_marker_in_public_outcomes": false,
+      "release_allowed": false,
+      "superiority_claim_allowed": false
+    },
+    "source_substrings_only": {
+      "observed": 12,
+      "passed": true,
+      "required": 12
+    },
+    "synthetic_fixture_disclosure": {
+      "authored_after_observation": true,
+      "passed": true,
+      "predictive_quality_claim_allowed": false
+    },
+    "synthetic_non_regression_vs_both_controls": {
+      "equal_cap_hits": 3,
+      "paired_vs_equal_cap": {
+        "baseline_wins": 0,
+        "candidate_wins": 9,
+        "net_gain": 9,
+        "shared_hits": 3,
+        "shared_misses": 0
+      },
+      "paired_vs_v1": {
+        "baseline_wins": 0,
+        "candidate_wins": 5,
+        "net_gain": 5,
+        "shared_hits": 7,
+        "shared_misses": 0
+      },
+      "passed": true,
+      "v1_hits": 7,
+      "v2_hits": 12
+    },
+    "zero_network_provider_model_or_secret_traffic": {
+      "fallback_requests": 0,
+      "gemini_requests": 0,
+      "model_calls": 0,
+      "network_requests": 0,
+      "passed": true,
+      "provider_calls": 0,
+      "repair_requests": 0,
+      "retries": 0,
+      "search_calls": 0,
+      "secrets_bound": 0,
+      "tavily_requests": 0
+    }
+  },
+  "privacy": {
+    "credentials_in_report": false,
+    "fixture_source_text_in_report": false,
+    "phase11_7_questions_or_answers_in_report": false,
+    "phase12_identifiers_in_report": false,
+    "questions_or_markers_in_report": false,
+    "source_titles_urls_or_evidence_in_report": false
+  },
+  "projection": {
+    "candidate": "fair_prefix_rarity_passage_pack_v2",
+    "controls": [
+      "historical_equal_cap",
+      "rank_weighted_query_window_head_tail_v1"
+    ],
+    "equal_cap_hits": 3,
+    "historical_equal_cap_over_budget_cases": 4,
+    "outcomes": [
+      {
+        "equal_cap_over_budget": false,
+        "equal_cap_rendered_chars": 760,
+        "equal_cap_retained_marker": false,
+        "id": "bounded_repetition_multi_passage",
+        "input_block_count": 1,
+        "v1_rendered_chars": 760,
+        "v1_retained_marker": true,
+        "v2_budget_compliant": true,
+        "v2_deterministic_five_replays": true,
+        "v2_metadata_preserved": true,
+        "v2_output_block_count": 1,
+        "v2_per_block_cap_compliant": true,
+        "v2_rendered_chars": 760,
+        "v2_retained_marker": true,
+        "v2_source_preserved": true
+      },
+      {
+        "equal_cap_over_budget": false,
+        "equal_cap_rendered_chars": 760,
+        "equal_cap_retained_marker": true,
+        "id": "fair_prefix_regression_guard",
+        "input_block_count": 1,
+        "v1_rendered_chars": 760,
+        "v1_retained_marker": false,
+        "v2_budget_compliant": true,
+        "v2_deterministic_five_replays": true,
+        "v2_metadata_preserved": true,
+        "v2_output_block_count": 1,
+        "v2_per_block_cap_compliant": true,
+        "v2_rendered_chars": 754,
+        "v2_retained_marker": true,
+        "v2_source_preserved": true
+      },
+      {
+        "equal_cap_over_budget": false,
+        "equal_cap_rendered_chars": 780,
+        "equal_cap_retained_marker": false,
+        "id": "two_distinct_anchor_regions",
+        "input_block_count": 1,
+        "v1_rendered_chars": 780,
+        "v1_retained_marker": true,
+        "v2_budget_compliant": true,
+        "v2_deterministic_five_replays": true,
+        "v2_metadata_preserved": true,
+        "v2_output_block_count": 1,
+        "v2_per_block_cap_compliant": true,
+        "v2_rendered_chars": 742,
+        "v2_retained_marker": true,
+        "v2_source_preserved": true
+      },
+      {
+        "equal_cap_over_budget": true,
+        "equal_cap_rendered_chars": 1208,
+        "equal_cap_retained_marker": false,
+        "id": "lower_rank_title_relevance",
+        "input_block_count": 5,
+        "v1_rendered_chars": 1200,
+        "v1_retained_marker": false,
+        "v2_budget_compliant": true,
+        "v2_deterministic_five_replays": true,
+        "v2_metadata_preserved": true,
+        "v2_output_block_count": 5,
+        "v2_per_block_cap_compliant": true,
+        "v2_rendered_chars": 1168,
+        "v2_retained_marker": true,
+        "v2_source_preserved": true
+      },
+      {
+        "equal_cap_over_budget": true,
+        "equal_cap_rendered_chars": 862,
+        "equal_cap_retained_marker": false,
+        "id": "exact_phrase_over_scattered_terms",
+        "input_block_count": 2,
+        "v1_rendered_chars": 773,
+        "v1_retained_marker": true,
+        "v2_budget_compliant": true,
+        "v2_deterministic_five_replays": true,
+        "v2_metadata_preserved": true,
+        "v2_output_block_count": 2,
+        "v2_per_block_cap_compliant": true,
+        "v2_rendered_chars": 833,
+        "v2_retained_marker": true,
+        "v2_source_preserved": true
+      },
+      {
+        "equal_cap_over_budget": false,
+        "equal_cap_rendered_chars": 720,
+        "equal_cap_retained_marker": false,
+        "id": "unicode_entity_and_marker",
+        "input_block_count": 1,
+        "v1_rendered_chars": 718,
+        "v1_retained_marker": true,
+        "v2_budget_compliant": true,
+        "v2_deterministic_five_replays": true,
+        "v2_metadata_preserved": true,
+        "v2_output_block_count": 1,
+        "v2_per_block_cap_compliant": true,
+        "v2_rendered_chars": 692,
+        "v2_retained_marker": true,
+        "v2_source_preserved": true
+      },
+      {
+        "equal_cap_over_budget": false,
+        "equal_cap_rendered_chars": 740,
+        "equal_cap_retained_marker": false,
+        "id": "hyphenated_identifier_and_number",
+        "input_block_count": 1,
+        "v1_rendered_chars": 740,
+        "v1_retained_marker": true,
+        "v2_budget_compliant": true,
+        "v2_deterministic_five_replays": true,
+        "v2_metadata_preserved": true,
+        "v2_output_block_count": 1,
+        "v2_per_block_cap_compliant": true,
+        "v2_rendered_chars": 706,
+        "v2_retained_marker": true,
+        "v2_source_preserved": true
+      },
+      {
+        "equal_cap_over_budget": false,
+        "equal_cap_rendered_chars": 700,
+        "equal_cap_retained_marker": true,
+        "id": "no_anchor_quarter_fallback",
+        "input_block_count": 1,
+        "v1_rendered_chars": 700,
+        "v1_retained_marker": false,
+        "v2_budget_compliant": true,
+        "v2_deterministic_five_replays": true,
+        "v2_metadata_preserved": true,
+        "v2_output_block_count": 1,
+        "v2_per_block_cap_compliant": true,
+        "v2_rendered_chars": 699,
+        "v2_retained_marker": true,
+        "v2_source_preserved": true
+      },
+      {
+        "equal_cap_over_budget": true,
+        "equal_cap_rendered_chars": 821,
+        "equal_cap_retained_marker": false,
+        "id": "long_headers_exact_budget",
+        "input_block_count": 2,
+        "v1_rendered_chars": 816,
+        "v1_retained_marker": true,
+        "v2_budget_compliant": true,
+        "v2_deterministic_five_replays": true,
+        "v2_metadata_preserved": true,
+        "v2_output_block_count": 2,
+        "v2_per_block_cap_compliant": true,
+        "v2_rendered_chars": 791,
+        "v2_retained_marker": true,
+        "v2_source_preserved": true
+      },
+      {
+        "equal_cap_over_budget": true,
+        "equal_cap_rendered_chars": 1505,
+        "equal_cap_retained_marker": false,
+        "id": "many_blocks_relevance_allocation",
+        "input_block_count": 6,
+        "v1_rendered_chars": 1460,
+        "v1_retained_marker": false,
+        "v2_budget_compliant": true,
+        "v2_deterministic_five_replays": true,
+        "v2_metadata_preserved": true,
+        "v2_output_block_count": 6,
+        "v2_per_block_cap_compliant": true,
+        "v2_rendered_chars": 1437,
+        "v2_retained_marker": true,
+        "v2_source_preserved": true
+      },
+      {
+        "equal_cap_over_budget": false,
+        "equal_cap_rendered_chars": 187,
+        "equal_cap_retained_marker": true,
+        "id": "short_evidence_no_compaction",
+        "input_block_count": 2,
+        "v1_rendered_chars": 187,
+        "v1_retained_marker": true,
+        "v2_budget_compliant": true,
+        "v2_deterministic_five_replays": true,
+        "v2_metadata_preserved": true,
+        "v2_output_block_count": 2,
+        "v2_per_block_cap_compliant": true,
+        "v2_rendered_chars": 187,
+        "v2_retained_marker": true,
+        "v2_source_preserved": true
+      },
+      {
+        "equal_cap_over_budget": false,
+        "equal_cap_rendered_chars": 558,
+        "equal_cap_retained_marker": false,
+        "id": "empty_block_filtered",
+        "input_block_count": 2,
+        "v1_rendered_chars": 700,
+        "v1_retained_marker": false,
+        "v2_budget_compliant": true,
+        "v2_deterministic_five_replays": true,
+        "v2_metadata_preserved": true,
+        "v2_output_block_count": 1,
+        "v2_per_block_cap_compliant": true,
+        "v2_rendered_chars": 805,
+        "v2_retained_marker": true,
+        "v2_source_preserved": true
+      }
+    ],
+    "paired_v2_vs_equal_cap": {
+      "baseline_wins": 0,
+      "candidate_wins": 9,
+      "net_gain": 9,
+      "shared_hits": 3,
+      "shared_misses": 0
+    },
+    "paired_v2_vs_v1": {
+      "baseline_wins": 0,
+      "candidate_wins": 5,
+      "net_gain": 5,
+      "shared_hits": 7,
+      "shared_misses": 0
+    },
+    "v1_hits": 7,
+    "v2_hits": 12
+  },
+  "protocol": {
+    "candidate_family": "fair_prefix_rarity_passage_pack_v2",
+    "candidate_path": "benchmarks/phase11_8_8_projection_candidate.py",
+    "candidate_sha256": "117968687a0c0c150acef42f997967d10b04006d14ed0efa9de87c9c08b1909e",
+    "fixture_path": "benchmarks/data/phase11_8_8_offline_projection_fixtures_v1.json",
+    "fixture_replays": 5,
+    "fixture_sha256": "8955ac33c89c2e16a474182c14eac8df5acaf649642f4dd90a313cf6227db614",
+    "future_runner_path": "benchmarks/run_phase11_8_8_projection_calibration.py",
+    "future_runner_sha256": "80643144da925c4b9b2d4e106a6c779ce2e6c4cf33ae5470fffe53de5a314c63",
+    "path": "docs/benchmark-protocol-v23.md",
+    "projection_inputs": [
+      "question",
+      "selected_evidence",
+      "budget_chars",
+      "max_block_chars",
+      "min_block_chars"
+    ],
+    "reference_answer_or_sentinel_passed_to_projector": false,
+    "sha256": "11a8fe99a3e418eb4161978928f2d682a2adcf6b59b3bcc7b7641c26b601a653"
+  },
+  "schema_version": 1,
+  "source": {
+    "historical_phase11_8_3": {
+      "candidate_passed": false,
+      "equal_cap_proxy_hits": 17,
+      "gate_count": 14,
+      "gate_passes": 10,
+      "phase11_9_protocol_may_be_frozen": false,
+      "release_decision": "no-go",
+      "selected_evidence_proxy_hits": 19,
+      "v1_proxy_hits": 17
+    },
+    "historical_result_changed": false
+  },
+  "task_type": "synthetic offline answer-blind projection engineering",
+  "traffic": {
+    "fallback_requests": 0,
+    "gemini_requests": 0,
+    "model_calls": 0,
+    "network_requests": 0,
+    "provider_calls": 0,
+    "repair_requests": 0,
+    "retries": 0,
+    "search_calls": 0,
+    "secrets_bound": 0,
+    "tavily_requests": 0
+  },
+  "warnings": [
+    "The 12 fixtures were authored after the historical failure and prove engineering invariants only, not real-case quality.",
+    "Historical selected evidence covered only 19/24 cases, so the old 20/24 projection floor was unreachable on that packet.",
+    "A future run would use new, non-deterministic Tavily packets. Only within-run paired projection comparisons would be causal."
+  ]
+}

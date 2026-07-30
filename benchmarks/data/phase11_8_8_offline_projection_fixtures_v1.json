@@ -1,0 +1,340 @@
+{
+  "benchmark": "evidencemesh-phase11-8-8-offline-projection-fixtures-v1",
+  "authored_after_phase11_8": true,
+  "contains_phase11_7_or_phase12_content": false,
+  "predictive_quality_claim_allowed": false,
+  "projection_defaults": {
+    "budget_chars": 960,
+    "max_block_chars": 720,
+    "min_block_chars": 128
+  },
+  "cases": [
+    {
+      "id": "bounded_repetition_multi_passage",
+      "question": "Who founded the Helios Archive?",
+      "marker": "Mara Okon",
+      "budget_chars": 760,
+      "blocks": [
+        {
+          "citation_id": "S1",
+          "title": "Helios Archive chronology",
+          "url": "https://example.test/helios/chronology",
+          "providers": ["tavily"],
+          "text_parts": [
+            {"repeat": "Helios Archive founded index. ", "count": 12},
+            {"repeat": "intermediate catalogue material ", "count": 42},
+            {"literal": "The Helios Archive was founded by Mara Okon."},
+            {"repeat": " later administrative record", "count": 34}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fair_prefix_regression_guard",
+      "question": "Where is the Ionia observatory located?",
+      "marker": "Nera Plateau",
+      "budget_chars": 760,
+      "blocks": [
+        {
+          "citation_id": "S1",
+          "title": "Ionia observatory register",
+          "url": "https://example.test/ionia/register",
+          "providers": ["tavily"],
+          "text_parts": [
+            {"repeat": "opening catalogue ", "count": 10},
+            {"literal": "Official site: Nera Plateau."},
+            {"repeat": " neutral administrative detail", "count": 28},
+            {"repeat": " Ionia observatory located directory", "count": 12},
+            {"repeat": " closing appendix", "count": 38}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "two_distinct_anchor_regions",
+      "question": "Which alloy is used by the Novus bridge?",
+      "marker": "alloy QN-7",
+      "budget_chars": 780,
+      "blocks": [
+        {
+          "citation_id": "S1",
+          "title": "Novus bridge materials",
+          "url": "https://example.test/novus/materials",
+          "providers": ["tavily"],
+          "text_parts": [
+            {"repeat": "Novus bridge alloy reference. ", "count": 11},
+            {"repeat": "structural background ", "count": 45},
+            {"literal": "The Novus bridge uses alloy QN-7 for its main span."},
+            {"repeat": " inspection appendix", "count": 35}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lower_rank_title_relevance",
+      "question": "Where is the Caldera observatory located?",
+      "marker": "Nera Plateau",
+      "budget_chars": 1200,
+      "min_block_chars": 96,
+      "blocks": [
+        {
+          "citation_id": "S1",
+          "title": "Astronomy overview",
+          "url": "https://example.test/astronomy",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "general astronomy material ", "count": 40}]
+        },
+        {
+          "citation_id": "S2",
+          "title": "Regional weather",
+          "url": "https://example.test/weather",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "regional weather observation ", "count": 38}]
+        },
+        {
+          "citation_id": "S3",
+          "title": "Telescope catalogue",
+          "url": "https://example.test/telescopes",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "telescope catalogue entry ", "count": 38}]
+        },
+        {
+          "citation_id": "S4",
+          "title": "Plateau directory",
+          "url": "https://example.test/plateaus",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "plateau directory entry ", "count": 38}]
+        },
+        {
+          "citation_id": "S5",
+          "title": "Caldera observatory location record",
+          "url": "https://example.test/caldera/location",
+          "providers": ["tavily"],
+          "text_parts": [
+            {"repeat": "site background ", "count": 25},
+            {"literal": "Caldera observatory field record "},
+            {"repeat": "detail ", "count": 7},
+            {"literal": "Nera Plateau"},
+            {"repeat": " access note", "count": 42}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "exact_phrase_over_scattered_terms",
+      "question": "Who directs the Orbis Research Laboratory?",
+      "marker": "Dara Mensah",
+      "budget_chars": 860,
+      "blocks": [
+        {
+          "citation_id": "S1",
+          "title": "Research directory",
+          "url": "https://example.test/research/directory",
+          "providers": ["tavily"],
+          "text_parts": [
+            {"repeat": "Orbis general research laboratory directs listing ", "count": 15},
+            {"repeat": "unrelated directory material ", "count": 35}
+          ]
+        },
+        {
+          "citation_id": "S2",
+          "title": "Orbis Research Laboratory",
+          "url": "https://example.test/orbis/lab",
+          "providers": ["tavily"],
+          "text_parts": [
+            {"repeat": "institutional background ", "count": 24},
+            {"literal": "The Orbis Research Laboratory is directed by Dara Mensah."},
+            {"repeat": " programme summary", "count": 28}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unicode_entity_and_marker",
+      "question": "Who designed Théâtre Élan?",
+      "marker": "Anaïs Koffi",
+      "budget_chars": 720,
+      "blocks": [
+        {
+          "citation_id": "S1",
+          "title": "Théâtre Élan architecture",
+          "url": "https://example.test/theatre-elan",
+          "providers": ["tavily"],
+          "text_parts": [
+            {"repeat": "Théâtre Élan design archive. ", "count": 9},
+            {"repeat": "patrimoine culturel ", "count": 36},
+            {"literal": "Théâtre Élan was designed by Anaïs Koffi."},
+            {"repeat": " dossier technique", "count": 34}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hyphenated_identifier_and_number",
+      "question": "What is the QN-7 protocol version?",
+      "marker": "version 7.4",
+      "budget_chars": 740,
+      "blocks": [
+        {
+          "citation_id": "S1",
+          "title": "QN-7 protocol revisions",
+          "url": "https://example.test/qn-7/revisions",
+          "providers": ["tavily"],
+          "text_parts": [
+            {"repeat": "QN-7 protocol version index. ", "count": 10},
+            {"repeat": "revision background ", "count": 38},
+            {"literal": "The current QN-7 protocol is version 7.4."},
+            {"repeat": " compatibility appendix", "count": 32}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "no_anchor_quarter_fallback",
+      "question": "What identifier is requested?",
+      "marker": "ZX-2048",
+      "budget_chars": 700,
+      "blocks": [
+        {
+          "citation_id": "S1",
+          "title": "Registry extract",
+          "url": "https://example.test/registry/extract",
+          "providers": ["tavily"],
+          "text_parts": [
+            {"repeat": "neutral opening material ", "count": 19},
+            {"literal": "Recorded value: ZX-2048."},
+            {"repeat": "neutral middle material ", "count": 52},
+            {"repeat": "neutral closing material ", "count": 28}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "long_headers_exact_budget",
+      "question": "What powers the Aster beacon?",
+      "marker": "solar cells",
+      "budget_chars": 820,
+      "blocks": [
+        {
+          "citation_id": "S1",
+          "title": "Aster beacon engineering specification and maintenance reference",
+          "url": "https://example.test/engineering/aster/beacon/specification/version-one",
+          "providers": ["tavily"],
+          "text_parts": [
+            {"repeat": "engineering background ", "count": 28},
+            {"literal": "The Aster beacon is powered by solar cells."},
+            {"repeat": " maintenance note", "count": 25}
+          ]
+        },
+        {
+          "citation_id": "S2",
+          "title": "Navigation beacon component catalogue and compatibility matrix",
+          "url": "https://example.test/catalogue/navigation/beacons/components/version-one",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "component catalogue material ", "count": 34}]
+        }
+      ]
+    },
+    {
+      "id": "many_blocks_relevance_allocation",
+      "question": "Which language does Project Selene use?",
+      "marker": "LumaScript",
+      "budget_chars": 1500,
+      "min_block_chars": 96,
+      "blocks": [
+        {
+          "citation_id": "S1",
+          "title": "General software index",
+          "url": "https://example.test/software/one",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "software index material ", "count": 42}]
+        },
+        {
+          "citation_id": "S2",
+          "title": "Programming overview",
+          "url": "https://example.test/software/two",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "programming overview material ", "count": 38}]
+        },
+        {
+          "citation_id": "S3",
+          "title": "Language catalogue",
+          "url": "https://example.test/software/three",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "language catalogue material ", "count": 40}]
+        },
+        {
+          "citation_id": "S4",
+          "title": "Repository directory",
+          "url": "https://example.test/software/four",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "repository directory material ", "count": 40}]
+        },
+        {
+          "citation_id": "S5",
+          "title": "Build systems",
+          "url": "https://example.test/software/five",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "build system material ", "count": 44}]
+        },
+        {
+          "citation_id": "S6",
+          "title": "Project Selene language reference",
+          "url": "https://example.test/selene/language",
+          "providers": ["tavily"],
+          "text_parts": [
+            {"repeat": "project documentation ", "count": 25},
+            {"literal": "Project Selene uses LumaScript."},
+            {"repeat": " implementation note", "count": 30}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "short_evidence_no_compaction",
+      "question": "Who leads the Vega Unit?",
+      "marker": "Sira Bello",
+      "blocks": [
+        {
+          "citation_id": "S1",
+          "title": "Vega Unit",
+          "url": "https://example.test/vega",
+          "providers": ["tavily"],
+          "text_parts": [{"literal": "The Vega Unit is led by Sira Bello."}]
+        },
+        {
+          "citation_id": "S2",
+          "title": "Units directory",
+          "url": "https://example.test/units",
+          "providers": ["tavily"],
+          "text_parts": [{"literal": "A directory of operating units."}]
+        }
+      ]
+    },
+    {
+      "id": "empty_block_filtered",
+      "question": "When was the Meridian collection opened?",
+      "marker": "17 March 1984",
+      "blocks": [
+        {
+          "citation_id": "S1",
+          "title": "Empty source",
+          "url": "https://example.test/empty",
+          "providers": ["tavily"],
+          "text_parts": [{"literal": "   "}]
+        },
+        {
+          "citation_id": "S2",
+          "title": "Meridian collection history",
+          "url": "https://example.test/meridian/history",
+          "providers": ["tavily"],
+          "text_parts": [
+            {"repeat": "collection history ", "count": 26},
+            {"literal": "The Meridian collection opened on 17 March 1984."},
+            {"repeat": " archive note", "count": 24}
+          ]
+        }
+      ]
+    }
+  ]
+}

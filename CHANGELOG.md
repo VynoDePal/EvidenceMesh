@@ -353,3 +353,17 @@ All notable changes to EvidenceMesh are documented here.
   network, provider, model, secret, retry, fallback or repair activity.
   Historical results and product defaults remain unchanged; future live work,
   Phase 11.9, Phase 12, merge, release and superiority claims remain blocked.
+- Locked Phase 11.8.8 as a zero-traffic projection-recovery phase with the
+  answer-blind, source-preserving `fair_prefix_rarity_passage_pack_v2`
+  projector, adversarial fixtures, a check-only-by-default future calibration
+  runner and a read-only workflow containing no secret or live job.
+- Recorded a reproducible 14/14 offline engineering pass. On twelve
+  post-observation synthetic fixtures, equal-cap retained 3/12 authored
+  markers, v1 retained 7/12 and v2 retained 12/12 with exact v2 budgets,
+  source/metadata preservation and five deterministic replays in every case.
+  These authored scores do not prove real-case quality.
+- Separated the retrieval ceiling from projection retention: Phase 11.8.3
+  remains failed at 10/14 with 19/24 selected-evidence proxy coverage and
+  17/24 for both historical projectors. Any future Tavily-only calibration
+  requires a new explicit authorization, while Phase 11.9, Phase 12, product
+  changes, merge, release and superiority claims remain blocked.
