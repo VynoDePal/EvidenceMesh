@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 from pathlib import Path
 
+import httpx
 import pytest
 from conftest import StaticFetcher, StaticProvider
 from pydantic import ValidationError
@@ -300,8 +301,37 @@ async def test_search_enforces_provider_total_deadline(settings) -> None:
     response = await engine.search(SearchRequest(query="deadline test", use_cache=False))
     assert response.results == []
     assert "request deadline" in response.metadata.provider_failures["slow:deadline test"]
+    assert response.metadata.provider_failure_kind_counts == {"slow": {"provider_wall_timeout": 1}}
     assert "partial results" in response.warnings[0]
     await engine.aclose()
+
+
+@pytest.mark.asyncio
+async def test_owned_client_uses_layered_provider_transport_timeouts(settings) -> None:
+    engine = EvidenceMesh(settings, providers=[StaticProvider("static")])
+
+    assert engine.client.timeout.connect == 5.0
+    assert engine.client.timeout.read == 12.0
+    assert engine.client.timeout.write == 10.0
+    assert engine.client.timeout.pool == 5.0
+    await engine.aclose()
+
+
+@pytest.mark.asyncio
+async def test_supplied_client_timeout_policy_is_not_mutated(settings) -> None:
+    supplied_timeout = httpx.Timeout(connect=2.0, read=3.0, write=4.0, pool=1.0)
+    async with httpx.AsyncClient(timeout=supplied_timeout) as client:
+        engine = EvidenceMesh(
+            settings,
+            providers=[StaticProvider("static")],
+            client=client,
+        )
+
+        assert client.timeout.connect == 2.0
+        assert client.timeout.read == 3.0
+        assert client.timeout.write == 4.0
+        assert client.timeout.pool == 1.0
+        await engine.aclose()
 
 
 @pytest.mark.asyncio

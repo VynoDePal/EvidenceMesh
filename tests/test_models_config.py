@@ -112,6 +112,11 @@ def test_settings_from_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> N
     monkeypatch.setenv("EVIDENCEMESH_MAX_CONCURRENCY", "3")
     monkeypatch.setenv("EVIDENCEMESH_PROVIDER_FAILURE_THRESHOLD", "4")
     monkeypatch.setenv("EVIDENCEMESH_PROVIDER_RECOVERY_SECONDS", "45")
+    monkeypatch.setenv("EVIDENCEMESH_REQUEST_TIMEOUT", "25")
+    monkeypatch.setenv("EVIDENCEMESH_PROVIDER_CONNECT_TIMEOUT", "4")
+    monkeypatch.setenv("EVIDENCEMESH_PROVIDER_READ_TIMEOUT", "20")
+    monkeypatch.setenv("EVIDENCEMESH_PROVIDER_WRITE_TIMEOUT", "9")
+    monkeypatch.setenv("EVIDENCEMESH_PROVIDER_POOL_TIMEOUT", "3")
     monkeypatch.setenv("EVIDENCEMESH_DNS_TIMEOUT", "4")
     monkeypatch.setenv("EVIDENCEMESH_MAX_PDF_PAGES", "25")
     monkeypatch.setenv(
@@ -131,6 +136,11 @@ def test_settings_from_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> N
     assert settings.max_concurrency == 3
     assert settings.provider_failure_threshold == 4
     assert settings.provider_recovery_seconds == 45
+    assert settings.request_timeout_seconds == 25
+    assert settings.provider_connect_timeout_seconds == 4
+    assert settings.provider_read_timeout_seconds == 20
+    assert settings.provider_write_timeout_seconds == 9
+    assert settings.provider_pool_timeout_seconds == 3
     assert settings.dns_timeout_seconds == 4
     assert settings.max_pdf_pages == 25
     assert settings.searxng_fallback_urls == [
@@ -147,6 +157,32 @@ def test_settings_from_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> N
 def test_settings_reject_unknown_provider() -> None:
     with pytest.raises(ValidationError, match="unknown providers"):
         Settings(enabled_providers=["unknown"])
+
+
+def test_settings_default_provider_timeout_policy_is_layered() -> None:
+    settings = Settings(enabled_providers=[])
+    assert settings.request_timeout_seconds == 15.0
+    assert settings.provider_connect_timeout_seconds == 5.0
+    assert settings.provider_read_timeout_seconds == 12.0
+    assert settings.provider_write_timeout_seconds == 10.0
+    assert settings.provider_pool_timeout_seconds == 5.0
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("provider_connect_timeout_seconds", 15.0),
+        ("provider_read_timeout_seconds", 15.0),
+        ("provider_write_timeout_seconds", 16.0),
+        ("provider_pool_timeout_seconds", 20.0),
+    ],
+)
+def test_settings_require_wall_timeout_above_every_transport_timeout(
+    field: str,
+    value: float,
+) -> None:
+    with pytest.raises(ValidationError, match="must be greater than every provider transport"):
+        Settings(enabled_providers=[], **{field: value})
 
 
 @pytest.mark.parametrize(

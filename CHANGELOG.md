@@ -341,3 +341,15 @@ All notable changes to EvidenceMesh are documented here.
   weakening either gate. Phase 11.8.5 remains failed at 8/12, broader quality
   evidence keeps release no-go, and no rerun, Phase 11.9, Phase 12, merge or
   superiority claim is authorized.
+- Applied the Phase 11.8.6 timeout taxonomy to the SDK and MCP runtime. Owned
+  HTTPX clients now use explicit 5-second connect, 12-second read, 10-second
+  write and 5-second pool deadlines under the existing 15-second provider wall
+  deadline.
+- Added fail-closed layered-timeout validation and environment overrides while
+  preserving caller-supplied HTTPX timeout settings. Runtime telemetry now
+  distinguishes connect, read, write, pool, generic HTTPX and provider-wall
+  timeout kinds without retaining private request or exception data.
+- Recorded a reproducible Phase 11.8.7 12/12 offline engineering pass with zero
+  network, provider, model, secret, retry, fallback or repair activity.
+  Historical results and product defaults remain unchanged; future live work,
+  Phase 11.9, Phase 12, merge, release and superiority claims remain blocked.

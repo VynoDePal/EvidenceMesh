@@ -103,7 +103,12 @@ class EvidenceMesh:
         supplied_client = client
         self._owns_client = client is None
         self.client = client or httpx.AsyncClient(
-            timeout=httpx.Timeout(self.settings.request_timeout_seconds),
+            timeout=httpx.Timeout(
+                connect=self.settings.provider_connect_timeout_seconds,
+                read=self.settings.provider_read_timeout_seconds,
+                write=self.settings.provider_write_timeout_seconds,
+                pool=self.settings.provider_pool_timeout_seconds,
+            ),
             headers={"User-Agent": self.settings.user_agent},
             follow_redirects=False,
         )
@@ -186,7 +191,7 @@ class EvidenceMesh:
             await self._provider_circuits.record_failure(permit)
             raise ProviderError(
                 f"{provider.name} exceeded the configured request deadline",
-                kind="timeout",
+                kind="provider_wall_timeout",
             ) from exc
         except Exception:
             await self._provider_circuits.record_failure(permit)

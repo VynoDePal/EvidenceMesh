@@ -70,6 +70,10 @@ class Settings(BaseModel):
     search_cache_ttl_seconds: int = Field(default=3_600, ge=0, le=604_800)
     document_cache_ttl_seconds: int = Field(default=86_400, ge=0, le=2_592_000)
     request_timeout_seconds: float = Field(default=15.0, ge=1.0, le=120.0)
+    provider_connect_timeout_seconds: float = Field(default=5.0, gt=0.0, le=120.0)
+    provider_read_timeout_seconds: float = Field(default=12.0, gt=0.0, le=120.0)
+    provider_write_timeout_seconds: float = Field(default=10.0, gt=0.0, le=120.0)
+    provider_pool_timeout_seconds: float = Field(default=5.0, gt=0.0, le=120.0)
     provider_failure_threshold: int = Field(default=3, ge=1, le=20)
     provider_recovery_seconds: float = Field(default=60.0, ge=1.0, le=3_600.0)
     fetch_timeout_seconds: float = Field(default=20.0, ge=1.0, le=120.0)
@@ -177,6 +181,25 @@ class Settings(BaseModel):
         normalised = value.strip().lower()
         return normalised or None
 
+    @model_validator(mode="after")
+    def validate_provider_timeout_policy(self) -> Settings:
+        transport_timeouts = {
+            "connect": self.provider_connect_timeout_seconds,
+            "read": self.provider_read_timeout_seconds,
+            "write": self.provider_write_timeout_seconds,
+            "pool": self.provider_pool_timeout_seconds,
+        }
+        longest_layer, longest_timeout = max(
+            transport_timeouts.items(),
+            key=lambda item: item[1],
+        )
+        if self.request_timeout_seconds <= longest_timeout:
+            raise ValueError(
+                "request_timeout_seconds must be greater than every provider transport "
+                f"timeout; {longest_layer} is {longest_timeout:g}s"
+            )
+        return self
+
     @classmethod
     def from_env(cls, **overrides: Any) -> Settings:
         providers = os.getenv("EVIDENCEMESH_PROVIDERS")
@@ -261,6 +284,22 @@ class Settings(BaseModel):
             "EVIDENCEMESH_SEARCH_CACHE_TTL": ("search_cache_ttl_seconds", int),
             "EVIDENCEMESH_DOCUMENT_CACHE_TTL": ("document_cache_ttl_seconds", int),
             "EVIDENCEMESH_REQUEST_TIMEOUT": ("request_timeout_seconds", float),
+            "EVIDENCEMESH_PROVIDER_CONNECT_TIMEOUT": (
+                "provider_connect_timeout_seconds",
+                float,
+            ),
+            "EVIDENCEMESH_PROVIDER_READ_TIMEOUT": (
+                "provider_read_timeout_seconds",
+                float,
+            ),
+            "EVIDENCEMESH_PROVIDER_WRITE_TIMEOUT": (
+                "provider_write_timeout_seconds",
+                float,
+            ),
+            "EVIDENCEMESH_PROVIDER_POOL_TIMEOUT": (
+                "provider_pool_timeout_seconds",
+                float,
+            ),
             "EVIDENCEMESH_PROVIDER_FAILURE_THRESHOLD": (
                 "provider_failure_threshold",
                 int,

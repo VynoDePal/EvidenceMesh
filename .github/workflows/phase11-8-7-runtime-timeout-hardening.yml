@@ -1,0 +1,146 @@
+name: Phase 11.8.7 Offline Runtime Timeout Hardening
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - .github/workflows/phase11-8-7-runtime-timeout-hardening.yml
+      - benchmarks/run_phase11_8_7_offline_runtime_timeout_hardening.py
+      - benchmarks/results/phase11_8_6_offline_timeout_diagnostic_2026-07-30.json
+      - benchmarks/results/phase11_8_7_offline_runtime_timeout_hardening_2026-07-30.json
+      - benchmarks/results/phase11_8_7_offline_runtime_timeout_hardening_2026-07-30.md
+      - docs/benchmark-protocol-v22.md
+      - docs/providers.md
+      - README.md
+      - src/evidencemesh/config.py
+      - src/evidencemesh/engine.py
+      - src/evidencemesh/telemetry.py
+      - tests/test_engine_query_benchmark.py
+      - tests/test_models_config.py
+      - tests/test_phase11_8_7_runtime_timeout_hardening.py
+      - tests/test_provider_observability.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase11-8-7-runtime-timeout-hardening-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  offline-runtime-timeout-hardening:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Verify immutable protocol, runtime and history
+        run: |
+          echo \
+            "e786b5b4f7ade79d40dc81ffab3a20bd0a09ffe45c7b5a8765155519e2cd1dbe  docs/benchmark-protocol-v22.md" \
+            | sha256sum --check
+          echo \
+            "e344e269ddef8f703d8e346e0fd6e9d98367b4d734d8155db24908a0e90bae40  src/evidencemesh/config.py" \
+            | sha256sum --check
+          echo \
+            "8e0d9003ee38c2f776547913ce8ddfeb7d80e334b5eb210e124b78eafdd57795  src/evidencemesh/engine.py" \
+            | sha256sum --check
+          echo \
+            "9f485c442a3c7e6d6fa2702b8089dd6d7fec57db9fdc4cda9dd05091e69046b4  src/evidencemesh/telemetry.py" \
+            | sha256sum --check
+          echo \
+            "72635a442aa4062f6588e5f7fcaec49abb68de52dc8da96f790fd88b55602207  benchmarks/results/phase11_8_6_offline_timeout_diagnostic_2026-07-30.json" \
+            | sha256sum --check
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install locked test environment
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Reproduce committed offline result
+        run: |
+          uv run python \
+            benchmarks/run_phase11_8_7_offline_runtime_timeout_hardening.py \
+            --output /tmp/phase11_8_7_runtime_timeout_hardening.json
+          cmp \
+            /tmp/phase11_8_7_runtime_timeout_hardening.json \
+            benchmarks/results/phase11_8_7_offline_runtime_timeout_hardening_2026-07-30.json
+
+      - name: Validate zero-traffic and release boundaries
+        run: |
+          uv run python - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = json.loads(
+              Path(
+                  "benchmarks/results/"
+                  "phase11_8_7_offline_runtime_timeout_hardening_2026-07-30.json"
+              ).read_bytes()
+          )
+          assert report["benchmark"] == (
+              "evidencemesh-phase11-8-7-offline-runtime-timeout-hardening-v1"
+          )
+          assert len(report["gates"]) == 12
+          assert all(gate["passed"] for gate in report["gates"].values())
+          assert report["traffic"] == {
+              "network_requests": 0,
+              "provider_calls": 0,
+              "model_calls": 0,
+              "secrets_bound": 0,
+              "tavily_requests": 0,
+              "gemini_requests": 0,
+              "retries": 0,
+              "fallback_requests": 0,
+              "repair_requests": 0,
+          }
+          decision = report["decision"]
+          assert decision["phase11_8_7_runtime_timeout_hardening_passed"] is True
+          assert decision["historical_phase11_8_6_result_changed"] is False
+          assert decision["future_live_run_authorized"] is False
+          assert decision["phase11_9_protocol_may_be_frozen"] is False
+          assert decision["phase12_authorized"] is False
+          assert decision["merge_allowed"] is False
+          assert decision["release_allowed"] is False
+          assert decision["release_decision"] == "no-go"
+          PY
+
+      - name: Run runtime tests and static checks
+        run: |
+          uv run pytest \
+            tests/test_models_config.py \
+            tests/test_provider_observability.py \
+            tests/test_engine_query_benchmark.py \
+            tests/test_phase11_8_7_runtime_timeout_hardening.py \
+            -q
+          uv run ruff check \
+            src/evidencemesh/config.py \
+            src/evidencemesh/engine.py \
+            src/evidencemesh/telemetry.py \
+            benchmarks/run_phase11_8_7_offline_runtime_timeout_hardening.py \
+            tests/test_models_config.py \
+            tests/test_provider_observability.py \
+            tests/test_engine_query_benchmark.py \
+            tests/test_phase11_8_7_runtime_timeout_hardening.py
+          uv run ruff format --check \
+            src/evidencemesh/config.py \
+            src/evidencemesh/engine.py \
+            src/evidencemesh/telemetry.py \
+            benchmarks/run_phase11_8_7_offline_runtime_timeout_hardening.py \
+            tests/test_models_config.py \
+            tests/test_provider_observability.py \
+            tests/test_engine_query_benchmark.py \
+            tests/test_phase11_8_7_runtime_timeout_hardening.py
+          uv run mypy src/evidencemesh

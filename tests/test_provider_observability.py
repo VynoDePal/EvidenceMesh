@@ -115,7 +115,7 @@ async def test_timeout_without_response_is_counted_as_one_http_failure(settings)
         )
         telemetry = response.metadata.provider_network_telemetry["mwmbl"]
 
-        assert response.metadata.provider_failure_kind_counts == {"mwmbl": {"timeout": 1}}
+        assert response.metadata.provider_failure_kind_counts == {"mwmbl": {"read_timeout": 1}}
         assert telemetry.adapter_invocations == 1
         assert telemetry.http_attempts == 1
         assert telemetry.http_responses == 0
@@ -140,6 +140,56 @@ def test_dns_and_connection_failures_have_distinct_sanitized_classes() -> None:
         ).kind
         == "connection_error"
     )
+
+
+@pytest.mark.parametrize(
+    ("exception_type", "expected_kind"),
+    [
+        (httpx.ConnectTimeout, "connect_timeout"),
+        (httpx.ReadTimeout, "read_timeout"),
+        (httpx.WriteTimeout, "write_timeout"),
+        (httpx.PoolTimeout, "pool_timeout"),
+        (httpx.TimeoutException, "httpx_timeout_unknown"),
+    ],
+)
+def test_httpx_timeouts_have_precise_privacy_safe_classes(
+    exception_type: type[httpx.TimeoutException],
+    expected_kind: str,
+) -> None:
+    private_url = "https://private.invalid/path?credential=private"
+    error = exception_type(
+        "private headers, body and provider response",
+        request=httpx.Request("POST", private_url),
+    )
+    classification = classify_provider_failure(error)
+    rendered = json.dumps(
+        {
+            "kind": classification.kind,
+            "http_status": classification.http_status,
+        }
+    )
+
+    assert classification.kind == expected_kind
+    assert classification.http_status is None
+    assert private_url not in rendered
+    assert "private headers" not in rendered
+
+
+def test_builtin_timeout_is_the_provider_wall_timeout() -> None:
+    classification = classify_provider_failure(TimeoutError("private wall detail"))
+    assert classification.kind == "provider_wall_timeout"
+    assert classification.http_status is None
+
+
+def test_specific_timeout_cause_survives_generic_provider_wrapper() -> None:
+    request = httpx.Request("GET", ENDPOINT)
+    try:
+        raise httpx.PoolTimeout("private pool detail", request=request)
+    except httpx.PoolTimeout as cause:
+        wrapped = ProviderError("sanitized")
+        wrapped.__cause__ = cause
+
+    assert classify_provider_failure(wrapped).kind == "pool_timeout"
 
 
 @pytest.mark.asyncio

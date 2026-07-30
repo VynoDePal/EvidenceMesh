@@ -318,6 +318,30 @@ export EVIDENCEMESH_PROVIDER_FAILURE_THRESHOLD=3
 export EVIDENCEMESH_PROVIDER_RECOVERY_SECONDS=60
 ```
 
+Provider searches also use a layered timeout policy:
+
+```bash
+export EVIDENCEMESH_REQUEST_TIMEOUT=15
+export EVIDENCEMESH_PROVIDER_CONNECT_TIMEOUT=5
+export EVIDENCEMESH_PROVIDER_READ_TIMEOUT=12
+export EVIDENCEMESH_PROVIDER_WRITE_TIMEOUT=10
+export EVIDENCEMESH_PROVIDER_POOL_TIMEOUT=5
+```
+
+The request timeout is an outer wall deadline covering the concurrency queue and
+adapter invocation. It must be strictly greater than each positive HTTPX
+transport deadline; invalid combinations fail configuration validation before
+traffic. These transport values apply only when EvidenceMesh owns the shared
+HTTPX client. A caller-supplied client keeps its configured timeout policy and
+ownership.
+
+Public failure telemetry distinguishes `connect_timeout`, `read_timeout`,
+`write_timeout`, `pool_timeout`, the bounded `httpx_timeout_unknown` fallback and
+`provider_wall_timeout`. DNS errors and explicit provider failure kinds keep
+precedence. Raw exception messages, URLs, headers, bodies and responses are
+discarded. The document fetcher's DNS, fetch and extraction limits remain
+separate.
+
 The `health` tool reports each provider's current state, failure count and
 remaining recovery delay without making a network request.
 

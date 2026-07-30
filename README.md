@@ -175,6 +175,11 @@ export EVIDENCEMESH_YACY_URL=http://127.0.0.1:8090
 export EVIDENCEMESH_YACY_RESOURCE=local
 export EVIDENCEMESH_PROVIDER_FAILURE_THRESHOLD=3
 export EVIDENCEMESH_PROVIDER_RECOVERY_SECONDS=60
+export EVIDENCEMESH_REQUEST_TIMEOUT=15
+export EVIDENCEMESH_PROVIDER_CONNECT_TIMEOUT=5
+export EVIDENCEMESH_PROVIDER_READ_TIMEOUT=12
+export EVIDENCEMESH_PROVIDER_WRITE_TIMEOUT=10
+export EVIDENCEMESH_PROVIDER_POOL_TIMEOUT=5
 
 # Temporary Phase 11 quality retention policy (8 Tavily / 2 federation at limit 10).
 export EVIDENCEMESH_QUALITY_PRIMARY_PROVIDER=tavily
@@ -185,6 +190,14 @@ Optional keys use `OPENALEX_API_KEY`, `GITHUB_TOKEN`, `BRAVE_API_KEY`,
 `TAVILY_API_KEY`, `EXA_API_KEY` and `FIRECRAWL_API_KEY`. A self-hosted
 Firecrawl endpoint can be selected with `EVIDENCEMESH_FIRECRAWL_URL` and does
 not require a key.
+
+EvidenceMesh-owned HTTP clients use separate connect, read, write and connection
+pool deadlines under the provider wall deadline. The wall must be strictly
+greater than every transport deadline. Runtime metadata distinguishes
+`connect_timeout`, `read_timeout`, `write_timeout`, `pool_timeout`,
+`httpx_timeout_unknown` and `provider_wall_timeout` without exposing exception
+messages, request data or credentials. A caller-supplied HTTPX client retains
+its own timeout policy.
 
 See [provider documentation](docs/providers.md) for limitations and data flow.
 

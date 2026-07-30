@@ -156,8 +156,19 @@ def classify_provider_failure(exc: BaseException) -> ProviderFailureClassificati
 
     if any(isinstance(item, socket.gaierror) for item in chain):
         return ProviderFailureClassification("dns_error")
-    if any(isinstance(item, (TimeoutError, httpx.TimeoutException)) for item in chain):
-        return ProviderFailureClassification("timeout")
+    timeout_classes = (
+        (httpx.ConnectTimeout, "connect_timeout"),
+        (httpx.ReadTimeout, "read_timeout"),
+        (httpx.WriteTimeout, "write_timeout"),
+        (httpx.PoolTimeout, "pool_timeout"),
+    )
+    for exception_type, public_kind in timeout_classes:
+        if any(isinstance(item, exception_type) for item in chain):
+            return ProviderFailureClassification(public_kind)
+    if any(isinstance(item, httpx.TimeoutException) for item in chain):
+        return ProviderFailureClassification("httpx_timeout_unknown")
+    if any(isinstance(item, TimeoutError) for item in chain):
+        return ProviderFailureClassification("provider_wall_timeout")
 
     status_error = next(
         (item for item in chain if isinstance(item, httpx.HTTPStatusError)),
