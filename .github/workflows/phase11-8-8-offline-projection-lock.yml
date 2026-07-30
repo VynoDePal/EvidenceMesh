@@ -48,7 +48,7 @@ jobs:
             "117968687a0c0c150acef42f997967d10b04006d14ed0efa9de87c9c08b1909e  benchmarks/phase11_8_8_projection_candidate.py" \
             | sha256sum --check
           echo \
-            "8955ac33c89c2e16a474182c14eac8df5acaf649642f4dd90a313cf6227db614  benchmarks/data/phase11_8_8_projection_fixtures_v1.json" \
+            "8955ac33c89c2e16a474182c14eac8df5acaf649642f4dd90a313cf6227db614  benchmarks/data/phase11_8_8_offline_projection_fixtures_v1.json" \
             | sha256sum --check
           echo \
             "de3b2bf527c19b745f059aba2a895e75fa1027bd5dafe79676b804db8624fff2  benchmarks/run_phase11_8_8_offline_projection_lock.py" \
