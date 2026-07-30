@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 import pytest
+
 from benchmarks.analyze_phase11_8_1_offline import (
     SOURCE_RESULT_SHA256,
     build_report,
