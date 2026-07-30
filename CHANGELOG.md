@@ -263,3 +263,14 @@ All notable changes to EvidenceMesh are documented here.
   from 1/12 for the locked equal-cap baseline to 12/12 with zero paired
   regression, while explicitly preserving the historical 5/12 no-go and
   making no real-case quality, merge, release or superiority claim.
+- Locked Phase 11.8.3 as an offline-by-default 2x2 causal calibration on
+  the already-observed 24 Phase 11.7 cases. One shared Tavily packet crosses
+  the locked equal-cap and candidate projections with the claims and direct-
+  answer JSON contracts; Gemini 3.5 Flash Lite is the sole blocking model.
+- Frozen the future live ceiling at exactly 24 Tavily requests and 96 Gemini
+  generations with zero retry, fallback or repair, plus fourteen blocking
+  traffic, identity, completion, schema, answer and citation gates.
+- Added a no-secret lock-validation path and a separately authorized live
+  job. This protocol commit makes no provider/model call, adds no live label,
+  preserves both product profiles and the Phase 12 seal, and leaves the draft
+  PR, merge, release, external comparison and superiority claims blocked.
