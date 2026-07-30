@@ -241,3 +241,15 @@ All notable changes to EvidenceMesh are documented here.
   30521453796. Phase 11.9 is not authorized, quality/community defaults are
   unchanged, Phase 12 remains sealed, and merge, release and superiority claims
   remain blocked.
+- Added a deterministic, standard-library-only Phase 11.8.1 analyzer that
+  recomputes the committed privacy-safe Phase 11.8 result with zero provider or
+  model traffic and preserves the historical 5/12 no-go without changing
+  product configuration or accessing Phase 12.
+- Isolated three answer-proxy losses between expanded selection and prompt
+  projection; decomposed the structured schema gate into ten requests that
+  never reached native validation and two actual schema rejects; and separated
+  hosted-model availability from retrieval and answer-quality diagnostics.
+- Added adversarial equal-truncation and structured-contract fixtures, a
+  reproducible diagnostic JSON/Markdown report and an offline-only GitHub
+  workflow with no secret inputs. The proposed future gate taxonomy is not
+  retroactive, Phase 11.9 remains unauthorized and the draft PR remains no-go.

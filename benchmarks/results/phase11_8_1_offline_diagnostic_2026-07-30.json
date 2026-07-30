@@ -1,0 +1,402 @@
+{
+  "benchmark": "evidencemesh-phase11-8-1-offline-causal-diagnostic-v1",
+  "causal_findings": [
+    {
+      "finding": "Three expanded cases lost the answer proxy between selected evidence and projected prompt evidence.",
+      "id": "projection-stage-loss",
+      "strength": "confirmed_stage_attribution"
+    },
+    {
+      "finding": "All 22 HTTP 503 failures came from gemma-4-31b-it; eight additional wall timeouts affected the run.",
+      "id": "provider-model-availability",
+      "strength": "confirmed_accounting"
+    },
+    {
+      "finding": "Of 12 structured attempts counted as not schema-valid, ten never reached native schema validation and two were native schema rejects.",
+      "id": "schema-gate-decomposition",
+      "strength": "confirmed_accounting"
+    },
+    {
+      "finding": "The structured contract improved citation metrics but regressed the answer-key proxy against the identical-evidence expanded strict arm.",
+      "id": "structured-contract-tradeoff",
+      "strength": "controlled_association"
+    },
+    {
+      "finding": "Questions, evidence, prompts and answers are absent by design, so the exact content-level truncation and answer failures cannot be replayed.",
+      "id": "content-root-cause-limit",
+      "strength": "not_observable"
+    }
+  ],
+  "decision": {
+    "diagnostic_only": true,
+    "historical_phase11_8_result_changed": false,
+    "merge_allowed": false,
+    "phase11_8_candidate_passed": false,
+    "phase11_9_authorized": false,
+    "phase12_authorized": false,
+    "phase12_executed": false,
+    "quality_profile_promotion_allowed": false,
+    "release_allowed": false,
+    "release_decision": "no-go",
+    "superiority_claim_allowed": false
+  },
+  "execution_boundary": {
+    "gemini_requests": 0,
+    "network_access": false,
+    "phase12_accessed": false,
+    "product_configuration_changed": false,
+    "provider_or_model_calls": false,
+    "tavily_requests": 0
+  },
+  "future_protocol_taxonomy_proposal": {
+    "layers": [
+      {
+        "measures": [
+          "traffic",
+          "packet identity",
+          "privacy"
+        ],
+        "name": "experimental_integrity"
+      },
+      {
+        "measures": [
+          "native response completion by model and arm"
+        ],
+        "name": "provider_model_availability"
+      },
+      {
+        "measures": [
+          "schema validity conditional on native completion"
+        ],
+        "name": "response_contract_validity"
+      },
+      {
+        "measures": [
+          "paired answer and citation quality when both arms complete"
+        ],
+        "name": "completion_conditioned_product_quality"
+      },
+      {
+        "measures": [
+          "all-attempt answer and citation outcomes"
+        ],
+        "name": "end_to_end_user_quality"
+      }
+    ],
+    "rule": "Future protocols should pre-register both conditioned and end-to-end views. A provider outage must remain blocking when required, but it must not be mislabeled as a retrieval, schema-format or answer-quality defect.",
+    "status": "proposal_only_not_applied_to_phase11_8"
+  },
+  "historical_gate_classification": {
+    "by_gate": {
+      "completion_at_least_23_of_24_per_model_arm": {
+        "availability_confounded": false,
+        "historical_passed": false,
+        "primary_layer": "provider_model_availability"
+      },
+      "expanded_prompt_answer_coverage_no_regression": {
+        "availability_confounded": false,
+        "historical_passed": false,
+        "primary_layer": "evidence_projection_quality"
+      },
+      "expanded_retrieval_available_and_answer_bearing": {
+        "availability_confounded": false,
+        "historical_passed": false,
+        "primary_layer": "evidence_projection_quality"
+      },
+      "protocol_integrity": {
+        "availability_confounded": false,
+        "historical_passed": true,
+        "primary_layer": "experimental_integrity"
+      },
+      "shared_raw_pool_and_expanded_packet_identity": {
+        "availability_confounded": false,
+        "historical_passed": true,
+        "primary_layer": "experimental_integrity"
+      },
+      "structured_answer_no_overall_regression": {
+        "availability_confounded": true,
+        "historical_passed": false,
+        "primary_layer": "end_to_end_answer_quality"
+      },
+      "structured_answer_no_regression_for_any_model": {
+        "availability_confounded": true,
+        "historical_passed": false,
+        "primary_layer": "end_to_end_answer_quality"
+      },
+      "structured_citation_ids_100_percent_valid": {
+        "availability_confounded": false,
+        "historical_passed": true,
+        "primary_layer": "citation_contract_quality"
+      },
+      "structured_citation_presence_at_least_95_percent_and_no_regression": {
+        "availability_confounded": false,
+        "historical_passed": true,
+        "primary_layer": "citation_contract_quality"
+      },
+      "structured_citation_support_at_least_75_percent": {
+        "availability_confounded": false,
+        "historical_passed": false,
+        "primary_layer": "citation_semantic_proxy"
+      },
+      "structured_citation_support_no_regression": {
+        "availability_confounded": false,
+        "historical_passed": true,
+        "primary_layer": "citation_semantic_proxy"
+      },
+      "structured_schema_valid_at_least_23_of_24_per_model": {
+        "availability_confounded": true,
+        "historical_passed": false,
+        "primary_layer": "mixed_availability_and_schema_contract"
+      }
+    },
+    "historical_failed": 7,
+    "historical_gate_count": 12,
+    "historical_gates_unchanged": true,
+    "historical_passed": 5
+  },
+  "privacy": {
+    "credentials_in_output": false,
+    "generated_answers_in_output": false,
+    "phase12_identifiers_in_output": false,
+    "prompts_in_output": false,
+    "questions_in_output": false,
+    "reference_answers_in_output": false,
+    "source_content_in_output": false
+  },
+  "projection_diagnostic": {
+    "cases": 24,
+    "current_prompt_answer_proxy_hits": 20,
+    "expanded_prompt_answer_proxy_hits": 18,
+    "expanded_selected_answer_proxy_hits": 21,
+    "expanded_vs_current_prompt_pairs": {
+      "current_wins": 3,
+      "expanded_wins": 1,
+      "net_gain": -2,
+      "shared_hits": 17,
+      "shared_misses": 3
+    },
+    "selected_to_prompt_gains": 0,
+    "selected_to_prompt_losses": 3,
+    "stage_attribution": "The answer proxy was present after expanded selection and absent after projection in three cases. Projection is therefore directly implicated; the privacy-safe result cannot reveal which truncation boundary removed it."
+  },
+  "provider_model_availability": {
+    "all_http_503_attributed_to_gemma_4_31b": true,
+    "by_model_arm": {
+      "gemini-3.5-flash-lite:current_strict": {
+        "attempts": 24,
+        "completed": 23,
+        "completion_floor": 23,
+        "completion_floor_deficit": 0,
+        "errors": {
+          "generation_wall_timeout": 1
+        },
+        "native_request_completed": 23
+      },
+      "gemini-3.5-flash-lite:expanded_strict": {
+        "attempts": 24,
+        "completed": 22,
+        "completion_floor": 23,
+        "completion_floor_deficit": 1,
+        "errors": {
+          "generation_wall_timeout": 2
+        },
+        "native_request_completed": 22
+      },
+      "gemini-3.5-flash-lite:expanded_structured": {
+        "attempts": 24,
+        "completed": 21,
+        "completion_floor": 23,
+        "completion_floor_deficit": 2,
+        "errors": {
+          "generation_wall_timeout": 3
+        },
+        "native_request_completed": 21
+      },
+      "gemma-4-31b-it:current_strict": {
+        "attempts": 24,
+        "completed": 14,
+        "completion_floor": 23,
+        "completion_floor_deficit": 9,
+        "errors": {
+          "generation_wall_timeout": 1,
+          "http_503": 9
+        },
+        "native_request_completed": 14
+      },
+      "gemma-4-31b-it:expanded_strict": {
+        "attempts": 24,
+        "completed": 17,
+        "completion_floor": 23,
+        "completion_floor_deficit": 6,
+        "errors": {
+          "generation_wall_timeout": 1,
+          "http_503": 6
+        },
+        "native_request_completed": 17
+      },
+      "gemma-4-31b-it:expanded_structured": {
+        "attempts": 24,
+        "completed": 15,
+        "completion_floor": 23,
+        "completion_floor_deficit": 8,
+        "errors": {
+          "http_503": 7,
+          "response_schema_failure": 2
+        },
+        "native_request_completed": 17
+      }
+    },
+    "completion_floor_deficit_total": 26,
+    "errors_all_arms": {
+      "generation_wall_timeout": 8,
+      "http_503": 22,
+      "response_schema_failure": 2
+    },
+    "http_503_by_model": {
+      "gemini-3.5-flash-lite": 0,
+      "gemma-4-31b-it": 22
+    },
+    "structured_schema_accounting": {
+      "attempts": 48,
+      "native_request_completed": 38,
+      "native_schema_rejections": 2,
+      "schema_valid": 36,
+      "schema_valid_given_native": {
+        "denominator": 38,
+        "numerator": 36,
+        "rate": 0.947368
+      },
+      "unavailable_before_schema_validation": 10
+    }
+  },
+  "ranked_corrective_hypotheses": [
+    {
+      "hypothesis": "Equal per-block truncation diluted or cut answer-bearing spans in three cases despite successful expanded selection.",
+      "next_test": "Use synthetic boundary fixtures now; require a separately authorized privacy-preserving content replay before any product change.",
+      "rank": 1,
+      "status": "mechanism_plausible_stage_loss_confirmed_content_unavailable",
+      "target": "evidence_projection"
+    },
+    {
+      "hypothesis": "Gemma 4 31B endpoint availability, not retrieval quality, dominated the completion deficit.",
+      "next_test": "Pre-register availability gates separately per user-selected model; do not change EvidenceMesh model defaults because none are imposed.",
+      "rank": 2,
+      "status": "confirmed_for_observed_http_503_failures",
+      "target": "provider_model_availability"
+    },
+    {
+      "hypothesis": "The one-claim structured instruction over-optimized citation form at the expense of preserving answer-key wording.",
+      "next_test": "Compare pre-registered structured contracts on shared evidence with paired semantic and answer-key scoring.",
+      "rank": 3,
+      "status": "controlled_association_not_content_verified",
+      "target": "structured_answer_contract"
+    }
+  ],
+  "schema_version": 1,
+  "source": {
+    "benchmark": "evidencemesh-phase11-8-corrective-recovery-v1",
+    "historical_release_decision": "no-go",
+    "historical_result": "fail",
+    "path": "benchmarks/results/phase11_8_recovery_2026-07-29.json",
+    "sha256": "0bd05884c6e6d019f22d18113ef449d1cf1c8158ac0e598d899ee1a93c4b687a"
+  },
+  "structured_contract_diagnostic": {
+    "answer_vs_current_all_attempts": {
+      "baseline_arm": "current_strict",
+      "baseline_wins": 9,
+      "candidate_arm": "expanded_structured",
+      "candidate_wins": 2,
+      "completed_pairs_only": false,
+      "eligible_pairs": 48,
+      "excluded_pairs": 0,
+      "field": "answer_key_covered",
+      "net_gain": -7,
+      "shared_hits": 21,
+      "shared_misses": 16
+    },
+    "answer_vs_current_completed_pairs": {
+      "baseline_arm": "current_strict",
+      "baseline_wins": 5,
+      "candidate_arm": "expanded_structured",
+      "candidate_wins": 0,
+      "completed_pairs_only": true,
+      "eligible_pairs": 33,
+      "excluded_pairs": 15,
+      "field": "answer_key_covered",
+      "net_gain": -5,
+      "shared_hits": 21,
+      "shared_misses": 7
+    },
+    "answer_vs_expanded_all_attempts": {
+      "baseline_arm": "expanded_strict",
+      "baseline_wins": 7,
+      "candidate_arm": "expanded_structured",
+      "candidate_wins": 3,
+      "completed_pairs_only": false,
+      "eligible_pairs": 48,
+      "excluded_pairs": 0,
+      "field": "answer_key_covered",
+      "net_gain": -4,
+      "shared_hits": 20,
+      "shared_misses": 18
+    },
+    "answer_vs_expanded_completed_pairs": {
+      "baseline_arm": "expanded_strict",
+      "baseline_wins": 3,
+      "candidate_arm": "expanded_structured",
+      "candidate_wins": 0,
+      "completed_pairs_only": true,
+      "eligible_pairs": 33,
+      "excluded_pairs": 15,
+      "field": "answer_key_covered",
+      "net_gain": -3,
+      "shared_hits": 20,
+      "shared_misses": 10
+    },
+    "citation_support_vs_expanded_all_attempts": {
+      "baseline_arm": "expanded_strict",
+      "baseline_wins": 4,
+      "candidate_arm": "expanded_structured",
+      "candidate_wins": 7,
+      "completed_pairs_only": false,
+      "eligible_pairs": 48,
+      "excluded_pairs": 0,
+      "field": "citation_support_proxy",
+      "net_gain": 3,
+      "shared_hits": 18,
+      "shared_misses": 19
+    },
+    "citation_support_vs_expanded_completed_pairs": {
+      "baseline_arm": "expanded_strict",
+      "baseline_wins": 0,
+      "candidate_arm": "expanded_structured",
+      "candidate_wins": 4,
+      "completed_pairs_only": true,
+      "eligible_pairs": 33,
+      "excluded_pairs": 15,
+      "field": "citation_support_proxy",
+      "net_gain": 4,
+      "shared_hits": 18,
+      "shared_misses": 11
+    },
+    "expanded_packet_identity_cases": 24,
+    "expanded_packet_identity_denominator": 24,
+    "interpretation": "With byte-identical expanded evidence, the structured arm improved citation discipline and support on comparable completions but reduced the answer-key proxy. Hosted-model non-determinism prevents a stronger content-level causal claim from this single run.",
+    "structured_citation_id_validity": {
+      "denominator": 35,
+      "numerator": 35,
+      "rate": 1.0
+    },
+    "structured_citation_presence": {
+      "denominator": 36,
+      "numerator": 35,
+      "rate": 0.972222
+    },
+    "structured_citation_support": {
+      "denominator": 36,
+      "numerator": 25,
+      "rate": 0.694444
+    }
+  },
+  "task_type": "offline_causal_diagnostic"
+}
