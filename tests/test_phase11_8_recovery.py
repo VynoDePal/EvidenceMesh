@@ -9,6 +9,8 @@ from typing import Any
 import httpx
 import pytest
 import respx
+
+from benchmarks.run_live_retrieval import BenchmarkRow
 from benchmarks.run_phase11_5_quality_recovery import ArmBundle, EvidenceBlock, gemini_endpoint
 from benchmarks.run_phase11_8_recovery import (
     BASELINE_ARM,
@@ -40,8 +42,6 @@ from benchmarks.run_phase11_8_recovery import (
     raw_pool_sha256,
     validate_arguments,
 )
-
-from benchmarks.run_live_retrieval import BenchmarkRow
 from evidencemesh.config import COMMUNITY_PROVIDERS, QUALITY_PROVIDERS, Settings
 from evidencemesh.models import ProviderResult
 
