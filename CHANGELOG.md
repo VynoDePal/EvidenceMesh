@@ -228,3 +228,16 @@ All notable changes to EvidenceMesh are documented here.
   authorize only a separately frozen fresh Phase 11.9 confirmation; product
   defaults, the Phase 12 seal, draft PR, merge, release, external comparison
   and superiority-claim boundaries remain unchanged.
+- Recorded the audited Phase 11.8 no-go. Five of twelve gates passed:
+  packet identity and the structured citation-presence, identifier-integrity and
+  support non-regression gates passed, while retrieval prompt coverage,
+  completion, schema validity, answer non-regression and the absolute support
+  floor remained blocking.
+- The single scored run made exactly 24 Tavily and 144 generation requests with
+  zero retry, fallback or repair. Only 112/144 generations completed; 22 HTTP
+  503 responses came from Gemma 4 31B, alongside eight wall-timeouts and two
+  structured-schema failures.
+- Committed the privacy-safe raw report and interpreted provenance for run
+  30521453796. Phase 11.9 is not authorized, quality/community defaults are
+  unchanged, Phase 12 remains sealed, and merge, release and superiority claims
+  remain blocked.
