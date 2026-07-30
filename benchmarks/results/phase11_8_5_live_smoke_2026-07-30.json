@@ -1,0 +1,367 @@
+{
+  "aborted": true,
+  "aborted_reason": "request_timeout",
+  "aggregate": {
+    "fixture_semantics_valid": {
+      "denominator": 8,
+      "numerator": 2,
+      "rate": 0.25
+    },
+    "native_completions": {
+      "denominator": 8,
+      "numerator": 2,
+      "rate": 0.25
+    },
+    "strict_schema_valid": {
+      "denominator": 8,
+      "numerator": 2,
+      "rate": 0.25
+    },
+    "usage_metadata_present": {
+      "denominator": 8,
+      "numerator": 2,
+      "rate": 0.25
+    }
+  },
+  "benchmark": "evidencemesh-phase11-8-5-gemini-live-smoke-v1",
+  "decision": {
+    "external_competitor_benchmark_allowed": false,
+    "gates": {
+      "all_eight_fixture_semantics_valid": {
+        "observed": 2,
+        "passed": false,
+        "required": 8
+      },
+      "all_eight_native_completions": {
+        "observed": 2,
+        "passed": false,
+        "required": 8
+      },
+      "all_eight_strict_schema_valid": {
+        "observed": 2,
+        "passed": false,
+        "required": 8
+      },
+      "cold_start_and_smoothed_start_pacing": {
+        "cold_start_seconds": 60.0,
+        "minimum_start_interval_seconds": 5.005047,
+        "passed": true,
+        "required_minimum_start_interval_seconds": 5.0
+      },
+      "exact_model_and_request_configuration": {
+        "candidate_count": "omitted; provider default",
+        "max_output_tokens": 256,
+        "model": "gemini-3.5-flash-lite",
+        "passed": true,
+        "sampling_parameters": "provider defaults; temperature/top-p/top-k omitted",
+        "thinking_level": "minimal"
+      },
+      "immutable_sources": {
+        "hashes": {
+          "candidate": "0eb71a0e94b7e21d33105788d05076382f96ab9e5fd6cea9d16669305d38c74e",
+          "fixture": "64096454a2884817148694b6086043a7fdbecb911b8db4456994a6dfadfc47af",
+          "guardrails": "83a4341b93c49b3fc8c6a7f46da40c24f8bed19b516472229e3b280a3ebc763d",
+          "phase11_8_3_result": "167a7eb531966ee0591a1ae01b2a8d9d47307cb1eb52ec152946bbe0dbc6e39c",
+          "phase11_8_4_result": "480e60d9f1d9807d9f7d0e21b23f812dbed2a4c978d27b08a8b810fe719d000d",
+          "protocol": "6c41f28afbf1ae4d4d6c2efaf83d54610dc6fdbc98256aeff7cacef90956b001"
+        },
+        "passed": true
+      },
+      "no_http_429": {
+        "observed": 0,
+        "passed": true
+      },
+      "privacy_and_historical_boundaries": {
+        "credentials_in_report": false,
+        "generated_answers_in_report": false,
+        "historical_phase11_8_3_result": "unchanged_fail_10_of_14",
+        "passed": true,
+        "questions_or_evidence_in_report": false,
+        "raw_provider_errors_in_report": false
+      },
+      "rolling_rpm_and_tpm_safety": {
+        "observed": {
+          "audit": {
+            "duration_seconds": 10.011006,
+            "effective_rpm": 12,
+            "effective_tpm": 200000,
+            "maximum_rolling_estimated_input_tokens": 1864,
+            "maximum_rolling_requests": 3,
+            "request_count": 3,
+            "within_rpm": true,
+            "within_tpm": true
+          },
+          "cold_start_seconds": 60.0,
+          "daily_requests_after": 395,
+          "effective_rpd": 400,
+          "effective_rpm": 12,
+          "effective_tpm": 200000,
+          "minimum_start_interval_seconds": 5.005047,
+          "model": "gemini-3.5-flash-lite",
+          "observed_ceiling": {
+            "rpd": 500,
+            "rpm": 15,
+            "tpm": 250000
+          },
+          "observed_prompt_tokens": 479,
+          "safety_fraction": {
+            "denominator": 5,
+            "numerator": 4
+          },
+          "synthetic_initial_daily_reservation": 392
+        },
+        "passed": true
+      },
+      "traffic_ceiling_and_provider_isolation": {
+        "maximum_gemini_requests": 8,
+        "observed": {
+          "fallback_requests": 0,
+          "gemini_requests": 3,
+          "http_429_responses": 0,
+          "maximum_gemini_requests": 8,
+          "native_http_200_responses": 2,
+          "other_failed_requests": 1,
+          "other_provider_requests": 0,
+          "repair_requests": 0,
+          "retries": 0,
+          "tavily_requests": 0,
+          "token_count_requests": 0
+        },
+        "passed": true
+      },
+      "usage_metadata_present": {
+        "observed": 2,
+        "passed": false,
+        "required": 8
+      },
+      "zero_retry_fallback_and_repair": {
+        "fallback_requests": 0,
+        "passed": true,
+        "repair_requests": 0,
+        "retries": 0
+      }
+    },
+    "historical_phase11_8_3_result_changed": false,
+    "merge_allowed": false,
+    "next_step": "Diagnose the failed smoke gate without an opportunistic live rerun.",
+    "phase11_8_5_live_smoke_passed": false,
+    "phase11_9_executed": false,
+    "phase11_9_protocol_may_be_frozen": false,
+    "phase12_authorized": false,
+    "phase12_executed": false,
+    "product_model_defaults_changed": false,
+    "projection_recovery_design_may_be_considered": false,
+    "public_alpha_allowed": false,
+    "quality_profile_promotion_allowed": false,
+    "release_allowed": false,
+    "release_decision": "no-go",
+    "superiority_claim_allowed": false,
+    "unchanged_phase11_8_3_rerun_authorized": false
+  },
+  "environment": {
+    "commit_sha": "23be221715ba5870ee6a2fa0078356ec6ad3afc5",
+    "dependency_versions": {
+      "httpx": "0.28.1"
+    },
+    "finished_at": "2026-07-30T18:06:27.406898+00:00",
+    "network_region": "GitHub-hosted runner",
+    "platform": "Linux-6.17.0-1020-azure-x86_64-with-glibc2.39",
+    "python": "3.11.15",
+    "started_at": "2026-07-30T18:04:47.126578+00:00"
+  },
+  "lock_validation": {
+    "case_count": 4,
+    "hashes": {
+      "candidate": "0eb71a0e94b7e21d33105788d05076382f96ab9e5fd6cea9d16669305d38c74e",
+      "fixture": "64096454a2884817148694b6086043a7fdbecb911b8db4456994a6dfadfc47af",
+      "guardrails": "83a4341b93c49b3fc8c6a7f46da40c24f8bed19b516472229e3b280a3ebc763d",
+      "phase11_8_3_result": "167a7eb531966ee0591a1ae01b2a8d9d47307cb1eb52ec152946bbe0dbc6e39c",
+      "phase11_8_4_result": "480e60d9f1d9807d9f7d0e21b23f812dbed2a4c978d27b08a8b810fe719d000d",
+      "protocol": "6c41f28afbf1ae4d4d6c2efaf83d54610dc6fdbc98256aeff7cacef90956b001"
+    },
+    "historical_phase11_8_3_result": "fail_10_of_14",
+    "historical_release_decision": "no-go",
+    "maximum_gemini_requests": 8,
+    "model_calls": 0,
+    "network_requests": 0,
+    "protocol_publication_authorizes_live": false,
+    "status": "phase11_8_5_protocol_lock_valid",
+    "tavily_requests": 0
+  },
+  "outcomes": [
+    {
+      "answer_chars": 9,
+      "answer_sha256": "925840f7d89757b7f93867cb9c448dbaee984663cc14000b3c31ed3213efb2e5",
+      "attempt_index": 1,
+      "case_id": "single_source_name",
+      "citation_count": 1,
+      "error_kind": null,
+      "estimated_input_tokens": 603,
+      "expected_answer_match": true,
+      "expected_citations_match": true,
+      "finish_reason": "STOP",
+      "http_status": 200,
+      "insufficient_semantics_valid": true,
+      "latency_ms": 810.304,
+      "model": "gemini-3.5-flash-lite",
+      "native_http_200": true,
+      "prompt_sha256": "c7caa8b857056b311d6302be052868bfc8fd6bd49a71eceb8b944046d90b59ab",
+      "quota_telemetry": null,
+      "repetition": 0,
+      "request_sha256": "f56b0d6bf5351e46fa7997cb78784dd51c92a95b50c70fdddcac7c6aa7e246f5",
+      "response_model": "gemini-3.5-flash-lite",
+      "schema_valid": true,
+      "semantic_valid": true,
+      "status": "completed",
+      "usage": {
+        "candidatesTokenCount": 14,
+        "promptTokenCount": 236,
+        "totalTokenCount": 250
+      }
+    },
+    {
+      "answer_chars": 4,
+      "answer_sha256": "a3de16c94c3c0ce856e8586a011ae873a8c6e51258c9625d8120dd73817fdaa0",
+      "attempt_index": 2,
+      "case_id": "single_source_year",
+      "citation_count": 1,
+      "error_kind": null,
+      "estimated_input_tokens": 608,
+      "expected_answer_match": true,
+      "expected_citations_match": true,
+      "finish_reason": "STOP",
+      "http_status": 200,
+      "insufficient_semantics_valid": true,
+      "latency_ms": 683.252,
+      "model": "gemini-3.5-flash-lite",
+      "native_http_200": true,
+      "prompt_sha256": "5a014ef2c1fdceb99983a4dffe85452a29cd5ae18b2b3215547c1f57b8df2772",
+      "quota_telemetry": null,
+      "repetition": 0,
+      "request_sha256": "4cb2bf52082af1cbd1e2cece061ab6f0f1429a256600db6339ec437c4886a5d3",
+      "response_model": "gemini-3.5-flash-lite",
+      "schema_valid": true,
+      "semantic_valid": true,
+      "status": "completed",
+      "usage": {
+        "candidatesTokenCount": 15,
+        "promptTokenCount": 243,
+        "totalTokenCount": 258
+      }
+    },
+    {
+      "answer_chars": 0,
+      "answer_sha256": null,
+      "attempt_index": 3,
+      "case_id": "two_source_unit",
+      "citation_count": 0,
+      "error_kind": "request_timeout",
+      "estimated_input_tokens": 653,
+      "expected_answer_match": null,
+      "expected_citations_match": null,
+      "finish_reason": null,
+      "http_status": null,
+      "insufficient_semantics_valid": null,
+      "latency_ms": 30022.938,
+      "model": "gemini-3.5-flash-lite",
+      "native_http_200": false,
+      "prompt_sha256": "16eb60892c7c9ab73d715842ab69b7e3d5630b953c0cc1cb88754d6bf0c2b483",
+      "quota_telemetry": null,
+      "repetition": 0,
+      "request_sha256": "2ab1899af7097d0427ffe714446c8ccee7420ee0621a684edbaa198f0d2ea28f",
+      "response_model": null,
+      "schema_valid": null,
+      "semantic_valid": null,
+      "status": "failed",
+      "usage": {}
+    }
+  ],
+  "privacy": {
+    "api_keys_in_report": false,
+    "evidence_in_report": false,
+    "expected_answers_in_report": false,
+    "generated_answers_in_report": false,
+    "phase12_identifiers_in_report": false,
+    "questions_in_report": false,
+    "raw_provider_errors_in_report": false,
+    "raw_quota_details_in_report": false,
+    "system_or_user_prompts_in_report": false
+  },
+  "protocol": {
+    "candidate_count": "omitted; provider default",
+    "cold_start_seconds": 60.0,
+    "endpoint": "Gemini v1beta generateContent",
+    "live_authorization_label": "phase11.8.5-live-authorized",
+    "max_output_tokens": 256,
+    "model": "gemini-3.5-flash-lite",
+    "path": "docs/benchmark-protocol-v20.md",
+    "protocol_publication_authorizes_live": false,
+    "response_json_schema": "Phase 11.8.4 supported subset",
+    "response_mime_type": "application/json",
+    "retry_policy": "none",
+    "sampling_parameters": "provider defaults; temperature/top-p/top-k omitted",
+    "sha256": "6c41f28afbf1ae4d4d6c2efaf83d54610dc6fdbc98256aeff7cacef90956b001",
+    "strict_local_parser": "unchanged Phase 11.8.2 direct-answer parser",
+    "thinking_level": "minimal"
+  },
+  "quota": {
+    "audit": {
+      "duration_seconds": 10.011006,
+      "effective_rpm": 12,
+      "effective_tpm": 200000,
+      "maximum_rolling_estimated_input_tokens": 1864,
+      "maximum_rolling_requests": 3,
+      "request_count": 3,
+      "within_rpm": true,
+      "within_tpm": true
+    },
+    "cold_start_seconds": 60.0,
+    "daily_requests_after": 395,
+    "effective_rpd": 400,
+    "effective_rpm": 12,
+    "effective_tpm": 200000,
+    "minimum_start_interval_seconds": 5.005047,
+    "model": "gemini-3.5-flash-lite",
+    "observed_ceiling": {
+      "rpd": 500,
+      "rpm": 15,
+      "tpm": 250000
+    },
+    "observed_prompt_tokens": 479,
+    "safety_fraction": {
+      "denominator": 5,
+      "numerator": 4
+    },
+    "synthetic_initial_daily_reservation": 392
+  },
+  "schema_version": 1,
+  "suite": {
+    "case_count": 4,
+    "fixture_sha256": "64096454a2884817148694b6086043a7fdbecb911b8db4456994a6dfadfc47af",
+    "maximum_attempts": 8,
+    "phase11_7_cases_used": false,
+    "phase12_cases_used": false,
+    "repetitions": 2,
+    "simpleqa_cases_used": false,
+    "synthetic_public_fixtures": true
+  },
+  "task_type": "synthetic live quota and native structured-output micro-smoke",
+  "traffic": {
+    "fallback_requests": 0,
+    "gemini_requests": 3,
+    "http_429_responses": 0,
+    "maximum_gemini_requests": 8,
+    "native_http_200_responses": 2,
+    "other_failed_requests": 1,
+    "other_provider_requests": 0,
+    "repair_requests": 0,
+    "retries": 0,
+    "tavily_requests": 0,
+    "token_count_requests": 0
+  },
+  "warnings": [
+    "This is an eight-request synthetic engineering smoke, not a retrieval or answer-quality benchmark.",
+    "A pass does not repair the deterministic Phase 11.8.3 projection failure and does not authorize an unchanged factorial rerun.",
+    "Observed project limits are calibration inputs and must be reviewed before any future live run."
+  ]
+}

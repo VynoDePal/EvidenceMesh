@@ -318,3 +318,13 @@ All notable changes to EvidenceMesh are documented here.
   Phase 11.8.5 smoke can validate only quota and response-contract mechanics;
   Phase 11.9, Phase 12, product changes, merge, release and superiority claims
   remain blocked.
+- Recorded the single authorized Phase 11.8.5 live no-go at 8/12 gates. The
+  first two Gemini requests returned native HTTP 200 outputs that passed the
+  strict schema and synthetic semantics; the third reached the locked
+  30-second request timeout, and the runner stopped before five later
+  attempts.
+- The run made three Gemini requests, zero Tavily or other-provider requests,
+  and zero retries, fallbacks or repairs. It observed no HTTP 429, stayed
+  within every quota-safety limit and preserved a privacy-safe one-file
+  artifact. No opportunistic rerun was made; Phase 11.9 and release remain
+  blocked.

@@ -62,6 +62,8 @@ PHASE11_8_3_RESULT = ROOT / PHASE11_8_3_RESULT_PATH
 CANDIDATE = ROOT / CANDIDATE_PATH
 RUNNER = ROOT / "benchmarks/run_phase11_8_5_live_smoke.py"
 WORKFLOW = ROOT / ".github/workflows/phase11-8-5-live-smoke.yml"
+RESULT = ROOT / "benchmarks/results/phase11_8_5_live_smoke_2026-07-30.json"
+REPORT = ROOT / "benchmarks/results/phase11_8_5_live_smoke_2026-07-30.md"
 
 
 def _sha256(path: Path) -> str:
@@ -606,9 +608,95 @@ def test_workflow_artifact_and_validation_preserve_no_go_on_smoke_failure() -> N
     assert 'decision["release_decision"] == "no-go"' in workflow
 
 
-def test_no_result_is_committed_before_the_authorized_live_run() -> None:
-    assert not (ROOT / "benchmarks/results/phase11_8_5_live_smoke_2026-07-30.json").exists()
-    assert not (ROOT / "benchmarks/results/phase11_8_5_live_smoke_2026-07-30.md").exists()
+def test_committed_live_result_is_an_audited_timeout_no_go() -> None:
+    assert RESULT.is_file()
+    assert REPORT.is_file()
+    assert _sha256(RESULT) == ("92e092a5929b9c2eb4d2090c61187e8d7d1eba9796d4de85f8f2d288e29a9423")
+
+    payload = json.loads(RESULT.read_bytes())
+    decision = payload["decision"]
+    gates = decision["gates"]
+    failed_gates = {name for name, gate in gates.items() if gate["passed"] is False}
+
+    assert payload["benchmark"] == BENCHMARK_NAME
+    assert payload["environment"]["commit_sha"] == ("23be221715ba5870ee6a2fa0078356ec6ad3afc5")
+    assert payload["aborted"] is True
+    assert payload["aborted_reason"] == "request_timeout"
+    assert payload["traffic"] == {
+        "fallback_requests": 0,
+        "gemini_requests": 3,
+        "http_429_responses": 0,
+        "maximum_gemini_requests": 8,
+        "native_http_200_responses": 2,
+        "other_failed_requests": 1,
+        "other_provider_requests": 0,
+        "repair_requests": 0,
+        "retries": 0,
+        "tavily_requests": 0,
+        "token_count_requests": 0,
+    }
+    assert len(gates) == 12
+    assert sum(gate["passed"] for gate in gates.values()) == 8
+    assert failed_gates == {
+        "all_eight_fixture_semantics_valid",
+        "all_eight_native_completions",
+        "all_eight_strict_schema_valid",
+        "usage_metadata_present",
+    }
+    assert gates["no_http_429"]["observed"] == 0
+    assert gates["rolling_rpm_and_tpm_safety"]["passed"] is True
+
+    outcomes = payload["outcomes"]
+    assert len(outcomes) == 3
+    assert all(
+        outcome["native_http_200"] is True
+        and outcome["schema_valid"] is True
+        and outcome["semantic_valid"] is True
+        for outcome in outcomes[:2]
+    )
+    assert outcomes[2]["native_http_200"] is False
+    assert outcomes[2]["http_status"] is None
+    assert outcomes[2]["error_kind"] == "request_timeout"
+    assert outcomes[2]["latency_ms"] == pytest.approx(30_022.938)
+
+    assert decision["phase11_8_5_live_smoke_passed"] is False
+    assert decision["projection_recovery_design_may_be_considered"] is False
+    assert decision["unchanged_phase11_8_3_rerun_authorized"] is False
+    assert decision["phase11_9_protocol_may_be_frozen"] is False
+    assert decision["phase11_9_executed"] is False
+    assert decision["phase12_authorized"] is False
+    assert decision["phase12_executed"] is False
+    assert decision["merge_allowed"] is False
+    assert decision["release_allowed"] is False
+    assert decision["superiority_claim_allowed"] is False
+    assert decision["release_decision"] == "no-go"
+
+    assert all(value is False for value in payload["privacy"].values())
+    rendered = json.dumps(payload, ensure_ascii=False, sort_keys=True)
+    for forbidden in (
+        "According to the evidence, which city hosts",
+        "The Solena Archive is located",
+        "Naro City",
+        "Project Amber began",
+        "250 milliseconds",
+        "A community orchard was planted",
+        "x-goog-api-key",
+        "quotaMetric",
+        "quotaId",
+    ):
+        assert forbidden not in rendered
+
+    report = REPORT.read_text(encoding="utf-8")
+    for marker in (
+        "live smoke failed (8/12 gates passed)",
+        "GitHub Actions 30568779397",
+        "8769965903",
+        "92e092a5929b9c2eb4d2090c61187e8d7d1eba9796d4de85f8f2d288e29a9423",
+        "e0237bd057ac3db44dc37c56e0b8a3ea6e6c4fdb23a045344239fbc06793d004",
+        "Phase 11.9 and Phase 12 remain blocked",
+        "No selective rerun was made",
+    ):
+        assert marker in report
 
 
 def test_public_runner_source_never_logs_prompt_answer_or_key() -> None:
