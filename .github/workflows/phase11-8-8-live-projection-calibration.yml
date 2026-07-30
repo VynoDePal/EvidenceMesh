@@ -104,7 +104,7 @@ jobs:
       github.event.pull_request.head.repo.full_name == github.repository &&
       github.event.pull_request.head.ref == 'agent/evidencemesh-v0.1' &&
       github.event.pull_request.head.sha == github.event.after &&
-      github.event.before == '__FROZEN_LOCK_COMMIT_SHA__'
+      github.event.before == 'd91f8a85f6e2770ecd83ca95cbc7112803d683cb'
     permissions:
       actions: read
       contents: read
@@ -126,7 +126,7 @@ jobs:
         env:
           EVENT_BEFORE_SHA: ${{ github.event.before }}
           EVENT_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          FROZEN_LOCK_COMMIT_SHA: __FROZEN_LOCK_COMMIT_SHA__
+          FROZEN_LOCK_COMMIT_SHA: d91f8a85f6e2770ecd83ca95cbc7112803d683cb
         run: |
           python - <<'PY'
           import json
@@ -219,7 +219,7 @@ jobs:
         id: history
         env:
           CURRENT_RUN_ID: ${{ github.run_id }}
-          FROZEN_LOCK_COMMIT_SHA: __FROZEN_LOCK_COMMIT_SHA__
+          FROZEN_LOCK_COMMIT_SHA: d91f8a85f6e2770ecd83ca95cbc7112803d683cb
           GITHUB_API_ROOT: ${{ github.api_url }}
           GITHUB_TOKEN: ${{ github.token }}
           REPOSITORY_NAME: ${{ github.repository }}
@@ -591,12 +591,12 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: __FROZEN_LOCK_COMMIT_SHA__
+          ref: d91f8a85f6e2770ecd83ca95cbc7112803d683cb
           persist-credentials: false
 
       - name: Confirm the frozen lock checkout
         env:
-          FROZEN_LOCK_COMMIT_SHA: __FROZEN_LOCK_COMMIT_SHA__
+          FROZEN_LOCK_COMMIT_SHA: d91f8a85f6e2770ecd83ca95cbc7112803d683cb
         run: |
           test "$(git rev-parse HEAD)" = "$FROZEN_LOCK_COMMIT_SHA"
           test ! -e "$RESULT_PATH"
@@ -649,7 +649,7 @@ jobs:
 
           lock_commit = os.environ["LOCK_COMMIT_SHA"]
           authorization_commit = os.environ["AUTHORIZATION_COMMIT_SHA"]
-          assert lock_commit == "__FROZEN_LOCK_COMMIT_SHA__"
+          assert lock_commit == "d91f8a85f6e2770ecd83ca95cbc7112803d683cb"
           assert len(authorization_commit) == 40
           assert lock_commit != authorization_commit
           assert (
@@ -712,7 +712,7 @@ jobs:
 
       - name: Run the locked Tavily-only 24-case calibration
         env:
-          EVIDENCEMESH_BENCHMARK_COMMIT: __FROZEN_LOCK_COMMIT_SHA__
+          EVIDENCEMESH_BENCHMARK_COMMIT: d91f8a85f6e2770ecd83ca95cbc7112803d683cb
           TAVILY_API_KEY: ${{ secrets.EVIDENCE_MESH_TAVILY_KEY }}
         run: |
           if [[ -z "${TAVILY_API_KEY:-}" ]]; then
@@ -801,7 +801,7 @@ jobs:
               for character in authorization["attestation_sha256"]
           )
           assert authorization["lock_commit_sha"] == (
-              "__FROZEN_LOCK_COMMIT_SHA__"
+              "d91f8a85f6e2770ecd83ca95cbc7112803d683cb"
           )
           assert authorization["authorization_commit_sha"] == (
               os.environ["AUTHORIZATION_COMMIT_SHA"]
