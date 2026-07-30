@@ -253,3 +253,13 @@ All notable changes to EvidenceMesh are documented here.
   reproducible diagnostic JSON/Markdown report and an offline-only GitHub
   workflow with no secret inputs. The proposed future gate taxonomy is not
   retroactive, Phase 11.9 remains unauthorized and the draft PR remains no-go.
+- Locked Phase 11.8.2 as a standard-library-only, synthetic and entirely
+  offline projection/response-contract design phase with no provider, model,
+  network, secret, product-profile or Phase 12 access.
+- Added a deterministic rank-weighted question-window/head/tail evidence
+  projector with exact rendered-budget accounting and a minimal closed
+  direct-answer JSON contract requiring packet-local citations.
+- Recorded a 12/12 authored engineering-gate pass: sentinel retention improved
+  from 1/12 for the locked equal-cap baseline to 12/12 with zero paired
+  regression, while explicitly preserving the historical 5/12 no-go and
+  making no real-case quality, merge, release or superiority claim.
