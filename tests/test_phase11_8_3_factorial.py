@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import hashlib
 import inspect
+import json
 from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
@@ -575,3 +576,94 @@ def test_source_has_no_retry_fallback_repair_or_response_publication() -> None:
     assert "reference_answer" not in report_keys
     assert "generated_answer" not in report_keys
     assert "raw_response" not in report_keys
+
+
+def test_committed_live_result_is_an_audited_no_go() -> None:
+    result = ROOT / "benchmarks/results/phase11_8_3_factorial_2026-07-30.json"
+    report = ROOT / "benchmarks/results/phase11_8_3_factorial_2026-07-30.md"
+
+    assert result.is_file()
+    assert report.is_file()
+    assert hashlib.sha256(result.read_bytes()).hexdigest() == (
+        "167a7eb531966ee0591a1ae01b2a8d9d47307cb1eb52ec152946bbe0dbc6e39c"
+    )
+
+    payload = json.loads(result.read_bytes())
+    decision = payload["decision"]
+    gates = decision["gates"]
+    failed_gates = {
+        name for name, gate in gates.items() if gate["passed"] is False
+    }
+
+    assert payload["benchmark"] == phase11_8_3.BENCHMARK_NAME
+    assert payload["environment"]["commit_sha"] == (
+        "a15a472b19dfc455d4dd0b1adba5e4c3484bcff5"
+    )
+    assert payload["traffic"] == {
+        "case_retrieval_operations": 24,
+        "expected_generation_requests": 96,
+        "expected_retrieval_operations": 24,
+        "expected_tavily_requests": 24,
+        "fallback_requests": 0,
+        "generation_requests": 96,
+        "provider_query_calls": 24,
+        "repair_requests": 0,
+        "retries": 0,
+        "tavily_requests": 24,
+    }
+    assert len(gates) == 14
+    assert sum(gate["passed"] for gate in gates.values()) == 10
+    assert failed_gates == {
+        "candidate_prompt_proxy_absolute_and_positive_gain",
+        "completion_at_least_23_of_24_per_arm",
+        "conditional_schema_validity_at_least_95_percent_per_arm",
+        "joint_answer_positive_gain_vs_control",
+    }
+    assert decision["phase11_8_3_candidate_passed"] is False
+    assert decision["phase11_9_protocol_may_be_frozen"] is False
+    assert decision["phase11_9_executed"] is False
+    assert decision["quality_profile_promotion_allowed"] is False
+    assert decision["quality_profile_promoted"] is False
+    assert decision["phase12_authorized"] is False
+    assert decision["phase12_executed"] is False
+    assert decision["external_competitor_benchmark_allowed"] is False
+    assert decision["public_alpha_allowed"] is False
+    assert decision["merge_allowed"] is False
+    assert decision["release_allowed"] is False
+    assert decision["superiority_claim_allowed"] is False
+    assert decision["release_decision"] == "no-go"
+    assert decision["quality_profile_unchanged"] is True
+    assert decision["community_profile_unchanged"] is True
+    assert decision["users_choose_provider_model_and_credentials"] is True
+
+    generated = payload["generation_metrics"]["aggregate"]
+    assert generated["equal_claims"]["error_kinds"] == {"http_429": 5}
+    assert generated["candidate_claims"]["error_kinds"] == {"http_429": 5}
+    assert generated["equal_direct"]["error_kinds"] == {
+        "http_429": 6,
+        "response_schema_failure": 15,
+    }
+    assert generated["candidate_direct"]["error_kinds"] == {
+        "http_429": 6,
+        "response_schema_failure": 16,
+    }
+
+    privacy = payload["privacy"]
+    assert privacy["answer_hashes_in_report"] is True
+    assert all(
+        value is False
+        for key, value in privacy.items()
+        if key != "answer_hashes_in_report"
+    )
+    assert payload["phase12_reserve"]["questions_or_answers_materialized"] is False
+
+    report_text = report.read_text(encoding="utf-8")
+    for marker in (
+        "GitHub Actions 30555171945",
+        "8764644024",
+        "9b7596c849bf2bfd89a270b11704289d1892b186432d41b9f058d8bfa7ba4154",
+        "167a7eb531966ee0591a1ae01b2a8d9d47307cb1eb52ec152946bbe0dbc6e39c",
+        "candidate failed (10/14 gates passed)",
+        "Phase 12 remains sealed and blocked",
+    ):
+        assert marker in report_text
