@@ -1,0 +1,239 @@
+{
+  "benchmark": "evidencemesh-phase11-8-6-offline-timeout-diagnostic-v1",
+  "decision": {
+    "benchmark_model_availability_validated": false,
+    "future_live_run_authorized": false,
+    "historical_phase11_8_5_result_changed": false,
+    "merge_allowed": false,
+    "next_step": "Review a separately pre-registered future availability protocol; do not rerun Phase 11.8.5.",
+    "offline_timeout_guardrails_passed": true,
+    "phase11_8_5_live_smoke_passed": false,
+    "phase11_9_executed": false,
+    "phase11_9_protocol_may_be_frozen": false,
+    "phase12_authorized": false,
+    "phase12_executed": false,
+    "product_model_defaults_changed": false,
+    "product_release_blocked_by_phase11_8_5_timeout_alone": false,
+    "product_release_decision_uses_broader_quality_evidence": true,
+    "release_allowed": false,
+    "release_decision": "no-go",
+    "superiority_claim_allowed": false,
+    "unchanged_phase11_8_3_rerun_authorized": false,
+    "users_choose_provider_model_and_credentials": true
+  },
+  "gates": {
+    "classification_is_deterministic": {
+      "fixture_count": 6,
+      "passed": true
+    },
+    "four_httpx_transport_timeouts_are_distinct": {
+      "observed": {
+        "connect": "connect_timeout",
+        "pool": "pool_timeout",
+        "read": "read_timeout",
+        "write": "write_timeout"
+      },
+      "passed": true
+    },
+    "generic_httpx_and_wall_timeouts_are_distinct": {
+      "observed": {
+        "benchmark_wall": "generation_wall_timeout",
+        "httpx_unknown": "httpx_timeout_unknown"
+      },
+      "passed": true
+    },
+    "historical_phase11_8_5_no_go_preserved": {
+      "historical_gate_count": 12,
+      "historical_gates_passed": 8,
+      "passed": true
+    },
+    "legacy_timeout_remains_unresolved": {
+      "diagnosis": "legacy_request_timeout_unresolved",
+      "passed": true,
+      "read_deadline_compatibility_only": true
+    },
+    "locked_source_integrity": {
+      "guardrails_sha256": "c20a094e56d638071780229cbb00a31482b4ac892c9bf66d091ad36af7eba231",
+      "passed": true,
+      "phase11_8_5_result_sha256": "92e092a5929b9c2eb4d2090c61187e8d7d1eba9796d4de85f8f2d288e29a9423",
+      "protocol_sha256": "b7d62af73021db103747acb5b0b0d670a6a52f0a4fa93986377657f1b2dc8120"
+    },
+    "model_smoke_and_product_release_gates_are_separate": {
+      "benchmark_model_availability_validated": false,
+      "passed": true,
+      "product_release_blocked_by_timeout_alone": false,
+      "users_choose_provider_model_and_credentials": true
+    },
+    "phase_and_release_boundaries_are_preserved": {
+      "future_live_run_authorized": false,
+      "merge_allowed": false,
+      "passed": true,
+      "phase11_9_protocol_may_be_frozen": false,
+      "phase12_authorized": false,
+      "release_allowed": false
+    },
+    "raw_exception_and_request_data_are_omitted": {
+      "headers_or_bodies_retained": false,
+      "passed": true,
+      "raw_exception_retained": false,
+      "request_url_retained": false
+    },
+    "timeout_is_not_rewritten_as_quota_schema_or_quality": {
+      "excluded_interpretations": [
+        "http_429",
+        "native_schema_failure",
+        "semantic_failure"
+      ],
+      "historical_http_429": 0,
+      "passed": true
+    },
+    "timeout_policy_fails_closed": {
+      "invalid_fixture_count": 5,
+      "invalid_rejected": 5,
+      "passed": true,
+      "unsupported_exception_rejected": true
+    },
+    "zero_network_provider_secret_and_retry_traffic": {
+      "fallback_requests": 0,
+      "gemini_requests": 0,
+      "model_calls": 0,
+      "network_requests": 0,
+      "passed": true,
+      "provider_calls": 0,
+      "repair_requests": 0,
+      "retries": 0,
+      "secrets_bound": 0,
+      "tavily_requests": 0
+    }
+  },
+  "historical_phase11_8_5": {
+    "gemini_requests": 3,
+    "http_429_responses": 0,
+    "native_http_200_responses": 2,
+    "result": "fail_8_of_12",
+    "result_changed": false,
+    "timeout_count": 1
+  },
+  "legacy_timeout_diagnosis": {
+    "compatible_with_locked_read_deadline": true,
+    "diagnosis": "legacy_request_timeout_unresolved",
+    "excluded_interpretations": [
+      "http_429",
+      "native_schema_failure",
+      "semantic_failure"
+    ],
+    "historical_error_kind": "request_timeout",
+    "http_status_observed": false,
+    "latency_ms": 30022.938,
+    "precise_timeout_kind": null,
+    "provider_response_observed": false,
+    "read_timeout_proven": false,
+    "retroactive_reclassification_allowed": false
+  },
+  "privacy": {
+    "credentials_in_report": false,
+    "generated_answers_in_report": false,
+    "phase12_identifiers_in_report": false,
+    "provider_responses_in_report": false,
+    "questions_or_evidence_in_report": false,
+    "raw_exception_messages_in_report": false,
+    "request_bodies_in_report": false,
+    "request_headers_in_report": false,
+    "request_urls_in_report": false
+  },
+  "protocol": {
+    "guardrails_sha256": "c20a094e56d638071780229cbb00a31482b4ac892c9bf66d091ad36af7eba231",
+    "historical_result_sha256": "92e092a5929b9c2eb4d2090c61187e8d7d1eba9796d4de85f8f2d288e29a9423",
+    "httpx_documented_timeout_classes": [
+      "ConnectTimeout",
+      "ReadTimeout",
+      "WriteTimeout",
+      "PoolTimeout"
+    ],
+    "path": "docs/benchmark-protocol-v21.md",
+    "sha256": "b7d62af73021db103747acb5b0b0d670a6a52f0a4fa93986377657f1b2dc8120"
+  },
+  "schema_version": 1,
+  "task_type": "offline timeout taxonomy and governance diagnostic",
+  "timeout_policy": {
+    "connect_seconds": 20.0,
+    "pool_seconds": 20.0,
+    "read_seconds": 30.0,
+    "wall_seconds": 45.0,
+    "write_seconds": 20.0
+  },
+  "timeout_taxonomy": {
+    "classified": {
+      "benchmark_wall": {
+        "error_kind": "generation_wall_timeout",
+        "layer": "benchmark_wall",
+        "provider_response_observed": false,
+        "raw_exception_retained": false,
+        "request_url_retained": false,
+        "retry_allowed_in_scored_run": false
+      },
+      "connect": {
+        "error_kind": "connect_timeout",
+        "layer": "transport_connect",
+        "provider_response_observed": false,
+        "raw_exception_retained": false,
+        "request_url_retained": false,
+        "retry_allowed_in_scored_run": false
+      },
+      "httpx_unknown": {
+        "error_kind": "httpx_timeout_unknown",
+        "layer": "transport_unknown",
+        "provider_response_observed": false,
+        "raw_exception_retained": false,
+        "request_url_retained": false,
+        "retry_allowed_in_scored_run": false
+      },
+      "pool": {
+        "error_kind": "pool_timeout",
+        "layer": "connection_pool",
+        "provider_response_observed": false,
+        "raw_exception_retained": false,
+        "request_url_retained": false,
+        "retry_allowed_in_scored_run": false
+      },
+      "read": {
+        "error_kind": "read_timeout",
+        "layer": "transport_read",
+        "provider_response_observed": false,
+        "raw_exception_retained": false,
+        "request_url_retained": false,
+        "retry_allowed_in_scored_run": false
+      },
+      "write": {
+        "error_kind": "write_timeout",
+        "layer": "transport_write",
+        "provider_response_observed": false,
+        "raw_exception_retained": false,
+        "request_url_retained": false,
+        "retry_allowed_in_scored_run": false
+      }
+    },
+    "deterministic_replay": true,
+    "fixture_count": 6,
+    "private_exception_message_omitted": true,
+    "private_request_url_omitted": true,
+    "request_query_secret_omitted": true,
+    "specific_httpx_timeout_count": 4
+  },
+  "traffic": {
+    "fallback_requests": 0,
+    "gemini_requests": 0,
+    "model_calls": 0,
+    "network_requests": 0,
+    "provider_calls": 0,
+    "repair_requests": 0,
+    "retries": 0,
+    "secrets_bound": 0,
+    "tavily_requests": 0
+  },
+  "warnings": [
+    "The historical request_timeout is compatible with the locked 30-second read deadline but is not proven to be ReadTimeout.",
+    "This offline engineering pass authorizes no provider traffic and does not convert the failed Phase 11.8.5 smoke into a pass.",
+    "A single test-model timeout does not alone define product release readiness; broader quality evidence remains blocking."
+  ]
+}

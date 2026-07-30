@@ -328,3 +328,16 @@ All notable changes to EvidenceMesh are documented here.
   within every quota-safety limit and preserved a privacy-safe one-file
   artifact. No opportunistic rerun was made; Phase 11.9 and release remain
   blocked.
+- Added the entirely offline Phase 11.8.6 timeout diagnostic with distinct
+  HTTPX connect, read, write and pool categories, an independent benchmark-wall
+  category, fail-closed timeout-policy validation and privacy-bounded public
+  telemetry.
+- Recorded a reproducible 12/12 offline engineering pass with zero network,
+  provider, model, secret, retry, fallback or repair activity. The historical
+  Phase 11.8.5 timeout remains `legacy_request_timeout_unresolved`: its timing
+  is compatible with the 30-second read deadline but does not prove a
+  `ReadTimeout`.
+- Separated test-model availability from product-release governance without
+  weakening either gate. Phase 11.8.5 remains failed at 8/12, broader quality
+  evidence keeps release no-go, and no rerun, Phase 11.9, Phase 12, merge or
+  superiority claim is authorized.

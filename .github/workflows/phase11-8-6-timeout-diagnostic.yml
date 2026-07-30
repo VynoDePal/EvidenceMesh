@@ -1,0 +1,123 @@
+name: Phase 11.8.6 Offline Timeout Diagnostic
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - .github/workflows/phase11-8-6-timeout-diagnostic.yml
+      - benchmarks/phase11_8_6_timeout_guardrails.py
+      - benchmarks/run_phase11_8_6_offline_timeout_diagnostic.py
+      - benchmarks/results/phase11_8_5_live_smoke_2026-07-30.json
+      - benchmarks/results/phase11_8_6_offline_timeout_diagnostic_2026-07-30.json
+      - benchmarks/results/phase11_8_6_offline_timeout_diagnostic_2026-07-30.md
+      - docs/benchmark-protocol-v21.md
+      - tests/test_phase11_8_6_timeout_diagnostic.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase11-8-6-timeout-diagnostic-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  offline-timeout-diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Verify immutable sources
+        run: |
+          echo \
+            "b7d62af73021db103747acb5b0b0d670a6a52f0a4fa93986377657f1b2dc8120  docs/benchmark-protocol-v21.md" \
+            | sha256sum --check
+          echo \
+            "c20a094e56d638071780229cbb00a31482b4ac892c9bf66d091ad36af7eba231  benchmarks/phase11_8_6_timeout_guardrails.py" \
+            | sha256sum --check
+          echo \
+            "92e092a5929b9c2eb4d2090c61187e8d7d1eba9796d4de85f8f2d288e29a9423  benchmarks/results/phase11_8_5_live_smoke_2026-07-30.json" \
+            | sha256sum --check
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install locked test environment
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Reproduce committed offline result
+        run: |
+          uv run python \
+            benchmarks/run_phase11_8_6_offline_timeout_diagnostic.py \
+            --output /tmp/phase11_8_6_timeout_diagnostic.json
+          cmp \
+            /tmp/phase11_8_6_timeout_diagnostic.json \
+            benchmarks/results/phase11_8_6_offline_timeout_diagnostic_2026-07-30.json
+
+      - name: Validate zero-traffic decisions
+        run: |
+          uv run python - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = json.loads(
+              Path(
+                  "benchmarks/results/"
+                  "phase11_8_6_offline_timeout_diagnostic_2026-07-30.json"
+              ).read_bytes()
+          )
+          assert report["benchmark"] == (
+              "evidencemesh-phase11-8-6-offline-timeout-diagnostic-v1"
+          )
+          assert len(report["gates"]) == 12
+          assert all(gate["passed"] for gate in report["gates"].values())
+          assert report["traffic"] == {
+              "network_requests": 0,
+              "provider_calls": 0,
+              "model_calls": 0,
+              "secrets_bound": 0,
+              "tavily_requests": 0,
+              "gemini_requests": 0,
+              "retries": 0,
+              "fallback_requests": 0,
+              "repair_requests": 0,
+          }
+          decision = report["decision"]
+          assert decision["offline_timeout_guardrails_passed"] is True
+          assert decision["historical_phase11_8_5_result_changed"] is False
+          assert decision["phase11_8_5_live_smoke_passed"] is False
+          assert decision["benchmark_model_availability_validated"] is False
+          assert decision["future_live_run_authorized"] is False
+          assert (
+              decision["product_release_blocked_by_phase11_8_5_timeout_alone"]
+              is False
+          )
+          assert decision["phase11_9_protocol_may_be_frozen"] is False
+          assert decision["phase12_authorized"] is False
+          assert decision["merge_allowed"] is False
+          assert decision["release_allowed"] is False
+          assert decision["release_decision"] == "no-go"
+          PY
+
+      - name: Run timeout tests and static checks
+        run: |
+          uv run pytest tests/test_phase11_8_6_timeout_diagnostic.py -q
+          uv run ruff check \
+            benchmarks/phase11_8_6_timeout_guardrails.py \
+            benchmarks/run_phase11_8_6_offline_timeout_diagnostic.py \
+            tests/test_phase11_8_6_timeout_diagnostic.py
+          uv run ruff format --check \
+            benchmarks/phase11_8_6_timeout_guardrails.py \
+            benchmarks/run_phase11_8_6_offline_timeout_diagnostic.py \
+            tests/test_phase11_8_6_timeout_diagnostic.py
