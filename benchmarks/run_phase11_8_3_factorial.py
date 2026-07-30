@@ -27,6 +27,7 @@ from typing import Any
 import httpx
 
 try:
+    from benchmarks import run_phase11_8_recovery as phase11_8
     from benchmarks.phase11_8_2_candidate import (
         DirectAnswerResponseError,
         balanced_baseline_project_blocks,
@@ -35,8 +36,6 @@ try:
         parse_direct_answer,
         rendered_evidence_chars,
     )
-
-    from benchmarks import run_phase11_8_recovery as phase11_8
 except ModuleNotFoundError:
     import run_phase11_8_recovery as phase11_8  # type: ignore[no-redef]
     from phase11_8_2_candidate import (  # type: ignore[no-redef]

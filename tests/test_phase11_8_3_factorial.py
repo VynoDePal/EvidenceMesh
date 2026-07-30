@@ -9,7 +9,8 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
-import run_phase11_8_3_factorial as phase11_8_3
+
+from benchmarks import run_phase11_8_3_factorial as phase11_8_3
 
 ROOT = Path(__file__).parents[1]
 if not (ROOT / "pyproject.toml").is_file():
