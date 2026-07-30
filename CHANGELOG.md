@@ -274,3 +274,19 @@ All notable changes to EvidenceMesh are documented here.
   job. This protocol commit makes no provider/model call, adds no live label,
   preserves both product profiles and the Phase 12 seal, and leaves the draft
   PR, merge, release, external comparison and superiority claims blocked.
+
+- Executed the single authorized Phase 11.8.3 live calibration on the frozen
+  24-case factorial suite. The run made exactly 24 Tavily requests and 96
+  Gemini 3.5 Flash Lite generation requests with zero retry, fallback or repair.
+- Recorded a 10/14 candidate no-go. Shared-packet, deterministic-budget and
+  conditioned answer/citation gates passed, but candidate prompt coverage tied
+  equal-cap at 17/24, all four arms missed the 23/24 completion floor, the
+  direct contract accepted only 5/36 native responses, and the joint candidate
+  had an all-attempt paired answer net of -7 against control.
+- Audited 22 HTTP 429 responses and 31 direct-response schema failures. The
+  privacy-safe report contains no questions, answers, prompts, evidence,
+  credentials or Phase 12 reserved identifiers; no opportunistic rerun was made.
+- Committed the raw report and interpreted provenance for run 30555171945 and
+  artifact 8764644024. Phase 11.9 may not be frozen, product defaults remain
+  unchanged, Phase 12 stays sealed, and merge, release and superiority claims
+  remain blocked.
