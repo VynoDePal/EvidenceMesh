@@ -568,13 +568,73 @@ def test_locked_arguments_accept_defaults_and_reject_budget_changes(
         validate_arguments(changed_results)
 
 
-def test_product_defaults_and_result_boundary_remain_unchanged() -> None:
+def test_committed_no_go_result_preserves_product_defaults_and_boundary() -> None:
     root = Path(__file__).parents[1]
     result = root / "benchmarks/results/phase11_8_recovery_2026-07-29.json"
     report = root / "benchmarks/results/phase11_8_recovery_2026-07-29.md"
 
-    assert not result.exists()
-    assert not report.exists()
+    assert result.is_file()
+    assert report.is_file()
+    assert hashlib.sha256(result.read_bytes()).hexdigest() == (
+        "0bd05884c6e6d019f22d18113ef449d1cf1c8158ac0e598d899ee1a93c4b687a"
+    )
+
+    payload = json.loads(result.read_bytes())
+    decision = payload["decision"]
+    gates = decision["gates"]
+
+    assert payload["benchmark"] == BENCHMARK_NAME
+    assert payload["environment"]["commit_sha"] == (
+        "b48fcfd6078270dac74ecb0c0c087a6c16066008"
+    )
+    assert payload["traffic"] == {
+        "case_retrieval_operations": 24,
+        "expected_generation_requests": 144,
+        "expected_retrieval_operations": 24,
+        "expected_tavily_requests": 24,
+        "fallback_requests": 0,
+        "generation_requests": 144,
+        "provider_query_calls": 24,
+        "repair_requests": 0,
+        "retries": 0,
+        "tavily_requests": 24,
+    }
+    assert len(gates) == 12
+    assert sum(gate["passed"] for gate in gates.values()) == 5
+    assert decision["phase11_8_candidate_passed"] is False
+    assert decision["phase11_9_fresh_confirmation_allowed"] is False
+    assert decision["quality_profile_promotion_allowed"] is False
+    assert decision["quality_profile_promoted"] is False
+    assert decision["phase12_untouched_evaluation_allowed"] is False
+    assert decision["phase12_executed"] is False
+    assert decision["external_competitor_benchmark_allowed"] is False
+    assert decision["public_alpha_allowed"] is False
+    assert decision["merge_allowed"] is False
+    assert decision["release_ready"] is False
+    assert decision["superiority_claim_allowed"] is False
+    assert decision["release_decision"] == "no-go"
+    assert decision["quality_profile_unchanged"] is True
+    assert decision["community_profile_unchanged"] is True
+
+    privacy = payload["privacy"]
+    assert privacy["answer_hashes_in_report"] is True
+    assert all(
+        value is False
+        for key, value in privacy.items()
+        if key != "answer_hashes_in_report"
+    )
+
+    report_text = report.read_text()
+    for marker in (
+        "GitHub Actions 30521453796",
+        "Artifact ZIP",
+        "c6228576f1b52ab007e3041e46abcec9dc84632e3ec2a68aba72c071d070fe44",
+        "0bd05884c6e6d019f22d18113ef449d1cf1c8158ac0e598d899ee1a93c4b687a",
+        "candidate failed (5/12 gates passed)",
+        "Phase 12 remains sealed and blocked",
+    ):
+        assert marker in report_text
+
     assert (*COMMUNITY_PROVIDERS, "tavily") == QUALITY_PROVIDERS
     assert Settings().quality_primary_provider_share == 0.8
     assert BENCHMARK_NAME == "evidencemesh-phase11-8-corrective-recovery-v1"
