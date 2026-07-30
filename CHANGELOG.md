@@ -306,3 +306,15 @@ All notable changes to EvidenceMesh are documented here.
   Tavily, provider or network calls. Phase 11.8.3 remains failed at 10/14, its
   projection defect is unchanged, no live smoke test is authorized, Phase 12
   remains sealed and release remains no-go.
+- Locked Phase 11.8.5 as a four-fixture, two-repetition Gemini-only live
+  micro-smoke for `gemini-3.5-flash-lite`. Its maximum traffic is eight
+  sequential generation requests after a 60-second cold start, with zero
+  Tavily, token-count, retry, fallback or repair calls.
+- Added exact schema, quota, traffic, privacy and fixture-conformance gates,
+  immediate stop on HTTP 429, non-success or transport failure, and a
+  same-repository authorization-label boundary. The protocol commit does not
+  itself execute the live smoke.
+- Kept the historical Phase 11.8.3 result failed at 10/14. Even a passing
+  Phase 11.8.5 smoke can validate only quota and response-contract mechanics;
+  Phase 11.9, Phase 12, product changes, merge, release and superiority claims
+  remain blocked.
