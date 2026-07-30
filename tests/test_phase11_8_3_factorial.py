@@ -591,14 +591,10 @@ def test_committed_live_result_is_an_audited_no_go() -> None:
     payload = json.loads(result.read_bytes())
     decision = payload["decision"]
     gates = decision["gates"]
-    failed_gates = {
-        name for name, gate in gates.items() if gate["passed"] is False
-    }
+    failed_gates = {name for name, gate in gates.items() if gate["passed"] is False}
 
     assert payload["benchmark"] == phase11_8_3.BENCHMARK_NAME
-    assert payload["environment"]["commit_sha"] == (
-        "a15a472b19dfc455d4dd0b1adba5e4c3484bcff5"
-    )
+    assert payload["environment"]["commit_sha"] == ("a15a472b19dfc455d4dd0b1adba5e4c3484bcff5")
     assert payload["traffic"] == {
         "case_retrieval_operations": 24,
         "expected_generation_requests": 96,
@@ -650,11 +646,7 @@ def test_committed_live_result_is_an_audited_no_go() -> None:
 
     privacy = payload["privacy"]
     assert privacy["answer_hashes_in_report"] is True
-    assert all(
-        value is False
-        for key, value in privacy.items()
-        if key != "answer_hashes_in_report"
-    )
+    assert all(value is False for key, value in privacy.items() if key != "answer_hashes_in_report")
     assert payload["phase12_reserve"]["questions_or_answers_materialized"] is False
 
     report_text = report.read_text(encoding="utf-8")
