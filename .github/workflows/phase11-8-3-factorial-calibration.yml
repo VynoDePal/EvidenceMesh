@@ -17,6 +17,8 @@ on:
       - benchmarks/run_phase11_8_3_factorial.py
       - benchmarks/results/phase11_8_recovery_2026-07-29.json
       - benchmarks/results/phase11_8_2_offline_design_2026-07-30.json
+      - benchmarks/results/phase11_8_3_factorial_2026-07-30.json
+      - benchmarks/results/phase11_8_3_factorial_2026-07-30.md
       - docs/benchmark-protocol-v18.md
       - tests/test_phase11_8_3_factorial.py
   workflow_dispatch:
@@ -65,6 +67,9 @@ jobs:
             | sha256sum --check
           echo \
             "91e2ab81e95ca34ba8766f552db60018e44783fe9792857d30d2d9b1195c9bbd  benchmarks/results/phase11_8_2_offline_design_2026-07-30.json" \
+            | sha256sum --check
+          echo \
+            "167a7eb531966ee0591a1ae01b2a8d9d47307cb1eb52ec152946bbe0dbc6e39c  benchmarks/results/phase11_8_3_factorial_2026-07-30.json" \
             | sha256sum --check
           echo \
             "0eb71a0e94b7e21d33105788d05076382f96ab9e5fd6cea9d16669305d38c74e  benchmarks/phase11_8_2_candidate.py" \
