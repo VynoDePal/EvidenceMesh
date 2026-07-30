@@ -1,0 +1,120 @@
+name: Phase 11.8.4 Offline Guardrails
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - .github/workflows/phase11-8-4-offline-guardrails.yml
+      - benchmarks/phase11_8_2_candidate.py
+      - benchmarks/phase11_8_4_guardrails.py
+      - benchmarks/run_phase11_8_4_offline_guardrails.py
+      - benchmarks/results/phase11_8_3_factorial_2026-07-30.json
+      - benchmarks/results/phase11_8_4_offline_guardrails_2026-07-30.json
+      - benchmarks/results/phase11_8_4_offline_guardrails_2026-07-30.md
+      - docs/benchmark-protocol-v19.md
+      - tests/test_phase11_8_4_guardrails.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase11-8-4-offline-guardrails-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  offline-guardrails:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Verify immutable sources
+        run: |
+          echo \
+            "ff3c034688dc87a320140b0e5815819603e9800fa14f5ea90cd5ff27b098cc58  docs/benchmark-protocol-v19.md" \
+            | sha256sum --check
+          echo \
+            "83a4341b93c49b3fc8c6a7f46da40c24f8bed19b516472229e3b280a3ebc763d  benchmarks/phase11_8_4_guardrails.py" \
+            | sha256sum --check
+          echo \
+            "167a7eb531966ee0591a1ae01b2a8d9d47307cb1eb52ec152946bbe0dbc6e39c  benchmarks/results/phase11_8_3_factorial_2026-07-30.json" \
+            | sha256sum --check
+          echo \
+            "0eb71a0e94b7e21d33105788d05076382f96ab9e5fd6cea9d16669305d38c74e  benchmarks/phase11_8_2_candidate.py" \
+            | sha256sum --check
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install locked test environment
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Reproduce the committed offline result
+        run: |
+          uv run python benchmarks/run_phase11_8_4_offline_guardrails.py \
+            --output /tmp/phase11_8_4_offline_guardrails.json
+          cmp \
+            /tmp/phase11_8_4_offline_guardrails.json \
+            benchmarks/results/phase11_8_4_offline_guardrails_2026-07-30.json
+
+      - name: Validate zero-traffic decisions
+        run: |
+          uv run python - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = json.loads(
+              Path(
+                  "benchmarks/results/"
+                  "phase11_8_4_offline_guardrails_2026-07-30.json"
+              ).read_bytes()
+          )
+          assert report["benchmark"] == (
+              "evidencemesh-phase11-8-4-offline-guardrails-v1"
+          )
+          assert len(report["gates"]) == 15
+          assert all(gate["passed"] for gate in report["gates"].values())
+          assert report["traffic"] == {
+              "network_requests": 0,
+              "provider_calls": 0,
+              "model_calls": 0,
+              "tavily_requests": 0,
+              "gemini_requests": 0,
+              "retries": 0,
+              "fallback_requests": 0,
+              "repair_requests": 0,
+          }
+          decision = report["decision"]
+          assert decision["offline_guardrails_passed"] is True
+          assert decision["historical_phase11_8_3_result_changed"] is False
+          assert decision["phase11_8_4_live_smoke_authorized"] is False
+          assert decision["phase11_9_protocol_may_be_frozen"] is False
+          assert decision["phase12_authorized"] is False
+          assert decision["phase12_executed"] is False
+          assert decision["merge_allowed"] is False
+          assert decision["release_allowed"] is False
+          assert decision["release_decision"] == "no-go"
+          PY
+
+      - name: Run guardrail tests and static checks
+        run: |
+          uv run pytest tests/test_phase11_8_4_guardrails.py -q
+          uv run ruff check \
+            benchmarks/phase11_8_4_guardrails.py \
+            benchmarks/run_phase11_8_4_offline_guardrails.py \
+            tests/test_phase11_8_4_guardrails.py
+          uv run ruff format --check \
+            benchmarks/phase11_8_4_guardrails.py \
+            benchmarks/run_phase11_8_4_offline_guardrails.py \
+            tests/test_phase11_8_4_guardrails.py

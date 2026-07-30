@@ -290,3 +290,19 @@ All notable changes to EvidenceMesh are documented here.
   artifact 8764644024. Phase 11.9 may not be frozen, product defaults remain
   unchanged, Phase 12 stays sealed, and merge, release and superiority claims
   remain blocked.
+- Added the zero-network Phase 11.8.4 quota governor with explicit per-model
+  RPM, input-TPM and RPD budgets, a 20% safety margin, rolling-window auditing,
+  conservative tokenizer-free estimates and fail-before-request daily or
+  oversized-request guards.
+- Added privacy-safe Gemini 429 classification for RPM, TPM, RPD, spend and
+  unknown dimensions. Scored runs abort unscored on the first 429 without a
+  selective retry; bounded positive-jitter backoff remains available only for
+  ordinary non-benchmark integrations.
+- Replaced unsupported provider-facing JSON Schema keywords with Gemini's
+  documented structured-output subset while preserving the strict local
+  direct-answer parser for citation syntax, uniqueness, packet membership and
+  insufficient-evidence semantics.
+- Recorded a reproducible 15/15 offline engineering pass with zero Gemini,
+  Tavily, provider or network calls. Phase 11.8.3 remains failed at 10/14, its
+  projection defect is unchanged, no live smoke test is authorized, Phase 12
+  remains sealed and release remains no-go.
