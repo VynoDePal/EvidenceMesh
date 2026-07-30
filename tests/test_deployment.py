@@ -391,6 +391,15 @@ def test_phase11_8_workflow_requires_manual_live_authorization_and_locks_budget(
     assert '{"row_index", "case_id"}' in offline
     assert "EVIDENCE_MESH_GEMINI_KEY" in live
     assert "EVIDENCE_MESH_TAVILY_KEY" in live
+    assert "Refuse to overwrite a committed Phase 11.8 result" in live
+    assert (
+        "if [[ -e benchmarks/results/phase11_8_recovery_2026-07-29.json ]]; then"
+        in live
+    )
+    assert (
+        "if [[ -e benchmarks/results/phase11_8_recovery_2026-07-29.md ]]; then"
+        in live
+    )
 
     assert "run_phase11_8_recovery.py" in live
     assert "--provider-max-results 20" in live
