@@ -1,0 +1,153 @@
+{
+  "schema_version": "evidencemesh.phase11_8_9.external-benchmarks.v1",
+  "purpose": "integration-conformance-only",
+  "network_policy": {
+    "ordinary_tests_must_not_download": true,
+    "ordinary_tests_must_not_authenticate": true,
+    "ordinary_tests_must_not_call_models": true,
+    "ordinary_tests_must_not_call_providers": true
+  },
+  "publication_policy": {
+    "synthetic_fixture_metrics_are_real_external_scores": false,
+    "synthetic_fixture_metrics_support_quality_claims": false,
+    "real_external_scores_require_resolved_asset_license": true,
+    "real_external_scores_require_exact_repository_revision": true,
+    "real_external_scores_supported_in_v1": false
+  },
+  "adapter_policies": {
+    "corpus_document_id_aliases": ["doc_id", "docid", "_id", "id"],
+    "corpus_url_field": "accepted-input-never-published",
+    "trec_qrels_iteration": "Q0",
+    "run_order": "score-desc-docid-asc-rank-must-match",
+    "ndcg_gain": "trec-linear-relevance",
+    "empty_run_per_query": "allowed-and-scored-zero"
+  },
+  "synthetic_bundle_policy": {
+    "policy_id": "synthetic-local-bundle-strict-v1",
+    "regular_files_only": true,
+    "symlinks_forbidden": true,
+    "path_escape_forbidden": true,
+    "sha256_policy": "streaming-full-file",
+    "byte_length_required": true,
+    "exact_query_coverage": true,
+    "max_manifest_bytes": 262144,
+    "max_file_bytes_by_role": {
+      "queries": 2097152,
+      "corpus": 8388608,
+      "run": 8388608,
+      "qrels": 8388608
+    },
+    "max_counts": {
+      "queries": 10000,
+      "corpus_documents": 50000,
+      "run_queries": 10000,
+      "run_entries": 250000,
+      "qrel_queries": 10000,
+      "qrel_entries": 250000,
+      "positive_qrels": 250000
+    }
+  },
+  "planned_official_evaluation_policy": {
+    "available_in_v1": false,
+    "score_publication_in_v1": "forbidden",
+    "global_requirements": [
+      "authoritative asset revision",
+      "authoritative per-asset SHA-256",
+      "authoritative per-asset byte length",
+      "authoritative per-asset record count",
+      "resolved asset-license evidence"
+    ],
+    "bright": {
+      "required_domain_count": 12,
+      "aggregation": "macro-average-across-all-12-domains",
+      "excluded_ids_lock_required": true,
+      "required_asset_roles": ["queries", "corpus", "qrels", "excluded_ids"]
+    },
+    "browsecomp_plus": {
+      "required_qrels_views": ["evidence", "gold"],
+      "report_each_qrels_view_separately": true,
+      "required_asset_roles": ["queries", "corpus", "evidence_qrels", "gold_qrels"]
+    }
+  },
+  "benchmarks": [
+    {
+      "benchmark_id": "bright",
+      "display_name": "BRIGHT",
+      "adapter_contract": "local-fixed-corpus-retrieval-v1",
+      "official_repository": "https://github.com/xlang-ai/BRIGHT",
+      "repository_revision": "d99e8391d967d4c2b3a74732530d2309e2fc92b6",
+      "repository_license_file": {
+        "spdx_id": "CC-BY-4.0",
+        "path": "LICENSE",
+        "git_blob_sha1": "2f244ac814036ecd9ba9f69782e89ce6b1dca9eb",
+        "scope": "repository-license-file-only"
+      },
+      "benchmark_asset_license": {
+        "status": "unresolved",
+        "scope": "queries-corpus-qrels",
+        "spdx_id": null,
+        "evidence_revision": null,
+        "real_external_evaluation_allowed": false,
+        "reason": "The repository license is not treated as proof of the separately distributed benchmark assets' terms."
+      },
+      "official_metadata": {
+        "retrieval_interface": "query-and-document identifiers with a per-query document score mapping",
+        "primary_reported_metric": "nDCG@10",
+        "fixed_corpus": true
+      },
+      "v1_official_blockers": [
+        "Authoritative query, corpus, qrels, and excluded_ids asset locks are absent.",
+        "Aggregation across exactly 12 BRIGHT domains is not implemented in adapter v1.",
+        "The separately distributed benchmark asset license remains unresolved."
+      ],
+      "supported_local_formats": {
+        "queries": ["json", "jsonl", "tsv"],
+        "corpus": ["json", "jsonl"],
+        "run": ["json", "jsonl", "trec"],
+        "qrels": ["json", "jsonl", "trec"]
+      }
+    },
+    {
+      "benchmark_id": "browsecomp_plus",
+      "display_name": "BrowseComp-Plus",
+      "adapter_contract": "local-fixed-corpus-retrieval-v1",
+      "official_repository": "https://github.com/texttron/BrowseComp-Plus",
+      "repository_revision": "046949032b0328319cc9a02663a759ec601d9402",
+      "repository_license_file": {
+        "spdx_id": "MIT",
+        "path": "LICENSE",
+        "git_blob_sha1": "1eeb9f2ab7b823eef913d01626ca28adf6422fba",
+        "scope": "repository-software-only"
+      },
+      "benchmark_asset_license": {
+        "status": "unresolved",
+        "scope": "queries-corpus-evidence-qrels-gold-qrels",
+        "spdx_id": null,
+        "evidence_revision": null,
+        "real_external_evaluation_allowed": false,
+        "reason": "The MIT software license is not evidence for the separately distributed queries, corpus, or relevance judgements."
+      },
+      "official_metadata": {
+        "retrieval_interface": "TREC run evaluated against evidence or gold qrels",
+        "primary_reported_metrics": [
+          "Recall@5",
+          "Recall@100",
+          "Recall@1000",
+          "nDCG@10"
+        ],
+        "fixed_corpus": true
+      },
+      "v1_official_blockers": [
+        "Authoritative query, corpus, evidence-qrels, and gold-qrels asset locks are absent.",
+        "Separate reporting against both evidence and gold qrels is not implemented in adapter v1.",
+        "The separately distributed benchmark asset license remains unresolved."
+      ],
+      "supported_local_formats": {
+        "queries": ["json", "jsonl", "tsv"],
+        "corpus": ["json", "jsonl"],
+        "run": ["json", "jsonl", "trec"],
+        "qrels": ["json", "jsonl", "trec"]
+      }
+    }
+  ]
+}

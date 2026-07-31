@@ -1,0 +1,97 @@
+name: Phase 11.8.9 Offline Retrieval Recovery
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - .github/workflows/phase11-8-9-offline-retrieval-recovery.yml
+      - benchmarks/data/phase11_8_9_external_benchmarks_v1.json
+      - benchmarks/data/phase11_8_9_external_eval_fixtures_v1.json
+      - benchmarks/data/phase11_8_9_retrieval_fixtures_v1.json
+      - benchmarks/data/phase11_8_9_source_locks_v1.json
+      - benchmarks/data/phase11_7_fresh_confirmation_v1.json
+      - benchmarks/phase11_8_8_projection_candidate.py
+      - benchmarks/phase11_8_9_external_eval.py
+      - benchmarks/phase11_8_9_retrieval_candidate.py
+      - benchmarks/results/phase11_8_8_live_projection_calibration_2026-07-30.json
+      - benchmarks/results/phase11_8_9_offline_retrieval_recovery_2026-07-31.json
+      - benchmarks/results/phase11_8_9_offline_retrieval_recovery_2026-07-31.md
+      - benchmarks/run_phase11_8_9_offline_retrieval_recovery.py
+      - CHANGELOG.md
+      - docs/benchmark-protocol-v24.md
+      - docs/benchmark-protocol-v25.md
+      - pyproject.toml
+      - tests/test_phase11_8_9_external_eval.py
+      - tests/test_phase11_8_9_offline_retrieval_recovery.py
+      - tests/test_phase11_8_9_retrieval_candidate.py
+      - tests/test_phase11_8_9_result.py
+      - uv.lock
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase11-8-9-offline-retrieval-recovery-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  offline-retrieval-recovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install locked test environment
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Reproduce aggregate-only offline conformance output twice
+        env:
+          LOCK_COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          uv run python -I \
+            benchmarks/run_phase11_8_9_offline_retrieval_recovery.py \
+            --lock-commit-sha "$LOCK_COMMIT_SHA" \
+            --output /tmp/phase11_8_9_offline_a.json
+          uv run python -I \
+            benchmarks/run_phase11_8_9_offline_retrieval_recovery.py \
+            --lock-commit-sha "$LOCK_COMMIT_SHA" \
+            --output /tmp/phase11_8_9_offline_b.json
+          cmp \
+            /tmp/phase11_8_9_offline_a.json \
+            /tmp/phase11_8_9_offline_b.json
+
+      - name: Run local-only Phase 11.8.9 tests and static checks
+        run: |
+          uv run pytest \
+            tests/test_phase11_8_9_retrieval_candidate.py \
+            tests/test_phase11_8_9_external_eval.py \
+            tests/test_phase11_8_9_offline_retrieval_recovery.py \
+            -q
+          uv run ruff check \
+            benchmarks/phase11_8_9_retrieval_candidate.py \
+            benchmarks/phase11_8_9_external_eval.py \
+            benchmarks/run_phase11_8_9_offline_retrieval_recovery.py \
+            tests/test_phase11_8_9_retrieval_candidate.py \
+            tests/test_phase11_8_9_external_eval.py \
+            tests/test_phase11_8_9_offline_retrieval_recovery.py
+          uv run ruff format --check \
+            benchmarks/phase11_8_9_retrieval_candidate.py \
+            benchmarks/phase11_8_9_external_eval.py \
+            benchmarks/run_phase11_8_9_offline_retrieval_recovery.py \
+            tests/test_phase11_8_9_retrieval_candidate.py \
+            tests/test_phase11_8_9_external_eval.py \
+            tests/test_phase11_8_9_offline_retrieval_recovery.py
