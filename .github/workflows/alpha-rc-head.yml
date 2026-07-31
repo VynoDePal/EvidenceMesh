@@ -1,0 +1,301 @@
+name: Alpha RC HEAD
+
+on:
+  push:
+    branches:
+      - agent/evidencemesh-v0.1
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+  artifact-metadata: write
+
+concurrency:
+  group: alpha-rc-head-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  ARTIFACT_PREFIX: alpha-rc-head
+  EXPECTED_SHA: ${{ github.sha }}
+  PROTOCOL_SHA256: 41c86a73a2d3e0a4f4225d0574a2d145650cb73eca14a9d61e1391bcbab76f3c
+  RC_NAME: evidencemesh-0.1.0-alpha-rc.2
+  RC_ROOT: /tmp/evidencemesh-alpha-rc-head
+  RC_BUNDLE: /tmp/evidencemesh-alpha-rc-head/evidencemesh-0.1.0-alpha-rc.2
+  RESULT_PATH: /tmp/evidencemesh-alpha-rc-head-result.json
+  UPLOAD_ROOT: /tmp/evidencemesh-alpha-rc-head-upload
+
+jobs:
+  alpha-rc-head:
+    if: >-
+      github.repository == 'VynoDePal/EvidenceMesh' &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/agent/evidencemesh-v0.1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Check out the exact candidate commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.EXPECTED_SHA }}
+          persist-credentials: false
+
+      - name: Verify candidate identity and clean checkout
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          test -z "$(git status --porcelain)"
+
+      - name: Set up pinned uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install the locked validation environment
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Verify the frozen Alpha-RC HEAD protocol
+        run: |
+          echo \
+            "$PROTOCOL_SHA256  docs/alpha-rc-head-protocol-v1.md" \
+            | sha256sum --check
+
+      - name: Validate release tooling and workflow locks
+        run: |
+          uv run ruff format --check .
+          uv run ruff check .
+          uv run mypy src
+          uv run pytest --cov=evidencemesh --cov-report=term-missing -q
+
+      - name: Audit locked runtime dependencies
+        shell: bash
+        run: |
+          set -o pipefail
+          uv export --frozen --no-dev --format requirements-txt --no-hashes |
+            uvx pip-audit==2.10.1 -r /dev/stdin
+
+      - name: Build and inspect wheel and source distribution
+        run: |
+          mkdir --parents "$RC_BUNDLE/dist"
+          uv build --out-dir "$RC_BUNDLE/dist"
+          rm --force -- "$RC_BUNDLE/dist/.gitignore"
+          uvx twine==7.0.0 check "$RC_BUNDLE"/dist/*
+
+      - name: Install and exercise the wheel outside the source environment
+        shell: bash
+        run: |
+          install_env="$RC_ROOT/installed"
+          wheels=("$RC_BUNDLE"/dist/evidencemesh-0.1.0-*.whl)
+          if [[ "${#wheels[@]}" -ne 1 ]]; then
+            echo "Expected exactly one EvidenceMesh wheel" >&2
+            exit 1
+          fi
+          uv venv --python 3.11 "$install_env"
+          uv pip install --python "$install_env/bin/python" "${wheels[0]}"
+          uv pip check --python "$install_env/bin/python"
+          sdist_env="$RC_ROOT/sdist-installed"
+          uv venv --python 3.11 "$sdist_env"
+          uv pip install --python "$sdist_env/bin/python" \
+            "$RC_BUNDLE/dist/evidencemesh-0.1.0.tar.gz"
+          uv pip check --python "$sdist_env/bin/python"
+          cd "$RC_ROOT"
+          "$install_env/bin/evidencemesh" benchmark-offline \
+            > "$RC_BUNDLE/installed-wheel-offline-benchmark.json"
+          "$install_env/bin/python" "$GITHUB_WORKSPACE/scripts/smoke_installed_mcp.py" \
+            --command "$install_env/bin/evidencemesh-mcp" \
+            --cache-path "$RC_ROOT/mcp-smoke-cache.sqlite3" \
+            --expected-version 0.1.0 \
+            --output "$RC_BUNDLE/installed-wheel-mcp-stdio.json" \
+            --server-log "$RC_ROOT/installed-wheel-mcp-stdio.server.log"
+          "$install_env/bin/python" -I - <<'PY'
+          from pathlib import Path
+          import sys
+
+          import evidencemesh
+          from evidencemesh import CitationAudit, audit_citations
+          from evidencemesh.config import Settings
+          from pydantic import ValidationError
+
+          origin = Path(evidencemesh.__file__).resolve()
+          origin.relative_to(Path(sys.prefix).resolve())
+          assert evidencemesh.__version__ == "0.1.0"
+          valid = audit_citations("Grounded fact [S1].", ["S1"])
+          invalid = audit_citations("Unknown [S2] and malformed [S0].", ["S1"])
+          assert isinstance(valid, CitationAudit) and valid.valid is True
+          assert invalid.invalid_ids == ("S2",)
+          assert invalid.malformed_tokens == ("[S0]",)
+          settings = Settings(enabled_providers=[])
+          assert settings.request_timeout_seconds == 15.0
+          assert settings.provider_read_timeout_seconds == 12.0
+          assert settings.allow_private_networks is False
+          try:
+              Settings(enabled_providers=[], request_timeout_seconds=12.0)
+          except ValidationError:
+              pass
+          else:
+              raise AssertionError("invalid layered timeout policy was accepted")
+          PY
+
+      - name: Generate and validate the CycloneDX 1.7 SBOM
+        run: |
+          uvx --from cyclonedx-bom==7.3.0 cyclonedx-py environment \
+            "$RC_ROOT/installed/bin/python" \
+            --pyproject pyproject.toml \
+            --mc-type application \
+            --spec-version 1.7 \
+            --output-format JSON \
+            --output-file "$RC_BUNDLE/evidencemesh-0.1.0.cdx.json"
+
+      - name: Validate and checksum the complete candidate bundle
+        run: |
+          uv run python scripts/build_alpha_rc_head_bundle.py \
+            --bundle-dir "$RC_BUNDLE" \
+            --protocol-sha256 "$PROTOCOL_SHA256" \
+            --commit-sha "$EXPECTED_SHA"
+          cd "$RC_BUNDLE"
+          sha256sum --check SHA256SUMS
+
+      - name: Create keyless SLSA build provenance
+        id: provenance
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        with:
+          subject-checksums: ${{ env.RC_BUNDLE }}/SHA256SUMS
+
+      - name: Create keyless CycloneDX SBOM attestation
+        id: sbom-attestation
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        with:
+          subject-path: ${{ env.RC_BUNDLE }}/dist/evidencemesh-0.1.0-py3-none-any.whl
+          sbom-path: ${{ env.RC_BUNDLE }}/evidencemesh-0.1.0.cdx.json
+
+      - name: Verify provenance and SBOM signatures
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SIGNER_WORKFLOW: VynoDePal/EvidenceMesh/.github/workflows/alpha-rc-head.yml
+        run: |
+          wheel="$RC_BUNDLE/dist/evidencemesh-0.1.0-py3-none-any.whl"
+          while read -r _ subject; do
+            subject="${subject#\*}"
+            gh attestation verify "$RC_BUNDLE/$subject" \
+              --repo "$GITHUB_REPOSITORY" \
+              --signer-workflow "$SIGNER_WORKFLOW" \
+              --source-digest "$EXPECTED_SHA" \
+              --source-ref "$GITHUB_REF" \
+              --signer-digest "$EXPECTED_SHA" \
+              --deny-self-hosted-runners
+          done < "$RC_BUNDLE/SHA256SUMS"
+          gh attestation verify "$wheel" \
+            --repo "$GITHUB_REPOSITORY" \
+            --signer-workflow "$SIGNER_WORKFLOW" \
+            --source-digest "$EXPECTED_SHA" \
+            --source-ref "$GITHUB_REF" \
+            --signer-digest "$EXPECTED_SHA" \
+            --deny-self-hosted-runners \
+            --predicate-type https://cyclonedx.org/bom
+
+      - name: Finalize and audit the privacy-safe candidate result
+        env:
+          PROVENANCE_ID: ${{ steps.provenance.outputs.attestation-id }}
+          PROVENANCE_URL: ${{ steps.provenance.outputs.attestation-url }}
+          SBOM_ID: ${{ steps.sbom-attestation.outputs.attestation-id }}
+          SBOM_URL: ${{ steps.sbom-attestation.outputs.attestation-url }}
+        run: |
+          uv run python scripts/finalize_alpha_rc_head_report.py \
+            --bundle-dir "$RC_BUNDLE" \
+            --output "$RESULT_PATH" \
+            --repository "$GITHUB_REPOSITORY" \
+            --commit-sha "$EXPECTED_SHA" \
+            --run-id "$GITHUB_RUN_ID" \
+            --run-attempt "$GITHUB_RUN_ATTEMPT" \
+            --artifact-name "$ARTIFACT_PREFIX-$EXPECTED_SHA" \
+            --provenance-attestation-id "$PROVENANCE_ID" \
+            --provenance-attestation-url "$PROVENANCE_URL" \
+            --sbom-attestation-id "$SBOM_ID" \
+            --sbom-attestation-url "$SBOM_URL"
+          uv run python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          report = json.loads(Path(os.environ["RESULT_PATH"]).read_bytes())
+          assert report["environment"]["commit_sha"] == os.environ["EXPECTED_SHA"]
+          assert report["candidate"]["name"] == os.environ["RC_NAME"]
+          assert report["evaluation"] == "evidencemesh-alpha-rc-head-v1"
+          assert report["phase"] == "alpha-rc-head"
+          assert report["decision"]["alpha_technical_candidate_passed"] is True
+          assert report["decision"]["quality_benchmark_passed"] is False
+          assert report["decision"]["public_distribution_allowed"] is False
+          assert report["decision"]["merge_allowed"] is False
+          assert all(value == 0 for value in report["traffic"].values())
+          rendered = json.dumps(report, sort_keys=True)
+          for forbidden in (
+              "EVIDENCE_MESH_TAVILY_KEY",
+              "EVIDENCE_MESH_GEMINI_KEY",
+              "TAVILY_API_KEY",
+              "GEMINI_API_KEY",
+          ):
+              assert forbidden not in rendered
+          PY
+
+      - name: Stage and verify the exact upload root
+        run: |
+          mkdir --parents "$UPLOAD_ROOT"
+          cp --archive "$RC_BUNDLE" "$UPLOAD_ROOT/$RC_NAME"
+          cp -- "$RESULT_PATH" "$UPLOAD_ROOT/alpha-rc-head-result.json"
+          uv run python - <<'PY'
+          import os
+          from pathlib import Path
+
+          root = Path(os.environ["UPLOAD_ROOT"])
+          rc_name = os.environ["RC_NAME"]
+          expected = {
+              "alpha-rc-head-result.json",
+              f"{rc_name}/SHA256SUMS",
+              f"{rc_name}/alpha-rc-manifest.json",
+              f"{rc_name}/dist/evidencemesh-0.1.0-py3-none-any.whl",
+              f"{rc_name}/dist/evidencemesh-0.1.0.tar.gz",
+              f"{rc_name}/evidencemesh-0.1.0.cdx.json",
+              f"{rc_name}/installed-wheel-mcp-stdio.json",
+              f"{rc_name}/installed-wheel-offline-benchmark.json",
+          }
+          entries = list(root.rglob("*"))
+          assert not any(path.is_symlink() for path in entries)
+          actual = {
+              path.relative_to(root).as_posix()
+              for path in entries
+              if path.is_file()
+          }
+          assert actual == expected
+          PY
+
+      - name: Summarize the technical candidate boundary
+        run: |
+          uv run python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          import os
+          from pathlib import Path
+
+          report = json.loads(Path(os.environ["RESULT_PATH"]).read_bytes())
+          print("## EvidenceMesh Alpha-RC HEAD")
+          print()
+          print(f"- Candidate: `{report['candidate']['name']}`")
+          print(f"- Commit: `{report['environment']['commit_sha']}`")
+          print("- Technical candidate: `pass`")
+          print("- Provider/model requests: `0`")
+          print()
+          print(
+              "This artifact is for a separately authorized closed technical "
+              "alpha. Quality claims, merge and public distribution remain blocked."
+          )
+          PY
+
+      - name: Upload the exact attested candidate evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: alpha-rc-head-${{ env.EXPECTED_SHA }}
+          path: ${{ env.UPLOAD_ROOT }}
+          if-no-files-found: error
+          retention-days: 30
