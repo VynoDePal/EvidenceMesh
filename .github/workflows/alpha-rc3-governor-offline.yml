@@ -11,6 +11,7 @@ on:
       - .github/workflows/alpha-rc3-governor-offline.yml
       - .github/workflows/ci.yml
       - .github/workflows/closed-alpha-a0-preflight.yml
+      - .github/workflows/phase11-8-8-live-projection-calibration.yml
       - alpha/closed_alpha_rc3_governor_policy_v1.json
       - benchmarks/fixtures/phase11_8_7_engine_rc2.py
       - benchmarks/run_phase11_8_7_offline_runtime_timeout_hardening.py
@@ -96,7 +97,12 @@ jobs:
         run: |
           set -euo pipefail
           private_root=/tmp/evidencemesh-alpha-rc3-governor
-          sudo install --directory --owner=nobody --group=nogroup --mode=0700 "$private_root"
+          runner_uid=$(id -u)
+          sudo install --directory \
+            --owner="$runner_uid" \
+            --group=nogroup \
+            --mode=0700 \
+            "$private_root"
           python_path="$PWD/.venv/bin/python"
           run_isolated=(
             sudo env -i
@@ -108,11 +114,12 @@ jobs:
             COVERAGE_FILE="$private_root/.coverage"
             /usr/bin/unshare --net --
             /usr/bin/setpriv
-            --reuid=nobody
+            --reuid="$runner_uid"
             --regid=nogroup
             --clear-groups
             --no-new-privs
           )
+          "${run_isolated[@]}" /usr/bin/test ! -w /var/run/docker.sock
           "${run_isolated[@]}" "$python_path" -m ruff format --check .
           "${run_isolated[@]}" "$python_path" -m ruff check .
           "${run_isolated[@]}" "$python_path" -m mypy src

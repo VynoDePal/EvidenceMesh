@@ -14,6 +14,7 @@ WORKFLOW = ROOT / ".github/workflows/alpha-rc3-governor-offline.yml"
 RC2_WORKFLOW = ROOT / ".github/workflows/alpha-rc-head.yml"
 A0_WORKFLOW = ROOT / ".github/workflows/closed-alpha-a0-preflight.yml"
 CI_WORKFLOW = ROOT / ".github/workflows/ci.yml"
+LIVE_11_8_8_WORKFLOW = ROOT / ".github/workflows/phase11-8-8-live-projection-calibration.yml"
 SNAPSHOT = ROOT / "benchmarks/fixtures/phase11_8_7_engine_rc2.py"
 
 PROTOCOL_SHA256 = "e436fdb3e971e8eda0e0b835268f0b4a65ed7b9e2c48dbfc841e037c0933ff71"
@@ -79,11 +80,16 @@ def test_offline_workflow_is_read_only_secret_free_and_network_isolated() -> Non
     assert "github.event.pull_request.number == 1" in workflow
     assert "github.event.pull_request.head.sha" in workflow
     assert ".github/workflows/ci.yml" in workflow
+    assert ".github/workflows/phase11-8-8-live-projection-calibration.yml" in workflow
     assert PROTOCOL_SHA256 in workflow
     assert POLICY_SHA256 in workflow
     assert "/usr/bin/unshare --net" in workflow
     assert "/usr/bin/setpriv" in workflow
-    assert "--reuid=nobody" in workflow
+    assert "runner_uid=$(id -u)" in workflow
+    assert '--reuid="$runner_uid"' in workflow
+    assert "--regid=nogroup" in workflow
+    assert "runner_gid" not in workflow
+    assert '"${run_isolated[@]}" /usr/bin/test ! -w /var/run/docker.sock' in workflow
     assert "--no-new-privs" in workflow
     assert "sudo env -i" in workflow
     assert 'MYPY_CACHE_DIR="$private_root/mypy-cache"' in workflow
@@ -125,6 +131,15 @@ def test_generic_ci_external_searxng_job_is_skipped_for_exact_alpha_pr() -> None
     assert "github.event.pull_request.number != 1" in workflow
     assert "github.event.pull_request.head.repo.full_name != 'VynoDePal/EvidenceMesh'" in workflow
     assert "github.event.pull_request.head.ref != 'agent/evidencemesh-v0.1'" in workflow
+
+
+def test_historical_live_lock_reproduces_rc2_without_authorizing_live() -> None:
+    workflow = LIVE_11_8_8_WORKFLOW.read_text(encoding="utf-8")
+    assert "HISTORICAL_RC2_SHA: 81b5f8a8abd4302b27ad123bd5505e1757eadc7f" in workflow
+    assert "fetch-depth: 0" in workflow
+    assert 'git worktree add --detach "$historical_root" "$HISTORICAL_RC2_SHA"' in workflow
+    assert 'PYTHONPATH="$historical_root/src:$historical_root" "$current_python"' in workflow
+    assert "github.event.before == 'd91f8a85f6e2770ecd83ca95cbc7112803d683cb'" in workflow
 
 
 def test_historical_rc2_and_a0_workflows_are_retired_or_frozen() -> None:

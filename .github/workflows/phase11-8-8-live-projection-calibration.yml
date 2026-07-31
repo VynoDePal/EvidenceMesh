@@ -30,6 +30,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
+  HISTORICAL_RC2_SHA: 81b5f8a8abd4302b27ad123bd5505e1757eadc7f
   DATASET_PATH: /tmp/simple_qa_test_set_phase11_8_8_live.csv
   RESULT_PATH: /tmp/phase11_8_8_live_projection_calibration.json
   ARTIFACT_DIR: /tmp/phase11-8-8-live-artifact
@@ -44,6 +45,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Verify immutable protocol, runner and sources
@@ -72,11 +74,22 @@ jobs:
           uv sync --extra dev --locked --python 3.11
 
       - name: Validate the protocol without network or provider traffic
+        shell: bash
         run: |
-          uv run python \
-            benchmarks/run_phase11_8_8_live_projection_calibration.py \
+          set -euo pipefail
+          historical_root=/tmp/evidencemesh-phase11-8-8-live-lock
+          current_python="$PWD/.venv/bin/python"
+          cleanup() {
+            git worktree remove --force "$historical_root" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+          test "$(git rev-parse "$HISTORICAL_RC2_SHA^{tree}")" = \
+            8bf47f72814befd5868adc48c7766a0cb278d52d
+          git worktree add --detach "$historical_root" "$HISTORICAL_RC2_SHA"
+          PYTHONPATH="$historical_root/src:$historical_root" "$current_python" \
+            "$historical_root/benchmarks/run_phase11_8_8_live_projection_calibration.py" \
             --dependency-lock-manifest \
-              benchmarks/data/phase11_8_8_live_projection_dependency_locks_v1.json \
+              "$historical_root/benchmarks/data/phase11_8_8_live_projection_dependency_locks_v1.json" \
             --check-only
 
       - name: Run live-lock and workflow tests
