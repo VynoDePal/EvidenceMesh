@@ -1,0 +1,119 @@
+name: Closed Alpha A0 Preflight
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+permissions:
+  contents: read
+
+concurrency:
+  group: closed-alpha-a0-preflight-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+env:
+  RC2_SHA: 81b5f8a8abd4302b27ad123bd5505e1757eadc7f
+  RC2_TREE_SHA: 8bf47f72814befd5868adc48c7766a0cb278d52d
+
+jobs:
+  zero-traffic-preflight:
+    if: >-
+      github.repository == 'VynoDePal/EvidenceMesh' &&
+      github.event.pull_request.number == 1 &&
+      github.event.pull_request.head.repo.full_name == 'VynoDePal/EvidenceMesh' &&
+      github.event.pull_request.head.ref == 'agent/evidencemesh-v0.1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out the exact pull-request head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Bind the immutable RC2 and A0-only diff
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test "$(git rev-parse "$RC2_SHA^{tree}")" = "$RC2_TREE_SHA"
+          git merge-base --is-ancestor "$RC2_SHA" HEAD
+          mapfile -t changed < <(git diff --name-only "$RC2_SHA" HEAD)
+          expected=(
+            .github/workflows/closed-alpha-a0-preflight.yml
+            alpha/closed_alpha_a0_feedback.schema.json
+            alpha/closed_alpha_a0_plan_v1.json
+            docs/closed-alpha-a0-protocol-v1.md
+            scripts/prepare_closed_alpha_a0.py
+            tests/test_closed_alpha_a0_preflight.py
+          )
+          test "${#changed[@]}" -eq "${#expected[@]}"
+          for index in "${!expected[@]}"; do
+            test "${changed[$index]}" = "${expected[$index]}"
+          done
+          test -z "$(git diff --name-only --diff-filter=D "$RC2_SHA" HEAD)"
+          test -z "$(git status --porcelain)"
+
+      - name: Set up pinned uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install the locked validation environment
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Reproduce A0 with research networking disabled
+        shell: bash
+        run: |
+          set -euo pipefail
+          private_root=/tmp/evidencemesh-closed-alpha-a0
+          sudo install --directory --mode 0700 "$private_root"
+          python_path="$PWD/.venv/bin/python"
+          sudo env -i PYTHONDONTWRITEBYTECODE=1 \
+            /usr/bin/unshare --net -- \
+            "$python_path" scripts/prepare_closed_alpha_a0.py \
+            --output "$private_root/preflight-a.json"
+          sudo env -i PYTHONDONTWRITEBYTECODE=1 \
+            /usr/bin/unshare --net -- \
+            "$python_path" scripts/prepare_closed_alpha_a0.py \
+            --output "$private_root/preflight-b.json"
+          sudo cmp "$private_root/preflight-a.json" "$private_root/preflight-b.json"
+          sudo test "$(sudo stat --format=%a "$private_root")" = 700
+          sudo test "$(sudo stat --format=%a "$private_root/preflight-a.json")" = 600
+
+      - name: Run focused fail-closed checks without research networking
+        shell: bash
+        run: |
+          set -euo pipefail
+          private_root=/tmp/evidencemesh-closed-alpha-a0
+          python_path="$PWD/.venv/bin/python"
+          sudo env -i \
+            PYTHONDONTWRITEBYTECODE=1 \
+            RUFF_CACHE_DIR="$private_root/ruff-cache" \
+            /usr/bin/unshare --net -- \
+            "$python_path" -m pytest \
+            tests/test_closed_alpha_a0_preflight.py \
+            -p no:cacheprovider -q
+          sudo env -i RUFF_CACHE_DIR="$private_root/ruff-cache" \
+            /usr/bin/unshare --net -- \
+            "$python_path" -m ruff check \
+            scripts/prepare_closed_alpha_a0.py \
+            tests/test_closed_alpha_a0_preflight.py
+          sudo env -i RUFF_CACHE_DIR="$private_root/ruff-cache" \
+            /usr/bin/unshare --net -- \
+            "$python_path" -m ruff format --check \
+            scripts/prepare_closed_alpha_a0.py \
+            tests/test_closed_alpha_a0_preflight.py
+
+      - name: Remove ephemeral A0 outputs
+        if: always()
+        run: sudo rm --recursive --force -- /tmp/evidencemesh-closed-alpha-a0

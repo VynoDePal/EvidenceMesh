@@ -1,0 +1,459 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "profile": {
+            "const": "community"
+          }
+        },
+        "required": [
+          "profile"
+        ]
+      },
+      "then": {
+        "properties": {
+          "slot_id": {
+            "enum": [
+              "C01",
+              "C02",
+              "C03",
+              "C04",
+              "C05",
+              "C06"
+            ]
+          },
+          "traffic": {
+            "properties": {
+              "tavily_attempts": {
+                "const": 0
+              }
+            },
+            "required": [
+              "tavily_attempts"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "profile": {
+            "const": "quality"
+          }
+        },
+        "required": [
+          "profile"
+        ]
+      },
+      "then": {
+        "properties": {
+          "slot_id": {
+            "enum": [
+              "Q01",
+              "Q02"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "task": {
+            "properties": {
+              "slot": {
+                "maximum": 3
+              }
+            },
+            "required": [
+              "slot"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "task": {
+            "properties": {
+              "kind": {
+                "const": "prescribed"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "task": {
+            "properties": {
+              "slot": {
+                "minimum": 4
+              }
+            },
+            "required": [
+              "slot"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "task": {
+            "properties": {
+              "kind": {
+                "const": "real_non_sensitive"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "outcome": {
+            "properties": {
+              "status": {
+                "const": "completed"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "outcome": {
+            "properties": {
+              "blocking": {
+                "const": false
+              },
+              "failure_kind": {
+                "const": "none"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "outcome": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "blocked",
+                  "aborted"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "outcome": {
+            "properties": {
+              "blocking": {
+                "const": true
+              },
+              "failure_kind": {
+                "not": {
+                  "const": "none"
+                }
+              },
+              "useful": {
+                "const": false
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "properties": {
+    "candidate_sha": {
+      "const": "81b5f8a8abd4302b27ad123bd5505e1757eadc7f"
+    },
+    "consent": {
+      "additionalProperties": false,
+      "properties": {
+        "authority_confirmed": {
+          "const": true
+        },
+        "confirmed": {
+          "const": true
+        },
+        "version": {
+          "const": "closed-alpha-a0-consent-v1"
+        },
+        "withdrawal_requested": {
+          "const": false
+        }
+      },
+      "required": [
+        "version",
+        "confirmed",
+        "authority_confirmed",
+        "withdrawal_requested"
+      ],
+      "type": "object"
+    },
+    "grounding_counts": {
+      "additionalProperties": false,
+      "properties": {
+        "citations": {
+          "maximum": 100,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "resolvable_citations": {
+          "maximum": 100,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "results": {
+          "maximum": 100,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "supported_citations": {
+          "maximum": 100,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "results",
+        "citations",
+        "resolvable_citations",
+        "supported_citations"
+      ],
+      "type": "object"
+    },
+    "outcome": {
+      "additionalProperties": false,
+      "properties": {
+        "blocking": {
+          "type": "boolean"
+        },
+        "duration_seconds": {
+          "maximum": 3600,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "failure_kind": {
+          "enum": [
+            "none",
+            "installation",
+            "configuration",
+            "provider",
+            "timeout",
+            "empty_result",
+            "citation",
+            "privacy",
+            "budget",
+            "candidate_identity",
+            "other"
+          ]
+        },
+        "status": {
+          "enum": [
+            "completed",
+            "blocked",
+            "aborted"
+          ]
+        },
+        "useful": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "status",
+        "duration_seconds",
+        "useful",
+        "blocking",
+        "failure_kind"
+      ],
+      "type": "object"
+    },
+    "participant_code": {
+      "pattern": "^p-[0-9a-f]{16}$",
+      "type": "string"
+    },
+    "privacy": {
+      "additionalProperties": false,
+      "properties": {
+        "cache_disabled": {
+          "const": true
+        },
+        "incident_detected": {
+          "const": false
+        },
+        "raw_runtime_objects_serialized": {
+          "const": false
+        },
+        "sensitive_input_detected": {
+          "const": false
+        }
+      },
+      "required": [
+        "cache_disabled",
+        "raw_runtime_objects_serialized",
+        "sensitive_input_detected",
+        "incident_detected"
+      ],
+      "type": "object"
+    },
+    "profile": {
+      "enum": [
+        "community",
+        "quality"
+      ]
+    },
+    "protocol_version": {
+      "const": "closed-alpha-a0-v1"
+    },
+    "retention": {
+      "additionalProperties": false,
+      "properties": {
+        "collected_on": {
+          "format": "date",
+          "type": "string"
+        },
+        "delete_after": {
+          "format": "date",
+          "type": "string"
+        }
+      },
+      "required": [
+        "collected_on",
+        "delete_after"
+      ],
+      "type": "object"
+    },
+    "schema_version": {
+      "const": "evidencemesh.closed-alpha-a0.session.v1"
+    },
+    "session_code": {
+      "pattern": "^s-[0-9a-f]{32}$",
+      "type": "string"
+    },
+    "slot_id": {
+      "enum": [
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "Q01",
+        "Q02"
+      ]
+    },
+    "task": {
+      "additionalProperties": false,
+      "properties": {
+        "category": {
+          "enum": [
+            "general_reference",
+            "current_information",
+            "technical",
+            "academic",
+            "code",
+            "other_non_sensitive"
+          ]
+        },
+        "kind": {
+          "enum": [
+            "prescribed",
+            "real_non_sensitive"
+          ]
+        },
+        "slot": {
+          "maximum": 5,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "slot",
+        "kind",
+        "category"
+      ],
+      "type": "object"
+    },
+    "traffic": {
+      "additionalProperties": false,
+      "properties": {
+        "automatic_retries": {
+          "const": 0
+        },
+        "evidencemesh_model_attempts": {
+          "const": 0
+        },
+        "fallbacks": {
+          "const": 0
+        },
+        "provider_attempts": {
+          "maximum": 6,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "provider_errors": {
+          "maximum": 6,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "repairs": {
+          "const": 0
+        },
+        "tavily_attempts": {
+          "maximum": 4,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "provider_attempts",
+        "tavily_attempts",
+        "provider_errors",
+        "evidencemesh_model_attempts",
+        "automatic_retries",
+        "fallbacks",
+        "repairs"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "protocol_version",
+    "candidate_sha",
+    "participant_code",
+    "session_code",
+    "slot_id",
+    "profile",
+    "task",
+    "retention",
+    "consent",
+    "outcome",
+    "traffic",
+    "grounding_counts",
+    "privacy"
+  ],
+  "title": "EvidenceMesh closed alpha A0 aggregate-only session report",
+  "type": "object"
+}

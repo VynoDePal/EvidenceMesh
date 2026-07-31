@@ -1,0 +1,115 @@
+{
+  "authority": {
+    "live_execution_authorized": false,
+    "preparation_authorized": true,
+    "separate_live_go_required": true,
+    "tester_contact_authorized": false
+  },
+  "budget": {
+    "automatic_retries_total_max": 0,
+    "concurrent_sessions_max": 2,
+    "evidencemesh_model_attempts_total_max": 0,
+    "fallbacks_total_max": 0,
+    "provider_attempts_per_session_max": 6,
+    "provider_attempts_total_max": 240,
+    "repairs_total_max": 0,
+    "request_starts_per_minute_max": 10,
+    "sessions_per_participant_max": 5,
+    "sessions_total_max": 40,
+    "tavily_attempts_community_session_max": 0,
+    "tavily_attempts_quality_session_max": 4,
+    "tavily_attempts_total_max": 40,
+    "waves_max": 1
+  },
+  "candidate": {
+    "artifact_digest_sha256": "487e7118f18ec425908fb1fbb94678795fb8197c9124435957ea843b49327561",
+    "artifact_name": "alpha-rc-head-81b5f8a8abd4302b27ad123bd5505e1757eadc7f",
+    "commit_sha": "81b5f8a8abd4302b27ad123bd5505e1757eadc7f",
+    "git_tree_sha1": "8bf47f72814befd5868adc48c7766a0cb278d52d",
+    "name": "evidencemesh-0.1.0-alpha-rc.2",
+    "provenance_attestation_id": 38176497,
+    "sbom_attestation_id": 38176506,
+    "workflow_run_attempt": 1,
+    "workflow_run_id": 30632190869
+  },
+  "cohort": {
+    "participant_count": 8,
+    "slots": [
+      {
+        "profile": "community",
+        "slot_id": "C01"
+      },
+      {
+        "profile": "community",
+        "slot_id": "C02"
+      },
+      {
+        "profile": "community",
+        "slot_id": "C03"
+      },
+      {
+        "profile": "community",
+        "slot_id": "C04"
+      },
+      {
+        "profile": "community",
+        "slot_id": "C05"
+      },
+      {
+        "profile": "community",
+        "slot_id": "C06"
+      },
+      {
+        "profile": "quality",
+        "slot_id": "Q01"
+      },
+      {
+        "profile": "quality",
+        "slot_id": "Q02"
+      }
+    ]
+  },
+  "feedback_schema_path": "alpha/closed_alpha_a0_feedback.schema.json",
+  "feedback_schema_sha256": "e78554d76bcb2f4d208c631696830812e514c3a554669eec00a8a2745380dc23",
+  "privacy": {
+    "cache_disabled_required": true,
+    "free_text_allowed": false,
+    "local_only": true,
+    "raw_runtime_object_serialization_allowed": false,
+    "report_directory_mode": "0700",
+    "report_file_mode": "0600",
+    "retention_days_max": 14,
+    "upload_allowed": false
+  },
+  "protocol_path": "docs/closed-alpha-a0-protocol-v1.md",
+  "protocol_sha256": "547da45ddc1f791d747ad77ff91e9bb6bb83ababdafbc6fff01f601184c87663",
+  "runtime_readiness": {
+    "pre_dispatch_global_governor_implemented": false,
+    "quality_profile_within_session_attempt_cap": false,
+    "runtime_budget_enforcement_ready": false
+  },
+  "schema_version": "evidencemesh.closed-alpha-a0.plan.v1",
+  "status": "prepared_blocked_before_live",
+  "stop_thresholds": {
+    "blocking_session_rate_strictly_greater_than": 0.1,
+    "citation_support_rate_less_than": 0.9,
+    "latency_p95_seconds_greater_than": 120,
+    "minimum_valid_sessions_for_rate_gates": 20,
+    "provider_error_rate_strictly_greater_than": 0.15,
+    "unresolvable_citation_sessions_max": 1,
+    "useful_session_rate_less_than": 0.7
+  },
+  "tasks": {
+    "per_participant": 5,
+    "prescribed_per_participant": 3,
+    "real_non_sensitive_per_participant": 2,
+    "task_text_collected": false
+  },
+  "traffic": {
+    "model_attempts": 0,
+    "provider_attempts": 0,
+    "research_requests": 0,
+    "tavily_attempts": 0,
+    "tester_sessions": 0
+  }
+}
