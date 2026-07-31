@@ -1,0 +1,178 @@
+{
+  "authority": {
+    "closed_alpha_adoption_authorized": false,
+    "live_execution_authorized": false,
+    "merge_authorized": false,
+    "offline_implementation_and_validation_authorized": true,
+    "public_binary_distribution_authorized": false,
+    "public_release_authorized": false,
+    "quality_claim_authorized": false,
+    "tester_contact_authorized": false
+  },
+  "basis": {
+    "accepted_rc3_candidate_sha": "c1e0be437442b0d97da26f2c9085067a8c09955e",
+    "accepted_rc3_candidate_tree": "44bb1df79b6026c1fc1c2a40218c7347117697a0",
+    "rc3_seal_sha": "033d893d7c07e8c31a19e543187d15e28aa58d90",
+    "rc3_seal_tree": "d0d0fb5b6d5954920728a9928891ab73b468d063"
+  },
+  "cohort": {
+    "community_slots": 6,
+    "consent_version": "closed-alpha-a0-consent-v1",
+    "contact_data_allowed": false,
+    "profile_source": "sqlite_registry",
+    "pseudonymous_identifiers_only": true,
+    "quality_slots": 2,
+    "slots_total": 8
+  },
+  "control_plane": {
+    "classes": [
+      "SQLiteAlphaControlPlane",
+      "ClosedAlphaFeedbackStore"
+    ],
+    "dispatch_checks": [
+      "atomic_reservation",
+      "first_httpx_request_hook"
+    ],
+    "dispatchable_state": "prepared",
+    "epoch_invalidates_prior_permits": true,
+    "feedback_context_authoritative_fields": [
+      "slot_id",
+      "profile",
+      "provider_attempts",
+      "tavily_attempts"
+    ],
+    "feedback_context_source": "sqlite_registry_and_attempt_ledger",
+    "ledger_scope": "single_host_shared_sqlite",
+    "privacy_fault_blocks": [
+      "transition_to_prepared",
+      "atomic_reservation",
+      "first_httpx_request_hook"
+    ],
+    "privacy_fault_durable": true,
+    "remote_or_distributed_coordinator": false,
+    "states": [
+      "prepared",
+      "paused",
+      "stopped"
+    ],
+    "stopped_is_terminal": true
+  },
+  "distribution": {
+    "actions_artifact_upload_allowed": false,
+    "attestation_creation_allowed_in_this_phase": false,
+    "build_outputs_ephemeral": true,
+    "package_publication_allowed": false,
+    "sealing_commit_authorized_in_this_phase": false
+  },
+  "feedback_validator": {
+    "arbitrary_or_noop_validator_allowed": false,
+    "candidate_sha_binding": "exact_pull_request_head",
+    "class": "ClosedAlphaFeedbackContract",
+    "final_class_required": true,
+    "packaged_in_candidate_wheel_required": true
+  },
+  "future_closed_alpha_ceiling_reference": {
+    "concurrent_sessions_max": 2,
+    "provider_attempts_per_session_max": 6,
+    "provider_attempts_total_max": 240,
+    "request_starts_per_minute_max": 10,
+    "sessions_per_participant_max": 5,
+    "sessions_total_max": 40,
+    "tavily_attempts_community_session_max": 0,
+    "tavily_attempts_quality_session_max": 4,
+    "tavily_attempts_total_max": 40
+  },
+  "offline_phase_budget": {
+    "automatic_fallbacks": 0,
+    "automatic_repairs": 0,
+    "automatic_retries": 0,
+    "document_fetches": 0,
+    "live_sessions": 0,
+    "model_requests": 0,
+    "provider_requests": 0,
+    "published_distributions": 0,
+    "tavily_requests": 0,
+    "tester_contacts": 0,
+    "tester_sessions": 0,
+    "token_count_requests": 0,
+    "uploaded_artifacts": 0
+  },
+  "privacy": {
+    "atomic_no_overwrite_writes": true,
+    "feedback_allowlist_only": true,
+    "feedback_directory_mode": "0700",
+    "feedback_file_mode": "0600",
+    "feedback_utc_high_water_durable": true,
+    "feedback_utc_high_water_store": "shared_sqlite_control_plane",
+    "local_only": true,
+    "privacy_fault_store": "shared_sqlite_control_plane",
+    "purge_at_access": true,
+    "purge_at_shutdown": true,
+    "purge_at_startup": true,
+    "scheduler_required": true,
+    "task_or_provider_payload_allowed": false,
+    "withdrawal_blocks_before_purge": true,
+    "withdrawal_caller_session_list_allowed": false,
+    "withdrawal_reconciliation_points": [
+      "startup",
+      "access",
+      "shutdown",
+      "scheduler"
+    ],
+    "withdrawal_report_discovery": "private_store_inventory"
+  },
+  "protocol": {
+    "path": "docs/alpha-rc4-control-plane-offline-protocol-v1.md",
+    "sha256": "b4d6946565538ce865893592f5c0e0e09436780ae102b52629291de3175b455d"
+  },
+  "providers": {
+    "community": [
+      "arxiv",
+      "crossref",
+      "github",
+      "searxng",
+      "wikipedia"
+    ],
+    "ddgs": "forbidden",
+    "quality": [
+      "arxiv",
+      "crossref",
+      "github",
+      "searxng",
+      "tavily",
+      "wikipedia"
+    ],
+    "searxng_fallback_endpoints": "forbidden",
+    "unknown_or_custom": "forbidden"
+  },
+  "recovery": {
+    "automatic_resume_allowed": false,
+    "budget_refund_allowed": false,
+    "budget_reset_allowed": false,
+    "expired_lease_state": "paused",
+    "host_reboot_transparent_recovery_claimed": false,
+    "outstanding_permits_invalidated": true,
+    "recovery_requires_compare_and_swap": true
+  },
+  "scheduler": {
+    "component": "FeedbackRetentionScheduler",
+    "continuous_local_supervision_required_before_live": true,
+    "deployed_daemon_in_offline_phase": false,
+    "entry_criterion_before_live": true,
+    "local_component": true,
+    "remote_service": false
+  },
+  "schema_version": "evidencemesh.closed-alpha-rc4-control-plane-policy.v1",
+  "status": "offline_implementation_validation_only",
+  "validation": {
+    "network_namespace_required": true,
+    "pull_request_draft_required": true,
+    "rc3_and_a0_history_immutable": true,
+    "strict_mypy_required": true,
+    "supply_chain_install_before_isolation": true,
+    "tests_and_branch_coverage_required": true,
+    "wheel_and_sdist_build_required": true,
+    "wheel_smoke_candidate_sha_binding_required": true,
+    "wheel_smoke_network_namespace_required": true
+  }
+}
