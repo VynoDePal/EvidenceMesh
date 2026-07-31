@@ -22,10 +22,13 @@ from scripts.finalize_alpha_rc3_head_report import finalize_report
 ROOT = Path(__file__).parents[1]
 PROTOCOL = ROOT / "docs/alpha-rc3-head-exact-protocol-v1.md"
 WORKFLOW = ROOT / ".github/workflows/alpha-rc3-head-exact.yml"
+ACCEPTANCE = ROOT / "alpha/alpha_rc3_head_acceptance_v1.json"
 SMOKE = ROOT / "scripts/smoke_installed_rc3.py"
 PROTOCOL_SHA256 = "5363531629e09fd43b41e17b2f9ad4dc631d8548b308728471e6363c81198456"
 BASE_SHA = "710739311af1c11504e647e94026f13d3dfb221f"
 BASE_TREE = "70d75d4eddef8654e850215d9b3eb6abd778ecdf"
+CANDIDATE_SHA = "c1e0be437442b0d97da26f2c9085067a8c09955e"
+CANDIDATE_TREE = "44bb1df79b6026c1fc1c2a40218c7347117697a0"
 
 
 def _write_json(path: Path, payload: object) -> None:
@@ -371,43 +374,66 @@ def test_installed_smoke_is_governed_and_contains_no_live_provider_path() -> Non
     assert "GEMINI_API_KEY" not in smoke
 
 
-def test_one_shot_workflow_is_exact_private_and_metadata_only() -> None:
-    workflow = WORKFLOW.read_text(encoding="utf-8")
-    lowered = workflow.lower()
-    assert f"RUNTIME_BASE_SHA: {BASE_SHA}" in workflow
-    assert f"RUNTIME_BASE_TREE: {BASE_TREE}" in workflow
-    assert "EXPECTED_SHA: ${{ github.sha }}" in workflow
-    assert f"github.event.before == '{BASE_SHA}'" in workflow
-    assert "github.event.forced == false" in workflow
-    assert "github.sha == github.event.after" in workflow
-    assert "pull_request:" not in workflow
-    assert "workflow_dispatch:" not in workflow
-    assert "persist-credentials: false" in workflow
-    assert "pull-requests: read" in workflow
-    assert "fetch-depth: 2" in workflow
-    assert "enable-cache: false" in workflow
-    assert "UV_NO_CACHE: 1" in workflow
-    assert workflow.count("--require-hashes") >= 3
-    assert "--no-hashes" not in workflow
-    assert 'git archive --format=tar "$EXPECTED_SHA"' in workflow
-    assert 'sudo chown --recursive root:root "$SOURCE_ROOT"' in workflow
-    assert 'sudo chown root:root "$SOURCE_SUMS"' in workflow
-    assert 'sudo chmod 0555 "$SOURCE_ROOT"' in workflow
-    assert "-mindepth 1 -perm /022" in workflow
-    assert 'sha256sum --check "$SOURCE_SUMS"' in workflow
-    assert "/usr/bin/unshare --net" in workflow
-    assert "--regid=nogroup" in workflow
-    assert "--clear-groups" in workflow
-    assert "--no-new-privs" in workflow
-    assert '"${run_isolated[@]}" /usr/bin/test ! -w /var/run/docker.sock' in workflow
-    assert workflow.count("actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26") == 3
-    assert "actions/upload-artifact" not in workflow
-    assert "artifact-metadata: write" not in workflow
-    assert "Binary artifact uploaded" in workflow
-    assert "Public metadata only" in workflow
-    assert "ALPHA_RC3_SEAL_RECORD_BEGIN" in workflow
-    assert workflow.count('gh api "repos/$GITHUB_REPOSITORY/pulls/1"') == 3
-    assert "Remove every ephemeral candidate byte" in workflow
-    assert "secrets." not in workflow
-    assert "pypi publish" not in lowered
-    assert "gh release" not in lowered
+def test_one_shot_workflow_is_retired_by_deletion() -> None:
+    assert not WORKFLOW.exists()
+
+
+def test_metadata_only_seal_records_public_evidence_and_keeps_live_blocked() -> None:
+    record = json.loads(ACCEPTANCE.read_bytes())
+    assert record["schema_version"] == 1
+    assert record["acceptance"] == {
+        "scope": "single_host_technical_alpha_only",
+        "scored": False,
+        "status": "accepted",
+    }
+    assert record["candidate"]["sha"] == CANDIDATE_SHA
+    assert record["candidate"]["tree"] == CANDIDATE_TREE
+    assert record["candidate"]["parent_sha"] == BASE_SHA
+    assert record["candidate"]["parent_tree"] == BASE_TREE
+    assert len(record["candidate"]["subjects"]) == 7
+    assert record["run"] == {
+        "attempt": 1,
+        "conclusion": "success",
+        "id": 30643865155,
+        "job_id": 91200262890,
+        "seal_emitted_at_utc": "2026-07-31T15:42:50Z",
+        "url": "https://github.com/VynoDePal/EvidenceMesh/actions/runs/30643865155",
+    }
+    assert record["attestations"] == {
+        "provenance": {
+            "id": 38206529,
+            "url": "https://github.com/VynoDePal/EvidenceMesh/attestations/38206529",
+        },
+        "result": {
+            "id": 38206635,
+            "url": "https://github.com/VynoDePal/EvidenceMesh/attestations/38206635",
+        },
+        "sbom": {
+            "id": 38206541,
+            "url": "https://github.com/VynoDePal/EvidenceMesh/attestations/38206541",
+        },
+    }
+    assert record["distribution"]["github_actions_artifact_count"] == 0
+    assert record["distribution"]["binary_artifact_uploaded"] is False
+    assert record["distribution"]["unpublished_distributions"] is True
+    assert record["decision"]["alpha_technical_candidate_passed"] is True
+    assert record["decision"]["sealing_commit_required"] is True
+    for blocked in (
+        "closed_alpha_adoption_authorized",
+        "live_execution_authorized",
+        "merge_allowed",
+        "public_binary_distribution_allowed",
+        "release_allowed",
+        "tester_contact_authorized",
+    ):
+        assert record["decision"][blocked] is False
+    assert all(type(value) is int and value == 0 for value in record["traffic"].values())
+    assert record["seal"]["completed"] is True
+    assert record["seal"]["workflow_retired"] is True
+    assert record["seal"]["retired_workflow_path"] == str(WORKFLOW.relative_to(ROOT))
+    assert record["seal"]["workflow_retirement_method"] == "deleted_in_sealing_commit"
+    assert not WORKFLOW.exists()
+    assert record["workflow"]["sha256"] == (
+        "92c856ae22987016d513c74c04259257bbc5ba0c6561a8727e334dd21c31c9a2"
+    )
+    assert record["protocol"]["sha256"] == PROTOCOL_SHA256
