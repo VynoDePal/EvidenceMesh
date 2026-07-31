@@ -17,6 +17,8 @@ concurrency:
 env:
   RC2_SHA: 81b5f8a8abd4302b27ad123bd5505e1757eadc7f
   RC2_TREE_SHA: 8bf47f72814befd5868adc48c7766a0cb278d52d
+  A0_SHA: 540eca26ffb97908320a5ecea5f1bf3fb4f0247a
+  A0_TREE_SHA: adf2a30efd5ff842fb1776e53053d90833fb716e
 
 jobs:
   zero-traffic-preflight:
@@ -35,7 +37,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Bind the immutable RC2 and A0-only diff
+      - name: Verify the immutable RC2 and A0 baselines
         env:
           EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
         shell: bash
@@ -43,9 +45,11 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
           test "$(git rev-parse "$RC2_SHA^{tree}")" = "$RC2_TREE_SHA"
-          git merge-base --is-ancestor "$RC2_SHA" HEAD
-          mapfile -t changed < <(git diff --name-only "$RC2_SHA" HEAD)
-          expected=(
+          test "$(git rev-parse "$A0_SHA^{tree}")" = "$A0_TREE_SHA"
+          test "$(git rev-parse "$A0_SHA^")" = "$RC2_SHA"
+          git merge-base --is-ancestor "$A0_SHA" HEAD
+          mapfile -t changed < <(git diff --name-only "$RC2_SHA" "$A0_SHA")
+          expected_history=(
             .github/workflows/closed-alpha-a0-preflight.yml
             alpha/closed_alpha_a0_feedback.schema.json
             alpha/closed_alpha_a0_plan_v1.json
@@ -53,11 +57,17 @@ jobs:
             scripts/prepare_closed_alpha_a0.py
             tests/test_closed_alpha_a0_preflight.py
           )
-          test "${#changed[@]}" -eq "${#expected[@]}"
-          for index in "${!expected[@]}"; do
-            test "${changed[$index]}" = "${expected[$index]}"
+          test "${#changed[@]}" -eq "${#expected_history[@]}"
+          for index in "${!expected_history[@]}"; do
+            test "${changed[$index]}" = "${expected_history[$index]}"
           done
-          test -z "$(git diff --name-only --diff-filter=D "$RC2_SHA" HEAD)"
+          immutable_artifacts=(
+            alpha/closed_alpha_a0_feedback.schema.json
+            alpha/closed_alpha_a0_plan_v1.json
+            docs/closed-alpha-a0-protocol-v1.md
+            scripts/prepare_closed_alpha_a0.py
+          )
+          git diff --quiet "$A0_SHA" HEAD -- "${immutable_artifacts[@]}"
           test -z "$(git status --porcelain)"
 
       - name: Set up pinned uv

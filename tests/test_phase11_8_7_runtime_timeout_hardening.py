@@ -20,7 +20,7 @@ from benchmarks.run_phase11_8_7_offline_runtime_timeout_hardening import (
 ROOT = Path(__file__).parents[1]
 PROTOCOL = ROOT / "docs/benchmark-protocol-v22.md"
 CONFIG = ROOT / "src/evidencemesh/config.py"
-ENGINE = ROOT / "src/evidencemesh/engine.py"
+ENGINE = ROOT / "benchmarks/fixtures/phase11_8_7_engine_rc2.py"
 TELEMETRY = ROOT / "src/evidencemesh/telemetry.py"
 RUNNER = ROOT / "benchmarks/run_phase11_8_7_offline_runtime_timeout_hardening.py"
 HISTORICAL = ROOT / "benchmarks/results/phase11_8_6_offline_timeout_diagnostic_2026-07-30.json"
@@ -49,6 +49,14 @@ def test_locked_runtime_sources_and_historical_result_are_unchanged() -> None:
     assert _sha256(ENGINE) == LOCKED_ENGINE_SHA256
     assert _sha256(TELEMETRY) == LOCKED_TELEMETRY_SHA256
     assert _sha256(HISTORICAL) == LOCKED_PHASE11_8_6_RESULT_SHA256
+
+
+def test_historical_engine_lock_uses_the_frozen_rc2_snapshot() -> None:
+    assert ENGINE.name == "phase11_8_7_engine_rc2.py"
+    assert ENGINE != ROOT / "src/evidencemesh/engine.py"
+    workflow = WORKFLOW.read_text(encoding="utf-8")
+    assert f"{LOCKED_ENGINE_SHA256}  benchmarks/fixtures/{ENGINE.name}" in workflow
+    assert f"{LOCKED_ENGINE_SHA256}  src/evidencemesh/engine.py" not in workflow
 
 
 def test_offline_report_passes_all_gates_with_exact_timeout_policy() -> None:

@@ -19,6 +19,7 @@ from scripts.build_alpha_rc_head_bundle import (
 from scripts.finalize_alpha_rc_head_report import finalize_report
 
 PROTOCOL_SHA256 = "41c86a73a2d3e0a4f4225d0574a2d145650cb73eca14a9d61e1391bcbab76f3c"
+ACCEPTED_RC2_SHA = "81b5f8a8abd4302b27ad123bd5505e1757eadc7f"
 
 
 def _write_json(path: Path, payload: object) -> None:
@@ -230,7 +231,7 @@ def test_alpha_rc_head_rejects_extra_file_and_wrong_sha(tmp_path: Path) -> None:
         )
 
 
-def test_alpha_rc_head_workflow_forces_one_exact_push_build() -> None:
+def test_alpha_rc_head_workflow_is_permanently_limited_to_the_accepted_rc2() -> None:
     root = Path(__file__).parents[1]
     workflow = (root / ".github" / "workflows" / "alpha-rc-head.yml").read_text(encoding="utf-8")
 
@@ -242,9 +243,11 @@ def test_alpha_rc_head_workflow_forces_one_exact_push_build() -> None:
     assert "pull_request:" not in workflow
     assert "workflow_dispatch:" not in workflow
     assert "cancel-in-progress: true" in workflow
-    assert "EXPECTED_SHA: ${{ github.sha }}" in workflow
+    assert f"EXPECTED_SHA: {ACCEPTED_RC2_SHA}" in workflow
+    assert "EXPECTED_SHA: ${{ github.sha }}" not in workflow
     assert "github.repository == 'VynoDePal/EvidenceMesh'" in workflow
     assert "github.ref == 'refs/heads/agent/evidencemesh-v0.1'" in workflow
+    assert f"github.sha == '{ACCEPTED_RC2_SHA}'" in workflow
     assert 'test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"' in workflow
     assert "candidate-state" not in workflow
     assert "Reuse the committed candidate decision" not in workflow

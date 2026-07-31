@@ -25,6 +25,7 @@ BENCHMARK_NAME = "evidencemesh-phase11-8-7-offline-runtime-timeout-hardening-v1"
 PROTOCOL_PATH = "docs/benchmark-protocol-v22.md"
 CONFIG_PATH = "src/evidencemesh/config.py"
 ENGINE_PATH = "src/evidencemesh/engine.py"
+ENGINE_SNAPSHOT_PATH = "benchmarks/fixtures/phase11_8_7_engine_rc2.py"
 TELEMETRY_PATH = "src/evidencemesh/telemetry.py"
 HISTORICAL_RESULT_PATH = "benchmarks/results/phase11_8_6_offline_timeout_diagnostic_2026-07-30.json"
 
@@ -496,7 +497,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--protocol", type=Path, default=REPOSITORY_ROOT / PROTOCOL_PATH)
     parser.add_argument("--config", type=Path, default=REPOSITORY_ROOT / CONFIG_PATH)
-    parser.add_argument("--engine", type=Path, default=REPOSITORY_ROOT / ENGINE_PATH)
+    parser.add_argument(
+        "--engine",
+        type=Path,
+        default=REPOSITORY_ROOT / ENGINE_SNAPSHOT_PATH,
+        help="Frozen RC2 engine snapshot used to reproduce the historical result.",
+    )
     parser.add_argument(
         "--telemetry",
         type=Path,

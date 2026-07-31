@@ -16,8 +16,6 @@ import httpx
 from evidencemesh.cache import SQLiteCache
 from evidencemesh.config import Settings
 from evidencemesh.errors import (
-    BudgetConfigurationError,
-    BudgetExceededError,
     EvidenceMeshError,
     FetchError,
     ProviderCircuitOpenError,
@@ -25,7 +23,6 @@ from evidencemesh.errors import (
 )
 from evidencemesh.extraction import content_sha256, select_excerpt
 from evidencemesh.fetcher import WebFetcher
-from evidencemesh.governor import DispatchIntent, DispatchPermit, SQLiteBudgetGovernor
 from evidencemesh.models import (
     BatchSearchResponse,
     ClaimReviewPacket,
@@ -101,26 +98,8 @@ class EvidenceMesh:
         client: httpx.AsyncClient | None = None,
         fetcher: WebFetcher | None = None,
         cache: SQLiteCache | None = None,
-        governor: SQLiteBudgetGovernor | None = None,
     ) -> None:
         self.settings = settings or Settings.from_env()
-        self.governor = governor if governor is not None else SQLiteBudgetGovernor.from_env()
-        if self.governor is not None:
-            if providers is None:
-                self.governor.validate_provider_configuration(
-                    self.settings.enabled_providers,
-                    self.settings.searxng_fallback_urls,
-                )
-            elif client is None:
-                raise BudgetConfigurationError(
-                    "closed-alpha custom providers require their governed HTTPX client"
-                )
-            if fetcher is not None and (
-                not isinstance(fetcher, WebFetcher) or fetcher.governor is not self.governor
-            ):
-                raise BudgetConfigurationError(
-                    "closed-alpha mode requires the governed built-in WebFetcher"
-                )
         supplied_client = client
         self._owns_client = client is None
         self.client = client or httpx.AsyncClient(
@@ -141,21 +120,7 @@ class EvidenceMesh:
         else:
             self.providers = providers
             self.configuration_warnings = []
-        self._governed_provider_identities: tuple[tuple[SearchProvider, str], ...] = ()
-        if self.governor is not None:
-            self._governed_provider_identities = tuple(
-                (provider, self.governor.validate_provider(provider, self.client))
-                for provider in self.providers
-            )
-            self.governor.attach_client(self.client)
-        if fetcher is None:
-            self.fetcher = WebFetcher(
-                self.settings,
-                client=supplied_client,
-                governor=self.governor,
-            )
-        else:
-            self.fetcher = fetcher
+        self.fetcher = fetcher or WebFetcher(self.settings, client=supplied_client)
         self.cache = cache or SQLiteCache(self.settings.cache_path)
         self._semaphore = asyncio.Semaphore(self.settings.max_concurrency)
         self._provider_circuits = ProviderCircuitBreaker(
@@ -175,17 +140,11 @@ class EvidenceMesh:
         if self._closed:
             return
         self._provider_http_instrumentation.detach()
-        try:
-            if self.governor is not None:
-                await self.governor.aclose()
-        finally:
-            try:
-                await self.fetcher.aclose()
-            finally:
-                if self._owns_client:
-                    await self.client.aclose()
-                self.cache.close()
-                self._closed = True
+        await self.fetcher.aclose()
+        if self._owns_client:
+            await self.client.aclose()
+        self.cache.close()
+        self._closed = True
 
     async def _provider_search(
         self,
@@ -193,7 +152,6 @@ class EvidenceMesh:
         query: str,
         request: SearchRequest,
         trace: ProviderCallTrace,
-        dispatch_permit: DispatchPermit | None,
     ) -> tuple[list[ProviderResult], bool]:
         cache_payload = {
             "provider": provider.name,
@@ -213,7 +171,7 @@ class EvidenceMesh:
                 trace.cache_hits += 1
                 return [ProviderResult.model_validate(item) for item in cached], True
         try:
-            circuit_permit = await self._provider_circuits.acquire(provider.name)
+            permit = await self._provider_circuits.acquire(provider.name)
         except ProviderCircuitOpenError:
             trace.circuit_skips += 1
             raise
@@ -222,34 +180,23 @@ class EvidenceMesh:
                 async with self._semaphore:
                     trace.begin_adapter(time.perf_counter())
                     try:
-                        if self.governor is None:
-                            with self._provider_http_instrumentation.capture(trace):
-                                results = await provider.search(query, request)
-                        else:
-                            if dispatch_permit is None:
-                                raise BudgetConfigurationError(
-                                    "closed-alpha provider dispatch has no permit"
-                                )
-                            with (
-                                self.governor.capture(dispatch_permit),
-                                self._provider_http_instrumentation.capture(trace),
-                            ):
-                                results = await provider.search(query, request)
+                        with self._provider_http_instrumentation.capture(trace):
+                            results = await provider.search(query, request)
                     finally:
                         trace.finish_adapter(time.perf_counter())
         except asyncio.CancelledError:
-            await self._provider_circuits.release(circuit_permit)
+            await self._provider_circuits.release(permit)
             raise
         except TimeoutError as exc:
-            await self._provider_circuits.record_failure(circuit_permit)
+            await self._provider_circuits.record_failure(permit)
             raise ProviderError(
                 f"{provider.name} exceeded the configured request deadline",
                 kind="provider_wall_timeout",
             ) from exc
         except Exception:
-            await self._provider_circuits.record_failure(circuit_permit)
+            await self._provider_circuits.record_failure(permit)
             raise
-        await self._provider_circuits.record_success(circuit_permit)
+        await self._provider_circuits.record_success(permit)
         if request.use_cache:
             self.cache.set_json(
                 "search",
@@ -262,17 +209,9 @@ class EvidenceMesh:
             )
         return results, False
 
-    def _governed_provider_name(self, provider: SearchProvider) -> str:
-        for audited_provider, canonical_name in self._governed_provider_identities:
-            if provider is audited_provider:
-                return canonical_name
-        raise BudgetConfigurationError("closed-alpha provider was not audited at engine startup")
-
     async def search(self, request: SearchRequest | str, **kwargs: Any) -> SearchResponse:
         if isinstance(request, str):
             request = SearchRequest(query=request, **kwargs)
-        if self.governor is not None and request.use_cache:
-            raise BudgetConfigurationError("closed-alpha search requires use_cache=false")
         started = time.perf_counter()
         queries = list(dict.fromkeys([request.query, *request.query_variants]))
         routes = build_provider_routes(
@@ -299,34 +238,10 @@ class EvidenceMesh:
             family_call_counts[route.source_family.value] += len(route.queries)
             provider_logical_call_counts[route.provider.name] += len(route.queries)
 
-        dispatches = [
-            (route.provider, query, route.source_family)
-            for route in routes
-            for query in route.queries
-        ]
-        permits: list[DispatchPermit | None]
-        if self.governor is None:
-            permits = [None] * len(dispatches)
-        elif dispatches:
-            permits = list(
-                await self.governor.reserve_batch(
-                    [
-                        DispatchIntent(
-                            kind="provider",
-                            provider=self._governed_provider_name(provider),
-                        )
-                        for provider, _, _ in dispatches
-                    ]
-                )
-            )
-        else:
-            permits = []
-
         async def run(
             provider: SearchProvider,
             query: str,
             source_family: SourceType,
-            permit: DispatchPermit | None,
         ) -> tuple[
             str,
             str,
@@ -345,7 +260,6 @@ class EvidenceMesh:
                     query,
                     request,
                     trace,
-                    permit,
                 )
                 return (
                     provider.name,
@@ -358,8 +272,6 @@ class EvidenceMesh:
                     (),
                     trace,
                 )
-            except (BudgetConfigurationError, BudgetExceededError):
-                raise
             except (ProviderError, httpx.HTTPError, ValueError) as exc:
                 failure = classify_provider_failure(exc)
                 return (
@@ -388,12 +300,9 @@ class EvidenceMesh:
                 )
 
         tasks = [
-            run(provider, query, source_family, permit)
-            for (provider, query, source_family), permit in zip(
-                dispatches,
-                permits,
-                strict=True,
-            )
+            run(route.provider, query, route.source_family)
+            for route in routes
+            for query in route.queries
         ]
         outcomes = await asyncio.gather(*tasks) if tasks else []
         for (
@@ -691,8 +600,6 @@ class EvidenceMesh:
     async def fetch(self, request: FetchRequest | str, **kwargs: Any) -> FetchedDocument:
         if isinstance(request, str):
             request = FetchRequest.model_validate({"url": request, **kwargs})
-        if self.governor is not None and request.use_cache:
-            raise BudgetConfigurationError("closed-alpha fetch requires use_cache=false")
         url = str(request.url)
         try:
             async with asyncio.timeout(self.settings.fetch_timeout_seconds):
@@ -780,7 +687,6 @@ class EvidenceMesh:
         *,
         language: str = "en",
         max_sources: int = 10,
-        use_cache: bool = True,
     ) -> ClaimReviewPacket:
         variants = [
             f'"{claim}"',
@@ -796,7 +702,6 @@ class EvidenceMesh:
                 language=language,
                 fetch_content=True,
                 max_per_domain=2,
-                use_cache=use_cache,
             )
         )
         independent_domains = {source.domain for source in response.results}
@@ -871,15 +776,6 @@ class EvidenceMesh:
                 "recovery_seconds": self.settings.provider_recovery_seconds,
                 "state_scope": "process-local",
                 "network_telemetry": self._provider_http_instrumentation.scope,
-                "closed_alpha_governor": (
-                    {
-                        "enabled": True,
-                        "scope": self.governor.scope,
-                        "distributed_global_guarantee": False,
-                    }
-                    if self.governor is not None
-                    else {"enabled": False}
-                ),
             },
             "safety": {
                 "private_networks_allowed": self.settings.allow_private_networks,

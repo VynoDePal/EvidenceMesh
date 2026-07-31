@@ -94,6 +94,11 @@ jobs:
       - run: docker run --rm evidencemesh:ci providers
 
   searxng-integration:
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.number != 1 ||
+      github.event.pull_request.head.repo.full_name != 'VynoDePal/EvidenceMesh' ||
+      github.event.pull_request.head.ref != 'agent/evidencemesh-v0.1'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1

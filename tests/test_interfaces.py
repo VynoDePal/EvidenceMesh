@@ -14,6 +14,7 @@ from typer.testing import CliRunner
 
 from evidencemesh import cli, mcp_server
 from evidencemesh.engine import EvidenceMesh
+from evidencemesh.errors import BudgetConfigurationError
 from evidencemesh.models import (
     BatchSearchResponse,
     ClaimReviewPacket,
@@ -250,7 +251,14 @@ class FakeCliEngine:
     async def __aexit__(self, *_: object) -> None:
         return None
 
-    async def fetch(self, url: str, *, max_chars: int) -> FetchedDocument:
+    async def fetch(
+        self,
+        url: str,
+        *,
+        max_chars: int,
+        use_cache: bool = True,
+    ) -> FetchedDocument:
+        assert isinstance(use_cache, bool)
         return FetchedDocument(
             url=url,
             canonical_url=url,
@@ -298,6 +306,7 @@ def test_cli_run_handles_interrupt_and_error() -> None:
 
 def test_cli_serve_and_mcp_main(
     monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
 ) -> None:
     calls: list[dict[str, Any]] = []
 
@@ -315,6 +324,17 @@ def test_cli_serve_and_mcp_main(
     monkeypatch.setenv("EVIDENCEMESH_TRANSPORT", "stdio")
     mcp_server.main()
     assert [call["transport"] for call in calls] == ["stdio", "http", "http", "stdio"]
+    monkeypatch.setenv(
+        "EVIDENCEMESH_CLOSED_ALPHA_LEDGER",
+        str(tmp_path / "closed-alpha.sqlite3"),
+    )
+    blocked = runner.invoke(cli.app, ["serve", "--transport", "http"])
+    assert blocked.exit_code != 0
+    assert [call["transport"] for call in calls] == ["stdio", "http", "http", "stdio"]
+    monkeypatch.setenv("EVIDENCEMESH_TRANSPORT", "http")
+    with pytest.raises(BudgetConfigurationError, match="STDIO"):
+        mcp_server.main()
+    monkeypatch.delenv("EVIDENCEMESH_CLOSED_ALPHA_LEDGER")
     monkeypatch.setenv("EVIDENCEMESH_TRANSPORT", "invalid")
     with pytest.raises(ValueError, match="TRANSPORT"):
         mcp_server.main()

@@ -14,6 +14,8 @@ from rich.table import Table
 
 from evidencemesh.benchmark import run_offline_benchmark
 from evidencemesh.engine import EvidenceMesh
+from evidencemesh.errors import BudgetConfigurationError
+from evidencemesh.governor import SQLiteBudgetGovernor
 from evidencemesh.models import (
     ResearchRequest,
     SearchDepth,
@@ -28,6 +30,12 @@ app = typer.Typer(
 )
 console = Console()
 error_console = Console(stderr=True)
+
+
+def _use_cache() -> bool:
+    """Require cache-off requests whenever the strict alpha environment is selected."""
+
+    return not SQLiteBudgetGovernor.environment_requested()
 
 
 class OutputFormat(StrEnum):
@@ -104,6 +112,7 @@ def search_command(
                 domains=domain or [],
                 exclude_domains=exclude_domain or [],
                 fetch_content=fetch_content,
+                use_cache=_use_cache(),
             )
         )
     )
@@ -135,6 +144,7 @@ def research_command(
                 max_sources=max_sources,
                 domains=domain or [],
                 exclude_domains=exclude_domain or [],
+                use_cache=_use_cache(),
             )
         )
     )
@@ -150,7 +160,7 @@ def fetch_command(
 
     async def run() -> Any:
         async with EvidenceMesh() as engine:
-            return await engine.fetch(url, max_chars=max_chars)
+            return await engine.fetch(url, max_chars=max_chars, use_cache=_use_cache())
 
     _json(_run(run()))
 
@@ -206,6 +216,10 @@ def serve_command(
     if transport == "stdio":
         mcp.run(transport="stdio")
     elif transport == "http":
+        if SQLiteBudgetGovernor.environment_requested():
+            raise BudgetConfigurationError(
+                "closed-alpha governor supports one-session-per-process STDIO only"
+            )
         mcp.run(transport="http", host=host, port=port)
     else:
         raise typer.BadParameter("transport must be 'stdio' or 'http'")

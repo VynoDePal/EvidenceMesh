@@ -13,6 +13,8 @@ from fastmcp.server.lifespan import lifespan
 
 from evidencemesh import __version__
 from evidencemesh.engine import EvidenceMesh
+from evidencemesh.errors import BudgetConfigurationError
+from evidencemesh.governor import SQLiteBudgetGovernor
 from evidencemesh.models import (
     ResearchRequest,
     SafeSearch,
@@ -64,7 +66,8 @@ async def search_web(
     """Federated web search with RRF ranking, deduplication and stable citations."""
 
     await ctx.info(f"Searching configured {profile.value} sources")
-    response = await _engine(ctx).search(
+    engine = _engine(ctx)
+    response = await engine.search(
         SearchRequest(
             query=query,
             limit=limit,
@@ -74,6 +77,7 @@ async def search_web(
             domains=domains or [],
             exclude_domains=exclude_domains or [],
             fetch_content=fetch_content,
+            use_cache=engine.governor is None,
         )
     )
     return response.model_dump(mode="json")
@@ -94,7 +98,8 @@ async def deep_research(
     """Build a multi-query evidence packet; synthesis remains under client control."""
 
     await ctx.info(f"Building a {depth.value} research packet")
-    packet = await _engine(ctx).research(
+    engine = _engine(ctx)
+    packet = await engine.research(
         ResearchRequest(
             question=question,
             depth=depth,
@@ -104,6 +109,7 @@ async def deep_research(
             domains=domains or [],
             exclude_domains=exclude_domains or [],
             subqueries=subqueries or [],
+            use_cache=engine.governor is None,
         )
     )
     return packet.model_dump(mode="json")
@@ -117,7 +123,12 @@ async def fetch_url(
 ) -> dict[str, Any]:
     """Safely fetch and extract one public HTML, text or PDF document."""
 
-    document = await _engine(ctx).fetch(url, max_chars=max_chars)
+    engine = _engine(ctx)
+    document = await engine.fetch(
+        url,
+        max_chars=max_chars,
+        use_cache=engine.governor is None,
+    )
     return document.model_dump(mode="json")
 
 
@@ -133,16 +144,18 @@ async def batch_search(
 
     if len(queries) > 20:
         raise ValueError("batch_search accepts at most 20 queries")
+    engine = _engine(ctx)
     requests = [
         SearchRequest(
             query=query,
             limit=limit_per_query,
             profile=profile,
             language=language,
+            use_cache=engine.governor is None,
         )
         for query in queries
     ]
-    response = await _engine(ctx).batch_search(requests)
+    response = await engine.batch_search(requests)
     return response.model_dump(mode="json")
 
 
@@ -155,10 +168,12 @@ async def verify_claim(
 ) -> dict[str, Any]:
     """Collect supporting and corrective evidence without issuing a truth verdict."""
 
-    packet = await _engine(ctx).verify_claim(
+    engine = _engine(ctx)
+    packet = await engine.verify_claim(
         claim,
         language=language,
         max_sources=max_sources,
+        use_cache=engine.governor is None,
     )
     return packet.model_dump(mode="json")
 
@@ -224,6 +239,10 @@ def main() -> None:
     transport = os.getenv("EVIDENCEMESH_TRANSPORT", "stdio").lower()
     if transport not in {"http", "stdio"}:
         raise ValueError("EVIDENCEMESH_TRANSPORT must be 'stdio' or 'http'")
+    if transport == "http" and SQLiteBudgetGovernor.environment_requested():
+        raise BudgetConfigurationError(
+            "closed-alpha governor supports one-session-per-process STDIO only"
+        )
     if transport == "http":
         mcp.run(
             transport="http",

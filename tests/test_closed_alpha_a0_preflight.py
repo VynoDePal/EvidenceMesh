@@ -29,6 +29,8 @@ from scripts.prepare_closed_alpha_a0 import (
 ROOT = Path(__file__).parents[1]
 SCRIPT = ROOT / "scripts/prepare_closed_alpha_a0.py"
 WORKFLOW = ROOT / ".github/workflows/closed-alpha-a0-preflight.yml"
+A0_SHA = "540eca26ffb97908320a5ecea5f1bf3fb4f0247a"
+A0_TREE_SHA = "adf2a30efd5ff842fb1776e53053d90833fb716e"
 
 
 def _json(path: Path) -> dict[str, Any]:
@@ -320,7 +322,7 @@ def test_runner_has_no_network_process_environment_or_dynamic_code_capability() 
     assert attributes.isdisjoint({"environ", "environb"})
 
 
-def test_workflow_is_read_only_a0_only_and_disables_research_networking() -> None:
+def test_workflow_keeps_a0_immutable_while_allowing_rc3_descendants() -> None:
     text = WORKFLOW.read_text(encoding="utf-8")
     lowered = text.lower()
     assert "permissions:\n  contents: read\n" in text
@@ -332,8 +334,16 @@ def test_workflow_is_read_only_a0_only_and_disables_research_networking() -> Non
     assert "fetch-depth: 0" in text
     assert CANDIDATE_SHA in text
     assert CANDIDATE_TREE in text
-    assert "git merge-base --is-ancestor" in text
-    assert "git diff --name-only" in text
+    assert A0_SHA in text
+    assert A0_TREE_SHA in text
+    assert 'test "$(git rev-parse "$A0_SHA^{tree}")" = "$A0_TREE_SHA"' in text
+    assert 'test "$(git rev-parse "$A0_SHA^")" = "$RC2_SHA"' in text
+    assert 'git merge-base --is-ancestor "$A0_SHA" HEAD' in text
+    assert 'git diff --name-only "$RC2_SHA" "$A0_SHA"' in text
+    assert 'git diff --name-only "$RC2_SHA" HEAD' not in text
+    assert 'git diff --quiet "$A0_SHA" HEAD -- "${immutable_artifacts[@]}"' in text
+    assert "closed-alpha-a0-preflight.yml\n            alpha/closed_alpha" in text
+    assert "tests/test_closed_alpha_a0_preflight.py" in text
     assert "/usr/bin/unshare --net" in text
     assert "env -i" in text
     assert "cmp " in text

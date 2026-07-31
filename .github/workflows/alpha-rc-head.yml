@@ -17,7 +17,7 @@ concurrency:
 
 env:
   ARTIFACT_PREFIX: alpha-rc-head
-  EXPECTED_SHA: ${{ github.sha }}
+  EXPECTED_SHA: 81b5f8a8abd4302b27ad123bd5505e1757eadc7f
   PROTOCOL_SHA256: 41c86a73a2d3e0a4f4225d0574a2d145650cb73eca14a9d61e1391bcbab76f3c
   RC_NAME: evidencemesh-0.1.0-alpha-rc.2
   RC_ROOT: /tmp/evidencemesh-alpha-rc-head
@@ -30,7 +30,8 @@ jobs:
     if: >-
       github.repository == 'VynoDePal/EvidenceMesh' &&
       github.event_name == 'push' &&
-      github.ref == 'refs/heads/agent/evidencemesh-v0.1'
+      github.ref == 'refs/heads/agent/evidencemesh-v0.1' &&
+      github.sha == '81b5f8a8abd4302b27ad123bd5505e1757eadc7f'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:

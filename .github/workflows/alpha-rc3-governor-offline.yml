@@ -1,0 +1,155 @@
+name: Alpha RC3 Governor Offline
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - .github/workflows/alpha-rc-head.yml
+      - .github/workflows/alpha-rc3-governor-offline.yml
+      - .github/workflows/ci.yml
+      - .github/workflows/closed-alpha-a0-preflight.yml
+      - alpha/closed_alpha_rc3_governor_policy_v1.json
+      - benchmarks/fixtures/phase11_8_7_engine_rc2.py
+      - benchmarks/run_phase11_8_7_offline_runtime_timeout_hardening.py
+      - docs/alpha-rc3-governor-protocol-v1.md
+      - src/evidencemesh/**
+      - tests/test_alpha_rc3_governor.py
+      - tests/test_alpha_rc3_runtime.py
+      - tests/test_alpha_rc3_workflow.py
+      - tests/test_alpha_rc_head.py
+      - tests/test_closed_alpha_a0_preflight.py
+      - tests/test_interfaces.py
+      - tests/test_phase11_8_7_runtime_timeout_hardening.py
+      - tests/test_phase11_8_8_live_projection_calibration.py
+
+permissions:
+  contents: read
+
+concurrency:
+  group: alpha-rc3-governor-offline-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+env:
+  A0_SHA: 540eca26ffb97908320a5ecea5f1bf3fb4f0247a
+  POLICY_SHA256: 92d7dca1ddb0c091b948b19529ad0eaac8e41fda3aa536b87766e397f56bff8a
+  PROTOCOL_SHA256: e436fdb3e971e8eda0e0b835268f0b4a65ed7b9e2c48dbfc841e037c0933ff71
+  RC2_SHA: 81b5f8a8abd4302b27ad123bd5505e1757eadc7f
+
+jobs:
+  zero-traffic-governor:
+    if: >-
+      github.repository == 'VynoDePal/EvidenceMesh' &&
+      github.event.pull_request.number == 1 &&
+      github.event.pull_request.head.repo.full_name == 'VynoDePal/EvidenceMesh' &&
+      github.event.pull_request.head.ref == 'agent/evidencemesh-v0.1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out the exact pull-request head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Preserve historical RC2 and A0 identities
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test "$(git rev-parse "$A0_SHA^")" = "$RC2_SHA"
+          git merge-base --is-ancestor "$A0_SHA" HEAD
+          git diff --quiet "$A0_SHA" HEAD -- \
+            alpha/closed_alpha_a0_feedback.schema.json \
+            alpha/closed_alpha_a0_plan_v1.json \
+            docs/closed-alpha-a0-protocol-v1.md \
+            scripts/prepare_closed_alpha_a0.py
+          test -z "$(git status --porcelain)"
+
+      - name: Verify the frozen RC3 offline contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "$PROTOCOL_SHA256  docs/alpha-rc3-governor-protocol-v1.md" \
+            | sha256sum --check
+          echo "$POLICY_SHA256  alpha/closed_alpha_rc3_governor_policy_v1.json" \
+            | sha256sum --check
+
+      - name: Set up pinned uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install the locked validation environment
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Run every gate with research networking disabled
+        shell: bash
+        run: |
+          set -euo pipefail
+          private_root=/tmp/evidencemesh-alpha-rc3-governor
+          sudo install --directory --owner=nobody --group=nogroup --mode=0700 "$private_root"
+          python_path="$PWD/.venv/bin/python"
+          run_isolated=(
+            sudo env -i
+            HOME="$private_root"
+            TMPDIR="$private_root"
+            PYTHONDONTWRITEBYTECODE=1
+            RUFF_CACHE_DIR="$private_root/ruff-cache"
+            MYPY_CACHE_DIR="$private_root/mypy-cache"
+            COVERAGE_FILE="$private_root/.coverage"
+            /usr/bin/unshare --net --
+            /usr/bin/setpriv
+            --reuid=nobody
+            --regid=nogroup
+            --clear-groups
+            --no-new-privs
+          )
+          "${run_isolated[@]}" "$python_path" -m ruff format --check .
+          "${run_isolated[@]}" "$python_path" -m ruff check .
+          "${run_isolated[@]}" "$python_path" -m mypy src
+          "${run_isolated[@]}" "$python_path" -m pytest \
+            --cov=evidencemesh \
+            --cov-report=term-missing \
+            -p no:cacheprovider \
+            -q
+          "${run_isolated[@]}" "$python_path" -m pytest \
+            tests/test_alpha_rc3_governor.py \
+            tests/test_alpha_rc3_runtime.py \
+            tests/test_alpha_rc3_workflow.py \
+            -p no:cacheprovider \
+            -q
+          "${run_isolated[@]}" "$python_path" -m hatchling build \
+            --target wheel \
+            --target sdist \
+            --directory "$private_root/dist"
+          sudo test "$(sudo stat --format=%a "$private_root")" = 700
+          sudo test "$(sudo find "$private_root/dist" -maxdepth 1 -type f -name '*.whl' | wc -l)" = 1
+          sudo test "$(sudo find "$private_root/dist" -maxdepth 1 -type f -name '*.tar.gz' | wc -l)" = 1
+          sudo find "$private_root/dist" -maxdepth 1 -type f -name '*.whl' \
+            -exec unzip -l {} \; \
+            | grep 'evidencemesh/governor.py' >/dev/null
+
+      - name: Summarize the non-live decision
+        run: |
+          {
+            echo '## EvidenceMesh Alpha-RC3 governor offline'
+            echo
+            echo '- Pre-dispatch single-host governor: `pass`'
+            echo '- Provider/model requests: `0`'
+            echo '- Distributed global enforcement: `not implemented`'
+            echo '- Tester contact and live execution: `blocked`'
+            echo '- Merge and release: `blocked`'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove ephemeral RC3 outputs
+        if: always()
+        run: sudo rm --recursive --force -- /tmp/evidencemesh-alpha-rc3-governor

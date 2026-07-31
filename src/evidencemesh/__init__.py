@@ -3,6 +3,12 @@
 from evidencemesh.citations import CitationAudit, audit_citations
 from evidencemesh.config import DeploymentProfile
 from evidencemesh.engine import EvidenceMesh
+from evidencemesh.governor import (
+    ClosedAlphaPolicy,
+    ClosedAlphaSession,
+    DispatchIntent,
+    SQLiteBudgetGovernor,
+)
 from evidencemesh.models import (
     FetchedDocument,
     FetchRequest,
@@ -14,12 +20,16 @@ from evidencemesh.models import (
 
 __all__ = [
     "CitationAudit",
+    "ClosedAlphaPolicy",
+    "ClosedAlphaSession",
     "DeploymentProfile",
+    "DispatchIntent",
     "EvidenceMesh",
     "FetchRequest",
     "FetchedDocument",
     "ResearchPacket",
     "ResearchRequest",
+    "SQLiteBudgetGovernor",
     "SearchRequest",
     "SearchResponse",
     "audit_citations",

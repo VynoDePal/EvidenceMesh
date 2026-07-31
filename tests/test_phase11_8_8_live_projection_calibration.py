@@ -231,12 +231,15 @@ def test_dependency_manifest_is_exact_relative_and_hash_verified(
         live.validate_dependency_manifest(manifest)
 
 
-def test_dependency_contract_covers_all_runtime_python_and_lockfiles() -> None:
+def test_dependency_contract_covers_the_frozen_phase_runtime_and_lockfiles() -> None:
     root = Path(live.__file__).parents[1]
     runtime_sources = {
         path.relative_to(root).as_posix() for path in (root / "src/evidencemesh").rglob("*.py")
     }
-    assert runtime_sources <= live.SOURCE_MANIFEST_REQUIRED_PATHS
+    post_phase_sources = {"src/evidencemesh/governor.py"}
+    assert post_phase_sources <= runtime_sources
+    assert post_phase_sources.isdisjoint(live.SOURCE_MANIFEST_REQUIRED_PATHS)
+    assert runtime_sources - post_phase_sources <= live.SOURCE_MANIFEST_REQUIRED_PATHS
     assert {
         "benchmarks/__init__.py",
         "pyproject.toml",

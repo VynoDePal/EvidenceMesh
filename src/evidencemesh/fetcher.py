@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import asyncio
 import time
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from urllib.parse import urljoin, urlsplit
 from urllib.robotparser import RobotFileParser
@@ -13,6 +15,7 @@ import httpx
 from evidencemesh.config import Settings
 from evidencemesh.errors import FetchError, UnsupportedContentError
 from evidencemesh.extraction import content_sha256, extract_content
+from evidencemesh.governor import DispatchIntent, SQLiteBudgetGovernor
 from evidencemesh.models import FetchedDocument
 from evidencemesh.urls import (
     PinnedURLResolver,
@@ -56,13 +59,24 @@ class RobotsPolicy:
         user_agent: str,
         *,
         ttl_seconds: int = 3_600,
+        governor: SQLiteBudgetGovernor | None = None,
     ) -> None:
         self.client = client
         self.guard = guard
         self.user_agent = user_agent
         self.ttl_seconds = ttl_seconds
+        self.governor = governor
         self._cache: dict[str, tuple[float, RobotFileParser | None]] = {}
         self._locks: dict[str, asyncio.Lock] = {}
+
+    @asynccontextmanager
+    async def _dispatch(self) -> AsyncIterator[None]:
+        if self.governor is None:
+            yield
+            return
+        permit = (await self.governor.reserve_batch([DispatchIntent(kind="robots")]))[0]
+        with self.governor.capture(permit):
+            yield
 
     async def allowed(self, url: str) -> bool:
         try:
@@ -88,21 +102,26 @@ class RobotsPolicy:
             robots_parser: RobotFileParser | None = None
             try:
                 targets = await _request_targets(self.guard, robots_url)
+                if self.governor is not None:
+                    targets = targets[:1]
                 for target in targets:
                     try:
-                        async with self.client.stream(
-                            "GET",
-                            target.url,
-                            headers=_target_headers(
-                                target,
-                                {
-                                    "User-Agent": self.user_agent,
-                                    "Accept": "text/plain",
-                                },
-                            ),
-                            extensions=_target_extensions(target),
-                            follow_redirects=False,
-                        ) as response:
+                        async with (
+                            self._dispatch(),
+                            self.client.stream(
+                                "GET",
+                                target.url,
+                                headers=_target_headers(
+                                    target,
+                                    {
+                                        "User-Agent": self.user_agent,
+                                        "Accept": "text/plain",
+                                    },
+                                ),
+                                extensions=_target_extensions(target),
+                                follow_redirects=False,
+                            ) as response,
+                        ):
                             if response.status_code != 200:
                                 break
                             declared_length = response.headers.get("content-length")
@@ -144,6 +163,7 @@ class WebFetcher:
         *,
         client: httpx.AsyncClient | None = None,
         guard: URLValidator | None = None,
+        governor: SQLiteBudgetGovernor | None = None,
     ) -> None:
         self.settings = settings
         self._owns_client = client is None
@@ -161,7 +181,24 @@ class WebFetcher:
             allow_nonstandard_ports=settings.allow_nonstandard_ports,
             dns_timeout_seconds=settings.dns_timeout_seconds,
         )
-        self.robots = RobotsPolicy(self.client, self.guard, settings.user_agent)
+        self.governor = governor
+        if governor is not None:
+            governor.attach_client(self.client)
+        self.robots = RobotsPolicy(
+            self.client,
+            self.guard,
+            settings.user_agent,
+            governor=governor,
+        )
+
+    @asynccontextmanager
+    async def _dispatch(self, kind: str) -> AsyncIterator[None]:
+        if self.governor is None:
+            yield
+            return
+        permit = (await self.governor.reserve_batch([DispatchIntent(kind=kind)]))[0]
+        with self.governor.capture(permit):
+            yield
 
     async def fetch(self, url: str, *, max_chars: int = 30_000) -> FetchedDocument:
         try:
@@ -174,28 +211,35 @@ class WebFetcher:
         current = url.strip()
         for redirect_index in range(self.settings.max_redirects + 1):
             targets = await _request_targets(self.guard, current)
+            if self.governor is not None:
+                # A second resolved target is an automatic fallback. A0 permits none.
+                targets = targets[:1]
             if self.settings.respect_robots_txt and not await self.robots.allowed(current):
                 raise FetchError("robots.txt does not permit this fetch")
             redirect_target: str | None = None
             last_network_error: httpx.HTTPError | None = None
             for target in targets:
                 try:
-                    async with self.client.stream(
-                        "GET",
-                        target.url,
-                        headers=_target_headers(
-                            target,
-                            {
-                                "User-Agent": self.settings.user_agent,
-                                "Accept": (
-                                    "text/html,application/xhtml+xml,application/pdf,"
-                                    "text/plain;q=0.9,*/*;q=0.1"
-                                ),
-                            },
-                        ),
-                        extensions=_target_extensions(target),
-                        follow_redirects=False,
-                    ) as response:
+                    kind = "fetch" if redirect_index == 0 else "redirect"
+                    async with (
+                        self._dispatch(kind),
+                        self.client.stream(
+                            "GET",
+                            target.url,
+                            headers=_target_headers(
+                                target,
+                                {
+                                    "User-Agent": self.settings.user_agent,
+                                    "Accept": (
+                                        "text/html,application/xhtml+xml,application/pdf,"
+                                        "text/plain;q=0.9,*/*;q=0.1"
+                                    ),
+                                },
+                            ),
+                            extensions=_target_extensions(target),
+                            follow_redirects=False,
+                        ) as response,
+                    ):
                         if response.status_code in _REDIRECTS:
                             location = response.headers.get("location")
                             if not location:

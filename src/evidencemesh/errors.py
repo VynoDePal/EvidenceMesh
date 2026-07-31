@@ -11,6 +11,14 @@ class ConfigurationError(EvidenceMeshError):
     """Raised when runtime configuration is invalid."""
 
 
+class BudgetConfigurationError(ConfigurationError):
+    """Raised when the closed-alpha governor cannot guarantee safe dispatch."""
+
+
+class BudgetExceededError(EvidenceMeshError):
+    """Raised before dispatch when a closed-alpha hard limit would be exceeded."""
+
+
 class ProviderError(EvidenceMeshError):
     """Raised when a search provider cannot satisfy a request."""
 
