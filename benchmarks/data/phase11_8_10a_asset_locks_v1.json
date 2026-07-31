@@ -1,0 +1,396 @@
+{
+  "schema_version": "evidencemesh.phase11_8_10a.asset-reconnaissance.v1",
+  "purpose": "metadata-only-non-scoring-external-asset-reconnaissance",
+  "captured_on": "2026-07-31",
+  "predecessor": {
+    "phase": "11.8.9",
+    "remote_head_commit": "14e1baa9a0c848366d77cf9351c54abeaf1da697",
+    "protocol": {
+      "path": "docs/benchmark-protocol-v25.md",
+      "sha256": "e08a9217d8d104202826b0f72944ae5864d181cb20f5fea10d52e908cc26f62c"
+    },
+    "external_registry": {
+      "path": "benchmarks/data/phase11_8_9_external_benchmarks_v1.json",
+      "sha256": "40828f7bc22d23206ce70ffb2fcf69f066850fbe618c636fd8bd094a11784cdc"
+    },
+    "result": {
+      "path": "benchmarks/results/phase11_8_9_offline_retrieval_recovery_2026-07-31.json",
+      "sha256": "cb3f4bd4e2862d4ef170d2c41d17cd7991090f5e933d480d3c76ccab7a197720",
+      "quality_decision": "no_go",
+      "real_external_score": false
+    }
+  },
+  "phase_policy": {
+    "mode": "metadata-only",
+    "suite_ids": [
+      "bright",
+      "browsecomp_plus"
+    ],
+    "official_asset_download_allowed": false,
+    "official_asset_open_or_parse_allowed": false,
+    "query_decryption_allowed": false,
+    "retrieval_or_answer_scoring_allowed": false,
+    "provider_search_or_model_calls_allowed": false,
+    "secret_access_allowed": false,
+    "phase12_access_allowed": false,
+    "asset_bytes_may_be_committed_or_uploaded": false,
+    "real_external_score": false,
+    "quality_claim_allowed": false,
+    "next_phase_requires_separate_go": true
+  },
+  "metadata_importer_policy": {
+    "input_kind": "content-object-inventory-metadata-only",
+    "maximum_inventory_bytes": 1048576,
+    "allowed_scheme": "https",
+    "allowed_hosts": [
+      "huggingface.co"
+    ],
+    "credentials_allowed": false,
+    "cookies_allowed": false,
+    "authorization_headers_allowed": false,
+    "signed_or_query_urls_allowed": false,
+    "moving_revisions_allowed": false,
+    "remote_globs_allowed": false,
+    "content_sha256_required": true,
+    "exact_content_bytes_required": true,
+    "git_lfs_oid_sha256_is_content_sha": true,
+    "git_blob_or_xet_descriptor_sha_is_content_sha": false,
+    "committed_inventory": {
+      "path": "benchmarks/data/phase11_8_10a_object_inventory_v1.json",
+      "sha256": "d23f81e23e2e1c8e075de7647d7529ccaf9c3a787f8c18106e101d8abef57a3e"
+    },
+    "inventory_import_downloads_content": false,
+    "inventory_import_opens_content": false,
+    "inventory_import_scores_content": false
+  },
+  "suites": [
+    {
+      "suite_id": "bright",
+      "display_name": "BRIGHT",
+      "code_authority": {
+        "repository": "https://github.com/xlang-ai/BRIGHT",
+        "revision": "d99e8391d967d4c2b3a74732530d2309e2fc92b6",
+        "readme_git_blob_sha1": "4343c51da97ce20dd9c9c0fb269a87d45e7beafe",
+        "runner_path": "run.py",
+        "runner_git_blob_sha1": "6a22eb46c6cee797cbd719a0890e1ed0420561da",
+        "license": {
+          "path": "LICENSE",
+          "spdx_id": "CC-BY-4.0",
+          "git_blob_sha1": "2f244ac814036ecd9ba9f69782e89ce6b1dca9eb",
+          "scope": "upstream-code-repository"
+        }
+      },
+      "dataset_snapshots": [
+        {
+          "snapshot_id": "bright_hf_3066d29",
+          "repository": "https://huggingface.co/datasets/xlangai/BRIGHT",
+          "revision": "3066d29c9651a576c8aba4832d249807b181ecae",
+          "immutable_tree": "https://huggingface.co/datasets/xlangai/BRIGHT/tree/3066d29c9651a576c8aba4832d249807b181ecae",
+          "metadata_path": "README.md",
+          "declared_license": {
+            "spdx_id": "CC-BY-4.0",
+            "scope": "upstream-dataset-card-declaration",
+            "evidence_revision": "3066d29c9651a576c8aba4832d249807b181ecae",
+            "evidence_path": "README.md",
+            "declaration_resolved": true,
+            "underlying_third_party_rights_individually_verified": false,
+            "redistribution_policy": "external-cache-only-do-not-republish"
+          }
+        }
+      ],
+      "selection": {
+        "included_configs": [
+          "examples",
+          "documents"
+        ],
+        "excluded_configs": [
+          "long_documents",
+          "Gemini-1.0_reason",
+          "claude-3-opus_reason",
+          "gpt4_reason",
+          "grit_reason",
+          "llama3-70b_reason"
+        ],
+        "task_count": 12,
+        "aggregation": "unweighted-macro-average-of-12-task-ndcg-at-10",
+        "examples_role_derivation": {
+          "query": "query",
+          "query_id": "id",
+          "qrels": "gold_ids",
+          "excluded_document_ids": "excluded_ids"
+        },
+        "documents_role_derivation": {
+          "document_id": "id",
+          "document_text": "content"
+        },
+        "tasks": [
+          {
+            "task_id": "biology",
+            "query_records": 103,
+            "document_records": 57359
+          },
+          {
+            "task_id": "earth_science",
+            "query_records": 116,
+            "document_records": 121249
+          },
+          {
+            "task_id": "economics",
+            "query_records": 103,
+            "document_records": 50220
+          },
+          {
+            "task_id": "pony",
+            "query_records": 112,
+            "document_records": 7894
+          },
+          {
+            "task_id": "psychology",
+            "query_records": 101,
+            "document_records": 52835
+          },
+          {
+            "task_id": "robotics",
+            "query_records": 101,
+            "document_records": 61961
+          },
+          {
+            "task_id": "stackoverflow",
+            "query_records": 117,
+            "document_records": 107081
+          },
+          {
+            "task_id": "sustainable_living",
+            "query_records": 108,
+            "document_records": 60792
+          },
+          {
+            "task_id": "aops",
+            "query_records": 111,
+            "document_records": 188002
+          },
+          {
+            "task_id": "leetcode",
+            "query_records": 142,
+            "document_records": 413932
+          },
+          {
+            "task_id": "theoremqa_theorems",
+            "query_records": 76,
+            "document_records": 23839
+          },
+          {
+            "task_id": "theoremqa_questions",
+            "query_records": 194,
+            "document_records": 188002
+          }
+        ]
+      },
+      "required_objects": [
+        {
+          "snapshot_id": "bright_hf_3066d29",
+          "path_template": "examples/{task}-00000-of-00001.parquet",
+          "expanded_object_count": 12,
+          "roles": [
+            "queries",
+            "qrels",
+            "excluded_ids"
+          ],
+          "media_type": "application/vnd.apache.parquet",
+          "content_sha256_inventory_complete": true,
+          "exact_content_bytes_inventory_complete": true
+        },
+        {
+          "snapshot_id": "bright_hf_3066d29",
+          "path_template": "documents/{task}-00000-of-00001.parquet",
+          "expanded_object_count": 12,
+          "roles": [
+            "corpus"
+          ],
+          "media_type": "application/vnd.apache.parquet",
+          "content_sha256_inventory_complete": true,
+          "exact_content_bytes_inventory_complete": true
+        }
+      ],
+      "upstream_declared_totals": {
+        "query_records": 1384,
+        "document_records": 1333166,
+        "download_bytes": 470079368,
+        "decoded_dataset_bytes": 1153708725,
+        "object_count": 24,
+        "counts_locally_verified": false,
+        "bytes_locally_verified": false
+      },
+      "readiness": {
+        "immutable_revisions_complete": true,
+        "dataset_license_declaration_complete": true,
+        "required_path_set_complete": true,
+        "per_object_content_sha256_complete": true,
+        "per_object_exact_content_bytes_complete": true,
+        "component_license_clearance_complete": false,
+        "leaderboard_revision_equivalence_complete": false,
+        "local_assets_admitted": false,
+        "evaluation_eligible": false
+      },
+      "unresolved_blockers": [
+        "Underlying third-party source-page rights were not individually audited; raw assets must not be republished.",
+        "The current 1,384-query snapshot is not proven equivalent to the 1,398-query ICLR description or the public leaderboard asset revision.",
+        "The upstream pytrec_eval version and tie semantics are not pinned."
+      ]
+    },
+    {
+      "suite_id": "browsecomp_plus",
+      "display_name": "BrowseComp-Plus",
+      "code_authority": {
+        "repository": "https://github.com/texttron/BrowseComp-Plus",
+        "revision": "046949032b0328319cc9a02663a759ec601d9402",
+        "readme_git_blob_sha1": "8f180d4fbf7e10a0ae66b803444176755741e444",
+        "metadata_transform_path": "scripts_build_index/decrypt_dataset.py",
+        "metadata_transform_git_blob_sha1": "6a895dd027b8024119a14149fd633d5592c46d9a",
+        "evidence_qrel_path": "topics-qrels/qrel_evidence.txt",
+        "evidence_qrel_git_blob_sha1": "d99a06aeb30dcf0dd9c41003c2bca8d775e4519c",
+        "gold_qrel_path": "topics-qrels/qrel_golds.txt",
+        "gold_qrel_git_blob_sha1": "8129652990c139cfa153ce901b415e802f6fbdd7",
+        "gold_qrel_repository_path_present": true,
+        "license": {
+          "path": "LICENSE",
+          "spdx_id": "MIT",
+          "git_blob_sha1": "1eeb9f2ab7b823eef913d01626ca28adf6422fba",
+          "scope": "upstream-code-repository"
+        }
+      },
+      "dataset_snapshots": [
+        {
+          "snapshot_id": "browsecomp_plus_queries_hf_144cff8",
+          "repository": "https://huggingface.co/datasets/Tevatron/browsecomp-plus",
+          "revision": "144cff8e35b5eaef7e526346aa60774a9deb941f",
+          "immutable_tree": "https://huggingface.co/datasets/Tevatron/browsecomp-plus/tree/144cff8e35b5eaef7e526346aa60774a9deb941f",
+          "metadata_path": "README.md",
+          "declared_license": {
+            "spdx_id": "MIT",
+            "scope": "upstream-dataset-card-declaration",
+            "evidence_revision": "144cff8e35b5eaef7e526346aa60774a9deb941f",
+            "evidence_path": "README.md",
+            "declaration_resolved": true,
+            "underlying_third_party_rights_individually_verified": false,
+            "redistribution_policy": "external-cache-only-do-not-republish"
+          }
+        },
+        {
+          "snapshot_id": "browsecomp_plus_corpus_hf_b27b02b",
+          "repository": "https://huggingface.co/datasets/Tevatron/browsecomp-plus-corpus",
+          "revision": "b27b02bc3e45511b8b82a13e6f90ce761df726f6",
+          "immutable_tree": "https://huggingface.co/datasets/Tevatron/browsecomp-plus-corpus/tree/b27b02bc3e45511b8b82a13e6f90ce761df726f6",
+          "metadata_path": "README.md",
+          "declared_license": {
+            "spdx_id": "MIT",
+            "scope": "upstream-dataset-card-declaration",
+            "evidence_revision": "b27b02bc3e45511b8b82a13e6f90ce761df726f6",
+            "evidence_path": "README.md",
+            "declaration_resolved": true,
+            "underlying_third_party_rights_individually_verified": false,
+            "redistribution_policy": "external-cache-only-do-not-republish"
+          }
+        }
+      ],
+      "selection": {
+        "query_records": 830,
+        "document_records": 100195,
+        "query_bundle_obfuscated": true,
+        "decryption_in_phase_11_8_10a": false,
+        "query_bundle_role_derivation": {
+          "query_id": "query_id",
+          "query": "query",
+          "evidence_qrels": "evidence_docs[].docid",
+          "gold_qrels": "gold_docs[].docid"
+        },
+        "corpus_role_derivation": {
+          "document_id": "docid",
+          "document_text": "text",
+          "source_url": "accepted-input-never-published"
+        },
+        "qrel_tracks": [
+          "evidence",
+          "gold"
+        ],
+        "qrel_tracks_reported_separately": true,
+        "trec_iteration": "Q0",
+        "prebuilt_indexes_in_scope": false
+      },
+      "required_objects": [
+        {
+          "snapshot_id": "browsecomp_plus_queries_hf_144cff8",
+          "path_template": "data/test-{shard:05d}-of-00006.parquet",
+          "shard_range": [
+            0,
+            5
+          ],
+          "expanded_object_count": 6,
+          "roles": [
+            "queries",
+            "evidence_qrels",
+            "gold_qrels"
+          ],
+          "media_type": "application/vnd.apache.parquet",
+          "content_sha256_inventory_complete": true,
+          "exact_content_bytes_inventory_complete": true
+        },
+        {
+          "snapshot_id": "browsecomp_plus_corpus_hf_b27b02b",
+          "path_template": "data/train-{shard:05d}-of-00007.parquet",
+          "shard_range": [
+            0,
+            6
+          ],
+          "expanded_object_count": 7,
+          "roles": [
+            "corpus"
+          ],
+          "media_type": "application/vnd.apache.parquet",
+          "content_sha256_inventory_complete": true,
+          "exact_content_bytes_inventory_complete": true
+        }
+      ],
+      "upstream_declared_totals": {
+        "query_records": 830,
+        "document_records": 100195,
+        "download_bytes": 4543008639,
+        "decoded_dataset_bytes": 6051754107,
+        "object_count": 13,
+        "counts_locally_verified": false,
+        "bytes_locally_verified": false
+      },
+      "readiness": {
+        "immutable_revisions_complete": true,
+        "dataset_license_declaration_complete": true,
+        "required_path_set_complete": true,
+        "per_object_content_sha256_complete": true,
+        "per_object_exact_content_bytes_complete": true,
+        "component_license_clearance_complete": false,
+        "leaderboard_revision_equivalence_complete": true,
+        "local_assets_admitted": false,
+        "evaluation_eligible": false
+      },
+      "unresolved_blockers": [
+        "The evidence and gold qrel views must remain separate; the official gold filename is qrel_golds.txt and singular aliases must be rejected.",
+        "Underlying third-party source-page rights were not individually audited; raw assets must not be republished."
+      ]
+    }
+  ],
+  "aggregate_reconnaissance": {
+    "suite_count": 2,
+    "required_object_count": 37,
+    "expected_download_bytes": 5013088007,
+    "expected_decoded_dataset_bytes": 7205462832,
+    "recommended_free_disk_bytes_for_future_import": 21474836480,
+    "object_inventory_complete": true,
+    "metadata_lock_complete": true,
+    "component_license_clearance_complete": false,
+    "benchmark_comparability_complete": false,
+    "acquisition_eligible": false,
+    "local_assets_admitted": false,
+    "evaluation_eligible": false,
+    "phase_11_8_10a_status": "completed_with_blockers",
+    "phase_11_8_10b_status": "blocked_pending_license_and_comparability_clearance"
+  }
+}
