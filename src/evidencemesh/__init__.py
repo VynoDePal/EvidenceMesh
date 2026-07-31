@@ -1,12 +1,21 @@
 """Evidence-first web research infrastructure for AI agents."""
 
 from evidencemesh.citations import CitationAudit, audit_citations
+from evidencemesh.closed_alpha_feedback import (
+    ClosedAlphaFeedbackContract,
+    ClosedAlphaFeedbackStore,
+    FeedbackContext,
+    FeedbackRetentionScheduler,
+)
 from evidencemesh.config import DeploymentProfile
 from evidencemesh.engine import EvidenceMesh
 from evidencemesh.governor import (
+    AlphaControlState,
+    ClosedAlphaAdmission,
     ClosedAlphaPolicy,
     ClosedAlphaSession,
     DispatchIntent,
+    SQLiteAlphaControlPlane,
     SQLiteBudgetGovernor,
 )
 from evidencemesh.models import (
@@ -19,16 +28,23 @@ from evidencemesh.models import (
 )
 
 __all__ = [
+    "AlphaControlState",
     "CitationAudit",
+    "ClosedAlphaAdmission",
+    "ClosedAlphaFeedbackContract",
+    "ClosedAlphaFeedbackStore",
     "ClosedAlphaPolicy",
     "ClosedAlphaSession",
     "DeploymentProfile",
     "DispatchIntent",
     "EvidenceMesh",
+    "FeedbackContext",
+    "FeedbackRetentionScheduler",
     "FetchRequest",
     "FetchedDocument",
     "ResearchPacket",
     "ResearchRequest",
+    "SQLiteAlphaControlPlane",
     "SQLiteBudgetGovernor",
     "SearchRequest",
     "SearchResponse",

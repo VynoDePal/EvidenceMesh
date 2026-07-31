@@ -110,6 +110,7 @@ class EvidenceMesh:
                 self.governor.validate_provider_configuration(
                     self.settings.enabled_providers,
                     self.settings.searxng_fallback_urls,
+                    deployment_profile=self.settings.deployment_profile.value,
                 )
             elif client is None:
                 raise BudgetConfigurationError(
@@ -146,6 +147,10 @@ class EvidenceMesh:
             self._governed_provider_identities = tuple(
                 (provider, self.governor.validate_provider(provider, self.client))
                 for provider in self.providers
+            )
+            self.governor.validate_provider_bundle(
+                tuple(name for _, name in self._governed_provider_identities),
+                deployment_profile=self.settings.deployment_profile.value,
             )
             self.governor.attach_client(self.client)
         if fetcher is None:
