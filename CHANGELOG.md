@@ -397,3 +397,15 @@ All notable changes to EvidenceMesh are documented here.
   authoritative assets and asset-level license locks are unresolved. No
   official external score is reported; Phase 11.9, Phase 12, product changes,
   merge, release and superiority claims remain blocked.
+- Locked Phase 11.8.10A as metadata-only external-asset reconnaissance for
+  BRIGHT and BrowseComp-Plus: exact immutable revisions, roles, 37 Git LFS
+  content objects, byte lengths, SHA-256 digests and capacity bounds.
+- Recorded a reproducible 15/15 engineering-gate pass with zero asset
+  downloads or opens, query decryptions, scores, provider, search, model or
+  secret calls. The inventory represents 5,013,088,007 transfer bytes and
+  7,205,462,832 upstream-declared decoded bytes.
+- Upstream license declarations are pinned, but component-level third-party
+  rights and BRIGHT leaderboard comparability remain unresolved. Raw asset
+  redistribution and evaluation stay blocked; Phase 11.8.10B, Phase 11.9,
+  Phase 12, product changes, merge, release and superiority claims remain
+  unauthorized.

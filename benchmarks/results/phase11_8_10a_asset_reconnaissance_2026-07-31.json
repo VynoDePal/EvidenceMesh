@@ -1,0 +1,154 @@
+{
+  "blocking_findings": [
+    "component_license_clearance_unresolved_bright",
+    "component_license_clearance_unresolved_browsecomp_plus",
+    "bright_leaderboard_revision_equivalence_unresolved",
+    "bright_upstream_evaluator_version_unpinned"
+  ],
+  "expected_decoded_dataset_bytes": 7205462832,
+  "expected_download_bytes": 5013088007,
+  "external_evaluation_status": "not_run",
+  "gate_summary": {
+    "failed": 0,
+    "passed": 15,
+    "total": 15
+  },
+  "gates": [
+    {
+      "gate": 1,
+      "gate_id": "predecessor_authority_locked",
+      "passed": true
+    },
+    {
+      "gate": 2,
+      "gate_id": "exact_two_suite_scope",
+      "passed": true
+    },
+    {
+      "gate": 3,
+      "gate_id": "immutable_code_and_dataset_revisions",
+      "passed": true
+    },
+    {
+      "gate": 4,
+      "gate_id": "dataset_license_declarations_pinned",
+      "passed": true
+    },
+    {
+      "gate": 5,
+      "gate_id": "bright_12_task_role_map",
+      "passed": true
+    },
+    {
+      "gate": 6,
+      "gate_id": "browsecomp_separate_evidence_and_gold_roles",
+      "passed": true
+    },
+    {
+      "gate": 7,
+      "gate_id": "upstream_counts_and_aggregate_volume_recorded",
+      "passed": true
+    },
+    {
+      "gate": 8,
+      "gate_id": "required_object_path_set_complete",
+      "passed": true
+    },
+    {
+      "gate": 9,
+      "gate_id": "per_object_content_sha256_complete",
+      "passed": true
+    },
+    {
+      "gate": 10,
+      "gate_id": "per_object_exact_content_bytes_complete",
+      "passed": true
+    },
+    {
+      "gate": 11,
+      "gate_id": "metadata_only_no_auth_import_contract",
+      "passed": true
+    },
+    {
+      "gate": 12,
+      "gate_id": "zero_corpus_download_open_decrypt_or_score",
+      "passed": true
+    },
+    {
+      "gate": 13,
+      "gate_id": "zero_provider_model_search_or_secret_access",
+      "passed": true
+    },
+    {
+      "gate": 14,
+      "gate_id": "aggregate_only_privacy_boundary",
+      "passed": true
+    },
+    {
+      "gate": 15,
+      "gate_id": "governance_no_go_and_next_phase_block",
+      "passed": true
+    }
+  ],
+  "generated_on": "2026-07-31",
+  "governance": {
+    "default_promotion_allowed": false,
+    "merge_allowed": false,
+    "phase12_accesses": 0,
+    "phase_11_8_10b_authorized": false,
+    "phase_11_9_authorized": false,
+    "pull_request_must_remain_draft": true,
+    "release_allowed": false,
+    "superiority_claim_allowed": false
+  },
+  "inventory": {
+    "digest_source": "immutable-git-lfs-content-oids",
+    "inventory_sha256": "4601e9e5b9f6e66290822dff5a668d51aeaacbae42576c5b88fa3c386b496779",
+    "object_count": 37,
+    "payload_content_accessed": false,
+    "total_content_bytes": 5013088007
+  },
+  "license_declarations": {
+    "bright": "CC-BY-4.0",
+    "browsecomp_plus": "MIT",
+    "raw_asset_redistribution_allowed": false,
+    "underlying_third_party_rights_individually_verified": false
+  },
+  "manifest_sha256": "393859492fee61e5edc8f85c5b3875e699dbce29fe4f6b9abc2abfc5f40ecd91",
+  "methodology_commit_sha": "619ce675ba28d1411658af52002828c544dafbd7",
+  "mode": "metadata-only-non-scoring",
+  "outcome": "asset_integrity_lock_complete_policy_blocked",
+  "phase": "11.8.10A",
+  "phase_status": "completed_with_blockers",
+  "quality_decision": "no_go",
+  "readiness": {
+    "acquisition_eligible": false,
+    "benchmark_comparability_complete": false,
+    "component_license_clearance_complete": false,
+    "evaluation_eligible": false,
+    "local_assets_admitted": false,
+    "metadata_lock_complete": true,
+    "next_phase_requires_separate_go": true,
+    "object_inventory_complete": true
+  },
+  "real_external_score": false,
+  "recommended_free_disk_bytes_for_future_import": 21474836480,
+  "required_object_count": 37,
+  "required_path_set_sha256": "5510b1a4e8fa6d2a3bea9bc10533e7c7557a0f52b517d50d1104c3fa5ce629f9",
+  "schema_version": "evidencemesh.phase11_8_10a.asset-reconnaissance-result.v1",
+  "source_lock": {
+    "source_count": 12,
+    "source_set_sha256": "4c3fecf50e26b8e37e3ee361af38aca62745a632d0fd5ef59eb66a025dc3ed75"
+  },
+  "suite_count": 2,
+  "traffic": {
+    "model_calls": 0,
+    "official_asset_bytes_opened": 0,
+    "official_asset_downloads": 0,
+    "provider_calls": 0,
+    "queries_decrypted": 0,
+    "retrieval_or_answer_scores_computed": 0,
+    "search_api_calls": 0,
+    "secret_reads": 0
+  }
+}
