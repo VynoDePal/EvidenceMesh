@@ -236,7 +236,10 @@ def test_dependency_contract_covers_the_frozen_phase_runtime_and_lockfiles() -> 
     runtime_sources = {
         path.relative_to(root).as_posix() for path in (root / "src/evidencemesh").rglob("*.py")
     }
-    post_phase_sources = {"src/evidencemesh/governor.py"}
+    post_phase_sources = {
+        "src/evidencemesh/closed_alpha_feedback.py",
+        "src/evidencemesh/governor.py",
+    }
     assert post_phase_sources <= runtime_sources
     assert post_phase_sources.isdisjoint(live.SOURCE_MANIFEST_REQUIRED_PATHS)
     assert runtime_sources - post_phase_sources <= live.SOURCE_MANIFEST_REQUIRED_PATHS
