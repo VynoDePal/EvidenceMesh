@@ -385,3 +385,15 @@ All notable changes to EvidenceMesh are documented here.
   `0d6ee7f91689fc2679ee0e5c6a2857d25219d5a71cd559d248875d1074693a00`.
   Phase 11.9, Phase 12, promotion, merge, release and superiority claims remain
   blocked; no rerun is authorized.
+- Locked Phase 11.8.9 as a zero-traffic, answer-blind retrieval-recovery
+  protocol with one transparent control, one v3 candidate, five-stage lineage,
+  exact-byte source execution, adversarial conformance fixtures and a
+  fail-closed external benchmark adapter.
+- Recorded a reproducible 12/19 engineering-conformance-only result. All
+  twelve local gates passed, including a 53/53 Gate 9 receipt over 43
+  registered requirements, with zero network, provider, model, secret, retry,
+  fallback, repair or live-cache activity.
+- BRIGHT and BrowseComp-Plus remain `not_evaluated` because their complete
+  authoritative assets and asset-level license locks are unresolved. No
+  official external score is reported; Phase 11.9, Phase 12, product changes,
+  merge, release and superiority claims remain blocked.
