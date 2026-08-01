@@ -103,6 +103,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 1
           fetch-tags: false
           persist-credentials: false
@@ -128,6 +129,23 @@ jobs:
             --output "$A1_OUTPUT" \
             --python "$python_path"
           "$python_path" -m json.tool "$A1_OUTPUT" >/dev/null
+      - name: Verify official MCP SDK first-run journey
+        env:
+          A1_EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+          A1_P0_OUTPUT: /tmp/evidencemesh-alpha-a1-p0-clean-room/runtime/receipt.json
+          A1_P1_OUTPUT: /tmp/evidencemesh-alpha-a1-p0-clean-room/p1-runtime/gate-receipt.json
+          A1_WORK_ROOT: /tmp/evidencemesh-alpha-a1-p0-clean-room
+        shell: bash
+        run: |
+          set -euo pipefail
+          python_path="$(uv python find 3.11)"
+          "$python_path" scripts/verify_alpha_a1_p1_mcp_first_run.py \
+            --work-root "$A1_WORK_ROOT" \
+            --p0-receipt "$A1_P0_OUTPUT" \
+            --expected-head "$A1_EXPECTED_HEAD" \
+            --descriptor-template examples/evidencemesh.mcp.json \
+            --output "$A1_P1_OUTPUT"
+          "$python_path" -m json.tool "$A1_P1_OUTPUT" >/dev/null
 
   container:
     runs-on: ubuntu-latest

@@ -86,6 +86,13 @@ git clone \
   --no-tags \
   https://github.com/VynoDePal/EvidenceMesh.git
 cd EvidenceMesh
+
+# Preserve the branch-head MCP template before detaching the product source.
+ALPHA_DESCRIPTOR="$(mktemp)"
+cp examples/evidencemesh.mcp.json "$ALPHA_DESCRIPTOR"
+chmod 0600 "$ALPHA_DESCRIPTOR"
+printf '%s\n' "$ALPHA_DESCRIPTOR"
+
 git checkout --detach "$ALPHA_SHA"
 test "$(git rev-parse HEAD)" = "$ALPHA_SHA"
 
@@ -119,30 +126,66 @@ EVIDENCEMESH_PROVIDERS=searxng \
   --fetch-content
 ```
 
-If SearXNG is unavailable, the other configured providers still run and the
-response contains an explicit partial-failure warning. After three consecutive
-failures, EvidenceMesh opens that provider's process-local circuit for 60
-seconds so later searches do not repeatedly inherit its full deadline. One
-half-open recovery probe is allowed after the cooldown.
+With the single-provider override above, an unavailable SearXNG leaves no other
+provider to answer. In a multi-provider configuration, the remaining providers
+still run and the response contains an explicit partial-failure warning. After
+three consecutive failures, EvidenceMesh opens the failing provider's
+process-local circuit for 60 seconds. One half-open recovery probe is allowed
+after the cooldown.
 
 ## MCP setup
 
 ### STDIO
 
-Add this server to any MCP-compatible client. Replace `/absolute/path`:
+EvidenceMesh publishes the descriptor below as its tested Ubuntu STDIO shape.
+The `mcpServers` configuration schema is common but is not universal: first
+confirm that your client supports STDIO servers and per-server `env` values.
+Replace both example paths with absolute paths; JSON clients are not required
+to expand `$HOME`, `$PWD` or shell expressions. Create the private cache parent
+before starting the client:
+
+```bash
+install -d -m 0700 /home/YOUR_USER/.cache/evidencemesh
+```
 
 ```json
 {
   "mcpServers": {
     "evidencemesh": {
-      "command": "/absolute/path/EvidenceMesh/.venv/bin/evidencemesh-mcp",
-      "args": []
+      "command": "/absolute/path/to/EvidenceMesh/.venv/bin/evidencemesh-mcp",
+      "args": [],
+      "env": {
+        "EVIDENCEMESH_ALLOW_NONSTANDARD_PORTS": "false",
+        "EVIDENCEMESH_ALLOW_PRIVATE_NETWORKS": "false",
+        "EVIDENCEMESH_CACHE_PATH": "/home/YOUR_USER/.cache/evidencemesh/cache.sqlite3",
+        "EVIDENCEMESH_DEPLOYMENT_PROFILE": "community",
+        "EVIDENCEMESH_PROVIDERS": "wikipedia",
+        "EVIDENCEMESH_RESPECT_ROBOTS_TXT": "true",
+        "EVIDENCEMESH_TRANSPORT": "stdio",
+        "FASTMCP_CHECK_FOR_UPDATES": "off",
+        "FASTMCP_SHOW_SERVER_BANNER": "false",
+        "PYTHONUNBUFFERED": "1"
+      }
     }
   }
 }
 ```
 
-### Streamable HTTP
+This exact shape is also available as
+[`examples/evidencemesh.mcp.json`](examples/evidencemesh.mcp.json). The Quick
+Start preserves it at the shell path printed by `printf '%s\n'
+"$ALPHA_DESCRIPTOR"` before detaching the older frozen product source. Replace
+the paths in that preserved copy, then add its JSON to your client. On first
+connection, call only `health`: the expected local result is EvidenceMesh
+`0.1.0`, status `ready`, profile `community`, provider `wikipedia`, no
+configuration warning, private networks disabled and DNS pinning enabled.
+`ready` describes local configuration; it does not prove that Wikipedia is
+reachable or that a live search will succeed. The A1-P1 gate validated this
+headless path with the official Python MCP SDK on Ubuntu 24.04 and did not test
+a GUI host, macOS or native Windows. FastMCP diagnostics remain enabled on
+stderr; MCP JSON-RPC remains isolated on stdout.
+
+### Streamable HTTP (advanced; outside A1-P1)
 
 ```bash
 .venv/bin/evidencemesh serve --transport http --host 127.0.0.1 --port 8000

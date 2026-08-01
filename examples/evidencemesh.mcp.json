@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "evidencemesh": {
+      "command": "/absolute/path/to/EvidenceMesh/.venv/bin/evidencemesh-mcp",
+      "args": [],
+      "env": {
+        "EVIDENCEMESH_ALLOW_NONSTANDARD_PORTS": "false",
+        "EVIDENCEMESH_ALLOW_PRIVATE_NETWORKS": "false",
+        "EVIDENCEMESH_CACHE_PATH": "/home/YOUR_USER/.cache/evidencemesh/cache.sqlite3",
+        "EVIDENCEMESH_DEPLOYMENT_PROFILE": "community",
+        "EVIDENCEMESH_PROVIDERS": "wikipedia",
+        "EVIDENCEMESH_RESPECT_ROBOTS_TXT": "true",
+        "EVIDENCEMESH_TRANSPORT": "stdio",
+        "FASTMCP_CHECK_FOR_UPDATES": "off",
+        "FASTMCP_SHOW_SERVER_BANNER": "false",
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  }
+}
