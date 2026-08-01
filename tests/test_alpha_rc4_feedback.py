@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import asyncio
 import copy
+import hashlib
 import json
 import os
 import stat
@@ -14,10 +15,12 @@ from typing import Any
 
 import pytest
 
+import evidencemesh.closed_alpha_feedback as feedback_module
 from evidencemesh.closed_alpha_feedback import (
     PURGE_MARGIN,
     ClosedAlphaFeedbackContract,
     ClosedAlphaFeedbackError,
+    ClosedAlphaFeedbackIdentity,
     ClosedAlphaFeedbackStore,
     FeedbackAdmissionError,
     FeedbackContext,
@@ -27,6 +30,7 @@ from evidencemesh.closed_alpha_feedback import (
 
 MODULE = Path(__file__).parents[1] / "src/evidencemesh/closed_alpha_feedback.py"
 CANDIDATE_SHA = "c1e0be437442b0d97da26f2c9085067a8c09955e"
+CANDIDATE_TREE = "44bb1df79b6026c1fc1c2a40218c7347117697a0"
 
 
 @dataclass
@@ -49,6 +53,7 @@ class FakeAdmission:
     privacy_faults: int = 0
     fail_feedback_context: bool = False
     fail_withdrawal_check: bool = False
+    fail_privacy_fault: bool = False
 
     def feedback_context(
         self,
@@ -82,7 +87,113 @@ class FakeAdmission:
         return True
 
     def record_privacy_fault(self) -> None:
+        if self.fail_privacy_fault:
+            raise RuntimeError("synthetic durable privacy fault failure")
         self.privacy_faults += 1
+
+
+@dataclass(frozen=True)
+class IdentityMaterials:
+    record_path: Path
+    expected_record_sha256: str
+    archive_path: Path
+    direct_url_payload: bytes
+
+
+def _json_bytes(value: object) -> bytes:
+    return (json.dumps(value, sort_keys=True, indent=2) + "\n").encode()
+
+
+def _write_record(path: Path, value: object) -> str:
+    payload = _json_bytes(value)
+    path.write_bytes(payload)
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _identity_materials(root: Path, *, archive_kind: str = "wheel") -> IdentityMaterials:
+    root.mkdir(parents=True, exist_ok=True)
+    wheel = root / "evidencemesh-0.1.0-py3-none-any.whl"
+    sdist = root / "evidencemesh-0.1.0.tar.gz"
+    wheel.write_bytes(b"synthetic accepted wheel\n")
+    sdist.write_bytes(b"synthetic accepted sdist\n")
+    wheel_digest = hashlib.sha256(wheel.read_bytes()).hexdigest()
+    sdist_digest = hashlib.sha256(sdist.read_bytes()).hexdigest()
+    record = {
+        "schema_version": 1,
+        "acceptance": {
+            "scope": "single_host_technical_alpha_only",
+            "scored": False,
+            "status": "accepted",
+        },
+        "attestations": {
+            "provenance": {
+                "id": 101,
+                "url": "https://github.com/VynoDePal/EvidenceMesh/attestations/101",
+            },
+            "result": {
+                "id": 102,
+                "url": "https://github.com/VynoDePal/EvidenceMesh/attestations/102",
+            },
+            "sbom": {
+                "id": 103,
+                "url": "https://github.com/VynoDePal/EvidenceMesh/attestations/103",
+            },
+        },
+        "candidate": {
+            "sha": CANDIDATE_SHA,
+            "tree": CANDIDATE_TREE,
+            "subjects": {
+                f"dist/{wheel.name}": wheel_digest,
+                f"dist/{sdist.name}": sdist_digest,
+            },
+        },
+        "distribution": {
+            "binary_artifact_uploaded": False,
+            "github_actions_artifact_count": 0,
+            "public_metadata_only": True,
+            "unpublished_distributions": True,
+        },
+        "seal": {"completed": True, "workflow_retired": True},
+    }
+    record_path = root / "acceptance.json"
+    expected_record_sha256 = _write_record(record_path, record)
+    archive_path = wheel if archive_kind == "wheel" else sdist
+    archive_digest = wheel_digest if archive_kind == "wheel" else sdist_digest
+    direct_url_payload = _json_bytes(
+        {
+            "archive_info": {
+                "hash": f"sha256={archive_digest}",
+                "hashes": {"sha256": archive_digest},
+            },
+            "url": archive_path.resolve().as_uri(),
+        }
+    )
+    return IdentityMaterials(
+        record_path=record_path,
+        expected_record_sha256=expected_record_sha256,
+        archive_path=archive_path,
+        direct_url_payload=direct_url_payload,
+    )
+
+
+def _load_identity(
+    materials: IdentityMaterials,
+    *,
+    expected_record_sha256: str | None = None,
+    direct_url_payload: bytes | None = None,
+) -> ClosedAlphaFeedbackIdentity:
+    payload = materials.direct_url_payload if direct_url_payload is None else direct_url_payload
+    with pytest.MonkeyPatch.context() as patcher:
+        patcher.setattr(feedback_module, "_read_installed_direct_url", lambda: payload)
+        return ClosedAlphaFeedbackIdentity.load(
+            materials.record_path,
+            expected_record_sha256=(
+                materials.expected_record_sha256
+                if expected_record_sha256 is None
+                else expected_record_sha256
+            ),
+            archive_path=materials.archive_path,
+        )
 
 
 def _participant(index: int) -> str:
@@ -158,12 +269,214 @@ def _store(
     clock: FakeClock,
     admission: FakeAdmission,
 ) -> ClosedAlphaFeedbackStore:
+    identity = _load_identity(_identity_materials(root.parent / ".accepted-identity"))
     return ClosedAlphaFeedbackStore(
         root,
-        ClosedAlphaFeedbackContract(CANDIDATE_SHA),
+        ClosedAlphaFeedbackContract(identity),
         admission,
         clock=clock,
     )
+
+
+@pytest.mark.parametrize("archive_kind", ["wheel", "sdist"])
+def test_identity_loads_only_cross_bound_accepted_archive(
+    tmp_path: Path,
+    archive_kind: str,
+) -> None:
+    materials = _identity_materials(tmp_path, archive_kind=archive_kind)
+    identity = _load_identity(materials)
+
+    assert identity.candidate_sha == CANDIDATE_SHA
+    assert identity.candidate_tree == CANDIDATE_TREE
+    assert identity.repository == "VynoDePal/EvidenceMesh"
+    assert identity.record_sha256 == materials.expected_record_sha256
+    assert identity.archive_subject.endswith(materials.archive_path.name)
+    expected_archive_sha256 = hashlib.sha256(materials.archive_path.read_bytes()).hexdigest()
+    assert identity.archive_sha256 == expected_archive_sha256
+    assert ClosedAlphaFeedbackContract(identity).candidate_sha == CANDIDATE_SHA
+
+
+def test_identity_rejects_bad_or_tampered_acceptance_record_digest(tmp_path: Path) -> None:
+    invalid = _identity_materials(tmp_path / "invalid")
+    with pytest.raises(FeedbackValidationError, match="expected acceptance record SHA-256"):
+        _load_identity(invalid, expected_record_sha256="A" * 64)
+
+    wrong = _identity_materials(tmp_path / "wrong")
+    with pytest.raises(FeedbackValidationError, match="does not match"):
+        _load_identity(wrong, expected_record_sha256="0" * 64)
+
+    tampered = _identity_materials(tmp_path / "tampered")
+    tampered.record_path.write_bytes(tampered.record_path.read_bytes() + b" ")
+    with pytest.raises(FeedbackValidationError, match="does not match"):
+        _load_identity(tampered)
+
+
+@pytest.mark.parametrize(
+    ("mutator", "failure"),
+    [
+        (lambda record: record["candidate"].__setitem__("sha", "A" * 40), "candidate SHA"),
+        (lambda record: record["candidate"].__setitem__("tree", "0" * 39), "candidate tree"),
+        (lambda record: record["attestations"].pop("result"), "incomplete"),
+        (
+            lambda record: record["attestations"]["result"].update(
+                {
+                    "id": 101,
+                    "url": "https://github.com/VynoDePal/EvidenceMesh/attestations/101",
+                }
+            ),
+            "not unique",
+        ),
+        (
+            lambda record: record["attestations"]["sbom"].__setitem__(
+                "url", "https://github.com/VynoDePal/EvidenceMesh/attestations/999"
+            ),
+            "URL is invalid",
+        ),
+        (lambda record: record["acceptance"].__setitem__("status", "pending"), "not final"),
+        (lambda record: record["seal"].__setitem__("completed", False), "not sealed"),
+        (
+            lambda record: record["distribution"].__setitem__("binary_artifact_uploaded", True),
+            "distribution boundary",
+        ),
+    ],
+)
+def test_identity_rejects_nonfinal_candidate_or_attestation_metadata(
+    tmp_path: Path,
+    mutator: Any,
+    failure: str,
+) -> None:
+    materials = _identity_materials(tmp_path)
+    record = json.loads(materials.record_path.read_bytes())
+    mutator(record)
+    expected = _write_record(materials.record_path, record)
+
+    with pytest.raises(FeedbackValidationError, match=failure):
+        _load_identity(materials, expected_record_sha256=expected)
+
+
+def test_identity_rejects_archive_or_subject_tampering(tmp_path: Path) -> None:
+    archive_tamper = _identity_materials(tmp_path / "archive")
+    archive_tamper.archive_path.write_bytes(archive_tamper.archive_path.read_bytes() + b"tampered")
+    with pytest.raises(FeedbackValidationError, match="archive SHA-256"):
+        _load_identity(archive_tamper)
+
+    subject_tamper = _identity_materials(tmp_path / "subject")
+    record = json.loads(subject_tamper.record_path.read_bytes())
+    subject = next(
+        name
+        for name in record["candidate"]["subjects"]
+        if name.endswith(subject_tamper.archive_path.name)
+    )
+    record["candidate"]["subjects"][subject] = "0" * 64
+    expected = _write_record(subject_tamper.record_path, record)
+    with pytest.raises(FeedbackValidationError, match="archive SHA-256"):
+        _load_identity(subject_tamper, expected_record_sha256=expected)
+
+
+def test_identity_rejects_non_distribution_subject_as_selected_archive(tmp_path: Path) -> None:
+    materials = _identity_materials(tmp_path)
+    non_distribution = tmp_path / "installed-wheel-rc3-smoke.json"
+    non_distribution.write_bytes(b"synthetic non-distribution subject\n")
+    non_distribution_digest = hashlib.sha256(non_distribution.read_bytes()).hexdigest()
+    record = json.loads(materials.record_path.read_bytes())
+    record["candidate"]["subjects"][non_distribution.name] = non_distribution_digest
+    expected = _write_record(materials.record_path, record)
+    spoofed = IdentityMaterials(
+        record_path=materials.record_path,
+        expected_record_sha256=expected,
+        archive_path=non_distribution,
+        direct_url_payload=_json_bytes(
+            {
+                "archive_info": {"hashes": {"sha256": non_distribution_digest}},
+                "url": non_distribution.resolve().as_uri(),
+            }
+        ),
+    )
+
+    with pytest.raises(FeedbackValidationError, match="accepted distribution subject"):
+        _load_identity(spoofed)
+
+
+@pytest.mark.parametrize("tamper", ["url", "hash", "directory"])
+def test_identity_rejects_installed_direct_url_tampering(
+    tmp_path: Path,
+    tamper: str,
+) -> None:
+    materials = _identity_materials(tmp_path)
+    direct_url = json.loads(materials.direct_url_payload)
+    if tamper == "url":
+        direct_url["url"] = (tmp_path / "other.whl").resolve().as_uri()
+        failure = "direct URL"
+    elif tamper == "hash":
+        direct_url["archive_info"]["hash"] = f"sha256={'0' * 64}"
+        direct_url["archive_info"]["hashes"]["sha256"] = "0" * 64
+        failure = "archive hash"
+    else:
+        direct_url = {"dir_info": {}, "url": tmp_path.resolve().as_uri()}
+        failure = "archive reference"
+
+    with pytest.raises(FeedbackValidationError, match=failure):
+        _load_identity(materials, direct_url_payload=_json_bytes(direct_url))
+
+
+def test_direct_url_reader_uses_current_installed_distribution(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+
+    class SyntheticDistribution:
+        files = ("evidencemesh/closed_alpha_feedback.py",)
+
+        def locate_file(self, filename: str) -> Path:
+            calls.append(f"locate:{filename}")
+            return MODULE
+
+        def read_text(self, filename: str) -> str:
+            calls.append(filename)
+            return '{"archive_info":{},"url":"file:///synthetic.whl"}'
+
+    def distribution(name: str) -> SyntheticDistribution:
+        calls.append(name)
+        return SyntheticDistribution()
+
+    monkeypatch.setattr(feedback_module.importlib.metadata, "distribution", distribution)
+    assert feedback_module._read_installed_direct_url().startswith(b"{")
+    assert calls == [
+        "evidencemesh",
+        "locate:evidencemesh/closed_alpha_feedback.py",
+        "direct_url.json",
+    ]
+
+
+@pytest.mark.parametrize("failure", ["missing_inventory", "missing_module", "wrong_module"])
+def test_direct_url_reader_rejects_unbound_distribution_metadata(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    failure: str,
+) -> None:
+    unrelated_module = tmp_path / "closed_alpha_feedback.py"
+    unrelated_module.write_bytes(MODULE.read_bytes())
+
+    class UnboundDistribution:
+        files = (
+            None
+            if failure == "missing_inventory"
+            else (() if failure == "missing_module" else ("evidencemesh/closed_alpha_feedback.py",))
+        )
+
+        def locate_file(self, _filename: str) -> Path:
+            return unrelated_module
+
+        def read_text(self, _filename: str) -> str:
+            raise AssertionError("unbound distribution metadata must not be read")
+
+    monkeypatch.setattr(
+        feedback_module.importlib.metadata,
+        "distribution",
+        lambda _name: UnboundDistribution(),
+    )
+    with pytest.raises(FeedbackValidationError, match="distribution"):
+        feedback_module._read_installed_direct_url()
 
 
 def test_create_once_is_private_canonical_idempotent_and_no_clobber(tmp_path: Path) -> None:
@@ -262,13 +575,14 @@ def test_arbitrary_or_noop_validator_is_rejected_and_admission_is_mandatory(
         assert store.reports() == ()
 
 
-def test_contract_requires_exact_candidate_sha_and_validator_cannot_mutate(
+def test_contract_requires_verified_identity_and_validator_cannot_mutate(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    for invalid in ("", "A" * 40, "0" * 39, "0" * 41):
-        with pytest.raises(FeedbackValidationError, match="candidate SHA"):
-            ClosedAlphaFeedbackContract(invalid)
+    with pytest.raises(FeedbackValidationError, match="loaded from accepted metadata"):
+        ClosedAlphaFeedbackIdentity()
+    with pytest.raises(FeedbackValidationError, match="verified accepted identity"):
+        ClosedAlphaFeedbackContract(CANDIDATE_SHA)  # type: ignore[arg-type]
 
     clock = FakeClock(datetime(2026, 7, 31, 12, tzinfo=UTC))
     report = _feedback(clock.now.date())
@@ -609,6 +923,31 @@ def test_clock_regression_erases_reports_and_poison_store(tmp_path: Path) -> Non
     assert not (root / f"{report['session_code']}.json").exists()
     assert admission.privacy_faults == 1
     with pytest.raises(ClosedAlphaFeedbackError):
+        store.close()
+
+
+def test_privacy_fault_recording_failure_is_propagated_and_store_stays_poisoned(
+    tmp_path: Path,
+) -> None:
+    clock = FakeClock(datetime(2026, 7, 31, 12, tzinfo=UTC))
+    report = _feedback(clock.now.date())
+    admission = FakeAdmission(active={(report["participant_code"], report["session_code"])})
+    root = tmp_path / "feedback"
+    store = _store(root, clock, admission)
+    store.put(report)
+    admission.fail_privacy_fault = True
+    clock.advance(-1)
+
+    with pytest.raises(ClosedAlphaFeedbackError, match="durably record") as failure:
+        store.purge()
+    assert isinstance(failure.value.__cause__, RuntimeError)
+    assert not (root / f"{report['session_code']}.json").exists()
+    assert store._poisoned is True
+    assert store._privacy_fault_recorded is False
+    assert admission.privacy_faults == 0
+    with pytest.raises(ClosedAlphaFeedbackError, match="fail-closed"):
+        store.reports()
+    with pytest.raises(ClosedAlphaFeedbackError, match="fail-closed"):
         store.close()
 
 

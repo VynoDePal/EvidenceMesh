@@ -98,7 +98,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          candidate_sha=$(git rev-parse HEAD)
           runner_uid=$(id -u)
           source_date_epoch=$(git show --no-patch --format=%ct HEAD)
           uv_path=$(command -v uv)
@@ -157,19 +156,37 @@ jobs:
             "$wheel_path"
           "${run_isolated[@]}" /usr/bin/env \
             PYTHONPATH="$smoke_target" \
-            "$python_path" - "$candidate_sha" "$smoke_target" <<'PY'
+            "$python_path" - "$smoke_target" <<'PY'
           from pathlib import Path
           import sys
 
-          from evidencemesh.closed_alpha_feedback import ClosedAlphaFeedbackContract
+          from evidencemesh import ClosedAlphaFeedbackIdentity as ExportedIdentity
+          from evidencemesh.closed_alpha_feedback import (
+              ClosedAlphaFeedbackContract,
+              ClosedAlphaFeedbackIdentity,
+              FeedbackValidationError,
+          )
 
-          candidate_sha, smoke_target = sys.argv[1:]
-          contract = ClosedAlphaFeedbackContract(candidate_sha)
-          assert contract.candidate_sha == candidate_sha
+          smoke_target = Path(sys.argv[1]).resolve()
+          assert ExportedIdentity is ClosedAlphaFeedbackIdentity
           assert getattr(ClosedAlphaFeedbackContract, "__final__", False) is True
-          module = sys.modules[ClosedAlphaFeedbackContract.__module__]
-          assert module.__file__ is not None
-          assert Path(module.__file__).resolve().is_relative_to(Path(smoke_target).resolve())
+          assert getattr(ClosedAlphaFeedbackIdentity, "__final__", False) is True
+          for packaged_type in (ClosedAlphaFeedbackContract, ClosedAlphaFeedbackIdentity):
+              module = sys.modules[packaged_type.__module__]
+              assert module.__file__ is not None
+              assert Path(module.__file__).resolve().is_relative_to(smoke_target)
+          try:
+              ClosedAlphaFeedbackContract("0" * 40)
+          except FeedbackValidationError:
+              pass
+          else:
+              raise AssertionError("raw candidate SHA unexpectedly constructed a contract")
+          try:
+              ClosedAlphaFeedbackIdentity()
+          except FeedbackValidationError:
+              pass
+          else:
+              raise AssertionError("feedback identity unexpectedly allowed direct construction")
           PY
           test -z "$(git status --porcelain --untracked-files=all)"
 
@@ -181,7 +198,7 @@ jobs:
             echo
             echo '- Offline implementation validation: `pass`'
             echo '- Provider/model/tester requests: `0`'
-            echo '- Candidate-bound packaged wheel smoke: `pass`'
+            echo '- Verified-identity packaged wheel smoke: `pass`'
             echo '- Actions artifact or attestation: `none`'
             echo '- Single-host scope only: `true`'
             echo '- Adoption, live, distribution, merge and release: `blocked`'

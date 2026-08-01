@@ -1,0 +1,340 @@
+name: Alpha RC4.1A Provider Policy Session Fail Closed Offline
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - converted_to_draft
+
+permissions:
+  contents: read
+
+concurrency:
+  group: alpha-rc4-1a-provider-policy-session-fail-closed-offline-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+env:
+  BASE_SHA: 61a58660cb77ba160e8ecfed53d09fdcd1d60c57
+  BASE_TREE: 6a7424d4d8391c64a0ebb0c0445b8d85c8d7a5fe
+  POLICY_SHA256: 4ee542ba49b2ca1fcac790f0279b6dae83129bf21266efe1addbf19bfb6c5d39
+  PROTOCOL_SHA256: 6d0e2daf707cf8155ad0a39606bbd80ae984e59094df7f23ef2f7de02afb7d55
+  RC4_1A_ROOT: /tmp/evidencemesh-alpha-rc4-1a-provider-policy-session-fail-closed-offline
+  UV_NO_CACHE: 1
+
+jobs:
+  validate-single-offline-correction:
+    if: >-
+      github.repository == 'VynoDePal/EvidenceMesh' &&
+      github.event.pull_request.number == 1 &&
+      github.event.pull_request.draft == true &&
+      github.event.pull_request.head.repo.full_name == 'VynoDePal/EvidenceMesh' &&
+      github.event.pull_request.head.ref == 'agent/evidencemesh-v0.1'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Check out the exact pull-request head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Verify the one-update RC4.1A identity and path set
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test "$(git rev-parse HEAD^)" = "$BASE_SHA"
+          test "$(git rev-parse "$BASE_SHA^{tree}")" = "$BASE_TREE"
+          test "$(git rev-list --parents --max-count=1 HEAD)" = \
+            "$EXPECTED_HEAD $BASE_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
+          expected_changes=$(
+            {
+              printf 'A\t%s\n' \
+                .github/workflows/alpha-rc4-1a-provider-policy-session-fail-closed-offline.yml \
+                alpha/closed_alpha_rc4_1a_provider_policy_session_fail_closed_policy_v1.json \
+                docs/alpha-rc4-1a-provider-policy-session-fail-closed-offline-protocol-v1.md \
+                tests/test_alpha_rc4_1a_workflow.py
+              printf 'M\t%s\n' \
+                .github/workflows/alpha-rc4-control-plane-offline.yml \
+                src/evidencemesh/__init__.py \
+                src/evidencemesh/closed_alpha_feedback.py \
+                src/evidencemesh/engine.py \
+                src/evidencemesh/governor.py \
+                tests/test_alpha_rc4_control_plane.py \
+                tests/test_alpha_rc4_feedback.py \
+                tests/test_alpha_rc4_integration.py \
+                tests/test_alpha_rc4_workflow.py
+            } | sort
+          )
+          actual_changes=$(git diff --name-status --no-renames "$BASE_SHA" HEAD | sort)
+          test "$actual_changes" = "$expected_changes"
+
+      - name: Verify immutable A0, RC3, RC4 and packaging evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          immutable=(
+            .github/workflows/alpha-rc3-governor-offline.yml
+            .github/workflows/closed-alpha-a0-preflight.yml
+            alpha/alpha_rc3_head_acceptance_v1.json
+            alpha/closed_alpha_a0_feedback.schema.json
+            alpha/closed_alpha_a0_plan_v1.json
+            alpha/closed_alpha_rc3_governor_policy_v1.json
+            alpha/closed_alpha_rc4_control_plane_policy_v1.json
+            docs/alpha-rc3-governor-protocol-v1.md
+            docs/alpha-rc3-head-exact-protocol-v1.md
+            docs/alpha-rc4-control-plane-offline-protocol-v1.md
+            docs/closed-alpha-a0-protocol-v1.md
+            pyproject.toml
+            scripts/build_alpha_rc3_head_bundle.py
+            scripts/finalize_alpha_rc3_head_report.py
+            scripts/prepare_closed_alpha_a0.py
+            scripts/smoke_installed_rc3.py
+            tests/test_alpha_rc3_head_exact.py
+            tests/test_closed_alpha_a0_preflight.py
+            uv.lock
+          )
+          git diff --quiet "$BASE_SHA" HEAD -- "${immutable[@]}"
+
+      - name: Verify the frozen RC4.1A offline contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo \
+            "$PROTOCOL_SHA256  docs/alpha-rc4-1a-provider-policy-session-fail-closed-offline-protocol-v1.md" \
+            | sha256sum --check
+          echo \
+            "$POLICY_SHA256  alpha/closed_alpha_rc4_1a_provider_policy_session_fail_closed_policy_v1.json" \
+            | sha256sum --check
+
+      - name: Set up pinned uv without an Actions cache
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: false
+
+      - name: Install the locked validation environment before isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11 --no-cache
+
+      - name: Run focused, full, build and wheel gates without networking
+        shell: bash
+        run: |
+          set -euo pipefail
+          runner_uid=$(id -u)
+          source_date_epoch=$(git show --no-patch --format=%ct HEAD)
+          uv_path=$(command -v uv)
+          test -x "$uv_path"
+          sudo install --directory \
+            --owner="$runner_uid" \
+            --group=nogroup \
+            --mode=0700 \
+            "$RC4_1A_ROOT"
+          python_path="$PWD/.venv/bin/python"
+          run_isolated=(
+            sudo env -i
+            HOME="$RC4_1A_ROOT"
+            TMPDIR="$RC4_1A_ROOT"
+            PATH=/usr/bin:/bin
+            LANG=C.UTF-8
+            LC_ALL=C.UTF-8
+            TZ=UTC
+            PYTHONDONTWRITEBYTECODE=1
+            RUFF_CACHE_DIR="$RC4_1A_ROOT/ruff-cache"
+            MYPY_CACHE_DIR="$RC4_1A_ROOT/mypy-cache"
+            COVERAGE_FILE="$RC4_1A_ROOT/.coverage"
+            SOURCE_DATE_EPOCH="$source_date_epoch"
+            UV_NO_CACHE=1
+            UV_OFFLINE=1
+            /usr/bin/unshare --net --
+            /usr/bin/setpriv
+            --reuid="$runner_uid"
+            --regid=nogroup
+            --clear-groups
+            --no-new-privs
+          )
+          "${run_isolated[@]}" /usr/bin/test ! -w /var/run/docker.sock
+          "${run_isolated[@]}" "$python_path" -m ruff format --check .
+          "${run_isolated[@]}" "$python_path" -m ruff check .
+          "${run_isolated[@]}" "$python_path" -m mypy src
+          "${run_isolated[@]}" "$python_path" -m pytest \
+            tests/test_alpha_rc4_control_plane.py \
+            tests/test_alpha_rc4_feedback.py \
+            tests/test_alpha_rc4_integration.py \
+            tests/test_alpha_rc4_workflow.py \
+            tests/test_alpha_rc4_1a_workflow.py \
+            -p no:cacheprovider \
+            -q
+          "${run_isolated[@]}" "$python_path" -m pytest \
+            --cov=evidencemesh \
+            --cov-report=term-missing \
+            -p no:cacheprovider \
+            -q
+          "${run_isolated[@]}" "$python_path" -m hatchling build \
+            --target wheel \
+            --target sdist \
+            --directory "$RC4_1A_ROOT/dist"
+          test "$(find "$RC4_1A_ROOT/dist" -maxdepth 1 -type f -name '*.whl' | wc -l)" = 1
+          test "$(find "$RC4_1A_ROOT/dist" -maxdepth 1 -type f -name '*.tar.gz' | wc -l)" = 1
+          wheel_path=$(find "$RC4_1A_ROOT/dist" -maxdepth 1 -type f -name '*.whl' -print -quit)
+          sdist_path=$(find "$RC4_1A_ROOT/dist" -maxdepth 1 -type f -name '*.tar.gz' -print -quit)
+          candidate_sha=$(git rev-parse HEAD)
+          candidate_tree=$(git rev-parse 'HEAD^{tree}')
+          smoke_target="$RC4_1A_ROOT/wheel-smoke"
+          "${run_isolated[@]}" "$uv_path" pip install \
+            --offline \
+            --no-index \
+            --no-deps \
+            --no-cache \
+            --python "$python_path" \
+            --target "$smoke_target" \
+            "$wheel_path"
+          "${run_isolated[@]}" /usr/bin/env \
+            PYTHONPATH="$smoke_target" \
+            "$python_path" - \
+            "$smoke_target" \
+            "$wheel_path" \
+            "$sdist_path" \
+            "$candidate_sha" \
+            "$candidate_tree" <<'PY'
+          import hashlib
+          import importlib.metadata
+          import json
+          from pathlib import Path, PurePosixPath
+          import sys
+
+          from evidencemesh import ClosedAlphaFeedbackIdentity as ExportedIdentity
+          from evidencemesh.closed_alpha_feedback import ClosedAlphaFeedbackIdentity
+
+          smoke_target = Path(sys.argv[1]).resolve(strict=True)
+          wheel_path = Path(sys.argv[2]).resolve(strict=True)
+          sdist_path = Path(sys.argv[3]).resolve(strict=True)
+          candidate_sha = sys.argv[4]
+          candidate_tree = sys.argv[5]
+          assert ExportedIdentity is ClosedAlphaFeedbackIdentity
+          module = sys.modules[ClosedAlphaFeedbackIdentity.__module__]
+          assert module.__file__ is not None
+          assert Path(module.__file__).resolve().is_relative_to(smoke_target)
+
+          distribution = importlib.metadata.distribution("evidencemesh")
+          module_entries = tuple(
+              entry
+              for entry in distribution.files or ()
+              if str(entry) == "evidencemesh/closed_alpha_feedback.py"
+          )
+          assert len(module_entries) == 1
+          assert Path(distribution.locate_file(module_entries[0])).resolve().samefile(
+              Path(module.__file__).resolve()
+          )
+
+          def digest(path: Path) -> str:
+              return hashlib.sha256(path.read_bytes()).hexdigest()
+
+          wheel_digest = digest(wheel_path)
+          sdist_digest = digest(sdist_path)
+          direct_url_entries = tuple(
+              entry
+              for entry in distribution.files or ()
+              if PurePosixPath(str(entry)).name == "direct_url.json"
+              and PurePosixPath(str(entry)).parent.name.endswith(".dist-info")
+          )
+          assert len(direct_url_entries) == 1
+          direct_url_path = Path(distribution.locate_file(direct_url_entries[0]))
+          direct_url_path.write_text(
+              json.dumps(
+                  {
+                      "archive_info": {"hashes": {"sha256": wheel_digest}},
+                      "url": wheel_path.as_uri(),
+                  },
+                  sort_keys=True,
+                  separators=(",", ":"),
+              ),
+              encoding="utf-8",
+          )
+          record = {
+              "schema_version": 1,
+              "acceptance": {
+                  "scope": "rc4_1a_offline_wheel_smoke_only",
+                  "scored": False,
+                  "status": "accepted",
+              },
+              "attestations": {
+                  name: {
+                      "id": identifier,
+                      "url": (
+                          "https://github.com/VynoDePal/EvidenceMesh/"
+                          f"attestations/{identifier}"
+                      ),
+                  }
+                  for name, identifier in (
+                      ("provenance", 1),
+                      ("result", 2),
+                      ("sbom", 3),
+                  )
+              },
+              "candidate": {
+                  "sha": candidate_sha,
+                  "tree": candidate_tree,
+                  "subjects": {
+                      f"dist/{wheel_path.name}": wheel_digest,
+                      f"dist/{sdist_path.name}": sdist_digest,
+                  },
+              },
+              "distribution": {
+                  "binary_artifact_uploaded": False,
+                  "github_actions_artifact_count": 0,
+                  "public_metadata_only": True,
+                  "unpublished_distributions": True,
+              },
+              "seal": {"completed": True, "workflow_retired": True},
+          }
+          record_payload = (
+              json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n"
+          ).encode()
+          record_path = smoke_target.parent / "wheel-smoke-acceptance.json"
+          record_path.write_bytes(record_payload)
+          identity = ClosedAlphaFeedbackIdentity.load(
+              record_path,
+              expected_record_sha256=hashlib.sha256(record_payload).hexdigest(),
+              archive_path=wheel_path,
+          )
+          assert identity.candidate_sha == candidate_sha
+          assert identity.candidate_tree == candidate_tree
+          assert identity.archive_subject == f"dist/{wheel_path.name}"
+          assert identity.archive_sha256 == wheel_digest
+          PY
+          test -z "$(git status --porcelain --untracked-files=all)"
+
+      - name: Summarize the offline-only correction
+        shell: bash
+        run: |
+          {
+            echo '## EvidenceMesh Alpha-RC4.1A provider/policy/session fail-closed offline'
+            echo
+            echo '- Offline correction validation: `pass`'
+            echo '- Branch update budget: `1/1`'
+            echo '- Automatic retries: `0`'
+            echo '- Provider/model/tester/live requests: `0`'
+            echo '- Packaged feedback identity load and origin binding: `pass`'
+            echo '- Artifact, attestation or distribution: `none`'
+            echo '- Adoption, live, merge and release: `blocked`'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove every ephemeral RC4.1A output
+        if: always()
+        shell: bash
+        run: sudo rm --recursive --force -- "$RC4_1A_ROOT"
+
+      - name: Confirm ephemeral output removal
+        if: always()
+        shell: bash
+        run: test ! -e "$RC4_1A_ROOT"

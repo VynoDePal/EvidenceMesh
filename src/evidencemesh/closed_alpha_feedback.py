@@ -12,6 +12,8 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import fcntl
+import hashlib
+import importlib.metadata
 import json
 import math
 import os
@@ -22,7 +24,7 @@ import threading
 from collections.abc import Awaitable, Callable, Iterator, Mapping
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any, Final, Protocol, cast, final
 
 from evidencemesh.errors import ConfigurationError
@@ -30,6 +32,9 @@ from evidencemesh.errors import ConfigurationError
 MAX_REPORT_BYTES: Final = 128 * 1024
 PURGE_MARGIN: Final = timedelta(seconds=60)
 MAX_SCHEDULER_POLL_SECONDS: Final = 30.0
+MAX_ACCEPTANCE_RECORD_BYTES: Final = 256 * 1024
+MAX_DIRECT_URL_BYTES: Final = 16 * 1024
+MAX_ACCEPTED_ARCHIVE_BYTES: Final = 512 * 1024 * 1024
 
 _LOCK_NAME: Final = ".feedback.lock"
 _REPORT_PATTERN: Final = re.compile(r"^s-[0-9a-f]{32}\.json$")
@@ -37,6 +42,10 @@ _SESSION_PATTERN: Final = re.compile(r"^s-[0-9a-f]{32}$")
 _PARTICIPANT_PATTERN: Final = re.compile(r"^p-[0-9a-f]{16}$")
 _TEMP_PATTERN: Final = re.compile(r"^\.feedback-tmp-[0-9a-f]{32}$")
 _CANDIDATE_PATTERN: Final = re.compile(r"^[0-9a-f]{40}$")
+_SHA256_PATTERN: Final = re.compile(r"^[0-9a-f]{64}$")
+_ATTESTATION_URL_PATTERN: Final = re.compile(
+    r"^https://github\.com/([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+)/attestations/([1-9][0-9]*)$"
+)
 _REPORT_SCHEMA: Final = "evidencemesh.closed-alpha-a0.session.v1"
 _PROTOCOL_VERSION: Final = "closed-alpha-a0-v1"
 _CONSENT_VERSION: Final = "closed-alpha-a0-consent-v1"
@@ -101,6 +110,7 @@ _FORBIDDEN_PROPERTY_MARKERS: Final = frozenset(
         "username",
     }
 )
+_IDENTITY_VERIFICATION: Final = object()
 
 
 class ClosedAlphaFeedbackError(ConfigurationError):
@@ -149,21 +159,413 @@ def _canonical_date(value: object, label: str) -> date:
     return parsed
 
 
+def _open_identity_file(
+    path: Path,
+    *,
+    label: str,
+    maximum_bytes: int,
+) -> tuple[int, os.stat_result]:
+    if not path.is_absolute():
+        raise FeedbackValidationError(f"{label} path must be absolute")
+    descriptor = -1
+    try:
+        descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+        metadata = os.fstat(descriptor)
+    except OSError as exc:
+        if descriptor >= 0:
+            os.close(descriptor)
+        raise FeedbackValidationError(f"cannot open {label}") from exc
+    if (
+        not stat.S_ISREG(metadata.st_mode)
+        or metadata.st_nlink != 1
+        or metadata.st_size <= 0
+        or metadata.st_size > maximum_bytes
+    ):
+        os.close(descriptor)
+        raise FeedbackValidationError(f"{label} is not a safe bounded regular file")
+    return descriptor, metadata
+
+
+def _assert_identity_file_stable(
+    path: Path,
+    before: os.stat_result,
+    after: os.stat_result,
+    *,
+    label: str,
+) -> None:
+    try:
+        current = os.stat(path, follow_symlinks=False)
+    except OSError as exc:
+        raise FeedbackValidationError(f"cannot recheck {label}") from exc
+    stable_fields = ("st_dev", "st_ino", "st_size", "st_mtime_ns", "st_ctime_ns")
+    if any(
+        getattr(before, field) != getattr(after, field)
+        or getattr(after, field) != getattr(current, field)
+        for field in stable_fields
+    ):
+        raise FeedbackValidationError(f"{label} changed while it was verified")
+
+
+def _read_identity_file(path: Path, *, label: str, maximum_bytes: int) -> bytes:
+    descriptor, before = _open_identity_file(path, label=label, maximum_bytes=maximum_bytes)
+    try:
+        chunks: list[bytes] = []
+        remaining = maximum_bytes + 1
+        while remaining:
+            chunk = os.read(descriptor, min(65536, remaining))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            remaining -= len(chunk)
+        payload = b"".join(chunks)
+        after = os.fstat(descriptor)
+    except OSError as exc:
+        raise FeedbackValidationError(f"cannot read {label}") from exc
+    finally:
+        os.close(descriptor)
+    if len(payload) != before.st_size or len(payload) > maximum_bytes:
+        raise FeedbackValidationError(f"{label} size changed while it was verified")
+    _assert_identity_file_stable(path, before, after, label=label)
+    return payload
+
+
+def _sha256_identity_file(path: Path, *, label: str, maximum_bytes: int) -> str:
+    descriptor, before = _open_identity_file(path, label=label, maximum_bytes=maximum_bytes)
+    digest = hashlib.sha256()
+    observed_size = 0
+    try:
+        while True:
+            chunk = os.read(descriptor, 65536)
+            if not chunk:
+                break
+            observed_size += len(chunk)
+            if observed_size > maximum_bytes:
+                raise FeedbackValidationError(f"{label} exceeds its byte limit")
+            digest.update(chunk)
+        after = os.fstat(descriptor)
+    except OSError as exc:
+        raise FeedbackValidationError(f"cannot hash {label}") from exc
+    finally:
+        os.close(descriptor)
+    if observed_size != before.st_size:
+        raise FeedbackValidationError(f"{label} size changed while it was verified")
+    _assert_identity_file_stable(path, before, after, label=label)
+    return digest.hexdigest()
+
+
+def _identity_json(payload: bytes, *, label: str) -> dict[str, Any]:
+    def reject_constant(_value: str) -> None:
+        raise FeedbackValidationError(f"{label} contains a non-finite number")
+
+    def closed_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        value: dict[str, Any] = {}
+        for key, child in pairs:
+            if not isinstance(key, str) or key in value:
+                raise FeedbackValidationError(f"{label} contains a duplicate property")
+            value[key] = child
+        return value
+
+    try:
+        parsed = json.loads(
+            payload,
+            object_pairs_hook=closed_object,
+            parse_constant=reject_constant,
+        )
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise FeedbackValidationError(f"{label} is not valid JSON") from exc
+    if not isinstance(parsed, dict):
+        raise FeedbackValidationError(f"{label} must be an object")
+    return cast(dict[str, Any], parsed)
+
+
+def _read_installed_direct_url() -> bytes:
+    """Read PEP 610 metadata from the installed EvidenceMesh distribution."""
+
+    try:
+        distribution = importlib.metadata.distribution("evidencemesh")
+    except (OSError, UnicodeError, importlib.metadata.PackageNotFoundError) as exc:
+        raise FeedbackValidationError("cannot locate installed EvidenceMesh distribution") from exc
+    try:
+        files = distribution.files
+    except (OSError, TypeError, UnicodeError, ValueError) as exc:
+        raise FeedbackValidationError(
+            "cannot inspect installed EvidenceMesh file inventory"
+        ) from exc
+    if files is None:
+        raise FeedbackValidationError(
+            "installed EvidenceMesh distribution has no verifiable file inventory"
+        )
+    module_entries = tuple(
+        entry
+        for entry in files
+        if PurePosixPath(str(entry)) == PurePosixPath("evidencemesh/closed_alpha_feedback.py")
+    )
+    if len(module_entries) != 1:
+        raise FeedbackValidationError(
+            "installed EvidenceMesh distribution does not inventory the imported feedback module"
+        )
+    try:
+        located_module = Path(str(distribution.locate_file(module_entries[0]))).resolve(strict=True)
+        imported_module = Path(__file__).resolve(strict=True)
+        located_metadata = located_module.stat()
+        imported_metadata = imported_module.stat()
+    except (OSError, RuntimeError, TypeError, ValueError) as exc:
+        raise FeedbackValidationError(
+            "cannot bind installed EvidenceMesh distribution to the imported feedback module"
+        ) from exc
+    if (
+        not stat.S_ISREG(located_metadata.st_mode)
+        or not stat.S_ISREG(imported_metadata.st_mode)
+        or (located_metadata.st_dev, located_metadata.st_ino)
+        != (imported_metadata.st_dev, imported_metadata.st_ino)
+    ):
+        raise FeedbackValidationError(
+            "installed EvidenceMesh distribution does not contain the imported feedback module"
+        )
+    try:
+        direct_url = distribution.read_text("direct_url.json")
+    except (OSError, TypeError, UnicodeError, ValueError) as exc:
+        raise FeedbackValidationError("cannot read installed EvidenceMesh direct_url.json") from exc
+    if not isinstance(direct_url, str):
+        raise FeedbackValidationError("installed EvidenceMesh distribution has no direct_url.json")
+    payload = direct_url.encode("utf-8")
+    if not payload or len(payload) > MAX_DIRECT_URL_BYTES:
+        raise FeedbackValidationError(
+            "installed EvidenceMesh direct_url.json is not safely bounded"
+        )
+    return payload
+
+
+def _acceptance_subjects(candidate: Mapping[str, Any]) -> dict[str, str]:
+    raw_subjects = candidate.get("subjects")
+    if not isinstance(raw_subjects, dict) or not raw_subjects:
+        raise FeedbackValidationError("acceptance record subjects are invalid")
+    subjects: dict[str, str] = {}
+    for raw_path, raw_digest in raw_subjects.items():
+        if not isinstance(raw_path, str) or not isinstance(raw_digest, str):
+            raise FeedbackValidationError("acceptance record subject is invalid")
+        subject_path = PurePosixPath(raw_path)
+        if (
+            subject_path.is_absolute()
+            or str(subject_path) != raw_path
+            or not subject_path.parts
+            or any(part in {"", ".", ".."} for part in subject_path.parts)
+            or _SHA256_PATTERN.fullmatch(raw_digest) is None
+        ):
+            raise FeedbackValidationError("acceptance record subject is unsafe")
+        subjects[raw_path] = raw_digest
+    wheels = [path for path in subjects if path.endswith(".whl")]
+    sdists = [path for path in subjects if path.endswith(".tar.gz")]
+    if len(wheels) != 1 or len(sdists) != 1:
+        raise FeedbackValidationError("acceptance record must bind one wheel and one sdist")
+    return subjects
+
+
+@final
+@dataclass(frozen=True, slots=True, init=False)
+class ClosedAlphaFeedbackIdentity:
+    """Verified installed identity of one metadata-only accepted candidate.
+
+    Loading is offline and fail-closed.  The raw acceptance-record digest is
+    the external trust anchor; the record then binds the candidate, its three
+    public attestations, the installed archive and its PEP 610 direct URL.
+    Direct construction is forbidden so a caller cannot select a raw SHA.
+    """
+
+    candidate_sha: str
+    candidate_tree: str
+    repository: str
+    record_sha256: str
+    archive_subject: str
+    archive_sha256: str
+    _verification: object
+
+    def __init__(self) -> None:
+        raise FeedbackValidationError(
+            "closed-alpha feedback identity must be loaded from accepted metadata"
+        )
+
+    @classmethod
+    def load(
+        cls,
+        record_path: Path,
+        *,
+        expected_record_sha256: str,
+        archive_path: Path,
+    ) -> ClosedAlphaFeedbackIdentity:
+        """Load and cross-bind an acceptance record and installed archive."""
+
+        if _SHA256_PATTERN.fullmatch(expected_record_sha256) is None:
+            raise FeedbackValidationError("expected acceptance record SHA-256 is invalid")
+        record_path = Path(record_path)
+        archive_path = Path(archive_path)
+        record_payload = _read_identity_file(
+            record_path,
+            label="acceptance record",
+            maximum_bytes=MAX_ACCEPTANCE_RECORD_BYTES,
+        )
+        if hashlib.sha256(record_payload).hexdigest() != expected_record_sha256:
+            raise FeedbackValidationError("acceptance record SHA-256 does not match")
+        record = _identity_json(record_payload, label="acceptance record")
+        if record.get("schema_version") != 1:
+            raise FeedbackValidationError("acceptance record schema is invalid")
+
+        acceptance = _object(record.get("acceptance"), "acceptance decision")
+        if (
+            acceptance.get("status") != "accepted"
+            or acceptance.get("scored") is not False
+            or not isinstance(acceptance.get("scope"), str)
+            or not acceptance["scope"]
+        ):
+            raise FeedbackValidationError("acceptance decision is not final")
+        seal = _object(record.get("seal"), "acceptance seal")
+        if seal.get("completed") is not True or seal.get("workflow_retired") is not True:
+            raise FeedbackValidationError("acceptance metadata is not sealed")
+        distribution = _object(record.get("distribution"), "acceptance distribution")
+        if (
+            distribution.get("public_metadata_only") is not True
+            or distribution.get("binary_artifact_uploaded") is not False
+            or distribution.get("unpublished_distributions") is not True
+            or type(distribution.get("github_actions_artifact_count")) is not int
+            or distribution["github_actions_artifact_count"] != 0
+        ):
+            raise FeedbackValidationError("acceptance distribution boundary is invalid")
+
+        candidate = _object(record.get("candidate"), "accepted candidate")
+        candidate_sha = candidate.get("sha")
+        candidate_tree = candidate.get("tree")
+        if (
+            not isinstance(candidate_sha, str)
+            or _CANDIDATE_PATTERN.fullmatch(candidate_sha) is None
+        ):
+            raise FeedbackValidationError("accepted candidate SHA is invalid")
+        if (
+            not isinstance(candidate_tree, str)
+            or _CANDIDATE_PATTERN.fullmatch(candidate_tree) is None
+        ):
+            raise FeedbackValidationError("accepted candidate tree is invalid")
+        subjects = _acceptance_subjects(candidate)
+
+        attestations = record.get("attestations")
+        if not isinstance(attestations, dict) or set(attestations) != {
+            "provenance",
+            "result",
+            "sbom",
+        }:
+            raise FeedbackValidationError("acceptance record attestations are incomplete")
+        repository: str | None = None
+        attestation_ids: set[int] = set()
+        for name in ("provenance", "result", "sbom"):
+            attestation = _object(attestations[name], f"{name} attestation")
+            if set(attestation) != {"id", "url"}:
+                raise FeedbackValidationError(f"{name} attestation fields drifted")
+            identifier = attestation.get("id")
+            url = attestation.get("url")
+            if type(identifier) is not int or identifier <= 0 or not isinstance(url, str):
+                raise FeedbackValidationError(f"{name} attestation is invalid")
+            match = _ATTESTATION_URL_PATTERN.fullmatch(url)
+            if match is None or int(match.group(3)) != identifier:
+                raise FeedbackValidationError(f"{name} attestation URL is invalid")
+            observed_repository = f"{match.group(1)}/{match.group(2)}"
+            if repository is None:
+                repository = observed_repository
+            elif repository != observed_repository:
+                raise FeedbackValidationError("acceptance attestations disagree on repository")
+            if identifier in attestation_ids:
+                raise FeedbackValidationError("acceptance attestation identifiers are not unique")
+            attestation_ids.add(identifier)
+        if repository is None:  # pragma: no cover - exact key check above makes this unreachable
+            raise FeedbackValidationError("acceptance attestation repository is missing")
+
+        archive_digest = _sha256_identity_file(
+            archive_path,
+            label="accepted distribution archive",
+            maximum_bytes=MAX_ACCEPTED_ARCHIVE_BYTES,
+        )
+        accepted_distribution_subjects = {
+            path: digest for path, digest in subjects.items() if path.endswith((".whl", ".tar.gz"))
+        }
+        matching_subjects = [
+            (path, digest)
+            for path, digest in accepted_distribution_subjects.items()
+            if PurePosixPath(path).name == archive_path.name
+        ]
+        if len(matching_subjects) != 1:
+            raise FeedbackValidationError(
+                "installed archive is not a unique accepted distribution subject"
+            )
+        archive_subject, expected_archive_digest = matching_subjects[0]
+        if expected_archive_digest != archive_digest:
+            raise FeedbackValidationError("installed archive SHA-256 does not match acceptance")
+
+        direct_url_payload = _read_installed_direct_url()
+        direct_url = _identity_json(direct_url_payload, label="installed direct_url.json")
+        if set(direct_url) != {"archive_info", "url"}:
+            raise FeedbackValidationError("installed direct_url.json is not an archive reference")
+        try:
+            archive_uri = archive_path.resolve(strict=True).as_uri()
+        except (OSError, ValueError) as exc:
+            raise FeedbackValidationError("cannot resolve accepted distribution archive") from exc
+        if direct_url.get("url") != archive_uri:
+            raise FeedbackValidationError("installed direct URL does not match accepted archive")
+        archive_info = _object(direct_url.get("archive_info"), "installed archive info")
+        if not archive_info or not set(archive_info).issubset({"hash", "hashes"}):
+            raise FeedbackValidationError("installed archive hash metadata is invalid")
+        hashes = archive_info.get("hashes")
+        legacy_hash = archive_info.get("hash")
+        observed_hash = False
+        if hashes is not None:
+            if hashes != {"sha256": archive_digest}:
+                raise FeedbackValidationError("installed archive hashes do not match acceptance")
+            observed_hash = True
+        if legacy_hash is not None:
+            if legacy_hash != f"sha256={archive_digest}":
+                raise FeedbackValidationError("installed archive hash does not match acceptance")
+            observed_hash = True
+        if not observed_hash:
+            raise FeedbackValidationError("installed direct URL has no accepted archive hash")
+
+        identity = object.__new__(cls)
+        object.__setattr__(identity, "candidate_sha", candidate_sha)
+        object.__setattr__(identity, "candidate_tree", candidate_tree)
+        object.__setattr__(identity, "repository", repository)
+        object.__setattr__(identity, "record_sha256", expected_record_sha256)
+        object.__setattr__(identity, "archive_subject", archive_subject)
+        object.__setattr__(identity, "archive_sha256", archive_digest)
+        object.__setattr__(identity, "_verification", _IDENTITY_VERIFICATION)
+        return identity
+
+
 @final
 @dataclass(frozen=True, slots=True)
 class ClosedAlphaFeedbackContract:
     """Final packaged validator for the closed aggregate A0 report shape.
 
     The report shape, enumerations, bounds and cross-field rules are frozen.
-    Only the exact candidate SHA is supplied when binding a later technical
-    candidate to this aggregate-only contract.
+    Candidate selection comes only from a verified installed acceptance
+    identity; callers cannot supply a raw candidate SHA.
     """
 
-    candidate_sha: str
+    identity: ClosedAlphaFeedbackIdentity
 
     def __post_init__(self) -> None:
-        if _CANDIDATE_PATTERN.fullmatch(self.candidate_sha) is None:
-            raise FeedbackValidationError("feedback candidate SHA is invalid")
+        if (
+            type(self.identity) is not ClosedAlphaFeedbackIdentity
+            or getattr(self.identity, "_verification", None) is not _IDENTITY_VERIFICATION
+        ):
+            raise FeedbackValidationError("feedback contract requires a verified accepted identity")
+
+    @property
+    def candidate_sha(self) -> str:
+        """Return the accepted candidate bound by the verified identity."""
+
+        return self.identity.candidate_sha
+
+    @property
+    def candidate_tree(self) -> str:
+        """Return the accepted Git tree bound by the verified identity."""
+
+        return self.identity.candidate_tree
 
     def validate(self, report: Mapping[str, Any], *, today: date) -> None:
         """Apply the complete closed shape and semantic A0 report contract."""
@@ -495,10 +897,12 @@ class ClosedAlphaFeedbackStore:
                 now = self._clock_locked()
                 self._purge_locked(now)
         except BaseException as exc:
-            if isinstance(exc, ClosedAlphaFeedbackError):
-                self._record_privacy_fault()
-            self._close_descriptors()
-            self._closed = True
+            try:
+                if isinstance(exc, ClosedAlphaFeedbackError):
+                    self._record_privacy_fault()
+            finally:
+                self._close_descriptors()
+                self._closed = True
             raise
 
     def __enter__(self) -> ClosedAlphaFeedbackStore:
@@ -1135,10 +1539,14 @@ class ClosedAlphaFeedbackStore:
         raise ClosedAlphaFeedbackError(message) from cause
 
     def _record_privacy_fault(self) -> None:
-        if not self._privacy_fault_recorded:
-            self._privacy_fault_recorded = True
-            with contextlib.suppress(BaseException):
-                self._admission.record_privacy_fault()
+        if self._privacy_fault_recorded:
+            return
+        self._poisoned = True
+        try:
+            self._admission.record_privacy_fault()
+        except BaseException as exc:
+            raise ClosedAlphaFeedbackError("cannot durably record private feedback fault") from exc
+        self._privacy_fault_recorded = True
 
     def _close_descriptors(self) -> None:
         for descriptor_name in ("_lock_fd", "_root_fd"):

@@ -3,6 +3,7 @@
 from evidencemesh.citations import CitationAudit, audit_citations
 from evidencemesh.closed_alpha_feedback import (
     ClosedAlphaFeedbackContract,
+    ClosedAlphaFeedbackIdentity,
     ClosedAlphaFeedbackStore,
     FeedbackContext,
     FeedbackRetentionScheduler,
@@ -32,6 +33,7 @@ __all__ = [
     "CitationAudit",
     "ClosedAlphaAdmission",
     "ClosedAlphaFeedbackContract",
+    "ClosedAlphaFeedbackIdentity",
     "ClosedAlphaFeedbackStore",
     "ClosedAlphaPolicy",
     "ClosedAlphaSession",

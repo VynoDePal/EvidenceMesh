@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import hashlib
+import json
 import os
+import threading
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -8,9 +11,13 @@ from pathlib import Path
 import httpx
 import pytest
 
+import evidencemesh.closed_alpha_feedback as feedback_module
+import evidencemesh.governor as governor_module
 from evidencemesh.closed_alpha_feedback import (
     ClosedAlphaFeedbackContract,
+    ClosedAlphaFeedbackIdentity,
     ClosedAlphaFeedbackStore,
+    FeedbackAdmissionError,
     FeedbackContext,
 )
 from evidencemesh.errors import BudgetConfigurationError, BudgetExceededError
@@ -23,6 +30,7 @@ from evidencemesh.governor import (
 )
 
 CANDIDATE_SHA = "c1e0be437442b0d97da26f2c9085067a8c09955e"
+CANDIDATE_TREE = "a" * 40
 
 
 @dataclass
@@ -148,9 +156,67 @@ def _report(collected_at: datetime) -> dict[str, object]:
     }
 
 
+def _accepted_contract(root: Path, monkeypatch: pytest.MonkeyPatch) -> ClosedAlphaFeedbackContract:
+    root.mkdir()
+    wheel = root / "evidencemesh-0.1.0-py3-none-any.whl"
+    sdist = root / "evidencemesh-0.1.0.tar.gz"
+    wheel.write_bytes(b"synthetic accepted wheel\n")
+    sdist.write_bytes(b"synthetic accepted sdist\n")
+    wheel_digest = hashlib.sha256(wheel.read_bytes()).hexdigest()
+    sdist_digest = hashlib.sha256(sdist.read_bytes()).hexdigest()
+    record = {
+        "schema_version": 1,
+        "acceptance": {
+            "scope": "single_host_technical_alpha_only",
+            "scored": False,
+            "status": "accepted",
+        },
+        "attestations": {
+            name: {
+                "id": identifier,
+                "url": (f"https://github.com/VynoDePal/EvidenceMesh/attestations/{identifier}"),
+            }
+            for name, identifier in (("provenance", 101), ("result", 102), ("sbom", 103))
+        },
+        "candidate": {
+            "sha": CANDIDATE_SHA,
+            "tree": CANDIDATE_TREE,
+            "subjects": {
+                f"dist/{wheel.name}": wheel_digest,
+                f"dist/{sdist.name}": sdist_digest,
+            },
+        },
+        "distribution": {
+            "binary_artifact_uploaded": False,
+            "github_actions_artifact_count": 0,
+            "public_metadata_only": True,
+            "unpublished_distributions": True,
+        },
+        "seal": {"completed": True, "workflow_retired": True},
+    }
+    record_payload = (json.dumps(record, sort_keys=True, indent=2) + "\n").encode()
+    record_path = root / "acceptance.json"
+    record_path.write_bytes(record_payload)
+    direct_url_payload = json.dumps(
+        {
+            "archive_info": {"hashes": {"sha256": wheel_digest}},
+            "url": wheel.resolve().as_uri(),
+        }
+    ).encode()
+    with monkeypatch.context() as patch:
+        patch.setattr(feedback_module, "_read_installed_direct_url", lambda: direct_url_payload)
+        identity = ClosedAlphaFeedbackIdentity.load(
+            record_path,
+            expected_record_sha256=hashlib.sha256(record_payload).hexdigest(),
+            archive_path=wheel,
+        )
+    return ClosedAlphaFeedbackContract(identity)
+
+
 @pytest.mark.asyncio
 async def test_real_control_plane_binds_feedback_and_recovers_withdrawal(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monotonic = MonotonicClock()
     control, ledger, _epoch = _prepared_control(tmp_path, monotonic)
@@ -173,9 +239,10 @@ async def test_real_control_plane_binds_feedback_and_recovers_withdrawal(
 
     feedback_clock = FeedbackClock(datetime(2026, 7, 31, 12, tzinfo=UTC))
     root = tmp_path / "feedback"
+    contract = _accepted_contract(tmp_path / "accepted-identity", monkeypatch)
     store = ClosedAlphaFeedbackStore(
         root,
-        ClosedAlphaFeedbackContract(CANDIDATE_SHA),
+        contract,
         control,
         clock=feedback_clock,
     )
@@ -186,7 +253,7 @@ async def test_real_control_plane_binds_feedback_and_recovers_withdrawal(
     control.withdraw(_participant(1), expected_admission_epoch=1)
     reopened = ClosedAlphaFeedbackStore(
         root,
-        ClosedAlphaFeedbackContract(CANDIDATE_SHA),
+        contract,
         control,
         clock=feedback_clock,
     )
@@ -232,6 +299,90 @@ async def test_privacy_fault_is_durable_and_blocks_reserve_hook_and_resume(
     assert calls == 0
     await client.aclose()
     await governor.aclose()
+
+
+@pytest.mark.asyncio
+async def test_feedback_put_cannot_publish_after_racing_fault_marker(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    clock = MonotonicClock()
+    control, ledger, _epoch = _prepared_control(tmp_path, clock)
+    governor = _governor(ledger, clock)
+    await governor.reserve_batch(
+        [
+            DispatchIntent("provider", "arxiv"),
+            DispatchIntent("provider", "crossref"),
+            DispatchIntent("provider", "wikipedia"),
+        ]
+    )
+    await governor.aclose()
+
+    feedback_clock = FeedbackClock(datetime(2026, 7, 31, 12, tzinfo=UTC))
+    root = tmp_path / "feedback-race"
+    store = ClosedAlphaFeedbackStore(
+        root,
+        _accepted_contract(tmp_path / "accepted-race-identity", monkeypatch),
+        control,
+        clock=feedback_clock,
+    )
+    final_check_entered = threading.Event()
+    marker_created = threading.Event()
+    release_final_check = threading.Event()
+    original_marker_check = governor_module._private_privacy_fault_marker_present
+    writer_checks = 0
+
+    def synchronized_marker_check(path: Path) -> bool:
+        nonlocal writer_checks
+        if threading.current_thread().name == "feedback-writer":
+            writer_checks += 1
+            if writer_checks == 2:
+                final_check_entered.set()
+                if not release_final_check.wait(5.0):
+                    raise AssertionError("feedback fault synchronization timed out")
+        present = original_marker_check(path)
+        if threading.current_thread().name == "fault-writer" and present:
+            marker_created.set()
+        return present
+
+    monkeypatch.setattr(
+        governor_module,
+        "_private_privacy_fault_marker_present",
+        synchronized_marker_check,
+    )
+    put_failures: list[BaseException] = []
+    fault_failures: list[BaseException] = []
+
+    def put_report() -> None:
+        try:
+            store.put(_report(feedback_clock.now))
+        except BaseException as exc:
+            put_failures.append(exc)
+
+    def record_fault() -> None:
+        try:
+            control.record_privacy_fault()
+        except BaseException as exc:  # pragma: no cover - asserted below
+            fault_failures.append(exc)
+
+    writer = threading.Thread(target=put_report, name="feedback-writer")
+    writer.start()
+    assert final_check_entered.wait(5.0)
+    fault_writer = threading.Thread(target=record_fault, name="fault-writer")
+    fault_writer.start()
+    assert marker_created.wait(5.0)
+    release_final_check.set()
+    writer.join(5.0)
+    fault_writer.join(5.0)
+    try:
+        assert not writer.is_alive()
+        assert not fault_writer.is_alive()
+        assert fault_failures == []
+        assert len(put_failures) == 1
+        assert isinstance(put_failures[0], FeedbackAdmissionError)
+        assert not (root / f"{_session(1)}.json").exists()
+    finally:
+        store.close()
 
 
 def test_feedback_clock_high_water_survives_instances_and_trips_fault(tmp_path: Path) -> None:

@@ -20,7 +20,7 @@ import time
 from collections.abc import Callable, Iterator, Sequence
 from contextlib import contextmanager
 from contextvars import ContextVar
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, fields
 from enum import StrEnum
 from pathlib import Path
 from typing import Final, TypeVar, cast
@@ -29,6 +29,12 @@ import httpx
 
 from evidencemesh.closed_alpha_feedback import FeedbackContext
 from evidencemesh.errors import BudgetConfigurationError, BudgetExceededError
+from evidencemesh.providers.arxiv import ArxivProvider
+from evidencemesh.providers.crossref import CrossrefProvider
+from evidencemesh.providers.github import GitHubProvider
+from evidencemesh.providers.searxng import SearxngProvider
+from evidencemesh.providers.tavily import TavilyProvider
+from evidencemesh.providers.wikipedia import WikipediaProvider
 
 _SCHEMA_VERSION: Final = "evidencemesh.closed-alpha-governor.v1"
 _CONTROL_SCHEMA_VERSION: Final = "evidencemesh.closed-alpha-control-plane.v2"
@@ -51,10 +57,23 @@ _ENV_NAMES: Final = (
 _CONTROL_PLANE_ACTIVATION: Final = "rc4"
 _CONSENT_VERSION: Final = "closed-alpha-a0-consent-v1"
 _CONTROL_STATES: Final = frozenset({"prepared", "paused", "stopped"})
+_PRIVACY_FAULT_MARKER_SUFFIX: Final = ".privacy-fault"
+_PRIVACY_FAULT_MARKER_CONTENT: Final = b"evidencemesh.closed-alpha-privacy-fault.v1\n"
 _ALPHA_PROVIDER_BUNDLES: Final = {
     "community": ("arxiv", "crossref", "github", "searxng", "wikipedia"),
     "quality": ("arxiv", "crossref", "github", "searxng", "tavily", "wikipedia"),
 }
+_AUDITED_PROVIDER_TYPES: Final[tuple[tuple[type[object], str], ...]] = (
+    (ArxivProvider, "arxiv"),
+    (CrossrefProvider, "crossref"),
+    (GitHubProvider, "github"),
+    (SearxngProvider, "searxng"),
+    (TavilyProvider, "tavily"),
+    (WikipediaProvider, "wikipedia"),
+)
+_AUDITED_PROVIDER_NAMES: Final = frozenset(
+    provider_name for _provider_type, provider_name in _AUDITED_PROVIDER_TYPES
+)
 _COHORT_SLOTS: Final = (
     *((f"C{index:02d}", "community") for index in range(1, 7)),
     *((f"Q{index:02d}", "quality") for index in range(1, 3)),
@@ -100,6 +119,71 @@ def _private_ledger_identity(path: Path) -> _LedgerIdentity:
         int(metadata.st_dev),
         int(metadata.st_ino),
     )
+
+
+def _privacy_fault_marker_path(ledger_path: Path) -> Path:
+    return ledger_path.with_name(f"{ledger_path.name}{_PRIVACY_FAULT_MARKER_SUFFIX}")
+
+
+def _private_privacy_fault_marker_present(ledger_path: Path) -> bool:
+    """Return whether the permanent marker exists, rejecting every unsafe shape."""
+
+    ledger_identity = _private_ledger_identity(ledger_path)
+    marker_path = _privacy_fault_marker_path(ledger_path)
+    try:
+        marker_metadata = marker_path.lstat()
+    except FileNotFoundError:
+        return False
+    except OSError as exc:
+        raise BudgetConfigurationError("cannot inspect closed-alpha privacy-fault marker") from exc
+    if (
+        not stat.S_ISREG(marker_metadata.st_mode)
+        or stat.S_IMODE(marker_metadata.st_mode) != 0o600
+        or marker_metadata.st_uid != os.geteuid()
+        or marker_metadata.st_nlink != 1
+    ):
+        raise BudgetConfigurationError("closed-alpha privacy-fault marker is unsafe")
+
+    parent_descriptor = -1
+    marker_descriptor = -1
+    try:
+        parent_descriptor = os.open(
+            marker_path.parent,
+            os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
+        )
+        parent_metadata = os.fstat(parent_descriptor)
+        if (int(parent_metadata.st_dev), int(parent_metadata.st_ino)) != ledger_identity[:2]:
+            raise BudgetConfigurationError(
+                "closed-alpha privacy-fault marker directory identity changed"
+            )
+        marker_descriptor = os.open(
+            marker_path.name,
+            os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC,
+            dir_fd=parent_descriptor,
+        )
+        opened_metadata = os.fstat(marker_descriptor)
+        if (
+            (int(opened_metadata.st_dev), int(opened_metadata.st_ino))
+            != (int(marker_metadata.st_dev), int(marker_metadata.st_ino))
+            or not stat.S_ISREG(opened_metadata.st_mode)
+            or stat.S_IMODE(opened_metadata.st_mode) != 0o600
+            or opened_metadata.st_uid != os.geteuid()
+            or opened_metadata.st_nlink != 1
+        ):
+            raise BudgetConfigurationError("closed-alpha privacy-fault marker is unsafe")
+        content = os.read(marker_descriptor, len(_PRIVACY_FAULT_MARKER_CONTENT) + 1)
+        if content != _PRIVACY_FAULT_MARKER_CONTENT:
+            raise BudgetConfigurationError("closed-alpha privacy-fault marker is unsafe")
+    except BudgetConfigurationError:
+        raise
+    except OSError as exc:
+        raise BudgetConfigurationError("cannot inspect closed-alpha privacy-fault marker") from exc
+    finally:
+        if marker_descriptor >= 0:
+            os.close(marker_descriptor)
+        if parent_descriptor >= 0:
+            os.close(parent_descriptor)
+    return True
 
 
 class AlphaControlState(StrEnum):
@@ -194,6 +278,27 @@ class ClosedAlphaPolicy:
         return hashlib.sha256(self.canonical_json.encode()).hexdigest()
 
 
+def _resolve_closed_alpha_policy(
+    policy: ClosedAlphaPolicy | None,
+    *,
+    exact_type_required: bool,
+) -> ClosedAlphaPolicy:
+    """Resolve one validated policy without accepting forged RC4 subclasses."""
+
+    if not exact_type_required:
+        return policy or ClosedAlphaPolicy()
+    if policy is None:
+        return ClosedAlphaPolicy()
+    if type(policy) is not ClosedAlphaPolicy or any(
+        type(getattr(policy, policy_field.name)) is not int
+        for policy_field in fields(ClosedAlphaPolicy)
+    ):
+        raise BudgetConfigurationError(
+            "closed-alpha RC4 requires the exact frozen policy type and exact integer limits"
+        )
+    return policy
+
+
 class SQLiteAlphaControlPlane:
     """Explicitly provisioned, local-only RC4 admission and dispatch control plane."""
 
@@ -205,7 +310,7 @@ class SQLiteAlphaControlPlane:
         clock: Callable[[], float] = time.monotonic,
     ) -> None:
         self.ledger_path = Path(ledger_path)
-        self.policy = policy or ClosedAlphaPolicy()
+        self._policy = _resolve_closed_alpha_policy(policy, exact_type_required=True)
         self._clock = clock
         self._ledger_identity = _private_ledger_identity(self.ledger_path)
         self._lease_seconds = self._validate_database()
@@ -221,7 +326,7 @@ class SQLiteAlphaControlPlane:
     ) -> SQLiteAlphaControlPlane:
         """Create one paused v2 ledger; runtime paths are never allowed to do this."""
 
-        resolved_policy = policy or ClosedAlphaPolicy()
+        resolved_policy = _resolve_closed_alpha_policy(policy, exact_type_required=True)
         if (
             not isinstance(lease_seconds, (int, float))
             or isinstance(lease_seconds, bool)
@@ -351,6 +456,16 @@ class SQLiteAlphaControlPlane:
     def lease_seconds(self) -> float:
         return self._lease_seconds
 
+    @property
+    def policy(self) -> ClosedAlphaPolicy:
+        """Return the immutable policy bound to this control-plane ledger."""
+
+        return self._policy
+
+    @policy.setter
+    def policy(self, _value: ClosedAlphaPolicy) -> None:
+        raise BudgetConfigurationError("closed-alpha RC4 policy is immutable")
+
     def admit(self, admission: ClosedAlphaAdmission) -> int:
         """Admit one participant while paused and return its immutable first epoch."""
 
@@ -430,6 +545,10 @@ class SQLiteAlphaControlPlane:
                 ):
                     raise BudgetConfigurationError("closed-alpha control CAS failed")
                 if target_state is AlphaControlState.PREPARED:
+                    if _private_privacy_fault_marker_present(self.ledger_path):
+                        raise BudgetConfigurationError(
+                            "closed-alpha privacy fault permanently blocks preparation"
+                        )
                     if int(control["privacy_fault"]) != 0:
                         raise BudgetConfigurationError(
                             "closed-alpha privacy fault permanently blocks preparation"
@@ -599,6 +718,10 @@ class SQLiteAlphaControlPlane:
                     "SELECT COUNT(*) FROM sessions WHERE status = 'recovery_required'"
                 ).fetchone()[0]
             )
+        try:
+            marker_fault = _private_privacy_fault_marker_present(self.ledger_path)
+        except BudgetConfigurationError:
+            marker_fault = True
         return {
             "schema_version": _CONTROL_SCHEMA_VERSION,
             "state": str(control["state"]),
@@ -607,7 +730,7 @@ class SQLiteAlphaControlPlane:
             "sessions": sessions,
             "global_attempts": attempts,
             "recovery_required_sessions": recovery,
-            "privacy_fault": bool(control["privacy_fault"]),
+            "privacy_fault": bool(control["privacy_fault"]) or marker_fault,
             "distributed_global_guarantee": False,
         }
 
@@ -625,9 +748,11 @@ class SQLiteAlphaControlPlane:
             return None
         try:
             with contextlib.closing(self._connect()) as connection:
+                connection.execute("BEGIN")
                 control = self._control_row(connection)
                 if (
                     control["state"] == AlphaControlState.STOPPED
+                    or _private_privacy_fault_marker_present(self.ledger_path)
                     or int(control["privacy_fault"]) != 0
                 ):
                     return None
@@ -653,12 +778,20 @@ class SQLiteAlphaControlPlane:
                 ).fetchone()
                 if row is None:
                     return None
-                return FeedbackContext(
+                context = FeedbackContext(
                     slot_id=str(row["slot_id"]),
                     profile=str(row["profile"]),
                     provider_attempts=int(row["provider_attempts"]),
                     tavily_attempts=int(row["tavily_attempts"]),
                 )
+                final_control = self._control_row(connection)
+                if (
+                    final_control["state"] == AlphaControlState.STOPPED
+                    or int(final_control["privacy_fault"]) != 0
+                    or _private_privacy_fault_marker_present(self.ledger_path)
+                ):
+                    return None
+                return context
         except (OSError, sqlite3.Error, BudgetConfigurationError, TypeError, ValueError):
             return None
 
@@ -673,9 +806,11 @@ class SQLiteAlphaControlPlane:
         try:
             self._assert_ledger_safe()
             with contextlib.closing(self._connect()) as connection:
+                connection.execute("BEGIN")
                 control = self._control_row(connection)
                 if (
                     control["state"] != AlphaControlState.PREPARED
+                    or _private_privacy_fault_marker_present(self.ledger_path)
                     or int(control["privacy_fault"]) != 0
                 ):
                     return False
@@ -693,7 +828,14 @@ class SQLiteAlphaControlPlane:
                     """,
                     (session_code, participant_code, _CONSENT_VERSION),
                 ).fetchone()
-                return row is not None
+                if row is None:
+                    return False
+                final_control = self._control_row(connection)
+                return (
+                    final_control["state"] == AlphaControlState.PREPARED
+                    and int(final_control["privacy_fault"]) == 0
+                    and not _private_privacy_fault_marker_present(self.ledger_path)
+                )
         except (OSError, sqlite3.Error, BudgetConfigurationError):
             return False
 
@@ -708,8 +850,18 @@ class SQLiteAlphaControlPlane:
             self.record_privacy_fault()
             return False
         observed = float(timestamp)
-        with contextlib.closing(self._connect()) as connection:
-            connection.execute("BEGIN IMMEDIATE")
+        self._assert_ledger_safe()
+        try:
+            connection = self._connect()
+        except BaseException as exc:
+            self._ensure_privacy_fault_marker_after_failure(exc)
+            raise
+        with contextlib.closing(connection):
+            try:
+                connection.execute("BEGIN IMMEDIATE")
+            except BaseException as exc:
+                self._ensure_privacy_fault_marker_after_failure(exc)
+                raise
             try:
                 now = self._now()
                 self._check_clock(connection, now)
@@ -717,6 +869,7 @@ class SQLiteAlphaControlPlane:
                     "SELECT value FROM metadata WHERE key = 'feedback_clock_high_water'"
                 ).fetchone()
                 if row is not None and observed < float(row["value"]):
+                    self._ensure_privacy_fault_marker()
                     self._set_privacy_fault_locked(connection, now)
                     self._write_clock(connection, now)
                     connection.commit()
@@ -731,7 +884,13 @@ class SQLiteAlphaControlPlane:
                 )
                 self._write_clock(connection, now)
                 connection.commit()
-            except BaseException:
+            except BaseException as exc:
+                try:
+                    self._ensure_privacy_fault_marker()
+                except BaseException as marker_exc:
+                    with contextlib.suppress(sqlite3.Error):
+                        connection.rollback()
+                    raise marker_exc from exc
                 with contextlib.suppress(sqlite3.Error):
                     connection.rollback()
                 raise
@@ -740,9 +899,20 @@ class SQLiteAlphaControlPlane:
     def record_privacy_fault(self) -> None:
         """Durably pause dispatch and make the privacy fault non-clearable."""
 
-        with contextlib.closing(self._connect()) as connection:
-            connection.execute("BEGIN IMMEDIATE")
+        self._assert_ledger_safe()
+        try:
+            connection = self._connect()
+        except BaseException as exc:
+            self._ensure_privacy_fault_marker_after_failure(exc)
+            raise
+        with contextlib.closing(connection):
             try:
+                connection.execute("BEGIN IMMEDIATE")
+            except BaseException as exc:
+                self._ensure_privacy_fault_marker_after_failure(exc)
+                raise
+            try:
+                self._ensure_privacy_fault_marker()
                 now = self._now()
                 self._check_clock(connection, now)
                 self._set_privacy_fault_locked(connection, now)
@@ -783,6 +953,68 @@ class SQLiteAlphaControlPlane:
     def _now(self) -> float:
         return self._read_clock(self._clock)
 
+    def _ensure_privacy_fault_marker_after_failure(self, cause: BaseException) -> None:
+        """Persist the POSIX fault plane when SQLite cannot be opened or locked."""
+
+        try:
+            self._ensure_privacy_fault_marker()
+        except BaseException as marker_exc:
+            raise marker_exc from cause
+
+    def _ensure_privacy_fault_marker(self) -> None:
+        """Create and fsync the permanent marker while the caller holds the DB lock."""
+
+        if _private_privacy_fault_marker_present(self.ledger_path):
+            return
+        marker_path = _privacy_fault_marker_path(self.ledger_path)
+        parent_descriptor = -1
+        marker_descriptor = -1
+        try:
+            parent_descriptor = os.open(
+                marker_path.parent,
+                os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
+            )
+            parent_metadata = os.fstat(parent_descriptor)
+            if (int(parent_metadata.st_dev), int(parent_metadata.st_ino)) != (
+                self._ledger_identity[0],
+                self._ledger_identity[1],
+            ):
+                raise BudgetConfigurationError(
+                    "closed-alpha privacy-fault marker directory identity changed"
+                )
+            try:
+                marker_descriptor = os.open(
+                    marker_path.name,
+                    os.O_CREAT | os.O_EXCL | os.O_WRONLY | os.O_NOFOLLOW | os.O_CLOEXEC,
+                    0o600,
+                    dir_fd=parent_descriptor,
+                )
+            except FileExistsError:
+                pass
+            else:
+                os.fchmod(marker_descriptor, 0o600)
+                remaining = memoryview(_PRIVACY_FAULT_MARKER_CONTENT)
+                while remaining:
+                    written = os.write(marker_descriptor, remaining)
+                    if written <= 0:
+                        raise OSError("short privacy-fault marker write")
+                    remaining = remaining[written:]
+                os.fsync(marker_descriptor)
+                os.fsync(parent_descriptor)
+        except BudgetConfigurationError:
+            raise
+        except OSError as exc:
+            raise BudgetConfigurationError(
+                "cannot persist closed-alpha privacy-fault marker"
+            ) from exc
+        finally:
+            if marker_descriptor >= 0:
+                os.close(marker_descriptor)
+            if parent_descriptor >= 0:
+                os.close(parent_descriptor)
+        if not _private_privacy_fault_marker_present(self.ledger_path):
+            raise BudgetConfigurationError("closed-alpha privacy-fault marker was not persisted")
+
     @staticmethod
     def _prepare_new_ledger(path: Path) -> None:
         if not path.is_absolute():
@@ -810,6 +1042,19 @@ class SQLiteAlphaControlPlane:
                 raise BudgetConfigurationError("closed-alpha ledger directory uses a symlink")
         except OSError as exc:
             raise BudgetConfigurationError("cannot resolve closed-alpha ledger directory") from exc
+        marker_path = _privacy_fault_marker_path(path)
+        try:
+            marker_path.lstat()
+        except FileNotFoundError:
+            pass
+        except OSError as exc:
+            raise BudgetConfigurationError(
+                "cannot inspect closed-alpha privacy-fault marker"
+            ) from exc
+        else:
+            raise BudgetConfigurationError(
+                "closed-alpha privacy-fault marker permanently blocks bootstrap"
+            )
         if path.exists() or path.is_symlink():
             raise BudgetConfigurationError("closed-alpha control-plane ledger already exists")
         parent_descriptor = -1
@@ -1117,9 +1362,23 @@ class SQLiteBudgetGovernor:
         clock: Callable[[], float] = time.monotonic,
         _require_rc4: bool = False,
     ) -> None:
+        if _require_rc4 and (
+            type(session) is not ClosedAlphaSession
+            or type(session.participant_code) is not str
+            or type(session.session_code) is not str
+            or type(session.profile) is not str
+        ):
+            raise BudgetConfigurationError(
+                "closed-alpha RC4 requires an exact immutable session identity"
+            )
+        resolved_policy = _resolve_closed_alpha_policy(
+            policy,
+            exact_type_required=_require_rc4,
+        )
+        self._rc4 = _require_rc4
         self.ledger_path = Path(ledger_path)
-        self.session = session
-        self.policy = policy or ClosedAlphaPolicy()
+        self._session = session
+        self._policy = resolved_policy
         self._clock = clock
         self._owner_id = secrets.token_hex(16)
         self._governor_id = secrets.token_hex(16)
@@ -1132,7 +1391,6 @@ class SQLiteBudgetGovernor:
         self._opened = False
         self._closed = False
         self._poisoned = False
-        self._rc4 = _require_rc4
         self._lease_seconds = 0.0
         self._prepare_ledger_file()
         self._ledger_identity = _private_ledger_identity(self.ledger_path)
@@ -1146,12 +1404,36 @@ class SQLiteBudgetGovernor:
     def scope(self) -> str:
         return "single_host_shared_sqlite"
 
+    @property
+    def session(self) -> ClosedAlphaSession:
+        """Return the session identity bound when this governor opened its ledger."""
+
+        return self._session
+
+    @session.setter
+    def session(self, value: ClosedAlphaSession) -> None:
+        if self._rc4:
+            raise BudgetConfigurationError("closed-alpha RC4 session identity is immutable")
+        self._session = value
+
+    @property
+    def policy(self) -> ClosedAlphaPolicy:
+        """Return the policy bound when this governor opened its ledger."""
+
+        return self._policy
+
+    @policy.setter
+    def policy(self, value: ClosedAlphaPolicy) -> None:
+        if self._rc4:
+            raise BudgetConfigurationError("closed-alpha RC4 policy is immutable")
+        self._policy = value
+
     @classmethod
     def environment_requested(cls) -> bool:
         return any(os.getenv(name) is not None for name in _ENV_NAMES)
 
     @classmethod
-    def from_env(cls) -> SQLiteBudgetGovernor | None:
+    def _environment_binding(cls) -> tuple[Path, ClosedAlphaSession] | None:
         values = {name: os.getenv(name) for name in _ENV_NAMES}
         if all(value is None for value in values.values()):
             return None
@@ -1164,13 +1446,48 @@ class SQLiteBudgetGovernor:
         ledger = Path(str(values[_ENV_LEDGER]))
         if not ledger.is_absolute():
             raise BudgetConfigurationError("closed-alpha ledger path must be absolute")
-        return cls(
+        return (
             ledger,
             ClosedAlphaSession(
                 participant_code=str(values[_ENV_PARTICIPANT]),
                 session_code=str(values[_ENV_SESSION]),
                 profile=str(values[_ENV_PROFILE]),
             ),
+        )
+
+    @classmethod
+    def require_explicit_environment_match(cls, governor: object) -> None:
+        """Require an explicitly supplied governor to equal the requested RC4 identity."""
+
+        binding = cls._environment_binding()
+        if binding is None:
+            return
+        ledger, session = binding
+        if (
+            type(governor) is not cls
+            or governor._rc4 is not True
+            or governor.ledger_path != ledger
+            or type(governor.session) is not ClosedAlphaSession
+            or type(governor.session.participant_code) is not str
+            or type(governor.session.session_code) is not str
+            or type(governor.session.profile) is not str
+            or governor.session.participant_code != session.participant_code
+            or governor.session.session_code != session.session_code
+            or governor.session.profile != session.profile
+        ):
+            raise BudgetConfigurationError(
+                "explicit governor does not exactly match the RC4 environment"
+            )
+
+    @classmethod
+    def from_env(cls) -> SQLiteBudgetGovernor | None:
+        binding = cls._environment_binding()
+        if binding is None:
+            return None
+        ledger, session = binding
+        return cls(
+            ledger,
+            session,
             _require_rc4=True,
         )
 
@@ -1183,7 +1500,9 @@ class SQLiteBudgetGovernor:
     ) -> None:
         """Reject configurations that cannot build only audited providers."""
 
-        audited_names = frozenset(self._AUDITED_PROVIDERS.values())
+        audited_names = (
+            _AUDITED_PROVIDER_NAMES if self._rc4 else frozenset(self._AUDITED_PROVIDERS.values())
+        )
         unsupported = sorted(set(provider_names) - audited_names)
         if unsupported:
             raise BudgetConfigurationError(
@@ -1224,10 +1543,33 @@ class SQLiteBudgetGovernor:
             )
 
     def validate_provider(self, provider: object, client: httpx.AsyncClient) -> str:
-        provider_type = f"{type(provider).__module__}.{type(provider).__qualname__}"
-        expected_name = self._AUDITED_PROVIDERS.get(provider_type)
+        provider_type = type(provider)
         actual_name = getattr(provider, "name", None)
-        if expected_name is None or actual_name != expected_name:
+        if self._rc4:
+            expected_name = next(
+                (
+                    provider_name
+                    for audited_type, provider_name in _AUDITED_PROVIDER_TYPES
+                    if provider_type is audited_type
+                ),
+                None,
+            )
+            if (
+                expected_name is None
+                or type(actual_name) is not str
+                or actual_name != expected_name
+            ):
+                raise BudgetConfigurationError(
+                    "closed-alpha mode accepts only audited single-dispatch HTTPX providers"
+                )
+        else:
+            provider_identity = f"{provider_type.__module__}.{provider_type.__qualname__}"
+            expected_name = self._AUDITED_PROVIDERS.get(provider_identity)
+            if expected_name is None or actual_name != expected_name:
+                raise BudgetConfigurationError(
+                    "closed-alpha mode accepts only audited single-dispatch HTTPX providers"
+                )
+        if expected_name is None:
             raise BudgetConfigurationError(
                 "closed-alpha mode accepts only audited single-dispatch HTTPX providers"
             )
@@ -1691,6 +2033,8 @@ class SQLiteBudgetGovernor:
         with contextlib.closing(self._connect()) as connection:
             connection.execute("BEGIN IMMEDIATE")
             try:
+                if _private_privacy_fault_marker_present(self.ledger_path):
+                    raise BudgetExceededError("closed-alpha privacy fault blocks dispatch")
                 now = SQLiteAlphaControlPlane._read_clock(self._clock)
                 SQLiteAlphaControlPlane._check_clock(connection, now)
                 expired = SQLiteAlphaControlPlane._reconcile_expired_sessions_locked(
@@ -1948,6 +2292,8 @@ class SQLiteBudgetGovernor:
         with contextlib.closing(self._connect()) as connection:
             connection.execute("BEGIN IMMEDIATE")
             try:
+                if _private_privacy_fault_marker_present(self.ledger_path):
+                    raise BudgetExceededError("closed-alpha privacy fault blocks dispatch")
                 now = SQLiteAlphaControlPlane._read_clock(self._clock)
                 SQLiteAlphaControlPlane._check_clock(connection, now)
                 expired = SQLiteAlphaControlPlane._reconcile_expired_sessions_locked(

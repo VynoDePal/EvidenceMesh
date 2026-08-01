@@ -257,7 +257,7 @@ def test_pull_request_workflow_is_read_only_secret_free_and_network_isolated() -
     assert "-m hatchling build" in workflow
     assert "--target wheel" in workflow
     assert "--target sdist" in workflow
-    assert "candidate_sha=$(git rev-parse HEAD)" in workflow
+    assert "candidate_sha=$(git rev-parse HEAD)" not in workflow
     assert 'wheel_path=$(find "$RC4_ROOT/dist"' in workflow
     assert 'smoke_target="$RC4_ROOT/wheel-smoke"' in workflow
     assert '"$uv_path" pip install' in workflow
@@ -265,10 +265,14 @@ def test_pull_request_workflow_is_read_only_secret_free_and_network_isolated() -
     assert "--no-index" in workflow
     assert "--no-deps" in workflow
     assert 'PYTHONPATH="$smoke_target"' in workflow
-    assert "from evidencemesh.closed_alpha_feedback import ClosedAlphaFeedbackContract" in workflow
-    assert "contract = ClosedAlphaFeedbackContract(candidate_sha)" in workflow
+    assert "from evidencemesh import ClosedAlphaFeedbackIdentity as ExportedIdentity" in workflow
+    assert 'ClosedAlphaFeedbackContract("0" * 40)' in workflow
+    assert "raw candidate SHA unexpectedly constructed a contract" in workflow
+    assert "ClosedAlphaFeedbackIdentity()" in workflow
+    assert "feedback identity unexpectedly allowed direct construction" in workflow
     assert 'getattr(ClosedAlphaFeedbackContract, "__final__", False) is True' in workflow
-    assert "is_relative_to(Path(smoke_target).resolve())" in workflow
+    assert 'getattr(ClosedAlphaFeedbackIdentity, "__final__", False) is True' in workflow
+    assert "is_relative_to(smoke_target)" in workflow
     assert "if: always()" in workflow
     assert 'test ! -e "$RC4_ROOT"' in workflow
 

@@ -104,6 +104,8 @@ class EvidenceMesh:
         governor: SQLiteBudgetGovernor | None = None,
     ) -> None:
         self.settings = settings or Settings.from_env()
+        if governor is not None:
+            SQLiteBudgetGovernor.require_explicit_environment_match(governor)
         self.governor = governor if governor is not None else SQLiteBudgetGovernor.from_env()
         if self.governor is not None:
             if providers is None:
@@ -116,12 +118,16 @@ class EvidenceMesh:
                 raise BudgetConfigurationError(
                     "closed-alpha custom providers require their governed HTTPX client"
                 )
-            if fetcher is not None and (
-                not isinstance(fetcher, WebFetcher) or fetcher.governor is not self.governor
-            ):
-                raise BudgetConfigurationError(
-                    "closed-alpha mode requires the governed built-in WebFetcher"
+            if fetcher is not None:
+                invalid_fetcher_type = (
+                    type(fetcher) is not WebFetcher
+                    if self.governor._rc4
+                    else not isinstance(fetcher, WebFetcher)
                 )
+                if invalid_fetcher_type or fetcher.governor is not self.governor:
+                    raise BudgetConfigurationError(
+                        "closed-alpha mode requires the governed built-in WebFetcher"
+                    )
         supplied_client = client
         self._owns_client = client is None
         self.client = client or httpx.AsyncClient(
