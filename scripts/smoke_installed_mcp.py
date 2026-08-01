@@ -137,6 +137,7 @@ def run_smoke(
     expected_version: str,
     output: Path,
     server_log: Path,
+    inherit_runtime_guard: bool = False,
 ) -> dict[str, Any]:
     command = command.resolve()
     if not command.is_file() or not os.access(command, os.X_OK):
@@ -149,9 +150,26 @@ def run_smoke(
         "EVIDENCEMESH_CACHE_PATH": str(cache_path.resolve()),
         "EVIDENCEMESH_PROVIDERS": "wikipedia",
         "EVIDENCEMESH_TRANSPORT": "stdio",
+        "FASTMCP_CHECK_FOR_UPDATES": "off",
+        "FASTMCP_SHOW_SERVER_BANNER": "false",
         "PATH": os.environ.get("PATH", ""),
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
         "PYTHONUNBUFFERED": "1",
     }
+    if inherit_runtime_guard:
+        for name in (
+            "EVIDENCEMESH_NETWORK_GUARD_LOG",
+            "HOME",
+            "PYTHONPATH",
+            "XDG_CACHE_HOME",
+            "XDG_CONFIG_HOME",
+            "XDG_DATA_HOME",
+        ):
+            value = os.environ.get(name)
+            if not value:
+                raise ValueError(f"Missing guarded runtime environment value: {name}")
+            server_env[name] = value
     observation = asyncio.run(
         _exercise_mcp(
             command=str(command),
@@ -234,6 +252,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--expected-version", default="0.1.0")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--server-log", type=Path, required=True)
+    parser.add_argument("--inherit-runtime-guard", action="store_true")
     return parser.parse_args()
 
 
@@ -245,6 +264,7 @@ def main() -> None:
         expected_version=args.expected_version,
         output=args.output,
         server_log=args.server_log,
+        inherit_runtime_guard=args.inherit_runtime_guard,
     )
 
 

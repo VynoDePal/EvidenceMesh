@@ -24,6 +24,10 @@ The core works without a paid API or a bundled language model.
 > [public projection](alpha/local_technical_alpha_v0_1_0_public_projection_v1.json)
 > binds that local record to the tree-identical public source commit without
 > publishing the local tag, distributions or a release.
+>
+> **Public source:** until this draft pull request is merged, `main` is only a
+> repository skeleton and is not installable. Use the exact alpha branch and
+> commit in the Quick Start below.
 
 ## Why another search MCP?
 
@@ -67,20 +71,52 @@ pages never become model instructions.
 
 ## Quick start
 
-Requirements: Python 3.11+ and [uv](https://docs.astral.sh/uv/). Docker is
-required for the recommended free general-web path because it runs the private
-default SearXNG service.
+This source-only path requires Git, Python 3.11 and
+[uv](https://docs.astral.sh/uv/) `0.11.33`. It needs no API key or Docker
+service. `main` is temporarily not installable, so the branch and full commit
+identity are both checked before installation.
 
 ```bash
-git clone https://github.com/VynoDePal/EvidenceMesh.git
+ALPHA_BRANCH=agent/evidencemesh-v0.1
+ALPHA_SHA=145f5f923825ffeaeb485bd680bc79410ab290d1
+
+git clone \
+  --branch "$ALPHA_BRANCH" \
+  --single-branch \
+  --no-tags \
+  https://github.com/VynoDePal/EvidenceMesh.git
 cd EvidenceMesh
-uv sync
+git checkout --detach "$ALPHA_SHA"
+test "$(git rev-parse HEAD)" = "$ALPHA_SHA"
 
-# Start a private local SearXNG instance.
-docker compose up -d searxng
+uv sync --locked --no-dev --no-editable --python 3.11
 
-uv run evidencemesh search "FastMCP HTTP transport" --fetch-content
-uv run evidencemesh research "Compare open source deep-research systems"
+# These checks are offline and make no provider or model request.
+ALPHA_STATE_DIR="$(mktemp -d)"
+export EVIDENCEMESH_CACHE_PATH="$ALPHA_STATE_DIR/cache.sqlite3"
+export FASTMCP_CHECK_FOR_UPDATES=off
+EVIDENCEMESH_PROVIDERS=wikipedia .venv/bin/evidencemesh providers
+EVIDENCEMESH_PROVIDERS=wikipedia .venv/bin/evidencemesh benchmark-offline
+```
+
+The Alpha A1-P0 path above was validated on Ubuntu 24.04 x86_64. CI exercises
+Python 3.11, 3.12 and 3.13. macOS has not been validated, and native Windows is
+not supported in this alpha.
+
+### Optional live search with SearXNG
+
+Docker is required only for this optional live step. It starts the private,
+checksum-pinned SearXNG service and performs a real external search without an
+API key. Provider availability and returned Web results are not part of the
+offline installation gate.
+
+```bash
+docker compose up --detach --wait searxng
+
+EVIDENCEMESH_PROVIDERS=searxng \
+  .venv/bin/evidencemesh search \
+  "FastMCP HTTP transport" \
+  --fetch-content
 ```
 
 If SearXNG is unavailable, the other configured providers still run and the
@@ -99,13 +135,8 @@ Add this server to any MCP-compatible client. Replace `/absolute/path`:
 {
   "mcpServers": {
     "evidencemesh": {
-      "command": "uv",
-      "args": [
-        "--directory",
-        "/absolute/path/EvidenceMesh",
-        "run",
-        "evidencemesh-mcp"
-      ]
+      "command": "/absolute/path/EvidenceMesh/.venv/bin/evidencemesh-mcp",
+      "args": []
     }
   }
 }
@@ -114,7 +145,7 @@ Add this server to any MCP-compatible client. Replace `/absolute/path`:
 ### Streamable HTTP
 
 ```bash
-uv run evidencemesh serve --transport http --host 127.0.0.1 --port 8000
+.venv/bin/evidencemesh serve --transport http --host 127.0.0.1 --port 8000
 ```
 
 The MCP endpoint is `http://127.0.0.1:8000/mcp`. A public deployment must add
@@ -233,13 +264,13 @@ asyncio.run(main())
 
 ```bash
 # Unit, integration, MCP contract and safety tests.
-uv run pytest
+.venv/bin/pytest
 
 # Deterministic RRF/dedup regression benchmark.
-uv run evidencemesh benchmark-offline
+.venv/bin/evidencemesh benchmark-offline
 
 # Interleaved zero-key retrieval pilot on checksum-pinned SimpleQA.
-uv run python benchmarks/run_live_retrieval.py \
+.venv/bin/python benchmarks/run_live_retrieval.py \
   --simpleqa \
   --sample-size 30 \
   --seed 0 \
@@ -545,11 +576,11 @@ closed findings, test methods and residual risks.
 ## Development
 
 ```bash
-uv sync --extra dev
-uv run ruff check .
-uv run ruff format --check .
-uv run mypy
-uv run pytest
+uv sync --locked --extra dev --python 3.11
+.venv/bin/ruff check .
+.venv/bin/ruff format --check .
+.venv/bin/mypy
+.venv/bin/pytest
 ```
 
 Contributions are welcome when benchmark claims are reproducible and provider

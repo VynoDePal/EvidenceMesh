@@ -89,6 +89,46 @@ jobs:
             --output /tmp/evidencemesh-installed-wheel-mcp.json \
             --server-log /tmp/evidencemesh-installed-wheel-mcp.server.log
 
+  alpha-a1-p0-installability:
+    name: Alpha A1-P0 installability
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.repository == 'VynoDePal/EvidenceMesh' &&
+      github.event.pull_request.number == 1 &&
+      github.event.pull_request.draft == true &&
+      github.event.pull_request.head.repo.full_name == 'VynoDePal/EvidenceMesh' &&
+      github.event.pull_request.head.ref == 'agent/evidencemesh-v0.1'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          fetch-tags: false
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: false
+      - name: Provision canonical Python 3.11
+        env:
+          UV_CACHE_DIR: /tmp/evidencemesh-a1-setup-uv-cache
+        run: uv python install 3.11
+      - name: Verify pinned public-source install path
+        env:
+          A1_OUTPUT: /tmp/evidencemesh-alpha-a1-p0-clean-room/runtime/receipt.json
+          A1_WORK_ROOT: /tmp/evidencemesh-alpha-a1-p0-clean-room
+          UV_CACHE_DIR: /tmp/evidencemesh-a1-setup-uv-cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          python_path="$(uv python find 3.11)"
+          "$python_path" scripts/verify_alpha_a1_p0_installability.py \
+            --work-root "$A1_WORK_ROOT" \
+            --output "$A1_OUTPUT" \
+            --python "$python_path"
+          "$python_path" -m json.tool "$A1_OUTPUT" >/dev/null
+
   container:
     runs-on: ubuntu-latest
     steps:
