@@ -1,0 +1,337 @@
+{
+  "schema_version": "evidencemesh.phase11_8_10b_p1.browsecomp-clarification.v1",
+  "purpose": "bounded-metadata-only-browsecomp-plus-rights-and-judge-runtime-clarification",
+  "captured_on": "2026-08-01",
+  "predecessor_lock": {
+    "phase": "11.8.10B-P0",
+    "methodology_commit": "56989d4674f99184b11f72d18c503c320c65c868",
+    "methodology_tree": "5db66c294420c901e63ad7c276ba430a0f50ac33",
+    "result_commit": "f05498eb59dae75b02d176f2c0d6a53d4246df0f",
+    "result_tree": "7c7f366d3aef562aec387443d9432a27d5c5488b",
+    "protocol": {
+      "path": "docs/benchmark-protocol-v27.md",
+      "sha256": "8346b69b1b7261eaf94028d5f2ac2e40bc028b49db0ea68f4f779083680ab0c6"
+    },
+    "policy_manifest": {
+      "path": "benchmarks/data/phase11_8_10b_p0_policy_comparability_lock_v1.json",
+      "sha256": "09e9dfb6475ccf40ffa4d844684ac7036c0255f35e2ad7c6fdeb5e0fe1027082"
+    },
+    "source_lock": {
+      "path": "benchmarks/data/phase11_8_10b_p0_source_locks_v1.json",
+      "sha256": "045b28d1da12ee11f2ca9083d6ea8648de8827f9e80c396f12d8bb6e8ccf93ff"
+    },
+    "result": {
+      "path": "benchmarks/results/phase11_8_10b_p0_policy_comparability_lock_2026-08-01.json",
+      "sha256": "7e4062e9270eb8dc681783b0aac2ff031ea53310bbd9982c61fea0e458fc3798",
+      "engineering_gates_passed": 16,
+      "engineering_gates_total": 16,
+      "quality_decision": "no_go",
+      "candidate_suites_admitted": 0,
+      "remaining_unique_public_metadata_documents": 5
+    }
+  },
+  "phase_policy": {
+    "mode": "metadata-only-local-fail-closed",
+    "candidate_id": "browsecomp_plus",
+    "bright_decision_frozen_from_p0": true,
+    "proof_targets": [
+      "component-level-rights-disposition-for-local-only-non-redistribution-handling",
+      "complete-immutable-judge-tokenizer-prompt-generation-runtime-and-scoring-closure"
+    ],
+    "official_score_target": "browsecomp-plus-fixed-corpus-officially-comparable-score",
+    "internal_proxy_score_is_acceptable_substitute": false,
+    "asset_acquisition_allowed": false,
+    "asset_payload_download_allowed": false,
+    "asset_payload_open_or_parse_allowed": false,
+    "query_decryption_allowed": false,
+    "provider_requests_allowed": false,
+    "model_requests_allowed": false,
+    "judge_requests_allowed": false,
+    "retrieval_requests_allowed": false,
+    "scoring_requests_allowed": false,
+    "secret_access_allowed": false,
+    "evaluation_allowed": false,
+    "publication_allowed": false,
+    "distribution_allowed": false,
+    "phase_11_9_allowed": false,
+    "phase_12_allowed": false,
+    "v1_quality_claim_allowed": false,
+    "next_external_action_requires_separate_go": true
+  },
+  "research_budget": {
+    "source_kind": "public-primary-metadata-only",
+    "maximum_unique_public_metadata_documents": 15,
+    "predecessor_consulted_unique_public_metadata_documents": 10,
+    "p1_new_unique_public_metadata_documents": 5,
+    "cumulative_consulted_unique_public_metadata_documents": 15,
+    "remaining_unique_public_metadata_documents": 0,
+    "source_ceiling_exhausted": true,
+    "additional_metadata_documents_allowed": 0,
+    "benchmark_payload_requests": 0,
+    "provider_requests": 0,
+    "model_requests": 0,
+    "judge_requests": 0,
+    "retrieval_requests": 0,
+    "scoring_requests": 0,
+    "secret_requests": 0,
+    "decryption_requests": 0,
+    "publication_requests": 0,
+    "benchmark_provider_model_or_judge_retries": 0,
+    "raw_metadata_transport_request_count_is_a_budget_metric": false,
+    "historical_operation_counts_are_process_attestations": true
+  },
+  "new_consulted_primary_documents": [
+    {
+      "source_id": "browsecomp_plus_evaluation_runner",
+      "suite_id": "browsecomp_plus",
+      "authority": "official-code-repository",
+      "immutable_revision": "046949032b0328319cc9a02663a759ec601d9402",
+      "content_identity_kind": "git-blob-sha1",
+      "content_identity_value": "d90b1a1d3dfc4020a902ff16606eaea6c21dc543",
+      "immutable_identity_complete": true,
+      "local_content_digest_verified": false,
+      "path": "scripts_evaluation/evaluate_run.py",
+      "url": "https://github.com/texttron/BrowseComp-Plus/blob/046949032b0328319cc9a02663a759ec601d9402/scripts_evaluation/evaluate_run.py",
+      "consultation_mode": "metadata-code-only-no-execution",
+      "payload_accessed": false
+    },
+    {
+      "source_id": "browsecomp_plus_project_dependencies",
+      "suite_id": "browsecomp_plus",
+      "authority": "official-code-repository",
+      "immutable_revision": "046949032b0328319cc9a02663a759ec601d9402",
+      "content_identity_kind": "git-blob-sha1",
+      "content_identity_value": "bf43f78a9310b290c35be79ad5f902c267bd3b5f",
+      "immutable_identity_complete": true,
+      "local_content_digest_verified": false,
+      "path": "pyproject.toml",
+      "url": "https://github.com/texttron/BrowseComp-Plus/blob/046949032b0328319cc9a02663a759ec601d9402/pyproject.toml",
+      "consultation_mode": "metadata-code-only-no-install",
+      "payload_accessed": false
+    },
+    {
+      "source_id": "browsecomp_plus_paper_v1",
+      "suite_id": "browsecomp_plus",
+      "authority": "official-author-publication-record",
+      "immutable_revision": "arXiv:2508.06600v1",
+      "content_identity_kind": "versioned-arxiv-record",
+      "content_identity_value": "2508.06600v1",
+      "immutable_identity_complete": true,
+      "local_content_digest_verified": false,
+      "path": "abs/2508.06600v1",
+      "url": "https://arxiv.org/abs/2508.06600v1",
+      "consultation_mode": "metadata-abstract-page-only",
+      "payload_accessed": false
+    },
+    {
+      "source_id": "openai_browsecomp_official_page",
+      "suite_id": "browsecomp",
+      "authority": "official-benchmark-publisher-page",
+      "immutable_revision": null,
+      "content_identity_kind": "official-moving-url-only",
+      "content_identity_value": "https://openai.com/index/browsecomp/",
+      "immutable_identity_complete": false,
+      "local_content_digest_verified": false,
+      "path": "/index/browsecomp/",
+      "url": "https://openai.com/index/browsecomp/",
+      "consultation_mode": "metadata-text-only-contextual",
+      "payload_accessed": false
+    },
+    {
+      "source_id": "qwen3_32b_candidate_model_card",
+      "suite_id": "browsecomp_plus",
+      "authority": "official-model-repository",
+      "immutable_revision": "9216db5781bf21249d130ec9da846c4624c16137",
+      "content_identity_kind": "immutable-revision-and-path-only",
+      "content_identity_value": "9216db5781bf21249d130ec9da846c4624c16137",
+      "immutable_identity_complete": true,
+      "local_content_digest_verified": false,
+      "path": "README.md",
+      "url": "https://huggingface.co/Qwen/Qwen3-32B/blob/9216db5781bf21249d130ec9da846c4624c16137/README.md",
+      "consultation_mode": "metadata-text-only",
+      "payload_accessed": false
+    }
+  ],
+  "facts": [
+    {
+      "fact_id": "evaluation_runner_source_identity",
+      "statement": "The upstream evaluation runner is locked by repository commit, path and Git blob identity.",
+      "source_ids": [
+        "browsecomp_plus_evaluation_runner"
+      ]
+    },
+    {
+      "fact_id": "grader_prompt_and_algorithm_present",
+      "statement": "The locked runner contains the grader prompt, response parser, citation and retrieval calculations, aggregate score construction and source-level default generation settings.",
+      "source_ids": [
+        "browsecomp_plus_evaluation_runner"
+      ]
+    },
+    {
+      "fact_id": "runner_source_defaults",
+      "statement": "The runner defaults to model name Qwen/Qwen3-32B, temperature 0.7, top-p 0.8, top-k 20, 4096 maximum output tokens, vLLM chat with thinking disabled, batch size 64 and tensor parallel size 1.",
+      "source_ids": [
+        "browsecomp_plus_evaluation_runner"
+      ]
+    },
+    {
+      "fact_id": "runner_model_binding_absent",
+      "statement": "The runner accepts overrides and supplies a mutable model name rather than binding an immutable Qwen model and tokenizer revision.",
+      "source_ids": [
+        "browsecomp_plus_evaluation_runner",
+        "qwen3_32b_candidate_model_card"
+      ]
+    },
+    {
+      "fact_id": "runtime_dependency_resolution_incomplete",
+      "statement": "The project dependency file contains unresolved version ranges, including vllm>=0.9.0 and transformers>=4.53.2, and resolves Tevatron from the moving main branch rather than a complete immutable runtime lock.",
+      "source_ids": [
+        "browsecomp_plus_project_dependencies"
+      ]
+    },
+    {
+      "fact_id": "qwen_revision_is_candidate_only",
+      "statement": "The immutable Qwen3-32B model-card revision identifies a candidate judge artifact, but the upstream runner does not reference or enforce that revision or its tokenizer revision.",
+      "source_ids": [
+        "browsecomp_plus_evaluation_runner",
+        "qwen3_32b_candidate_model_card"
+      ]
+    },
+    {
+      "fact_id": "benchmark_lineage_context",
+      "statement": "The BrowseComp-Plus paper and the official BrowseComp publisher page provide benchmark lineage and comparison context, not an immutable EvidenceMesh execution environment.",
+      "source_ids": [
+        "browsecomp_plus_paper_v1",
+        "openai_browsecomp_official_page"
+      ]
+    },
+    {
+      "fact_id": "openai_page_is_not_revision_locked",
+      "statement": "The official BrowseComp page exposes no immutable revision in the consulted URL and cannot independently satisfy an immutable source-identity gate.",
+      "source_ids": [
+        "openai_browsecomp_official_page"
+      ]
+    },
+    {
+      "fact_id": "component_rights_disposition_not_found",
+      "statement": "None of the five new documents supplies the component-level or per-document rights disposition required for EvidenceMesh acquisition and local-only non-redistribution handling of the third-party Web corpus.",
+      "source_ids": [
+        "browsecomp_plus_evaluation_runner",
+        "browsecomp_plus_project_dependencies",
+        "browsecomp_plus_paper_v1",
+        "openai_browsecomp_official_page",
+        "qwen3_32b_candidate_model_card"
+      ]
+    }
+  ],
+  "inferences": [
+    {
+      "inference_id": "source_defaults_are_not_effective_run_lock",
+      "statement": "An exact prompt and algorithm in source code provide only a partial comparability lock when command-line and runtime resolution can change the effective execution."
+    },
+    {
+      "inference_id": "candidate_model_revision_is_not_runner_binding",
+      "statement": "An immutable candidate model-card revision does not prove that the runner invoked that model and tokenizer revision."
+    },
+    {
+      "inference_id": "benchmark_lineage_is_not_component_rights_clearance",
+      "statement": "Benchmark lineage and repository-level declarations do not by themselves establish the component-level corpus disposition required by EvidenceMesh policy."
+    },
+    {
+      "inference_id": "moving_context_cannot_close_immutable_gate",
+      "statement": "A moving official page can provide context but cannot replace immutable primary evidence for an identity or execution gate."
+    },
+    {
+      "inference_id": "exhausted_budget_with_open_gates_requires_stop",
+      "statement": "Because all fifteen metadata slots are consumed while both targeted gates remain incomplete, the P0 stop criterion applies and broader research or a proxy score is forbidden."
+    }
+  ],
+  "clarification_gate_decisions": {
+    "component_rights": {
+      "status": "blocked",
+      "clearance_complete": false,
+      "blocking_reasons": [
+        "no-component-level-or-per-document-rights-disposition-in-bounded-source-set"
+      ]
+    },
+    "prompt_and_algorithm_source": {
+      "status": "partial",
+      "prompt_source_identity_locked": true,
+      "parser_source_identity_locked": true,
+      "aggregation_algorithm_source_identity_locked": true,
+      "default_generation_values_present": true,
+      "effective_execution_configuration_locked": false,
+      "blocking_reasons": [
+        "runner-options-are-overridable",
+        "effective-run-manifest-absent"
+      ]
+    },
+    "judge_and_runtime": {
+      "status": "blocked",
+      "qwen_candidate_revision": "9216db5781bf21249d130ec9da846c4624c16137",
+      "qwen_candidate_revision_identified": true,
+      "runner_binds_qwen_candidate_revision": false,
+      "tokenizer_revision_locked": false,
+      "resolved_runtime_dependency_lock_complete": false,
+      "scoring_source_identity_locked": true,
+      "end_to_end_closure_complete": false,
+      "blocking_reasons": [
+        "runner-uses-mutable-model-name",
+        "tokenizer-revision-unbound",
+        "runtime-dependencies-contain-ranges-and-moving-main-reference",
+        "no-immutable-effective-run-configuration"
+      ]
+    }
+  },
+  "aggregate_decision": {
+    "engineering_lock_may_pass": true,
+    "clarification_decision": "no_go",
+    "candidate_id": "browsecomp_plus",
+    "candidate_admitted": false,
+    "component_rights_clearance_complete": false,
+    "prompt_and_algorithm_source_lock": "partial",
+    "judge_runtime_closure_complete": false,
+    "end_to_end_comparability_complete": false,
+    "real_external_score": false,
+    "officially_comparable_score_available": false,
+    "stop_criterion_triggered": true,
+    "moving_context_document_closed_no_gate": true,
+    "no_go_independent_of_moving_context_document": true,
+    "stop_reasons": [
+      "fifteen-document-source-ceiling-exhausted",
+      "component-rights-gate-remains-blocked",
+      "judge-and-runtime-gate-remains-blocked"
+    ],
+    "asset_acquisition_allowed": false,
+    "evaluation_allowed": false,
+    "publication_allowed": false,
+    "phase_11_9_status": "blocked",
+    "phase_12_status": "blocked",
+    "v1_readiness": false
+  },
+  "single_recommended_next_step": {
+    "action_kind": "prepare-local-unsent-upstream-clarification-request",
+    "decision": "recommended",
+    "scope": [
+      "request-authoritative-component-level-rights-disposition-for-acquisition-local-processing-aggregate-reporting-and-non-redistribution",
+      "request-exact-model-tokenizer-prompt-generation-runtime-and-scoring-closure-for-official-fixed-corpus-comparison"
+    ],
+    "entry_criteria": [
+      "P1 result reproduces with every engineering gate passing",
+      "cumulative metadata source count is exactly 15 of 15 with zero remaining",
+      "component-rights and judge-runtime gates remain blocked",
+      "P0 stop criterion is recorded as triggered"
+    ],
+    "stop_criteria": [
+      "drafting would require a sixteenth source or benchmark payload",
+      "drafting would require a legal conclusion, secret, provider, model, judge, retrieval or score",
+      "drafting would contact an external person or service",
+      "drafting would publish, distribute or attach an artifact"
+    ],
+    "external_contact_allowed": false,
+    "sending_requires_separate_explicit_go": true,
+    "maximum_external_requests": 0,
+    "maximum_retries": 0,
+    "maximum_publications": 0
+  }
+}

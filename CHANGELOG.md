@@ -4,6 +4,17 @@ All notable changes to EvidenceMesh are documented here.
 
 ## 0.1.0 - 2026-07-28
 
+- Accepted exact tag `v0.1.0-alpha.local` as a single-host, offline technical
+  alpha after clean-export tests, strict typing and lint, reproducible wheel
+  and source builds, and installed CLI/MCP smokes. All distributions remain
+  unpublished.
+- Isolated the local-alpha decision from BrowseComp-Plus and BRIGHT. Upstream
+  silence cannot invalidate the local alpha, while external admission, Phase
+  11.9, Phase 12, V1 readiness, merge and release remain blocked.
+- Added a draft-PR public projection of the local acceptance, based on exact
+  Git-tree equivalence. The local tag, build distributions and release remain
+  unpublished, and the retired one-update RC4.1A workflow is preserved as a
+  byte-identical historical archive.
 - Initial evidence-first search engine and Python SDK.
 - FastMCP tools over STDIO and Streamable HTTP.
 - Keyless SearXNG, DDGS, Wikipedia and Crossref providers.
@@ -409,3 +420,26 @@ All notable changes to EvidenceMesh are documented here.
   redistribution and evaluation stay blocked; Phase 11.8.10B, Phase 11.9,
   Phase 12, product changes, merge, release and superiority claims remain
   unauthorized.
+- Locked Phase 11.8.10B-P0 as a public-metadata-only policy and comparability
+  decision for BRIGHT and BrowseComp-Plus, bounded to ten of fifteen permitted
+  primary documents and zero benchmark payload access.
+- Preserved an official-comparability target and the option to use one
+  individually admitted authoritative suite later, while admitting neither
+  suite now: component-level third-party rights remain unverified, BRIGHT has
+  no exact leaderboard/evaluator binding, and BrowseComp-Plus has no pinned
+  judge, tokenizer or complete inference configuration.
+- Recorded the fail-closed acquisition decision with zero downloads, opens,
+  decryptions, scores, provider, model, external-tester, secret or publication
+  calls. Phase 11.8.10B acquisition, Phase 11.9, Phase 12, merge, release and
+  superiority claims require a separate authorization and remain blocked.
+- Locked Phase 11.8.10B-P1 as a five-source, public-metadata-only BrowseComp-
+  Plus clarification, exhausting the cumulative fifteen-of-fifteen primary-
+  document budget without acquiring or opening any benchmark payload.
+- Recorded a fail-closed `BLOCK`: component-level corpus rights remain
+  unverified and the judge, tokenizer, prompt, generation, runtime and scoring
+  identity remain insufficiently pinned for official comparability.
+- Recorded bounded process attestations of zero payload download, query
+  decryption, provider, model, judge, scoring, live-evaluation, secret or
+  publication activity; no full runtime network instrumentation is claimed.
+  Phase 11.8.10B acquisition, Phase 11.9, Phase 12, merge, release and
+  superiority claims remain blocked.

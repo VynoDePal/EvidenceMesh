@@ -1,0 +1,89 @@
+name: Phase 11.8.10B-P0 Policy Comparability Lock
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - .github/workflows/phase11-8-10b-p0-policy-comparability-lock.yml
+      - benchmarks/data/phase11_8_10a_asset_locks_v1.json
+      - benchmarks/data/phase11_8_10a_object_inventory_v1.json
+      - benchmarks/data/phase11_8_10a_source_locks_v1.json
+      - benchmarks/data/phase11_8_10b_p0_policy_comparability_lock_v1.json
+      - benchmarks/data/phase11_8_10b_p0_source_locks_v1.json
+      - benchmarks/phase11_8_10b_p0_policy_lock.py
+      - benchmarks/run_phase11_8_10b_p0_policy_lock.py
+      - benchmarks/results/phase11_8_10b_p0_policy_comparability_lock_2026-08-01.json
+      - benchmarks/results/phase11_8_10b_p0_policy_comparability_lock_2026-08-01.md
+      - benchmarks/results/phase11_8_10a_asset_reconnaissance_2026-07-31.json
+      - docs/benchmark-protocol-v27.md
+      - tests/test_phase11_8_10b_p0_policy_lock.py
+      - tests/test_phase11_8_10b_p0_runner.py
+      - tests/test_phase11_8_10b_p0_result.py
+      - CHANGELOG.md
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase11-8-10b-p0-policy-comparability-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  metadata-only-policy-lock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install locked test environment
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Reproduce the metadata-only policy lock twice
+        env:
+          LOCK_COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          uv run python -m benchmarks.run_phase11_8_10b_p0_policy_lock \
+            --methodology-commit-sha "$LOCK_COMMIT_SHA" \
+            --output /tmp/phase11_8_10b_p0_a.json
+          uv run python -m benchmarks.run_phase11_8_10b_p0_policy_lock \
+            --methodology-commit-sha "$LOCK_COMMIT_SHA" \
+            --output /tmp/phase11_8_10b_p0_b.json
+          cmp /tmp/phase11_8_10b_p0_a.json /tmp/phase11_8_10b_p0_b.json
+
+      - name: Run focused tests and static checks
+        run: |
+          result_test=()
+          if [[ -f tests/test_phase11_8_10b_p0_result.py ]]; then
+            result_test=(tests/test_phase11_8_10b_p0_result.py)
+          fi
+          uv run pytest \
+            tests/test_phase11_8_10b_p0_policy_lock.py \
+            tests/test_phase11_8_10b_p0_runner.py \
+            "${result_test[@]}" \
+            -q
+          uv run ruff check \
+            benchmarks/phase11_8_10b_p0_policy_lock.py \
+            benchmarks/run_phase11_8_10b_p0_policy_lock.py \
+            tests/test_phase11_8_10b_p0_policy_lock.py \
+            tests/test_phase11_8_10b_p0_runner.py \
+            "${result_test[@]}"
+          uv run ruff format --check \
+            benchmarks/phase11_8_10b_p0_policy_lock.py \
+            benchmarks/run_phase11_8_10b_p0_policy_lock.py \
+            tests/test_phase11_8_10b_p0_policy_lock.py \
+            tests/test_phase11_8_10b_p0_runner.py \
+            "${result_test[@]}"

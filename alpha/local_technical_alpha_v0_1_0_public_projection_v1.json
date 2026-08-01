@@ -1,0 +1,58 @@
+{
+  "local_acceptance": {
+    "candidate_commit_sha": "644064b5fa097bbf7055f3bf4335ea613afb6387",
+    "candidate_tag_name": "v0.1.0-alpha.local",
+    "candidate_tag_object_sha": "196cfaca0458f81d4d5cd7de54f7adbf80ad1e57",
+    "local_identity_resolution_required_in_ci": false,
+    "record_path": "alpha/local_technical_alpha_v0_1_0_acceptance_v1.json",
+    "record_sha256": "2bf1662b9bc3931a079e4f4bf2b4ba51fcf67364c363deefbd4882ff1fff6ba3",
+    "seal_commit_sha": "f5279d20c25d87f420911c000d6704f4d549d8f0",
+    "seal_head_tests_passed": 985
+  },
+  "projection": {
+    "head_branch": "agent/evidencemesh-v0.1",
+    "pull_request_number": 1,
+    "repository": "VynoDePal/EvidenceMesh",
+    "required_pr_state": "draft",
+    "scope": "public_projection_of_local_acceptance_record_only"
+  },
+  "publication_boundaries": {
+    "candidate_commit_published": false,
+    "distributions_published": false,
+    "github_release_created": false,
+    "local_tag_published": false,
+    "merge_allowed": false,
+    "phase_11_9_allowed": false,
+    "phase_12_allowed": false,
+    "public_artifact_attestation_created": false,
+    "public_provenance_established": false,
+    "seal_commit_published": false,
+    "v1_ready": false
+  },
+  "publication_control": {
+    "automatic_retries_max": 0,
+    "branch_ref_updates_max": 1,
+    "external_response_reads_max": 0,
+    "model_requests_max": 0,
+    "provider_requests_max": 0,
+    "published_distributions_max": 0
+  },
+  "schema_version": "evidencemesh.local-technical-alpha-v0.1.0-public-projection.v1",
+  "source_equivalence": {
+    "basis": "identical_git_tree_sha1",
+    "local_candidate_tree_sha": "7a774664442caa9201b419fb219d47c6113a52a3",
+    "public_commit_sha": "8026ace0f8c48abf9f9a5664d31d1e9cc66bdf2e",
+    "public_tree_sha": "7a774664442caa9201b419fb219d47c6113a52a3",
+    "runtime_immutable_paths": [
+      "src",
+      "pyproject.toml",
+      "uv.lock"
+    ]
+  },
+  "workflow_retirement": {
+    "active_path_absent": ".github/workflows/alpha-rc4-1a-provider-policy-session-fail-closed-offline.yml",
+    "archive_path": "docs/workflow-archive/alpha-rc4-1a-provider-policy-session-fail-closed-offline.yml",
+    "archive_sha256": "3e49836f1c1a685146f5bdef639acbbef90c55247cfa9b8d1fabf5dbb913e7d1",
+    "reason": "historical_exact_one_update_workflow_would_reject_every_descendant_head"
+  }
+}

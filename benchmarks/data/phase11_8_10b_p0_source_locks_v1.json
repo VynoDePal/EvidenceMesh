@@ -1,0 +1,54 @@
+{
+  "schema_version": "evidencemesh.phase11_8_10b_p0.source-locks.v1",
+  "source_set_sha256": "1d8e0524ecfe8c3c1d02a8925a517e23d67d090eea808e9fc3f9ab8c91265b6f",
+  "authority_sources": [
+    {
+      "relative_path": ".github/workflows/phase11-8-10b-p0-policy-comparability-lock.yml",
+      "sha256": "da539adaba35227b4b411b020ac4aab68f3222d2ba56c370d520b4ee4cba49de"
+    },
+    {
+      "relative_path": "benchmarks/data/phase11_8_10a_asset_locks_v1.json",
+      "sha256": "8c470471e250df2f33bb6840bec27c5bdecb9f4ad7654142374c0eb4df615f2c"
+    },
+    {
+      "relative_path": "benchmarks/data/phase11_8_10a_object_inventory_v1.json",
+      "sha256": "d23f81e23e2e1c8e075de7647d7529ccaf9c3a787f8c18106e101d8abef57a3e"
+    },
+    {
+      "relative_path": "benchmarks/data/phase11_8_10a_source_locks_v1.json",
+      "sha256": "f7da0ef14f6b5fee788eb8139c9e62df13d6b51f23492fb9852da42463301094"
+    },
+    {
+      "relative_path": "benchmarks/data/phase11_8_10b_p0_policy_comparability_lock_v1.json",
+      "sha256": "09e9dfb6475ccf40ffa4d844684ac7036c0255f35e2ad7c6fdeb5e0fe1027082"
+    },
+    {
+      "relative_path": "benchmarks/phase11_8_10b_p0_policy_lock.py",
+      "sha256": "2e26a7dad98d2608c2e878d1e9a47b11bc562c6a60d067f81970f30f19bfb3da"
+    },
+    {
+      "relative_path": "benchmarks/results/phase11_8_10a_asset_reconnaissance_2026-07-31.json",
+      "sha256": "3e0c2d7e99778d71f773a980a4212cd44fd8960fd1ee7d142350867345c9310d"
+    },
+    {
+      "relative_path": "benchmarks/run_phase11_8_10b_p0_policy_lock.py",
+      "sha256": "79524173177b6459a4a8ce3ad0a587b2c26df0bb88a47dedbd457bd37ffe0308"
+    },
+    {
+      "relative_path": "docs/benchmark-protocol-v26.md",
+      "sha256": "b97a215a6be2294a23db15c4183353371a185d7c11c738d7ca3894beb710bd77"
+    },
+    {
+      "relative_path": "docs/benchmark-protocol-v27.md",
+      "sha256": "8346b69b1b7261eaf94028d5f2ac2e40bc028b49db0ea68f4f779083680ab0c6"
+    },
+    {
+      "relative_path": "tests/test_phase11_8_10b_p0_policy_lock.py",
+      "sha256": "54b2dbd9358f9a0663fd28f01f8e867f425184820d0035f00ef431c54b763fa2"
+    },
+    {
+      "relative_path": "tests/test_phase11_8_10b_p0_runner.py",
+      "sha256": "8c5f7c9d33353953ebf15fc6d31cabc512b4861d843da4b6faa403b463947b37"
+    }
+  ]
+}

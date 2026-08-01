@@ -10,12 +10,18 @@ import yaml
 ROOT = Path(__file__).parents[1]
 PROTOCOL = ROOT / "docs/alpha-rc4-1a-provider-policy-session-fail-closed-offline-protocol-v1.md"
 POLICY = ROOT / "alpha/closed_alpha_rc4_1a_provider_policy_session_fail_closed_policy_v1.json"
-WORKFLOW = ROOT / ".github/workflows/alpha-rc4-1a-provider-policy-session-fail-closed-offline.yml"
+LIVE_WORKFLOW = (
+    ROOT / ".github/workflows/alpha-rc4-1a-provider-policy-session-fail-closed-offline.yml"
+)
+WORKFLOW = (
+    ROOT / "docs/workflow-archive/alpha-rc4-1a-provider-policy-session-fail-closed-offline.yml"
+)
 
 BASE_SHA = "61a58660cb77ba160e8ecfed53d09fdcd1d60c57"
 BASE_TREE = "6a7424d4d8391c64a0ebb0c0445b8d85c8d7a5fe"
 PROTOCOL_SHA256 = "6d0e2daf707cf8155ad0a39606bbd80ae984e59094df7f23ef2f7de02afb7d55"
 POLICY_SHA256 = "4ee542ba49b2ca1fcac790f0279b6dae83129bf21266efe1addbf19bfb6c5d39"
+WORKFLOW_SHA256 = "3e49836f1c1a685146f5bdef639acbbef90c55247cfa9b8d1fabf5dbb913e7d1"
 
 ADDITIONS = [
     ".github/workflows/alpha-rc4-1a-provider-policy-session-fail-closed-offline.yml",
@@ -252,6 +258,8 @@ def test_workflow_is_exact_read_only_offline_and_ephemeral() -> None:
     lowered = workflow.lower()
     parsed = yaml.safe_load(workflow)
 
+    assert not LIVE_WORKFLOW.exists()
+    assert _sha256(WORKFLOW) == WORKFLOW_SHA256
     assert isinstance(parsed, dict)
     triggers = parsed.get("on", parsed.get(True))
     assert triggers == {

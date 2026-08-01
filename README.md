@@ -13,13 +13,17 @@ search engines, fuses their rankings, removes duplicates, extracts public
 HTML/PDF content and returns compact evidence with stable `[S#]` citations.
 The core works without a paid API or a bundled language model.
 
-> **Status:** `0.1.0` alpha. The implementation is tested, but no claim of
-> superior end-to-end research quality is made until comparable public
-> benchmark runs are available.
+> **Status:** the exact tag `v0.1.0-alpha.local` is accepted as an offline,
+> single-host technical alpha. The implementation is tested, but this is not
+> V1 readiness and no superior end-to-end research-quality claim is made.
 >
-> **Distribution:** source checkout is currently the supported route. No PyPI
-> package or GitHub Release has been published. Phase 11.4 validates a
-> temporary, attested alpha candidate without authorizing public distribution.
+> **Distribution:** the accepted tag remains local and unpublished. No PyPI
+> package, GitHub Release or public binary has been published. See the
+> [acceptance protocol](docs/local-technical-alpha-v0.1.0-acceptance-protocol-v1.md)
+> and [no-response policy](docs/local-technical-alpha-v0.1.0-policy-v1.md). The
+> [public projection](alpha/local_technical_alpha_v0_1_0_public_projection_v1.json)
+> binds that local record to the tree-identical public source commit without
+> publishing the local tag, distributions or a release.
 
 ## Why another search MCP?
 

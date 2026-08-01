@@ -1,9 +1,28 @@
 # EvidenceMesh 0.1.0 alpha distribution status
 
 EvidenceMesh `0.1.0` is source-available under Apache-2.0, but it is not yet a
-published PyPI package or GitHub Release. Phase 11.4 prepares and validates an
-ephemeral technical release candidate without changing that publication
-boundary.
+published PyPI package or GitHub Release. The exact local tag
+`v0.1.0-alpha.local`, commit
+`644064b5fa097bbf7055f3bf4335ea613afb6387`, is accepted as an offline,
+single-host technical alpha. Its wheel and source archive remain ephemeral and
+unpublished.
+
+This local acceptance does not authorize closed-alpha sessions, external
+benchmark acquisition, Phase 11.9, Phase 12, V1 readiness, merge or release.
+It is independent of a BrowseComp-Plus response, including permanent silence.
+The exact boundary is recorded in the
+[local acceptance protocol](local-technical-alpha-v0.1.0-acceptance-protocol-v1.md)
+and [no-response policy](local-technical-alpha-v0.1.0-policy-v1.md).
+
+Phase 11.4 historically prepared and validated an ephemeral technical release
+candidate without changing that publication boundary.
+
+The draft PR carries a separate
+[public projection record](../alpha/local_technical_alpha_v0_1_0_public_projection_v1.json).
+It proves that public commit `8026ace0f8c48abf9f9a5664d31d1e9cc66bdf2e`
+has the same Git tree as the accepted local candidate. It does not publish or
+make CI resolve the local commit, tag object or seal commit, and it establishes
+neither public provenance nor release authority.
 
 ## What Phase 11.4 proves
 

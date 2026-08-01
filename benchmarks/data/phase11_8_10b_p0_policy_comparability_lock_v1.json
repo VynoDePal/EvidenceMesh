@@ -1,0 +1,435 @@
+{
+  "schema_version": "evidencemesh.phase11_8_10b_p0.policy-comparability-lock.v1",
+  "purpose": "metadata-only-policy-and-official-comparability-lock",
+  "captured_on": "2026-08-01",
+  "predecessor_lock": {
+    "phase": "11.8.10A",
+    "repository_tree": "7a774664442caa9201b419fb219d47c6113a52a3",
+    "protocol": {
+      "path": "docs/benchmark-protocol-v26.md",
+      "sha256": "b97a215a6be2294a23db15c4183353371a185d7c11c738d7ca3894beb710bd77"
+    },
+    "asset_lock_manifest": {
+      "path": "benchmarks/data/phase11_8_10a_asset_locks_v1.json",
+      "sha256": "8c470471e250df2f33bb6840bec27c5bdecb9f4ad7654142374c0eb4df615f2c"
+    },
+    "object_inventory": {
+      "path": "benchmarks/data/phase11_8_10a_object_inventory_v1.json",
+      "sha256": "d23f81e23e2e1c8e075de7647d7529ccaf9c3a787f8c18106e101d8abef57a3e"
+    },
+    "source_lock": {
+      "path": "benchmarks/data/phase11_8_10a_source_locks_v1.json",
+      "sha256": "f7da0ef14f6b5fee788eb8139c9e62df13d6b51f23492fb9852da42463301094"
+    },
+    "result": {
+      "path": "benchmarks/results/phase11_8_10a_asset_reconnaissance_2026-07-31.json",
+      "sha256": "3e0c2d7e99778d71f773a980a4212cd44fd8960fd1ee7d142350867345c9310d",
+      "quality_decision": "no_go",
+      "real_external_score": false
+    }
+  },
+  "phase_policy": {
+    "mode": "metadata-only-local-fail-closed",
+    "score_target": "officially-comparable-external-score",
+    "internal-proxy-score_is_acceptable_substitute": false,
+    "independent_candidate_ids": [
+      "bright",
+      "browsecomp_plus"
+    ],
+    "one_authoritative_suite_may_suffice_later": true,
+    "candidate_suites_admitted_now": [],
+    "asset_acquisition_allowed": false,
+    "asset_payload_download_allowed": false,
+    "asset_payload_open_or_parse_allowed": false,
+    "query_decryption_allowed": false,
+    "evaluation_allowed": false,
+    "score_generation_allowed": false,
+    "provider_requests_allowed": false,
+    "model_requests_allowed": false,
+    "search_requests_allowed": false,
+    "secret_access_allowed": false,
+    "publication_allowed": false,
+    "distribution_allowed": false,
+    "quality_claim_allowed": false,
+    "phase_11_8_10b_acquisition_allowed": false,
+    "phase_11_9_allowed": false,
+    "phase_12_allowed": false,
+    "next_phase_requires_separate_go": true
+  },
+  "research_budget": {
+    "source_kind": "immutable-public-primary-metadata-only",
+    "maximum_unique_public_metadata_documents": 15,
+    "consulted_unique_public_metadata_documents": 10,
+    "remaining_unique_public_metadata_documents": 5,
+    "bright_document_count": 5,
+    "browsecomp_plus_document_count": 5,
+    "payload_requests": 0,
+    "provider_requests": 0,
+    "model_requests": 0,
+    "benchmark_search_api_requests": 0,
+    "retrieval_requests": 0,
+    "judge_requests": 0,
+    "scoring_requests": 0,
+    "secret_requests": 0,
+    "decryption_requests": 0,
+    "publication_requests": 0,
+    "maximum_additional_metadata_documents_without_new_budget": 5,
+    "raw_metadata_transport_request_count_is_a_budget_metric": false
+  },
+  "consulted_primary_documents": [
+    {
+      "source_id": "bright_code_readme",
+      "suite_id": "bright",
+      "authority": "official-code-repository",
+      "immutable_revision": "d99e8391d967d4c2b3a74732530d2309e2fc92b6",
+      "content_identity_kind": "git-blob-sha1",
+      "content_identity_value": "4343c51da97ce20dd9c9c0fb269a87d45e7beafe",
+      "local_content_digest_verified": false,
+      "path": "README.md",
+      "url": "https://github.com/xlang-ai/BRIGHT/blob/d99e8391d967d4c2b3a74732530d2309e2fc92b6/README.md",
+      "consultation_mode": "metadata-text-only",
+      "payload_accessed": false
+    },
+    {
+      "source_id": "bright_code_license",
+      "suite_id": "bright",
+      "authority": "official-code-repository",
+      "immutable_revision": "d99e8391d967d4c2b3a74732530d2309e2fc92b6",
+      "content_identity_kind": "git-blob-sha1",
+      "content_identity_value": "2f244ac814036ecd9ba9f69782e89ce6b1dca9eb",
+      "local_content_digest_verified": false,
+      "path": "LICENSE",
+      "url": "https://github.com/xlang-ai/BRIGHT/blob/d99e8391d967d4c2b3a74732530d2309e2fc92b6/LICENSE",
+      "consultation_mode": "metadata-text-only",
+      "payload_accessed": false
+    },
+    {
+      "source_id": "bright_runner",
+      "suite_id": "bright",
+      "authority": "official-code-repository",
+      "immutable_revision": "d99e8391d967d4c2b3a74732530d2309e2fc92b6",
+      "content_identity_kind": "git-blob-sha1",
+      "content_identity_value": "6a22eb46c6cee797cbd719a0890e1ed0420561da",
+      "local_content_digest_verified": false,
+      "path": "run.py",
+      "url": "https://github.com/xlang-ai/BRIGHT/blob/d99e8391d967d4c2b3a74732530d2309e2fc92b6/run.py",
+      "consultation_mode": "metadata-code-only",
+      "payload_accessed": false
+    },
+    {
+      "source_id": "bright_retrievers",
+      "suite_id": "bright",
+      "authority": "official-code-repository",
+      "immutable_revision": "d99e8391d967d4c2b3a74732530d2309e2fc92b6",
+      "content_identity_kind": "git-blob-sha1",
+      "content_identity_value": "0ce9ef84f802b6318a9c195d3755a1b2103d4f54",
+      "local_content_digest_verified": false,
+      "path": "retrievers.py",
+      "url": "https://github.com/xlang-ai/BRIGHT/blob/d99e8391d967d4c2b3a74732530d2309e2fc92b6/retrievers.py",
+      "consultation_mode": "metadata-code-only",
+      "payload_accessed": false
+    },
+    {
+      "source_id": "bright_dataset_card",
+      "suite_id": "bright",
+      "authority": "official-dataset-repository",
+      "immutable_revision": "3066d29c9651a576c8aba4832d249807b181ecae",
+      "content_identity_kind": "immutable-revision-and-path-only",
+      "content_identity_value": "3066d29c9651a576c8aba4832d249807b181ecae",
+      "local_content_digest_verified": false,
+      "path": "README.md",
+      "url": "https://huggingface.co/datasets/xlangai/BRIGHT/blob/3066d29c9651a576c8aba4832d249807b181ecae/README.md",
+      "consultation_mode": "metadata-text-only",
+      "payload_accessed": false
+    },
+    {
+      "source_id": "browsecomp_plus_code_readme",
+      "suite_id": "browsecomp_plus",
+      "authority": "official-code-repository",
+      "immutable_revision": "046949032b0328319cc9a02663a759ec601d9402",
+      "content_identity_kind": "git-blob-sha1",
+      "content_identity_value": "8f180d4fbf7e10a0ae66b803444176755741e444",
+      "local_content_digest_verified": false,
+      "path": "README.md",
+      "url": "https://github.com/texttron/BrowseComp-Plus/blob/046949032b0328319cc9a02663a759ec601d9402/README.md",
+      "consultation_mode": "metadata-text-only",
+      "payload_accessed": false
+    },
+    {
+      "source_id": "browsecomp_plus_code_license",
+      "suite_id": "browsecomp_plus",
+      "authority": "official-code-repository",
+      "immutable_revision": "046949032b0328319cc9a02663a759ec601d9402",
+      "content_identity_kind": "git-blob-sha1",
+      "content_identity_value": "1eeb9f2ab7b823eef913d01626ca28adf6422fba",
+      "local_content_digest_verified": false,
+      "path": "LICENSE",
+      "url": "https://github.com/texttron/BrowseComp-Plus/blob/046949032b0328319cc9a02663a759ec601d9402/LICENSE",
+      "consultation_mode": "metadata-text-only",
+      "payload_accessed": false
+    },
+    {
+      "source_id": "browsecomp_plus_decrypt_metadata_transform",
+      "suite_id": "browsecomp_plus",
+      "authority": "official-code-repository",
+      "immutable_revision": "046949032b0328319cc9a02663a759ec601d9402",
+      "content_identity_kind": "git-blob-sha1",
+      "content_identity_value": "6a895dd027b8024119a14149fd633d5592c46d9a",
+      "local_content_digest_verified": false,
+      "path": "scripts_build_index/decrypt_dataset.py",
+      "url": "https://github.com/texttron/BrowseComp-Plus/blob/046949032b0328319cc9a02663a759ec601d9402/scripts_build_index/decrypt_dataset.py",
+      "consultation_mode": "metadata-code-only-no-execution",
+      "payload_accessed": false
+    },
+    {
+      "source_id": "browsecomp_plus_query_bundle_dataset_card",
+      "suite_id": "browsecomp_plus",
+      "authority": "official-dataset-repository",
+      "immutable_revision": "144cff8e35b5eaef7e526346aa60774a9deb941f",
+      "content_identity_kind": "immutable-revision-and-path-only",
+      "content_identity_value": "144cff8e35b5eaef7e526346aa60774a9deb941f",
+      "local_content_digest_verified": false,
+      "path": "README.md",
+      "url": "https://huggingface.co/datasets/Tevatron/browsecomp-plus/blob/144cff8e35b5eaef7e526346aa60774a9deb941f/README.md",
+      "consultation_mode": "metadata-text-only",
+      "payload_accessed": false
+    },
+    {
+      "source_id": "browsecomp_plus_fixed_corpus_dataset_card",
+      "suite_id": "browsecomp_plus",
+      "authority": "official-dataset-repository",
+      "immutable_revision": "b27b02bc3e45511b8b82a13e6f90ce761df726f6",
+      "content_identity_kind": "immutable-revision-and-path-only",
+      "content_identity_value": "b27b02bc3e45511b8b82a13e6f90ce761df726f6",
+      "local_content_digest_verified": false,
+      "path": "README.md",
+      "url": "https://huggingface.co/datasets/Tevatron/browsecomp-plus-corpus/blob/b27b02bc3e45511b8b82a13e6f90ce761df726f6/README.md",
+      "consultation_mode": "metadata-text-only",
+      "payload_accessed": false
+    }
+  ],
+  "facts": {
+    "bright": [
+      {
+        "fact_id": "bright_declared_license",
+        "statement": "The official code repository and immutable dataset card declare CC-BY-4.0.",
+        "source_ids": [
+          "bright_code_license",
+          "bright_dataset_card"
+        ]
+      },
+      {
+        "fact_id": "bright_source_derived_components",
+        "statement": "The selected benchmark contains source-derived components and the consulted metadata supplies no item-level or component-level rights map sufficient for EvidenceMesh admission.",
+        "source_ids": [
+          "bright_code_readme",
+          "bright_dataset_card"
+        ]
+      },
+      {
+        "fact_id": "bright_snapshot_population",
+        "statement": "The pinned selected snapshot declares 1,384 queries; the predecessor lock records an unresolved mapping to the 1,398-query publication population and public leaderboard revision.",
+        "source_ids": [
+          "bright_dataset_card"
+        ],
+        "predecessor_source": "phase11_8_10a"
+      },
+      {
+        "fact_id": "bright_evaluator_dependency",
+        "statement": "The upstream scoring path uses pytrec_eval without an exact dependency-version and scoring-semantics closure in the consulted immutable code.",
+        "source_ids": [
+          "bright_runner",
+          "bright_retrievers"
+        ]
+      }
+    ],
+    "browsecomp_plus": [
+      {
+        "fact_id": "browsecomp_plus_declared_license",
+        "statement": "The official repository and immutable dataset cards declare MIT.",
+        "source_ids": [
+          "browsecomp_plus_code_license",
+          "browsecomp_plus_query_bundle_dataset_card",
+          "browsecomp_plus_fixed_corpus_dataset_card"
+        ]
+      },
+      {
+        "fact_id": "browsecomp_plus_third_party_corpus",
+        "statement": "The fixed corpus contains third-party Web pages and the consulted metadata supplies no per-document rights field or component-level rights clearance for EvidenceMesh admission.",
+        "source_ids": [
+          "browsecomp_plus_code_readme",
+          "browsecomp_plus_fixed_corpus_dataset_card"
+        ]
+      },
+      {
+        "fact_id": "browsecomp_plus_comparison_boundary",
+        "statement": "The documented comparison is BrowseComp-Plus over its fixed corpus; it does not establish equivalence to open-Web BrowseComp, live search, another corpus or a rebuilt index.",
+        "source_ids": [
+          "browsecomp_plus_code_readme",
+          "browsecomp_plus_query_bundle_dataset_card",
+          "browsecomp_plus_fixed_corpus_dataset_card"
+        ]
+      },
+      {
+        "fact_id": "browsecomp_plus_judge_dependency",
+        "statement": "The published evaluation path refers to a Qwen judge without a complete immutable judge, tokenizer, prompt, generation, runtime and deterministic scoring closure in the consulted metadata.",
+        "source_ids": [
+          "browsecomp_plus_code_readme"
+        ]
+      }
+    ]
+  },
+  "inferences": [
+    {
+      "inference_id": "declared_license_does_not_complete_component_clearance",
+      "statement": "A repository or dataset-card license declaration alone does not establish the component-level rights clearance required by EvidenceMesh policy.",
+      "applies_to": [
+        "bright",
+        "browsecomp_plus"
+      ]
+    },
+    {
+      "inference_id": "unlocked_evaluator_is_not_officially_comparable",
+      "statement": "A score produced without immutable population and evaluator closure cannot be labeled officially comparable.",
+      "applies_to": [
+        "bright",
+        "browsecomp_plus"
+      ]
+    },
+    {
+      "inference_id": "scope_reduction_does_not_create_clearance",
+      "statement": "Reducing the future evaluation to one candidate can reduce cost but cannot repair that candidate's unresolved admission gates.",
+      "applies_to": [
+        "bright",
+        "browsecomp_plus"
+      ]
+    }
+  ],
+  "candidate_decisions": [
+    {
+      "suite_id": "bright",
+      "candidate_status": "blocked",
+      "independently_assessed": true,
+      "declared_license": "CC-BY-4.0",
+      "component_rights_clearance_complete": false,
+      "official_population_mapping_complete": false,
+      "official_track_mapping_complete": false,
+      "evaluator_dependency_lock_complete": false,
+      "comparability_complete": false,
+      "acquisition_eligible": false,
+      "evaluation_eligible": false,
+      "official_score_claim_eligible": false,
+      "blocking_reasons": [
+        "third-party-component-rights-not-itemized",
+        "pinned-snapshot-to-publication-and-leaderboard-mapping-unresolved",
+        "pytrec_eval-version-and-scoring-semantics-unpinned"
+      ]
+    },
+    {
+      "suite_id": "browsecomp_plus",
+      "candidate_status": "blocked",
+      "independently_assessed": true,
+      "declared_license": "MIT",
+      "component_rights_clearance_complete": false,
+      "official_population_mapping_complete": true,
+      "official_track_mapping_complete": true,
+      "official_comparability_boundary": "browsecomp-plus-fixed-corpus-only",
+      "qwen_judge_identity_lock_complete": false,
+      "tokenizer_revision_lock_complete": false,
+      "judge_prompt_and_generation_config_lock_complete": false,
+      "runtime_dependency_lock_complete": false,
+      "comparability_complete": false,
+      "acquisition_eligible": false,
+      "decryption_eligible": false,
+      "evaluation_eligible": false,
+      "official_score_claim_eligible": false,
+      "blocking_reasons": [
+        "third-party-component-rights-not-itemized",
+        "qwen-judge-tokenizer-prompt-generation-and-runtime-closure-unpinned"
+      ]
+    }
+  ],
+  "option_analysis": [
+    {
+      "option_id": "continue_both_now",
+      "label": "continue",
+      "decision": "rejected",
+      "benefit": "Preserves the two-suite evaluation ambition.",
+      "failure": "Crosses unresolved rights and comparability gates and could yield non-official scores."
+    },
+    {
+      "option_id": "reduce_to_one_now",
+      "label": "reduce-scope",
+      "decision": "deferred",
+      "benefit": "A single authoritative suite may later reduce acquisition and evaluation cost.",
+      "failure": "Neither independent candidate is currently admissible; reducing scope does not create clearance."
+    },
+    {
+      "option_id": "technical_alpha_isolated",
+      "label": "prepare-technical-alpha",
+      "decision": "recommended",
+      "benefit": "Allows engineering validation to continue without benchmark assets or unsupported quality claims.",
+      "failure": "Does not provide external evidence or advance Phase 11.9, Phase 12 or V1 readiness."
+    }
+  ],
+  "recommended_decision": {
+    "option_id": "technical_alpha_isolated",
+    "single_next_step": "Run one BrowseComp-Plus-only immutable-metadata clarification, capped at five additional unique public documents, to seek component-rights and fully pinned judge/runtime evidence; stop without acquisition if either proof class remains unresolved.",
+    "official_score_target_preserved": true,
+    "asset_acquisition_before_clearance": false,
+    "one_suite_future_rule_preserved": true,
+    "one_suite_selected_now": false
+  },
+  "next_evidence_action": {
+    "action_kind": "browsecomp-plus-immutable-metadata-clarification",
+    "candidate_id": "browsecomp_plus",
+    "entry_criteria": [
+      "P0 result reproduces with all 16 engineering gates passing and both candidates blocked",
+      "BrowseComp-Plus is the sole clarification candidate and no acquisition candidate is admitted",
+      "exactly five unique public metadata documents remain in the approved budget",
+      "proof targets are limited to component-level rights and complete judge, tokenizer, prompt, generation, runtime and scoring closure",
+      "a separate explicit GO authorizes this metadata-only clarification"
+    ],
+    "success_criteria": [
+      "component-level rights disposition satisfies intended local-only non-redistribution handling",
+      "official BrowseComp-Plus fixed-corpus population and track mapping remain immutable",
+      "judge, tokenizer, prompt, generation, runtime dependencies and scoring semantics are fully immutable and reproducible"
+    ],
+    "future_acquisition_review_entry_criteria": [
+      "component-level rights disposition covers intended acquisition, local processing, reporting and non-redistribution",
+      "exact official population, asset revision and track mapping is immutable",
+      "evaluator or judge identity, tokenizer, prompt, generation configuration, runtime dependencies and scoring semantics are immutable as applicable",
+      "candidate-specific acquisition manifest and storage boundary are approved",
+      "separate explicit candidate GO is recorded"
+    ],
+    "stop_criteria": [
+      "fifteen-unique-public-metadata-document ceiling would be exceeded",
+      "payload, credential, secret, decryption, provider, model, retrieval, judge or scoring access would be required",
+      "moving or secondary evidence would have to replace immutable primary evidence",
+      "official score target would have to be weakened to an internal proxy",
+      "publication or redistribution would be required",
+      "no independent candidate has every required admission gate complete after the bounded clarification"
+    ],
+    "maximum_additional_unique_public_metadata_documents": 5,
+    "maximum_benchmark_payload_requests": 0,
+    "maximum_provider_or_model_requests": 0,
+    "maximum_retries": 0
+  },
+  "aggregate_decision": {
+    "engineering_lock_may_pass": true,
+    "quality_decision": "no_go",
+    "real_external_score": false,
+    "officially_comparable_score_available": false,
+    "candidate_suite_count": 2,
+    "candidate_suites_admitted": 0,
+    "component_license_clearance_complete": false,
+    "benchmark_comparability_complete": false,
+    "asset_acquisition_allowed": false,
+    "evaluation_allowed": false,
+    "publication_allowed": false,
+    "phase_11_8_10b_acquisition_status": "blocked",
+    "phase_11_9_status": "blocked",
+    "phase_12_status": "blocked",
+    "v1_readiness": false
+  }
+}

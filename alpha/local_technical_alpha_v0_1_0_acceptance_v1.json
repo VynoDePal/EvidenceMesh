@@ -1,0 +1,153 @@
+{
+  "acceptance": {
+    "decision": "go",
+    "package_version": "0.1.0",
+    "scope": "single_host_local_offline_technical_alpha_only",
+    "scored": false,
+    "status": "accepted"
+  },
+  "candidate": {
+    "commit_sha": "644064b5fa097bbf7055f3bf4335ea613afb6387",
+    "current_head_is_candidate": false,
+    "parent_sha": "61a58660cb77ba160e8ecfed53d09fdcd1d60c57",
+    "repository": "VynoDePal/EvidenceMesh",
+    "source_date_epoch": 1785577726,
+    "tag_annotated": true,
+    "tag_name": "v0.1.0-alpha.local",
+    "tag_object_sha": "196cfaca0458f81d4d5cd7de54f7adbf80ad1e57",
+    "tag_signed": false,
+    "tree_sha": "7a774664442caa9201b419fb219d47c6113a52a3"
+  },
+  "distributions": {
+    "reproducible_build_count": 2,
+    "source_date_epoch": 1785577726,
+    "subjects": {
+      "dist/evidencemesh-0.1.0-py3-none-any.whl": {
+        "sha256": "857d9f363b76a77000506ac17084c49fa553f76ff881fcb0646c975058af7313",
+        "size_bytes": 118395
+      },
+      "dist/evidencemesh-0.1.0.tar.gz": {
+        "sha256": "6da7a48b8374f7b19fcac00e316ab3f3d279babb25e799060d103b9107210840",
+        "size_bytes": 1241308
+      }
+    }
+  },
+  "downstream_authority": {
+    "closed_alpha_live_allowed": false,
+    "merge_allowed": false,
+    "phase_11_9_allowed": false,
+    "phase_12_allowed": false,
+    "public_distribution_allowed": false,
+    "quality_claim_allowed": false,
+    "release_allowed": false,
+    "superiority_claim_allowed": false,
+    "tester_contact_allowed": false,
+    "v1_ready": false
+  },
+  "excluded_evidence": {
+    "rc4_1a_synthetic_identity_record": {
+      "acceptance_evidence": false,
+      "attestation_ids_real": false,
+      "sha256": "69cc7de538067358506be5af7bb9dc81bb71bc4bb5416666e9303f562deb3d4d",
+      "scope": "rc4_1a_offline_wheel_smoke_only"
+    }
+  },
+  "external_benchmarks": {
+    "bright": "blocked_unadmitted",
+    "browsecomp_plus": "blocked_unadmitted",
+    "response_required_for_local_acceptance": false,
+    "response_state_ingested": false,
+    "silence_forever_preserves_acceptance": true
+  },
+  "immutable_inputs": {
+    ".github/workflows/alpha-rc4-1a-provider-policy-session-fail-closed-offline.yml": "3e49836f1c1a685146f5bdef639acbbef90c55247cfa9b8d1fabf5dbb913e7d1",
+    "alpha/closed_alpha_rc4_1a_provider_policy_session_fail_closed_policy_v1.json": "4ee542ba49b2ca1fcac790f0279b6dae83129bf21266efe1addbf19bfb6c5d39",
+    "alpha/local_technical_alpha_v0_1_0_policy_v1.json": "53399a0f93ddd38f6736b8ac723b9ad1fdf8b5e429041a0713b2370b1e684661",
+    "docs/alpha-rc4-1a-provider-policy-session-fail-closed-offline-protocol-v1.md": "6d0e2daf707cf8155ad0a39606bbd80ae984e59094df7f23ef2f7de02afb7d55",
+    "docs/local-technical-alpha-v0.1.0-acceptance-protocol-v1.md": "dbfdca45129e4d29556f46265ad7eb13325f41f43598c933412771e248e0b254",
+    "pyproject.toml": "eac6ae9e1d5b38f4262d33af137ce82ff019b41719c404a5c9b70a08a4f600a0",
+    "scripts/smoke_installed_rc4_1a.py": "b40e8d1d2c42e304f4b7315ef06382e10f99f2e6967cfba8ce7a284cbd24a2f4",
+    "uv.lock": "5a47e1815cc2074698e1ab0cfec2932200bb013601d02246324513ffa5404898"
+  },
+  "limitations": {
+    "complete_git_history_verified": false,
+    "continuous_retention_supervisor_present": false,
+    "install_to_smoke_toctou_excluded": false,
+    "os_network_namespace_enforced": false,
+    "pep610_archive_sha256_declared_by_installer": false,
+    "public_provenance_established": false,
+    "python_socket_guard_scope": "python_socket_api_only_not_os_network_namespace",
+    "tag_signed": false
+  },
+  "request_budget": {
+    "automatic_fallbacks": 0,
+    "automatic_repairs": 0,
+    "automatic_retries": 0,
+    "benchmark_asset_downloads": 0,
+    "document_fetches": 0,
+    "external_response_reads": 0,
+    "model_requests": 0,
+    "provider_requests": 0,
+    "published_distributions": 0,
+    "tavily_requests": 0,
+    "tester_sessions": 0,
+    "token_count_requests": 0
+  },
+  "schema_version": "evidencemesh.local-technical-alpha-v0.1.0-acceptance.v1",
+  "seal": {
+    "candidate_tag_moved": false,
+    "completed": true,
+    "public_attestation_created": false,
+    "runtime_source_changed_after_candidate": false,
+    "distributions_published": false,
+    "seal_commit_identity": "the commit containing this record"
+  },
+  "smoke_reports": {
+    "harness": {
+      "path": "scripts/smoke_installed_rc4_1a.py",
+      "sha256": "b40e8d1d2c42e304f4b7315ef06382e10f99f2e6967cfba8ce7a284cbd24a2f4"
+    },
+    "sdist": {
+      "path": "alpha/local_technical_alpha_v0_1_0_sdist_smoke_v1.json",
+      "sha256": "134092ee0f02421d9501c15db7ccfb0c9626ab85ed13f695010d145364726a71",
+      "size_bytes": 5801
+    },
+    "wheel": {
+      "path": "alpha/local_technical_alpha_v0_1_0_wheel_smoke_v1.json",
+      "sha256": "f46f0c458d6a6bd8a66193360df890f6c1cb99f846c9c6d1de4936a99a9e83ad",
+      "size_bytes": 5810
+    }
+  },
+  "toolchain": {
+    "hatchling": "1.31.0",
+    "mypy": "1.20.2",
+    "pytest": "9.1.1",
+    "python": "3.12.13",
+    "ruff": "0.16.0",
+    "uv": "0.11.33"
+  },
+  "verification": {
+    "branch_coverage_percent": 87,
+    "branch_coverage_required_percent": 85,
+    "candidate_files_formatted": 225,
+    "clean_tag_exports_built": 2,
+    "dependency_acquisition_before_offline_window_performed": true,
+    "focused_rc4_tests_passed": 99,
+    "full_candidate_tests_passed": 885,
+    "installed_smoke_critical_files_bound": 6,
+    "installed_smoke_dependency_update_checks_disabled": true,
+    "installed_smoke_guarded_subprocesses_per_distribution": 6,
+    "installed_smoke_python_socket_access_observed": false,
+    "installed_sdist_smoke_passed": true,
+    "installed_wheel_smoke_passed": true,
+    "mypy_source_files_passed": 38,
+    "offline_build_and_smoke_network_access_performed": false,
+    "research_network_access_performed": false,
+    "ruff_format_passed": true,
+    "ruff_lint_passed": true,
+    "seal_head_files_formatted": 252,
+    "seal_head_mypy_source_files_passed": 39,
+    "seal_head_tests_passed": 985,
+    "validation_date": "2026-08-01"
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "authority": {
+    "benchmark_asset_acquisition_allowed": false,
+    "benchmark_evaluation_allowed": false,
+    "closed_alpha_live_execution_allowed": false,
+    "local_offline_technical_alpha_allowed": true,
+    "merge_allowed": false,
+    "phase_11_9_allowed": false,
+    "phase_12_allowed": false,
+    "public_binary_distribution_allowed": false,
+    "public_release_allowed": false,
+    "quality_claim_allowed": false,
+    "response_ingestion_allowed": false,
+    "superiority_claim_allowed": false,
+    "tester_contact_allowed": false,
+    "v1_ready": false
+  },
+  "basis": {
+    "browsecomp_plus_connector_attempt_receipt": {
+      "historical_result": "connector_write_failed_http_403",
+      "path": "docs/browsecomp-plus-publication-attempt-receipt-v1.md",
+      "sha256": "f8144511d2dd46d751cd7fa062f0db3be014f2ff2e6181b8a928cb0b93a003da",
+      "superseded": false
+    },
+    "browsecomp_plus_manual_issue_receipt": {
+      "path": "docs/browsecomp-plus-manual-issue-28-receipt-v1.md",
+      "state": "manual_browser_user_attested"
+    },
+    "protocol_v27": {
+      "path": "docs/benchmark-protocol-v27.md",
+      "sha256": "8346b69b1b7261eaf94028d5f2ac2e40bc028b49db0ea68f4f779083680ab0c6"
+    },
+    "protocol_v28": {
+      "path": "docs/benchmark-protocol-v28.md",
+      "sha256": "e52fb157d32003b21c2af3497b2aa1b642dada68c480231380b4c6a751211e26"
+    }
+  },
+  "budgets": {
+    "future_without_separate_explicit_go": {
+      "automatic_retries": 0,
+      "benchmark_asset_requests": 0,
+      "browser_or_connector_reads": 0,
+      "document_fetches": 0,
+      "human_response_reads": 0,
+      "issue_comments_or_publications": 0,
+      "model_requests": 0,
+      "provider_requests": 0,
+      "published_distributions": 0,
+      "tester_contacts": 0
+    },
+    "local_technical_alpha": {
+      "automatic_retries": 0,
+      "benchmark_asset_requests": 0,
+      "browser_or_connector_reads": 0,
+      "document_fetches": 0,
+      "human_response_reads": 0,
+      "issue_comments_or_publications": 0,
+      "model_requests": 0,
+      "provider_requests": 0,
+      "published_distributions": 0,
+      "tester_contacts": 0
+    }
+  },
+  "candidate": {
+    "commit_sha": "644064b5fa097bbf7055f3bf4335ea613afb6387",
+    "current_head_claimed_as_candidate": false,
+    "local_tag": "v0.1.0-alpha.local",
+    "package_version": "0.1.0",
+    "scope": "exact-tag-local-offline-only",
+    "status": "validated_local_unpublished"
+  },
+  "external_benchmark_admission": {
+    "bright": {
+      "admitted": false,
+      "status": "blocked"
+    },
+    "browsecomp_plus": {
+      "admitted": false,
+      "issue_number": 28,
+      "issue_url": "https://github.com/texttron/BrowseComp-Plus/issues/28",
+      "response_required_for_local_alpha": false,
+      "status": "blocked"
+    },
+    "candidate_suites_admitted": 0,
+    "official_external_score_available": false
+  },
+  "manual_issue_publication": {
+    "context_comment_sha256_user_attested": "cffc9bc965bd8dbddffba75e804a3b45c89a3b03750164798fac4aa326045287",
+    "initial_payload_sha256_user_attested": "2225c5f25641ecfef944ffb55bd34403753ef8a1c4c191db520857af3660e77c",
+    "issue_number": 28,
+    "issue_url": "https://github.com/texttron/BrowseComp-Plus/issues/28",
+    "local_github_write_receipt_available": false,
+    "remote_content_cryptographically_verified": false,
+    "source": "user_and_browser_attestations_in_conversation",
+    "state": "manual_browser_user_attested"
+  },
+  "phase_boundaries": {
+    "phase_11_9": {
+      "authorized": false,
+      "status": "blocked"
+    },
+    "phase_12": {
+      "authorized": false,
+      "executed": false,
+      "seal_preserved": true,
+      "status": "sealed_blocked"
+    },
+    "release": {
+      "github_release_allowed": false,
+      "pypi_publication_allowed": false,
+      "public_release_allowed": false
+    },
+    "v1": {
+      "readiness": false,
+      "status": "no_go"
+    }
+  },
+  "response_independence": {
+    "automatic_polling_allowed": false,
+    "local_alpha_decision_for_all_response_states": "validated_local_unpublished",
+    "local_alpha_response_dependency": "none",
+    "permanent_silence_preserves_local_alpha": true,
+    "response_ingestion_requires_separate_explicit_go": true,
+    "response_states_with_identical_local_alpha_decision": [
+      "no_response_observed",
+      "response_exists_but_is_not_read_or_ingested",
+      "permanent_silence"
+    ]
+  },
+  "schema_version": "evidencemesh.local-technical-alpha-v0.1.0-policy.v1"
+}
