@@ -153,8 +153,11 @@ def test_policy_freezes_one_shot_budgets_and_guard_limitations() -> None:
         "node_api_blocking": True,
         "operating_system_network_namespace_enforced": False,
         "packet_xdp_and_raw_inet_sockets_allowed": False,
+        "passive_ipv6_loopback_bind_is_network_request": False,
+        "passive_ipv6_loopback_bind_probe_maximum": 1,
         "python_api_blocking": True,
-        "setsockopt_allowed": False,
+        "setsockopt_on_proven_local_fd_allowed": True,
+        "setsockopt_on_unproven_or_inet_fd_allowed": False,
         "strace_fd_family_tracking": True,
         "strace_family_classification": "syscall_and_sockaddr",
         "strace_external_socket_audit": True,
@@ -502,6 +505,7 @@ def test_strace_audit_accepts_only_addressless_inet_socket_creation(tmp_path: Pa
         "explicit_local_socket_syscalls": 1,
         "forbidden_network_syscalls": 0,
         "network_syscalls_observed": 3,
+        "passive_ipv6_loopback_bind_probes": 0,
         "process_audit_lines": 5,
     }
 
@@ -512,6 +516,7 @@ def test_strace_audit_allows_explicit_unix_and_netlink_control_plane(tmp_path: P
     trace.write_text(
         f'101 execve("{node}", ["{node}"], 0x0) = 0\n'
         "101 socketpair(AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC, 0, [3, 4]) = 0\n"
+        "101 setsockopt(3, SOL_SOCKET, SO_RCVBUF, [212992], 4) = 0\n"
         "101 socket(AF_NETLINK, SOCK_RAW|SOCK_CLOEXEC, NETLINK_ROUTE) = 5\n"
         "101 bind(5, {sa_family=AF_NETLINK, nl_pid=0}, 12) = 0\n"
         "101 sendto(5, [{rtm_family=AF_INET}], 20, 0, NULL, 0) = 20\n"
@@ -521,11 +526,121 @@ def test_strace_audit_allows_explicit_unix_and_netlink_control_plane(tmp_path: P
     assert gate._validate_strace(trace, {node}) == {
         "addressless_inet_socket_creations": 0,
         "execve_count": 1,
-        "explicit_local_socket_syscalls": 5,
+        "explicit_local_socket_syscalls": 6,
         "forbidden_network_syscalls": 0,
-        "network_syscalls_observed": 5,
-        "process_audit_lines": 6,
+        "network_syscalls_observed": 6,
+        "passive_ipv6_loopback_bind_probes": 0,
+        "process_audit_lines": 7,
     }
+
+
+def test_strace_audit_allows_one_urllib3_ipv6_loopback_probe(tmp_path: Path) -> None:
+    node = (tmp_path / "node").resolve()
+    trace = tmp_path / "inspector.strace.log"
+    trace.write_text(
+        f'101 execve("{node}", ["{node}"], 0x0) = 0\n'
+        "101 socket(AF_INET6, SOCK_STREAM|SOCK_CLOEXEC, IPPROTO_IP) = 3\n"
+        "101 bind(3, {sa_family=AF_INET6, sin6_port=htons(0), "
+        'sin6_flowinfo=htonl(0), inet_pton(AF_INET6, "::1", &sin6_addr), '
+        "sin6_scope_id=0}, 28) = 0\n",
+        encoding="utf-8",
+    )
+    assert gate._validate_strace(trace, {node}) == {
+        "addressless_inet_socket_creations": 1,
+        "execve_count": 1,
+        "explicit_local_socket_syscalls": 0,
+        "forbidden_network_syscalls": 0,
+        "network_syscalls_observed": 2,
+        "passive_ipv6_loopback_bind_probes": 1,
+        "process_audit_lines": 3,
+    }
+
+
+@pytest.mark.parametrize(
+    "network_block",
+    [
+        (
+            "101 socket(AF_INET6, SOCK_DGRAM|SOCK_CLOEXEC, IPPROTO_IP) = 3\n"
+            "101 bind(3, {sa_family=AF_INET6, sin6_port=htons(0), "
+            'inet_pton(AF_INET6, "::1", &sin6_addr)}, 28) = 0'
+        ),
+        (
+            "101 socket(AF_INET6, SOCK_STREAM|SOCK_CLOEXEC, IPPROTO_IP) = 3\n"
+            "101 setsockopt(3, SOL_IPV6, IPV6_V6ONLY, [1], 4) = 0"
+        ),
+        (
+            "101 socket(AF_INET6, SOCK_STREAM|SOCK_CLOEXEC, IPPROTO_IP) = 3\n"
+            "101 bind(3, {sa_family=AF_INET6, sin6_port=htons(443), "
+            'inet_pton(AF_INET6, "::1", &sin6_addr)}, 28) = 0'
+        ),
+        (
+            "101 socket(AF_INET6, SOCK_STREAM|SOCK_CLOEXEC, IPPROTO_IP) = 3\n"
+            "101 bind(3, {sa_family=AF_INET6, sin6_port=htons(0), "
+            "sin6_flowinfo=htonl(1), "
+            'inet_pton(AF_INET6, "::1", &sin6_addr)}, 28) = 0'
+        ),
+        (
+            "101 socket(AF_INET6, SOCK_STREAM|SOCK_CLOEXEC, IPPROTO_IP) = 3\n"
+            "101 bind(3, {sa_family=AF_INET6, sin6_port=htons(0), "
+            'inet_pton(AF_INET6, "::1", &sin6_addr)}, 28) = 0'
+        ),
+        (
+            "101 socket(AF_INET6, SOCK_STREAM|SOCK_CLOEXEC, IPPROTO_IP) = 3\n"
+            "101 bind(3, {sa_family=AF_INET6, sin6_port=htons(0), "
+            "sin6_flowinfo=htonl(0), "
+            'inet_pton(AF_INET6, "::1", &sin6_addr), sin6_scope_id=0, '
+            "unknown=1}, 28) = 0"
+        ),
+        (
+            "101 socket(AF_INET6, SOCK_STREAM|SOCK_CLOEXEC, IPPROTO_IP) = 3\n"
+            "101 bind(3, {sa_family=AF_INET6, sin6_port=htons(0), "
+            'inet_pton(AF_INET6, "2001:db8::1", &sin6_addr)}, 28) = 0'
+        ),
+        (
+            "101 socket(AF_INET6, SOCK_STREAM|SOCK_CLOEXEC, IPPROTO_IP) = 3\n"
+            "101 bind(4, {sa_family=AF_INET6, sin6_port=htons(0), "
+            'inet_pton(AF_INET6, "::1", &sin6_addr)}, 28) = 0'
+        ),
+        (
+            "101 socket(AF_INET6, SOCK_STREAM|SOCK_CLOEXEC, IPPROTO_IP) = 3\n"
+            "101 bind(3, {sa_family=AF_INET6, sin6_port=htons(0), "
+            'inet_pton(AF_INET6, "::1", &sin6_addr)}, 28) = 0\n'
+            "101 bind(3, {sa_family=AF_INET6, sin6_port=htons(0), "
+            'inet_pton(AF_INET6, "::1", &sin6_addr)}, 28) = 0'
+        ),
+        (
+            "101 socket(AF_INET6, SOCK_STREAM|SOCK_CLOEXEC, IPPROTO_IP) = 3\n"
+            "101 bind(3, {sa_family=AF_INET6, sin6_port=htons(0), "
+            'inet_pton(AF_INET6, "::1", &sin6_addr)}, 28) = 0\n'
+            "101 listen(3, 1) = 0"
+        ),
+    ],
+)
+def test_strace_audit_rejects_widened_ipv6_probe(tmp_path: Path, network_block: str) -> None:
+    node = (tmp_path / "node").resolve()
+    trace = tmp_path / "inspector.strace.log"
+    trace.write_text(
+        f'101 execve("{node}", ["{node}"], 0x0) = 0\n{network_block}\n',
+        encoding="utf-8",
+    )
+    with pytest.raises(gate.GateError, match="strace"):
+        gate._validate_strace(trace, {node})
+
+
+def test_strace_audit_rejects_cross_pid_fd_identity_collision(tmp_path: Path) -> None:
+    node = (tmp_path / "node").resolve()
+    trace = tmp_path / "inspector.strace.log"
+    trace.write_text(
+        f'101 execve("{node}", ["{node}"], 0x0) = 0\n'
+        "101 socket(AF_INET6, SOCK_STREAM|SOCK_CLOEXEC, IPPROTO_IP) = 3\n"
+        "102 socket(AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC, 0) = 3\n"
+        "102 bind(3, {sa_family=AF_INET6, sin6_port=htons(0), "
+        'sin6_flowinfo=htonl(0), inet_pton(AF_INET6, "::1", &sin6_addr), '
+        "sin6_scope_id=0}, 28) = 0\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(gate.GateError, match="strace"):
+        gate._validate_strace(trace, {node})
 
 
 @pytest.mark.parametrize(

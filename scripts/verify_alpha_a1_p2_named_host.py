@@ -956,6 +956,11 @@ _LOCAL_SOCKETPAIR = re.compile(
     r"(?P<family>AF_LOCAL|AF_UNIX), (?P<type>[^,]+), 0, "
     r"\[(?P<first>\d+), (?P<second>\d+)\]"
 )
+_PASSIVE_IPV6_LOOPBACK_BIND = re.compile(
+    r"\d+(?:<.*?>)?, \{sa_family=AF_INET6, sin6_port=htons\(0\), "
+    r"sin6_flowinfo=htonl\(0\), inet_pton\(AF_INET6, \"::1\", &sin6_addr\), "
+    r"sin6_scope_id=0\}, 28"
+)
 _SOCKADDR_FAMILY = re.compile(r"\bsa_family=(?P<family>AF_[A-Z0-9_]+)\b")
 _ALLOWED_INET_SOCKET_BASE_TYPES = {"SOCK_DGRAM", "SOCK_STREAM"}
 _ALLOWED_INET_SOCKET_FLAGS = {"SOCK_CLOEXEC", "SOCK_NONBLOCK"}
@@ -992,21 +997,33 @@ class StraceNetworkCall:
     result: str
 
 
-def _is_addressless_inet_socket_creation(call: StraceNetworkCall) -> bool:
+@dataclass(frozen=True)
+class SocketIdentity:
+    """Family, base type and protocol observed at socket creation."""
+
+    family: str
+    base_type: str
+    protocol: str
+
+
+def _inet_socket_identity(call: StraceNetworkCall) -> SocketIdentity | None:
     if call.name != "socket":
-        return False
+        return None
     match = _ADDRESSLESS_INET_SOCKET.fullmatch(call.arguments)
     if match is None:
-        return False
+        return None
     type_tokens = match.group("type").split("|")
     base_types = set(type_tokens) & _ALLOWED_INET_SOCKET_BASE_TYPES
     flags = set(type_tokens) - base_types
     if len(base_types) != 1 or len(type_tokens) != len(set(type_tokens)):
-        return False
+        return None
     if not flags <= _ALLOWED_INET_SOCKET_FLAGS:
-        return False
+        return None
     base_type = next(iter(base_types))
-    return match.group("protocol") in _ALLOWED_INET_SOCKET_PROTOCOLS[base_type]
+    protocol = match.group("protocol")
+    if protocol not in _ALLOWED_INET_SOCKET_PROTOCOLS[base_type]:
+        return None
+    return SocketIdentity(match.group("family"), base_type, protocol)
 
 
 def _is_explicit_local_socket_creation(call: StraceNetworkCall) -> bool:
@@ -1105,6 +1122,28 @@ def _local_socketpair_fds(call: StraceNetworkCall) -> tuple[int, int] | None:
     return int(match.group("first")), int(match.group("second"))
 
 
+def _is_passive_ipv6_loopback_bind(
+    call: StraceNetworkCall,
+    families: set[str],
+    identities: set[SocketIdentity],
+) -> bool:
+    if (
+        call.name != "bind"
+        or call.result != "0"
+        or families != {"AF_INET6"}
+        or len(identities) != 1
+    ):
+        return False
+    identity = next(iter(identities))
+    if (
+        identity.family != "AF_INET6"
+        or identity.base_type != "SOCK_STREAM"
+        or identity.protocol not in {"0", "IPPROTO_IP", "IPPROTO_TCP"}
+    ):
+        return False
+    return _PASSIVE_IPV6_LOOPBACK_BIND.fullmatch(call.arguments) is not None
+
+
 def _validate_strace(path: Path, allowed_execs: set[Path]) -> dict[str, Any]:
     _require(path.is_file() and path.stat().st_size > 0, "strace audit is missing")
     try:
@@ -1117,6 +1156,9 @@ def _validate_strace(path: Path, allowed_execs: set[Path]) -> dict[str, Any]:
     forbidden_network_calls: list[StraceNetworkCall] = []
     fd_families: dict[tuple[int, int], set[str]] = {}
     global_fd_families: dict[int, set[str]] = {}
+    fd_identities: dict[tuple[int, int], set[SocketIdentity]] = {}
+    global_fd_identities: dict[int, set[SocketIdentity]] = {}
+    passive_ipv6_loopback_bind_probes = 0
 
     def record_fd_family(call: StraceNetworkCall, fd: int, families: set[str]) -> None:
         fd_families.setdefault((call.pid, fd), set()).update(families)
@@ -1128,12 +1170,24 @@ def _validate_strace(path: Path, allowed_execs: set[Path]) -> dict[str, Any]:
             return set()
         return fd_families.get((call.pid, fd), global_fd_families.get(fd, set()))
 
+    def record_fd_identity(call: StraceNetworkCall, fd: int, identity: SocketIdentity) -> None:
+        fd_identities.setdefault((call.pid, fd), set()).add(identity)
+        global_fd_identities.setdefault(fd, set()).add(identity)
+
+    def observed_fd_identities(call: StraceNetworkCall) -> set[SocketIdentity]:
+        fd = _first_fd_argument(call)
+        if fd is None:
+            return set()
+        return fd_identities.get((call.pid, fd), global_fd_identities.get(fd, set()))
+
     for call in network_calls:
-        if _is_addressless_inet_socket_creation(call):
+        inet_identity = _inet_socket_identity(call)
+        if inet_identity is not None:
             addressless_socket_calls.append(call)
             fd = _returned_fd(call)
             if fd is not None:
-                record_fd_family(call, fd, {call.arguments.partition(",")[0]})
+                record_fd_family(call, fd, {inet_identity.family})
+                record_fd_identity(call, fd, inet_identity)
             continue
         if _is_explicit_local_socket_creation(call):
             explicit_local_calls.append(call)
@@ -1147,6 +1201,22 @@ def _validate_strace(path: Path, allowed_execs: set[Path]) -> dict[str, Any]:
                     record_fd_family(call, pair_fd, {family})
             continue
         if call.name in {"getsockname", "getsockopt"}:
+            continue
+        if call.name == "setsockopt":
+            families = observed_fd_families(call)
+            if families and families <= _LOCAL_SOCKET_FAMILIES:
+                explicit_local_calls.append(call)
+                continue
+        if (
+            call.name == "bind"
+            and passive_ipv6_loopback_bind_probes == 0
+            and _is_passive_ipv6_loopback_bind(
+                call,
+                observed_fd_families(call),
+                observed_fd_identities(call),
+            )
+        ):
+            passive_ipv6_loopback_bind_probes += 1
             continue
         if call.name in _DESTINATION_OR_TRAFFIC_SYSCALLS:
             sockaddr_families = set(_SOCKADDR_FAMILY.findall(call.arguments))
@@ -1180,6 +1250,7 @@ def _validate_strace(path: Path, allowed_execs: set[Path]) -> dict[str, Any]:
         "explicit_local_socket_syscalls": len(explicit_local_calls),
         "forbidden_network_syscalls": 0,
         "network_syscalls_observed": len(network_calls),
+        "passive_ipv6_loopback_bind_probes": passive_ipv6_loopback_bind_probes,
         "process_audit_lines": len(lines),
     }
 

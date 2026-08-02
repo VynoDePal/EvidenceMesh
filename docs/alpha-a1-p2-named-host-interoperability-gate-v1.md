@@ -98,8 +98,12 @@ explicitly local. Any destination or traffic syscall without a decoded local
 Unix/Netlink `sockaddr`, any raw IPv4/IPv6 socket, any packet/XDP-family socket,
 or any incomplete, resumed, malformed or non-UTF-8 network trace fails the gate.
 The audit tracks socket families by process and file descriptor so local
-Netlink calls with a null address remain attributable. Mutating `setsockopt`
-calls are not needed by this journey and fail closed.
+Netlink calls with a null address remain attributable. `setsockopt` is accepted
+only on a descriptor already proven Unix/Netlink local. The locked dependency
+stack also performs one `urllib3` IPv6 capability probe at import: one tracked
+IPv6 STREAM socket may bind `::1` at port zero and must then close without
+`listen`, `connect`, `accept`, send or receive. This passive local bind moves no
+bytes and is reported separately from the zero runtime-network-request budget.
 
 These controls are API blocking plus syscall observation, not an operating-
 system network namespace. The runtime descriptor, original template, package
