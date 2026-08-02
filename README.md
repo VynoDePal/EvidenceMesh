@@ -182,10 +182,14 @@ configuration warning, private networks disabled and DNS pinning enabled.
 `ready` describes local configuration; it does not prove that Wikipedia is
 reachable or that a live search will succeed. The A1-P1 gate validated this
 headless path with the official Python MCP SDK on Ubuntu 24.04 and did not test
-a GUI host, macOS or native Windows. FastMCP diagnostics remain enabled on
-stderr; MCP JSON-RPC remains isolated on stdout.
+a GUI host, macOS or native Windows. A1-P2 additionally loaded a private copy
+of the same descriptor through the official MCP Inspector CLI 2.0.0 and called
+`health` in one Ubuntu STDIO session. MCP Inspector is a developer testing
+client, not an AI application host: this does not establish compatibility with
+Claude Desktop, Cursor, VS Code, ChatGPT or every MCP client. FastMCP
+diagnostics remain enabled on stderr; MCP JSON-RPC remains isolated on stdout.
 
-### Streamable HTTP (advanced; outside A1-P1)
+### Streamable HTTP (advanced; outside A1-P2)
 
 ```bash
 .venv/bin/evidencemesh serve --transport http --host 127.0.0.1 --port 8000

@@ -130,6 +130,7 @@ jobs:
             --python "$python_path"
           "$python_path" -m json.tool "$A1_OUTPUT" >/dev/null
       - name: Verify official MCP SDK first-run journey
+        if: github.event.pull_request.head.sha == 'b967114a177eec00a7ff5f03bcf1169e04b2faac'
         env:
           A1_EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
           A1_P0_OUTPUT: /tmp/evidencemesh-alpha-a1-p0-clean-room/runtime/receipt.json
@@ -146,6 +147,35 @@ jobs:
             --descriptor-template examples/evidencemesh.mcp.json \
             --output "$A1_P1_OUTPUT"
           "$python_path" -m json.tool "$A1_P1_OUTPUT" >/dev/null
+      - name: Provision canonical Node 22.20.0
+        if: github.event.pull_request.head.sha != 'b967114a177eec00a7ff5f03bcf1169e04b2faac'
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22.20.0"
+          check-latest: false
+      - name: Verify MCP Inspector CLI interoperability
+        if: github.event.pull_request.head.sha != 'b967114a177eec00a7ff5f03bcf1169e04b2faac'
+        env:
+          A1_EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+          A1_P0_OUTPUT: /tmp/evidencemesh-alpha-a1-p0-clean-room/runtime/receipt.json
+          A1_P2_OUTPUT: /tmp/evidencemesh-alpha-a1-p0-clean-room/p2-runtime/gate-receipt.json
+          A1_WORK_ROOT: /tmp/evidencemesh-alpha-a1-p0-clean-room
+          NPM_CONFIG_CACHE: /tmp/evidencemesh-alpha-a1-p0-clean-room/p2-npm-cache
+          NPM_CONFIG_FETCH_RETRIES: "0"
+          NPM_CONFIG_UPDATE_NOTIFIER: "false"
+        shell: bash
+        run: |
+          set -euo pipefail
+          python_path="$(uv python find 3.11)"
+          "$python_path" scripts/verify_alpha_a1_p2_named_host.py \
+            --work-root "$A1_WORK_ROOT" \
+            --p0-receipt "$A1_P0_OUTPUT" \
+            --expected-head "$A1_EXPECTED_HEAD" \
+            --output "$A1_P2_OUTPUT" \
+            --node "$(command -v node)" \
+            --npm "$(command -v npm)" \
+            --strace "$(command -v strace)"
+          "$python_path" -m json.tool "$A1_P2_OUTPUT" >/dev/null
 
   container:
     runs-on: ubuntu-latest

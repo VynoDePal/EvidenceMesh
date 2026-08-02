@@ -1,0 +1,127 @@
+{
+  "authority": {
+    "artifact_publication_allowed": false,
+    "distribution_publication_allowed": false,
+    "github_release_allowed": false,
+    "live_provider_execution_allowed": false,
+    "merge_allowed": false,
+    "model_calls_allowed": false,
+    "phase_12_allowed": false,
+    "tag_publication_allowed": false
+  },
+  "budgets": {
+    "dependency_install_attempts": 1,
+    "external_document_requests": 0,
+    "host_invocations": 1,
+    "host_timeout_seconds": 30,
+    "logical_mcp_requests_expected": 4,
+    "logical_mcp_requests_maximum": 12,
+    "maximum_total_seconds": 90,
+    "mcp_server_launch_attempts": 1,
+    "mcp_sessions": 1,
+    "mcp_tool_calls": 1,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "retries": 0,
+    "runtime_network_requests": 0,
+    "search_calls": 0
+  },
+  "candidate": {
+    "commit_sha": "145f5f923825ffeaeb485bd680bc79410ab290d1",
+    "tree_sha": "3b36c2d3970a5e3c325a2b20260daabf23d33a29",
+    "version": "0.1.0"
+  },
+  "canonical_environment": {
+    "architecture": "x86_64",
+    "node_version": "22.20.0",
+    "npm_version": "10.9.3",
+    "operating_system": "Ubuntu 24.04",
+    "python_version": "3.11",
+    "strace_required": true
+  },
+  "decision": {
+    "fail_closed": true,
+    "named_ai_host_validated": false,
+    "phase_12_authorized": false,
+    "public_release_authorized": false,
+    "quality_claim_authorized": false,
+    "v1_ready": false
+  },
+  "descriptor": {
+    "adapter_required": false,
+    "allowed_materialization": [
+      "absolute installed evidencemesh-mcp command",
+      "absolute private cache path"
+    ],
+    "format": "mcpServers STDIO descriptor",
+    "original_template_immutable": true,
+    "path": "examples/evidencemesh.mcp.json",
+    "read_only_config_mode": true,
+    "runtime_descriptor_immutable": true,
+    "template_sha256": "81f631f82166f70d81712d7e9ab82cdb3dc20b8ba592d65ba59473faf5b4295e"
+  },
+  "named_client": {
+    "classification": "official MCP developer client",
+    "cli_bundle_sha256": "bce0edfa3a72dca4d3b1f81771172ded2e1294128539c353a51e11f05871a4b6",
+    "gui_mode_executed": false,
+    "launcher_sha256": "c114e7c78afcfa01523232ae9639c3e49919952db6b8901ec7c0f49267ce0c23",
+    "name": "MCP Inspector CLI",
+    "npm_integrity": "sha512-uEoeEG7/+ZbrvccPF3EsgbfjcyJ3bWVJXT4pcZtpmDUhA0zdK4T4Tuj2oUphi2Huwl66LqVdo3Mx2PkS2SUHXA==",
+    "package": "@modelcontextprotocol/inspector",
+    "package_json_sha256": "d6be3029cd7b300575c4d54950dbcf372813055d9e14a555f5226a11ea6862d4",
+    "version": "2.0.0"
+  },
+  "prerequisite": {
+    "accepted_workflow_run_id": 30721297774,
+    "branch": "agent/evidencemesh-v0.1",
+    "commit_sha": "b967114a177eec00a7ff5f03bcf1169e04b2faac",
+    "gate": "Alpha A1-P1 MCP first-run",
+    "historical_step_rerun_required": false,
+    "tree_sha": "7477a10c89ae158a5f5ca197799b50088335d4d8"
+  },
+  "request_sequence": [
+    "initialize",
+    "logging/setLevel",
+    "tools/list",
+    "tools/call health"
+  ],
+  "runtime_guard": {
+    "node_api_blocking": true,
+    "operating_system_network_namespace_enforced": false,
+    "python_api_blocking": true,
+    "strace_external_socket_audit": true
+  },
+  "supply_chain": {
+    "dependency_acquisition_network_required": true,
+    "install_command": "npm ci --ignore-scripts --no-audit --no-fund",
+    "install_lifecycle_scripts_executed": false,
+    "lock_package_entries": 241,
+    "lock_path": "alpha/a1-p2-inspector/package-lock.json",
+    "lock_sha256": "b8c2d8cd2a8f16fcfd28dc7aedc3aae8e5baa6bf5bac508ee7b22bbd4343a33e",
+    "manifest_path": "alpha/a1-p2-inspector/package.json",
+    "manifest_sha256": "ec21ceac22f4897d454ffbf1cce610cafaf68fcfd700340300151fea68642071",
+    "npm_registry_only": true,
+    "npm_retries": 0,
+    "peer_dependency_tree_validated": true
+  },
+  "limitations": {
+    "claude_desktop_validated": false,
+    "complete_six_tool_inventory_revalidated_by_p2": false,
+    "cursor_validated": false,
+    "gui_host_validated": false,
+    "live_provider_validated": false,
+    "macos_validated": false,
+    "named_ai_host_validated": false,
+    "network_guard_scope": "node_and_python_api_blocking_plus_strace_audit",
+    "protocol_version_reobserved_by_p2": false,
+    "vscode_validated": false,
+    "windows_validated": false
+  },
+  "publication": {
+    "artifacts": 0,
+    "distributions": 0,
+    "releases": 0,
+    "tags": 0
+  },
+  "schema_version": "evidencemesh.alpha-a1-p2-named-host-policy.v1"
+}

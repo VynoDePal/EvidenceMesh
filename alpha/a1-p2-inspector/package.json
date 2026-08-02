@@ -1,0 +1,16 @@
+{
+  "name": "evidencemesh-a1-p2-inspector",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pinned MCP Inspector harness for the EvidenceMesh Alpha A1-P2 gate.",
+  "engines": {
+    "node": "22.20.0",
+    "npm": "10.9.3"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/inspector": "2.0.0"
+  },
+  "overrides": {
+    "ink-select-input": "6.2.0"
+  }
+}
