@@ -51,6 +51,7 @@ EXPECTED_INSPECTOR_FILES = {
         "bce0edfa3a72dca4d3b1f81771172ded2e1294128539c353a51e11f05871a4b6"
     ),
 }
+EXPECTED_INSPECTOR_BIN = {"mcp-inspector": "./clients/launcher/build/index.js"}
 HARNESS_RELATIVE_PATH = Path("alpha/a1-p2-inspector")
 DESCRIPTOR_RELATIVE_PATH = Path("examples/evidencemesh.mcp.json")
 DESCRIPTOR_TEMPLATE_SHA256 = "81f631f82166f70d81712d7e9ab82cdb3dc20b8ba592d65ba59473faf5b4295e"
@@ -857,7 +858,7 @@ def _validate_installed_inspector(harness: Path) -> tuple[Path, dict[str, str]]:
     manifest = _json_object(root / "package.json", "Installed Inspector manifest")
     _require(manifest.get("version") == EXPECTED_INSPECTOR_VERSION, "Installed Inspector drifted")
     _require(
-        manifest.get("bin") == {"mcp-inspector": "clients/launcher/build/index.js"},
+        manifest.get("bin") == EXPECTED_INSPECTOR_BIN,
         "Installed Inspector launcher drifted",
     )
     return root / "clients" / "launcher" / "build" / "index.js", observed

@@ -202,6 +202,7 @@ def test_verifier_pins_exact_p1_checkpoint_and_eight_file_scope() -> None:
         ),
         "clients/cli/build/index.js": INSPECTOR_CLI_SHA256,
     }
+    assert gate.EXPECTED_INSPECTOR_BIN == {"mcp-inspector": "./clients/launcher/build/index.js"}
     assert gate.EXPECTED_REQUEST_METHODS == [
         "initialize",
         "logging/setLevel",
