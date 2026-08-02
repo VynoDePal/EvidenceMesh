@@ -91,7 +91,15 @@ preload blocks common Node network APIs. Explicit Inspector `-e` harness
 overrides load a Python `sitecustomize` guard in the server; it blocks common
 Python socket and DNS APIs and records request classes without changing MCP
 messages. `strace -f` independently audits process creation and network syscalls.
-Any IPv4, IPv6 or packet-family runtime socket attempt fails the gate.
+An addressless IPv4 or IPv6 `SOCK_STREAM`/`SOCK_DGRAM` allocation is audited but
+is not classified as a network request because it has no destination and moves
+no bytes. Unix-domain IPC and the Linux Netlink kernel control plane are
+explicitly local. Any destination or traffic syscall without a decoded local
+Unix/Netlink `sockaddr`, any raw IPv4/IPv6 socket, any packet/XDP-family socket,
+or any incomplete, resumed, malformed or non-UTF-8 network trace fails the gate.
+The audit tracks socket families by process and file descriptor so local
+Netlink calls with a null address remain attributable. Mutating `setsockopt`
+calls are not needed by this journey and fail closed.
 
 These controls are API blocking plus syscall observation, not an operating-
 system network namespace. The runtime descriptor, original template, package

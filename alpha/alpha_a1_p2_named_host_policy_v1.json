@@ -86,9 +86,17 @@
     "tools/call health"
   ],
   "runtime_guard": {
+    "addressless_inet_socket_creation_is_network_request": false,
+    "ambiguous_network_syscalls_allowed": false,
+    "destination_or_traffic_requires_explicit_local_sockaddr": true,
+    "local_unix_and_netlink_syscalls_allowed": true,
     "node_api_blocking": true,
     "operating_system_network_namespace_enforced": false,
+    "packet_xdp_and_raw_inet_sockets_allowed": false,
     "python_api_blocking": true,
+    "setsockopt_allowed": false,
+    "strace_fd_family_tracking": true,
+    "strace_family_classification": "syscall_and_sockaddr",
     "strace_external_socket_audit": true
   },
   "supply_chain": {

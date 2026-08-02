@@ -146,9 +146,17 @@ def test_policy_freezes_one_shot_budgets_and_guard_limitations() -> None:
         "search_calls": 0,
     }
     assert policy["runtime_guard"] == {
+        "addressless_inet_socket_creation_is_network_request": False,
+        "ambiguous_network_syscalls_allowed": False,
+        "destination_or_traffic_requires_explicit_local_sockaddr": True,
+        "local_unix_and_netlink_syscalls_allowed": True,
         "node_api_blocking": True,
         "operating_system_network_namespace_enforced": False,
+        "packet_xdp_and_raw_inet_sockets_allowed": False,
         "python_api_blocking": True,
+        "setsockopt_allowed": False,
+        "strace_fd_family_tracking": True,
+        "strace_family_classification": "syscall_and_sockaddr",
         "strace_external_socket_audit": True,
     }
     assert policy["publication"] == {
@@ -476,27 +484,99 @@ def test_request_trace_rejects_budget_or_sequence_drift(
         gate._validate_request_trace(trace)
 
 
-def test_strace_audit_rejects_network_or_unexpected_execve(tmp_path: Path) -> None:
+def test_strace_audit_accepts_only_addressless_inet_socket_creation(tmp_path: Path) -> None:
     node = (tmp_path / "node").resolve()
     trace = tmp_path / "inspector.strace.log"
     trace.write_text(
-        f'101 execve("{node}", ["{node}"], 0x0) = 0\n101 +++ exited with 0 +++\n',
+        f'101 execve("{node}", ["{node}", "AF_INET"], 0x0) = 0\n'
+        "101 socket(AF_INET, SOCK_DGRAM|SOCK_CLOEXEC, IPPROTO_IP) = 3\n"
+        "101 socket(AF_INET6, SOCK_STREAM|SOCK_NONBLOCK|SOCK_CLOEXEC, IPPROTO_TCP) "
+        "= -1 EAFNOSUPPORT (Address family not supported by protocol)\n"
+        "101 socket(AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC, 0) = 4\n"
+        "101 +++ exited with 0 +++\n",
         encoding="utf-8",
     )
     assert gate._validate_strace(trace, {node}) == {
+        "addressless_inet_socket_creations": 2,
         "execve_count": 1,
+        "explicit_local_socket_syscalls": 1,
         "forbidden_network_syscalls": 0,
-        "process_audit_lines": 2,
+        "network_syscalls_observed": 3,
+        "process_audit_lines": 5,
     }
 
+
+def test_strace_audit_allows_explicit_unix_and_netlink_control_plane(tmp_path: Path) -> None:
+    node = (tmp_path / "node").resolve()
+    trace = tmp_path / "inspector.strace.log"
     trace.write_text(
         f'101 execve("{node}", ["{node}"], 0x0) = 0\n'
-        "101 socket(AF_INET, SOCK_STREAM, IPPROTO_TCP) = -1 EPERM\n",
+        "101 socketpair(AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC, 0, [3, 4]) = 0\n"
+        "101 socket(AF_NETLINK, SOCK_RAW|SOCK_CLOEXEC, NETLINK_ROUTE) = 5\n"
+        "101 bind(5, {sa_family=AF_NETLINK, nl_pid=0}, 12) = 0\n"
+        "101 sendto(5, [{rtm_family=AF_INET}], 20, 0, NULL, 0) = 20\n"
+        "101 recvfrom(5, [{ifa_family=AF_INET6}], 48, 0, NULL, NULL) = 48\n",
         encoding="utf-8",
     )
-    with pytest.raises(gate.GateError, match="network syscall"):
+    assert gate._validate_strace(trace, {node}) == {
+        "addressless_inet_socket_creations": 0,
+        "execve_count": 1,
+        "explicit_local_socket_syscalls": 5,
+        "forbidden_network_syscalls": 0,
+        "network_syscalls_observed": 5,
+        "process_audit_lines": 6,
+    }
+
+
+@pytest.mark.parametrize(
+    "network_line",
+    [
+        "101 socket(AF_PACKET, SOCK_RAW|SOCK_CLOEXEC, htons(ETH_P_ALL)) = 3",
+        "101 socket(AF_XDP, SOCK_RAW|SOCK_CLOEXEC, 0) = 3",
+        "101 socket(2, SOCK_DGRAM|SOCK_CLOEXEC, 0) = 3",
+        "101 socket(AF_INET, SOCK_RAW|SOCK_CLOEXEC, IPPROTO_RAW) = 3",
+        "101 socket(AF_INET, SOCK_DGRAM|SOCK_CLOEXEC, 253) = 3",
+        "101 socket(AF_INET, SOCK_DGRAM|SOCK_CLOEXEC, IPPROTO_TCP) = 3",
+        "101 socket(AF_INET6, SOCK_STREAM|SOCK_CLOEXEC, IPPROTO_UDP) = 3",
+        "101 socket(AF_INET, SOCK_DGRAM|SOCK_CLOEXEC, IPPROTO_IP <unfinished ...>",
+        "101 <... connect resumed>{sa_family=AF_INET}, 16) = 0",
+        "101 connect(3, {sa_family=AF_INET, sin_port=htons(443)}, 16) = 0",
+        "101 connect(3, 0x7fff0000, 16) = -1 EFAULT (Bad address)",
+        "101 bind(3, {sa_family=AF_INET, sin_port=htons(0)}, 16) = 0",
+        '101 sendto(3, "x", 1, 0, {sa_family=AF_INET6}, 28) = 1',
+        '101 sendmsg(3, {msg_name=NULL, msg_iov=[{iov_base="x"}]}, 0) = 1',
+        '101 recvfrom(3, "x", 1, 0, {sa_family=AF_INET}, [16]) = 1',
+        "101 setsockopt(3, SOL_IP, IP_ADD_MEMBERSHIP, {imr_interface=0}, 8) = 0",
+        "101 setsockopt(3, SOL_SOCKET, SO_UNKNOWN_OPTION, [1], 4) = 0",
+        "101 listen(3, 128) = 0",
+        "101 connect(3, {sa_family=AF_INET}, 16) = 0; socket(AF_INET, SOCK_DGRAM, IPPROTO_IP) = 4",
+        "101 socketpair(AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC, 0, [3, 4]) = ???",
+        "101 socketpair(AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC, 0, 0x7fff0000) = 0",
+        "101 sendto(5, [{rtm_family=AF_INET}], 20, 0, {sa_family=AF_NETLINK}, 12) = ???",
+    ],
+)
+def test_strace_audit_rejects_external_socket_or_traffic(tmp_path: Path, network_line: str) -> None:
+    node = (tmp_path / "node").resolve()
+    trace = tmp_path / "inspector.strace.log"
+    trace.write_text(
+        f'101 execve("{node}", ["{node}"], 0x0) = 0\n{network_line}\n',
+        encoding="utf-8",
+    )
+    with pytest.raises(gate.GateError, match="strace"):
         gate._validate_strace(trace, {node})
 
+
+def test_strace_audit_rejects_non_utf8_trace(tmp_path: Path) -> None:
+    node = (tmp_path / "node").resolve()
+    trace = tmp_path / "inspector.strace.log"
+    trace.write_bytes(f'101 execve("{node}", ["{node}"], 0x0) = 0\n'.encode() + b"\xff")
+    with pytest.raises(gate.GateError, match="valid UTF-8"):
+        gate._validate_strace(trace, {node})
+
+
+def test_strace_audit_rejects_unexpected_execve(tmp_path: Path) -> None:
+    node = (tmp_path / "node").resolve()
+    trace = tmp_path / "inspector.strace.log"
     unexpected = (tmp_path / "unexpected").resolve()
     trace.write_text(
         f'101 execve("{node}", ["{node}"], 0x0) = 0\n'

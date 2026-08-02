@@ -913,17 +913,259 @@ def _validate_request_trace(path: Path) -> dict[str, Any]:
 
 
 _EXECVE = re.compile(r'\bexecve\("([^"]+)"')
+_NETWORK_SYSCALL_NAMES = {
+    "accept",
+    "accept4",
+    "bind",
+    "connect",
+    "getpeername",
+    "getsockname",
+    "getsockopt",
+    "listen",
+    "recvmmsg",
+    "recvmmsg_time64",
+    "recvfrom",
+    "recvmsg",
+    "sendmmsg",
+    "sendmsg",
+    "sendto",
+    "setsockopt",
+    "shutdown",
+    "socket",
+    "socketpair",
+}
+_NETWORK_SYSCALL = re.compile(
+    r"\b(?P<name>" + "|".join(sorted(_NETWORK_SYSCALL_NAMES, key=len, reverse=True)) + r")\("
+)
+_RESUMED_NETWORK_SYSCALL = re.compile(
+    r"<\.\.\. (?P<name>"
+    + "|".join(sorted(_NETWORK_SYSCALL_NAMES, key=len, reverse=True))
+    + r") resumed>"
+)
+_STRACE_SYSCALL_LINE = re.compile(
+    r"^(?:\[pid\s+)?(?P<pid>\d+)\]?\s+(?P<name>[a-z][a-z0-9_]*)"
+    r"\((?P<args>.*)\)\s+=\s+(?P<result>.+)$"
+)
+_ADDRESSLESS_INET_SOCKET = re.compile(
+    r"(?P<family>AF_INET6?), (?P<type>[^,]+), (?P<protocol>[^)]+)"
+)
+_STRACE_RESULT = re.compile(r"\d+(?:<.*>)?|-1 [A-Z0-9_]+(?: \([^)]*\))?")
+_RETURNED_FD = re.compile(r"(?P<fd>\d+)(?:<.*>)?")
+_FIRST_FD_ARGUMENT = re.compile(r"^(?P<fd>\d+)(?:<.*>)?(?:,|$)")
+_LOCAL_SOCKETPAIR = re.compile(
+    r"(?P<family>AF_LOCAL|AF_UNIX), (?P<type>[^,]+), 0, "
+    r"\[(?P<first>\d+), (?P<second>\d+)\]"
+)
+_SOCKADDR_FAMILY = re.compile(r"\bsa_family=(?P<family>AF_[A-Z0-9_]+)\b")
+_ALLOWED_INET_SOCKET_BASE_TYPES = {"SOCK_DGRAM", "SOCK_STREAM"}
+_ALLOWED_INET_SOCKET_FLAGS = {"SOCK_CLOEXEC", "SOCK_NONBLOCK"}
+_ALLOWED_INET_SOCKET_PROTOCOLS = {
+    "SOCK_DGRAM": {"0", "IPPROTO_IP", "IPPROTO_UDP"},
+    "SOCK_STREAM": {"0", "IPPROTO_IP", "IPPROTO_TCP"},
+}
+_LOCAL_SOCKET_FAMILIES = {"AF_LOCAL", "AF_NETLINK", "AF_UNIX"}
+_DESTINATION_OR_TRAFFIC_SYSCALLS = {
+    "accept",
+    "accept4",
+    "bind",
+    "connect",
+    "getpeername",
+    "listen",
+    "recvmmsg",
+    "recvmmsg_time64",
+    "recvfrom",
+    "recvmsg",
+    "sendmmsg",
+    "sendmsg",
+    "sendto",
+    "shutdown",
+}
+
+
+@dataclass(frozen=True)
+class StraceNetworkCall:
+    """One complete network syscall decoded from the strace audit."""
+
+    pid: int
+    name: str
+    arguments: str
+    result: str
+
+
+def _is_addressless_inet_socket_creation(call: StraceNetworkCall) -> bool:
+    if call.name != "socket":
+        return False
+    match = _ADDRESSLESS_INET_SOCKET.fullmatch(call.arguments)
+    if match is None:
+        return False
+    type_tokens = match.group("type").split("|")
+    base_types = set(type_tokens) & _ALLOWED_INET_SOCKET_BASE_TYPES
+    flags = set(type_tokens) - base_types
+    if len(base_types) != 1 or len(type_tokens) != len(set(type_tokens)):
+        return False
+    if not flags <= _ALLOWED_INET_SOCKET_FLAGS:
+        return False
+    base_type = next(iter(base_types))
+    return match.group("protocol") in _ALLOWED_INET_SOCKET_PROTOCOLS[base_type]
+
+
+def _is_explicit_local_socket_creation(call: StraceNetworkCall) -> bool:
+    if call.name not in {"socket", "socketpair"}:
+        return False
+    family, separator, remainder = call.arguments.partition(", ")
+    if not separator or family not in _LOCAL_SOCKET_FAMILIES:
+        return False
+    if call.name == "socketpair":
+        match = _LOCAL_SOCKETPAIR.fullmatch(call.arguments)
+        if match is None or call.result != "0":
+            return False
+        type_value = match.group("type")
+        tokens = type_value.split("|")
+        flags = set(tokens) & _ALLOWED_INET_SOCKET_FLAGS
+        base_types = set(tokens) - flags
+        return (
+            len(base_types) == 1
+            and len(tokens) == len(set(tokens))
+            and next(iter(base_types)) in {"SOCK_DGRAM", "SOCK_SEQPACKET", "SOCK_STREAM"}
+        )
+    type_value, separator, protocol = remainder.partition(", ")
+    if not separator:
+        return False
+    tokens = type_value.split("|")
+    flags = set(tokens) & _ALLOWED_INET_SOCKET_FLAGS
+    base_types = set(tokens) - flags
+    if len(base_types) != 1 or len(tokens) != len(set(tokens)):
+        return False
+    base_type = next(iter(base_types))
+    if family in {"AF_LOCAL", "AF_UNIX"}:
+        return base_type in {"SOCK_DGRAM", "SOCK_SEQPACKET", "SOCK_STREAM"} and protocol == "0"
+    return base_type in {"SOCK_DGRAM", "SOCK_RAW"} and protocol in {
+        "0",
+        "NETLINK_GENERIC",
+        "NETLINK_ROUTE",
+    }
+
+
+def _parse_strace_network_calls(lines: list[str]) -> list[StraceNetworkCall]:
+    calls: list[StraceNetworkCall] = []
+    for line in lines:
+        parsed = _STRACE_SYSCALL_LINE.fullmatch(line)
+        if parsed is not None:
+            name = parsed.group("name")
+            if name not in _NETWORK_SYSCALL_NAMES:
+                continue
+            _require(
+                len(list(_NETWORK_SYSCALL.finditer(line))) == 1 and "<unfinished ...>" not in line,
+                f"strace network trace is ambiguous: {name}",
+            )
+            calls.append(
+                StraceNetworkCall(
+                    pid=int(parsed.group("pid")),
+                    name=name,
+                    arguments=parsed.group("args"),
+                    result=parsed.group("result"),
+                )
+            )
+            _require(
+                _STRACE_RESULT.fullmatch(parsed.group("result")) is not None,
+                f"strace network syscall result is malformed: {name}",
+            )
+            continue
+        resumed = _RESUMED_NETWORK_SYSCALL.search(line)
+        mentioned = _NETWORK_SYSCALL.search(line)
+        _require(
+            resumed is None and mentioned is None,
+            "strace network trace contains an incomplete or unparsable syscall",
+        )
+    return calls
+
+
+def _network_syscall_class(call: StraceNetworkCall) -> str:
+    if call.name in {"socket", "socketpair"}:
+        family = call.arguments.partition(",")[0].strip() or "unknown"
+        return f"{call.name}:{family}"
+    families = sorted(set(_SOCKADDR_FAMILY.findall(call.arguments)))
+    return f"{call.name}:{'/'.join(families) if families else 'ambiguous'}"
+
+
+def _returned_fd(call: StraceNetworkCall) -> int | None:
+    match = _RETURNED_FD.fullmatch(call.result)
+    return int(match.group("fd")) if match is not None else None
+
+
+def _first_fd_argument(call: StraceNetworkCall) -> int | None:
+    match = _FIRST_FD_ARGUMENT.search(call.arguments)
+    return int(match.group("fd")) if match is not None else None
+
+
+def _local_socketpair_fds(call: StraceNetworkCall) -> tuple[int, int] | None:
+    match = _LOCAL_SOCKETPAIR.fullmatch(call.arguments)
+    if match is None or call.result != "0":
+        return None
+    return int(match.group("first")), int(match.group("second"))
 
 
 def _validate_strace(path: Path, allowed_execs: set[Path]) -> dict[str, Any]:
     _require(path.is_file() and path.stat().st_size > 0, "strace audit is missing")
-    lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
-    forbidden_network_lines = [
-        line
-        for line in lines
-        if any(family in line for family in ("AF_INET", "AF_INET6", "AF_PACKET"))
-    ]
-    _require(not forbidden_network_lines, "strace observed a non-local network syscall")
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except UnicodeDecodeError as exc:
+        raise GateError("strace network trace is not valid UTF-8") from exc
+    network_calls = _parse_strace_network_calls(lines)
+    addressless_socket_calls: list[StraceNetworkCall] = []
+    explicit_local_calls: list[StraceNetworkCall] = []
+    forbidden_network_calls: list[StraceNetworkCall] = []
+    fd_families: dict[tuple[int, int], set[str]] = {}
+    global_fd_families: dict[int, set[str]] = {}
+
+    def record_fd_family(call: StraceNetworkCall, fd: int, families: set[str]) -> None:
+        fd_families.setdefault((call.pid, fd), set()).update(families)
+        global_fd_families.setdefault(fd, set()).update(families)
+
+    def observed_fd_families(call: StraceNetworkCall) -> set[str]:
+        fd = _first_fd_argument(call)
+        if fd is None:
+            return set()
+        return fd_families.get((call.pid, fd), global_fd_families.get(fd, set()))
+
+    for call in network_calls:
+        if _is_addressless_inet_socket_creation(call):
+            addressless_socket_calls.append(call)
+            fd = _returned_fd(call)
+            if fd is not None:
+                record_fd_family(call, fd, {call.arguments.partition(",")[0]})
+            continue
+        if _is_explicit_local_socket_creation(call):
+            explicit_local_calls.append(call)
+            family = call.arguments.partition(",")[0]
+            fd = _returned_fd(call)
+            if fd is not None:
+                record_fd_family(call, fd, {family})
+            pair = _local_socketpair_fds(call)
+            if pair is not None:
+                for pair_fd in pair:
+                    record_fd_family(call, pair_fd, {family})
+            continue
+        if call.name in {"getsockname", "getsockopt"}:
+            continue
+        if call.name in _DESTINATION_OR_TRAFFIC_SYSCALLS:
+            sockaddr_families = set(_SOCKADDR_FAMILY.findall(call.arguments))
+            proven_families = sockaddr_families or observed_fd_families(call)
+            if proven_families and proven_families <= _LOCAL_SOCKET_FAMILIES:
+                explicit_local_calls.append(call)
+                fd = _first_fd_argument(call)
+                if fd is not None:
+                    record_fd_family(call, fd, proven_families)
+                accepted_fd = _returned_fd(call) if call.name in {"accept", "accept4"} else None
+                if accepted_fd is not None:
+                    record_fd_family(call, accepted_fd, proven_families)
+                continue
+        forbidden_network_calls.append(call)
+    _require(
+        not forbidden_network_calls,
+        "strace observed a destination-bearing, raw, packet-family, or ambiguous network "
+        f"syscall: {sorted({_network_syscall_class(call) for call in forbidden_network_calls})}",
+    )
     exec_paths = [
         Path(match.group(1)).resolve() for line in lines if (match := _EXECVE.search(line))
     ]
@@ -933,8 +1175,11 @@ def _validate_strace(path: Path, allowed_execs: set[Path]) -> dict[str, Any]:
         not unexpected, f"strace observed an unexpected executable: {sorted(map(str, unexpected))}"
     )
     return {
+        "addressless_inet_socket_creations": len(addressless_socket_calls),
         "execve_count": len(exec_paths),
+        "explicit_local_socket_syscalls": len(explicit_local_calls),
         "forbidden_network_syscalls": 0,
+        "network_syscalls_observed": len(network_calls),
         "process_audit_lines": len(lines),
     }
 
