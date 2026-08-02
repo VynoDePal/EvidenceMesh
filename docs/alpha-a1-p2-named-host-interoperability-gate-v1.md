@@ -128,6 +128,25 @@ health, request-sequence or identity drift; an error marker; a runtime network
 attempt; an orphaned process; or a filesystem mutation outside the declared
 ephemeral P2 and reused A1-P0 runtime paths.
 
+## Invalid diagnostic history
+
+The following public runs are retained as failed diagnostics, never accepted
+as gate evidence:
+
+- `30742640148` stopped before Inspector launch because the installed manifest
+  check omitted the launcher's published `./` path prefix;
+- `30742752978` completed the Inspector journey but a coarse syscall audit
+  classified every IPv4/IPv6 family mention as traffic;
+- `30743437520` completed the Inspector journey and exposed two passive local
+  operations that required exact classification: the locked `urllib3` IPv6
+  loopback capability bind and Node/libuv buffer tuning on Unix socket pairs;
+- `30743776406` never reached Inspector or Node because the one-shot A1-P0
+  dependency acquisition received a connection reset while fetching
+  `packaging==26.2` from `files.pythonhosted.org`.
+
+No failed run was manually rerun. Each later run is tied to a new public commit,
+and only a complete run for its exact trigger SHA can become accepted evidence.
+
 ## Decision and publication boundary
 
 A pass proves only Ubuntu STDIO interoperability with MCP Inspector CLI 2.0.0.
