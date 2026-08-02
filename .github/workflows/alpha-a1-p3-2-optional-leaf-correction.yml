@@ -1,0 +1,78 @@
+name: Alpha A1-P3.2 optional-leaf correction
+
+on:
+  pull_request:
+    types: [labeled]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: alpha-a1-p3-2-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
+  cancel-in-progress: false
+
+jobs:
+  real-host-offline:
+    name: Alpha A1-P3.2 Gemini CLI offline replay
+    if: >-
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'alpha-a1-p3-2-authorized' &&
+      github.repository == 'VynoDePal/EvidenceMesh' &&
+      github.event.pull_request.number == 1 &&
+      github.event.pull_request.draft == true &&
+      github.event.pull_request.head.repo.full_name == 'VynoDePal/EvidenceMesh' &&
+      github.event.pull_request.head.ref == 'agent/evidencemesh-v0.1'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 4
+          fetch-tags: false
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22.20.0"
+          check-latest: false
+      - name: Provision canonical Python 3.11
+        env:
+          UV_CACHE_DIR: /tmp/evidencemesh-a1-p3-2-uv-cache
+        run: uv python install 3.11
+      - name: Reproduce the frozen public-source installation
+        env:
+          A1_OUTPUT: /tmp/evidencemesh-alpha-a1-p3-2/runtime/receipt.json
+          A1_WORK_ROOT: /tmp/evidencemesh-alpha-a1-p3-2
+          UV_CACHE_DIR: /tmp/evidencemesh-a1-p3-2-uv-cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          python_path="$(uv python find 3.11)"
+          "$python_path" scripts/verify_alpha_a1_p0_installability.py \
+            --work-root "$A1_WORK_ROOT" \
+            --output "$A1_OUTPUT" \
+            --python "$python_path"
+          "$python_path" -m json.tool "$A1_OUTPUT" >/dev/null
+      - name: Execute the exact-leaf corrected Gemini CLI offline-replayed agent loop
+        env:
+          A1_EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+          A1_P0_OUTPUT: /tmp/evidencemesh-alpha-a1-p3-2/runtime/receipt.json
+          A1_P3_OUTPUT: /tmp/evidencemesh-alpha-a1-p3-2/p3-runtime/gate-receipt.json
+          A1_WORK_ROOT: /tmp/evidencemesh-alpha-a1-p3-2
+        shell: bash
+        run: |
+          set -euo pipefail
+          python_path="$(uv python find 3.11)"
+          "$python_path" -m scripts.verify_alpha_a1_p3_2_optional_leaf_correction \
+            --work-root "$A1_WORK_ROOT" \
+            --p0-receipt "$A1_P0_OUTPUT" \
+            --expected-head "$A1_EXPECTED_HEAD" \
+            --output "$A1_P3_OUTPUT" \
+            --node "$(command -v node)" \
+            --npm "$(command -v npm)" \
+            --strace "$(command -v strace)"
+          "$python_path" -m json.tool "$A1_P3_OUTPUT" >/dev/null
