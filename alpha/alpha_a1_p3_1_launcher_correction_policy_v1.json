@@ -1,0 +1,118 @@
+{
+  "authority": {
+    "distribution": false,
+    "merge": false,
+    "phase_12": false,
+    "production": false,
+    "release": false,
+    "tag": false,
+    "v1": false
+  },
+  "budgets": {
+    "corrective_commit_publications": 1,
+    "corrective_workflow_runs": 1,
+    "dependency_install_attempts": 1,
+    "external_document_requests": 0,
+    "external_model_requests": 0,
+    "historical_run_reruns": 0,
+    "host_invocations": 1,
+    "host_timeout_seconds": 60,
+    "logical_mcp_requests_expected": 5,
+    "logical_mcp_requests_maximum": 5,
+    "maximum_p3_seconds": 240,
+    "mcp_server_launches": 1,
+    "mcp_sessions": 1,
+    "mcp_tool_calls": 1,
+    "provider_calls": 0,
+    "retries": 0,
+    "runtime_network_requests": 0,
+    "search_calls": 0,
+    "synthetic_model_turns": 2,
+    "workflow_retries": 0
+  },
+  "claim": {
+    "live_gemini_model_validated": false,
+    "named_ai_application_host": "Gemini CLI",
+    "offline_replayed_agent_loop_validated": true,
+    "production_authentication_validated": false,
+    "scope": "one corrected Ubuntu headless Gemini CLI agent loop with official local response replay, one discovered EvidenceMesh health tool, and zero external model request"
+  },
+  "correction": {
+    "application_or_server_code_changed": false,
+    "entrypoint": "python -m scripts.verify_alpha_a1_p3_1_launcher_correction",
+    "failed_run_reused": false,
+    "historical_evidence_preserved": true,
+    "root_cause": "direct script execution did not place the repository root on sys.path",
+    "strategy": "new module entrypoint plus a corrective scope wrapper"
+  },
+  "decision": {
+    "alpha_a1_p3_1_passes_only_if_all_checks_pass": true,
+    "failure_is_fail_closed": true,
+    "pr_remains_draft": true
+  },
+  "entry_criteria": {
+    "authorization_label": "alpha-a1-p3-1-authorized",
+    "branch": "agent/evidencemesh-v0.1",
+    "exact_parent_commit": "38eb63ade7024ab32963f894c719fa190fe9346a",
+    "exact_parent_tree": "c21496bf690a8c2844a8957b7af12de72cf5b7ad",
+    "pull_request": 1,
+    "pull_request_draft": true,
+    "same_repository_head": true
+  },
+  "gate": "Alpha A1-P3.1 Python launcher correction and real AI host offline replay",
+  "historical_failure": {
+    "commit_sha": "38eb63ade7024ab32963f894c719fa190fe9346a",
+    "conclusion": "failure",
+    "job_id": 91490727817,
+    "p0_mcp_stdio_health": true,
+    "p0_installability_passed": true,
+    "p3_host_invocations": 0,
+    "p3_mcp_server_launches": 0,
+    "p3_npm_install_attempts": 0,
+    "reason": "ModuleNotFoundError: No module named 'scripts'",
+    "run_id": 30745671040,
+    "tree_sha": "c21496bf690a8c2844a8957b7af12de72cf5b7ad"
+  },
+  "limitations": {
+    "external_model_semantics_validated": false,
+    "gemini_api_availability_validated": false,
+    "gemini_api_quota_validated": false,
+    "gui_mode_validated": false,
+    "host_matrix_validated": false,
+    "non_ubuntu_platforms_validated": false,
+    "production_credentials_used": false,
+    "response_replay_is_a_real_model": false
+  },
+  "publication": {
+    "artifacts": 0,
+    "distributions": 0,
+    "releases": 0,
+    "tags": 0
+  },
+  "scope": {
+    "cumulative_a1_p3_paths": 13,
+    "direct_corrective_paths": {
+      ".github/workflows/alpha-a1-p3-1-launcher-correction.yml": "added",
+      "alpha/alpha_a1_p3_1_launcher_correction_policy_v1.json": "added",
+      "docs/alpha-a1-p3-1-launcher-correction-gate-v1.md": "added",
+      "scripts/verify_alpha_a1_p3_1_launcher_correction.py": "added",
+      "tests/test_alpha_a1_p3_1_launcher_correction.py": "added"
+    }
+  },
+  "schema_version": "evidencemesh.alpha-a1-p3-1-launcher-correction-policy.v1",
+  "stop_criteria": [
+    "the corrective HEAD is not a one-parent child of the preserved failed A1-P3 commit",
+    "the five-path corrective scope, twelve-path cumulative scope, ancestry, tree or immutable hash drifts",
+    "the historical failed run is rerun, retried, erased or represented as a host evaluation",
+    "a second corrective dependency installation, host invocation, MCP server, session or tool call occurs",
+    "Gemini exposes or calls a tool other than mcp_evidencemesh_health",
+    "the MCP sequence differs from the five locked requests",
+    "health is not ready at version 0.1.0 under the community profile",
+    "a third synthetic model turn is requested or either locked replay record remains unused",
+    "any external model, provider, search, document, DNS, socket or network request is attempted",
+    "the EvidenceMesh child inherits a key, token, secret, credential, password or proxy variable",
+    "the source checkout, locked settings, read-only workspace, read-only server home or explicit state inventory changes",
+    "the 60-second host timeout or 240-second P3 budget is exceeded",
+    "the corrective workflow fails; no retry or rerun is permitted"
+  ]
+}
