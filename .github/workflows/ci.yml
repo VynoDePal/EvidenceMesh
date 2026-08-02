@@ -97,7 +97,12 @@ jobs:
       github.event.pull_request.number == 1 &&
       github.event.pull_request.draft == true &&
       github.event.pull_request.head.repo.full_name == 'VynoDePal/EvidenceMesh' &&
-      github.event.pull_request.head.ref == 'agent/evidencemesh-v0.1'
+      github.event.pull_request.head.ref == 'agent/evidencemesh-v0.1' &&
+      (
+        github.event.pull_request.head.sha == 'd34abe56b95c9daccf361eb86ff1c19421085f62' ||
+        github.event.pull_request.head.sha == 'b967114a177eec00a7ff5f03bcf1169e04b2faac' ||
+        github.event.pull_request.head.sha == 'e33fb3bbfe5278ea30fe568847a1caf263de8c4d'
+      )
     runs-on: ubuntu-24.04
     timeout-minutes: 18
     steps:
@@ -148,13 +153,13 @@ jobs:
             --output "$A1_P1_OUTPUT"
           "$python_path" -m json.tool "$A1_P1_OUTPUT" >/dev/null
       - name: Provision canonical Node 22.20.0
-        if: github.event.pull_request.head.sha != 'b967114a177eec00a7ff5f03bcf1169e04b2faac'
+        if: github.event.pull_request.head.sha == 'e33fb3bbfe5278ea30fe568847a1caf263de8c4d'
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "22.20.0"
           check-latest: false
       - name: Verify MCP Inspector CLI interoperability
-        if: github.event.pull_request.head.sha != 'b967114a177eec00a7ff5f03bcf1169e04b2faac'
+        if: github.event.pull_request.head.sha == 'e33fb3bbfe5278ea30fe568847a1caf263de8c4d'
         env:
           A1_EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
           A1_P0_OUTPUT: /tmp/evidencemesh-alpha-a1-p0-clean-room/runtime/receipt.json

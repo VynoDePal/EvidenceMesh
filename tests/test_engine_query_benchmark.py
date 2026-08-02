@@ -294,6 +294,19 @@ class SlowProvider(StaticProvider):
         return []
 
 
+class QueueHoldingProvider(StaticProvider):
+    def __init__(self, name: str) -> None:
+        super().__init__(name)
+        self.entered = asyncio.Event()
+        self.release = asyncio.Event()
+
+    async def search(self, query: str, request: SearchRequest) -> list[ProviderResult]:
+        self.calls.append(query)
+        self.entered.set()
+        await self.release.wait()
+        return []
+
+
 @pytest.mark.asyncio
 async def test_search_enforces_provider_total_deadline(settings) -> None:
     short_deadline = settings.model_copy(update={"request_timeout_seconds": 0.01})
@@ -335,24 +348,38 @@ async def test_supplied_client_timeout_policy_is_not_mutated(settings) -> None:
 
 
 @pytest.mark.asyncio
-async def test_provider_deadline_includes_concurrency_queue(settings) -> None:
+async def test_provider_deadline_includes_concurrency_queue(
+    settings,
+    document: FetchedDocument,
+) -> None:
     short_deadline = settings.model_copy(
         update={
             "max_concurrency": 1,
             "request_timeout_seconds": 0.08,
         }
     )
-    engine = EvidenceMesh(short_deadline, providers=[SlowProvider("slow")])
-    response = await engine.search(
-        SearchRequest(
-            query="first query",
-            query_variants=["second query"],
-            use_cache=False,
+    provider = StaticProvider("queued")
+    holder = QueueHoldingFetcher({document.url: document})
+    engine = EvidenceMesh(short_deadline, providers=[provider], fetcher=holder)
+    holder_task = asyncio.create_task(engine.fetch(FetchRequest(url=document.url, use_cache=False)))
+    try:
+        await asyncio.wait_for(holder.entered.wait(), timeout=2.0)
+        response = await asyncio.wait_for(
+            engine.search(SearchRequest(query="queued query", use_cache=False)),
+            timeout=2.0,
         )
-    )
-    assert len(response.metadata.provider_failures) == 1
-    assert "slow:second query" in response.metadata.provider_failures
-    await engine.aclose()
+        assert set(response.metadata.provider_failures) == {"queued:queued query"}
+        assert "request deadline" in response.metadata.provider_failures["queued:queued query"]
+        assert response.metadata.provider_failure_kind_counts == {
+            "queued": {"provider_wall_timeout": 1}
+        }
+        assert provider.calls == []
+    finally:
+        holder.release.set()
+        try:
+            await asyncio.wait_for(holder_task, timeout=2.0)
+        finally:
+            await engine.aclose()
 
 
 class AcademicOnlyProvider(StaticProvider):
@@ -390,9 +417,15 @@ async def test_router_applies_query_budget_and_reports_source_family(
     await engine.aclose()
 
 
-class SlowFetcher(StaticFetcher):
+class QueueHoldingFetcher(StaticFetcher):
+    def __init__(self, documents: dict[str, FetchedDocument]) -> None:
+        super().__init__(documents)
+        self.entered = asyncio.Event()
+        self.release = asyncio.Event()
+
     async def fetch(self, url: str, *, max_chars: int = 30_000) -> FetchedDocument:
-        await asyncio.sleep(0.05)
+        self.entered.set()
+        await self.release.wait()
         return await super().fetch(url, max_chars=max_chars)
 
 
@@ -509,38 +542,37 @@ async def test_fetch_deadline_includes_concurrency_queue(
     settings,
     document: FetchedDocument,
 ) -> None:
-    second_url = "https://docs.example.org/second"
-    second_document = document.model_copy(
-        update={
-            "url": second_url,
-            "canonical_url": second_url,
-        }
-    )
     short_deadline = settings.model_copy(
         update={
             "fetch_timeout_seconds": 0.08,
             "max_concurrency": 1,
         }
     )
+    holder = QueueHoldingProvider("holder")
+    fetcher = StaticFetcher({document.url: document})
     engine = EvidenceMesh(
         short_deadline,
-        providers=[],
-        fetcher=SlowFetcher(
-            {
-                document.url: document,
-                second_url: second_document,
-            }
-        ),
+        providers=[holder],
+        fetcher=fetcher,
     )
-    outcomes = await asyncio.gather(
-        engine.fetch(FetchRequest(url=document.url, use_cache=False)),
-        engine.fetch(FetchRequest(url=second_url, use_cache=False)),
-        return_exceptions=True,
+    holder_task = asyncio.create_task(
+        engine.search(SearchRequest(query="queue holder", use_cache=False))
     )
-    assert outcomes[0] == document
-    assert isinstance(outcomes[1], FetchError)
-    assert "total deadline" in str(outcomes[1])
-    await engine.aclose()
+    try:
+        await asyncio.wait_for(holder.entered.wait(), timeout=2.0)
+        with pytest.raises(FetchError, match="total deadline"):
+            await asyncio.wait_for(
+                engine.fetch(FetchRequest(url=document.url, use_cache=False)),
+                timeout=2.0,
+            )
+        assert fetcher.guard.urls == [document.url]
+        assert fetcher.calls == []
+    finally:
+        holder.release.set()
+        try:
+            await asyncio.wait_for(holder_task, timeout=2.0)
+        finally:
+            await engine.aclose()
 
 
 @pytest.mark.asyncio

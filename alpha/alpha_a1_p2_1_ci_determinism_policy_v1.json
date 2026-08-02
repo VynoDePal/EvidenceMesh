@@ -1,0 +1,102 @@
+{
+  "accepted_a1_p2_checkpoint": {
+    "commit_sha": "e33fb3bbfe5278ea30fe568847a1caf263de8c4d",
+    "gate_conclusion": "success",
+    "gate_decision": "pass",
+    "gate_job_id": 91485918959,
+    "global_workflow_conclusion": "failure",
+    "tree_sha": "3564672ea1bd1ba6ec0edfd2c7a325d3f033b257",
+    "workflow_run_id": 30743849354
+  },
+  "authority": {
+    "artifact_publication_allowed": false,
+    "distribution_publication_allowed": false,
+    "github_release_allowed": false,
+    "live_provider_execution_allowed": false,
+    "merge_allowed": false,
+    "model_calls_allowed": false,
+    "phase_12_allowed": false,
+    "tag_publication_allowed": false
+  },
+  "budgets": {
+    "canonical_ci_runs": 1,
+    "commit_publications": 1,
+    "evidencemesh_runtime_network_requests": 0,
+    "live_document_requests": 0,
+    "live_provider_calls": 0,
+    "local_stress_scenarios_maximum": 1900,
+    "manual_ci_reruns": 0,
+    "model_calls": 0,
+    "retries": 0,
+    "search_calls": 0
+  },
+  "correction": {
+    "engine_behavior_changed": false,
+    "private_engine_members_accessed": false,
+    "provider_queue_invariant": "provider adapter is not entered while a public fetch holds shared concurrency",
+    "fetch_queue_invariant": "fetch adapter is not entered while a public provider holds shared concurrency",
+    "strategy": "event_synchronized_cross_api_queue_holders",
+    "timing_sleep_used_as_oracle": false
+  },
+  "diagnosis": {
+    "failing_job": "tests (3.12)",
+    "failing_test": "tests/test_engine_query_benchmark.py::test_provider_deadline_includes_concurrency_queue",
+    "python_3_11_conclusion": "success",
+    "python_3_12_conclusion": "failure",
+    "python_3_13_conclusion": "success",
+    "root_cause": "timing-sensitive test assertion",
+    "semantic_finding": "two provider wall timeouts are valid when scheduler delay exceeds the first operation's 30 millisecond margin"
+  },
+  "entry": {
+    "branch": "agent/evidencemesh-v0.1",
+    "draft_pull_request": 1,
+    "parent_commit_sha": "e33fb3bbfe5278ea30fe568847a1caf263de8c4d",
+    "repository": "VynoDePal/EvidenceMesh"
+  },
+  "expected_changed_paths": [
+    ".github/workflows/ci.yml",
+    "alpha/alpha_a1_p2_1_ci_determinism_policy_v1.json",
+    "docs/alpha-a1-p2-1-ci-determinism-gate-v1.md",
+    "tests/test_alpha_a1_p2_1_ci_determinism.py",
+    "tests/test_engine_query_benchmark.py"
+  ],
+  "historical_gate_execution": {
+    "a1_job_allowed_head_shas": [
+      "d34abe56b95c9daccf361eb86ff1c19421085f62",
+      "b967114a177eec00a7ff5f03bcf1169e04b2faac",
+      "e33fb3bbfe5278ea30fe568847a1caf263de8c4d"
+    ],
+    "a1_p2_rerun_required": false,
+    "manual_rerun_allowed": false,
+    "p2_inspector_head_sha": "e33fb3bbfe5278ea30fe568847a1caf263de8c4d"
+  },
+  "pass_criteria": {
+    "a1_job_conclusion": "skipped",
+    "canonical_workflow_conclusion": "success",
+    "container_conclusion": "success",
+    "package_conclusion": "success",
+    "python_test_matrix": {
+      "3.11": "success",
+      "3.12": "success",
+      "3.13": "success"
+    },
+    "quality_conclusion": "success",
+    "required_new_public_heads": 1
+  },
+  "publication": {
+    "artifacts": 0,
+    "distributions": 0,
+    "releases": 0,
+    "tags": 0
+  },
+  "schema_version": "evidencemesh.alpha-a1-p2-1-ci-determinism-policy.v1",
+  "stop_criteria": [
+    "any changed path outside expected_changed_paths",
+    "any product source or dependency change",
+    "A1-P0, Node, npm, Inspector or the A1-P2 verifier executes on the P2.1 head",
+    "any required CI job fails",
+    "any manual rerun or retry",
+    "any live EvidenceMesh search, provider, document or model request",
+    "any artifact, distribution, tag or release publication"
+  ]
+}
