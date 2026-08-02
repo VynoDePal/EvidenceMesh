@@ -1,0 +1,165 @@
+{
+  "authority": {
+    "distribution": false,
+    "merge": false,
+    "phase_12": false,
+    "production": false,
+    "release": false,
+    "tag": false,
+    "v1": false
+  },
+  "budgets": {
+    "dependency_install_attempts": 1,
+    "external_document_requests": 0,
+    "external_model_requests": 0,
+    "host_invocations": 1,
+    "host_timeout_seconds": 60,
+    "logical_mcp_requests_expected": 5,
+    "logical_mcp_requests_maximum": 5,
+    "maximum_p3_seconds": 240,
+    "mcp_server_launches": 1,
+    "mcp_sessions": 1,
+    "mcp_tool_calls": 1,
+    "provider_calls": 0,
+    "retries": 0,
+    "runtime_network_requests": 0,
+    "search_calls": 0,
+    "synthetic_model_turns": 2,
+    "workflow_reruns": 0
+  },
+  "claim": {
+    "live_gemini_model_validated": false,
+    "named_ai_application_host": "Gemini CLI",
+    "offline_replayed_agent_loop_validated": true,
+    "production_authentication_validated": false,
+    "scope": "one Ubuntu headless Gemini CLI agent loop with an official local response replay, one discovered EvidenceMesh health tool, and zero external model request"
+  },
+  "decision": {
+    "alpha_a1_p3_passes_only_if_all_checks_pass": true,
+    "failure_is_fail_closed": true,
+    "pr_remains_draft": true
+  },
+  "entry_criteria": {
+    "a1_p2_1_accepted_run_id": 30744506608,
+    "authorization_label": "alpha-a1-p3-authorized",
+    "branch": "agent/evidencemesh-v0.1",
+    "exact_parent_commit": "3cc75a33790be353a74641034a3c5210dfc7bc17",
+    "exact_parent_tree": "21abc6024a08a5528710a5fd8e49630c8fca2c9d",
+    "pull_request": 1,
+    "pull_request_draft": true,
+    "same_repository_head": true
+  },
+  "gate": "Alpha A1-P3 real AI host offline replay interoperability",
+  "host": {
+    "classification": "real open-source terminal AI agent and MCP host",
+    "entry_sha256": "a193db41b0b2c9e35a8c5aafcb2c810947ee41a311757bb4ee4d6b015bc3bfb5",
+    "license": "Apache-2.0",
+    "model_label": "gemini-3.1-flash-lite",
+    "name": "Gemini CLI",
+    "npm_integrity": "sha512-xBGdD/tl05gsTpD2oV1Bq0NCb4BBeTnjSbKxHtwOB7nt1QMaqWYJ9WsOEsQQhQ2P1v0UJth1F17SAXvdZ5mASw==",
+    "package": "@google/gemini-cli",
+    "version": "0.53.1"
+  },
+  "journey": {
+    "host_event_sequence": [
+      "init",
+      "user message",
+      "tool_use mcp_evidencemesh_health",
+      "tool_result success",
+      "assistant sentinel",
+      "result success"
+    ],
+    "mcp_request_sequence": [
+      "initialize",
+      "prompts/list",
+      "tools/list",
+      "resources/list",
+      "tools/call health"
+    ],
+    "only_exposed_tool": "mcp_evidencemesh_health",
+    "response_driver": "Gemini CLI built-in strict --fake-responses engine",
+    "tool_result": {
+      "deployment_profile": "community",
+      "status": "ready",
+      "version": "0.1.0"
+    }
+  },
+  "limitations": {
+    "external_model_semantics_validated": false,
+    "gemini_api_availability_validated": false,
+    "gemini_api_quota_validated": false,
+    "gui_mode_validated": false,
+    "host_matrix_validated": false,
+    "non_ubuntu_platforms_validated": false,
+    "production_credentials_used": false,
+    "response_replay_is_a_real_model": false
+  },
+  "prerequisite": {
+    "a1_p2": {
+      "commit_sha": "e33fb3bbfe5278ea30fe568847a1caf263de8c4d",
+      "run_id": 30743849354,
+      "tree_sha": "3564672ea1bd1ba6ec0edfd2c7a325d3f033b257"
+    },
+    "a1_p2_1": {
+      "commit_sha": "3cc75a33790be353a74641034a3c5210dfc7bc17",
+      "run_id": 30744506608,
+      "tree_sha": "21abc6024a08a5528710a5fd8e49630c8fca2c9d"
+    },
+    "product": {
+      "commit_sha": "145f5f923825ffeaeb485bd680bc79410ab290d1",
+      "tree_sha": "3b36c2d3970a5e3c325a2b20260daabf23d33a29",
+      "version": "0.1.0"
+    }
+  },
+  "publication": {
+    "artifacts": 0,
+    "distributions": 0,
+    "releases": 0,
+    "tags": 0
+  },
+  "replay": {
+    "external_provider": false,
+    "fake_response_sha256": "ef07d0312717639ec5d53809b874fc4eee1e2f9f70d42133235d895752eb510b",
+    "records": 2,
+    "strict_consumption": true
+  },
+  "runtime_guard": {
+    "ambiguous_network_syscalls_allowed": false,
+    "gemini_state_isolated": true,
+    "mcp_child_secret_names_allowed": false,
+    "node_api_network_blocking": true,
+    "node_fetch_non_network_schemes_allowed": [
+      "data"
+    ],
+    "operating_system_network_namespace_enforced": false,
+    "python_api_network_blocking": true,
+    "server_home_read_only": true,
+    "strace_process_and_network_audit": true,
+    "workspace_read_only": true
+  },
+  "schema_version": "evidencemesh.alpha-a1-p3-real-host-offline-policy.v1",
+  "stop_criteria": [
+    "trigger HEAD is not a one-parent child of the accepted A1-P2.1 checkpoint",
+    "the eight-file additive scope or any immutable prerequisite hash drifts",
+    "a second dependency installation, host invocation, MCP server, session, or tool call occurs",
+    "Gemini exposes or calls a tool other than mcp_evidencemesh_health",
+    "the MCP sequence differs from the five locked requests",
+    "health is not ready at version 0.1.0 under the community profile",
+    "a third synthetic model turn is requested or either locked replay record remains unused",
+    "any external model, provider, search, document, DNS, socket, or network request is attempted",
+    "the EvidenceMesh child inherits a key, token, secret, credential, password, or proxy variable",
+    "the source checkout, locked settings, read-only workspace, read-only server home, or explicit state inventory changes",
+    "the 60-second host timeout or 240-second P3 budget is exceeded",
+    "the canonical workflow fails; no retry or rerun is permitted"
+  ],
+  "supply_chain": {
+    "install_scripts_executed": false,
+    "lock_package_entries": 13,
+    "lock_sha256": "dc384de3fe3277f1cdaadf06dcc16268bb73aae0312f327119ba09fb8ea564b9",
+    "manifest_sha256": "59f5b8801b95333938d0ce17560ea583cfaf8388084a9bc620db637252926295",
+    "node": "22.20.0",
+    "npm": "10.9.3",
+    "optional_dependencies_installed": false,
+    "registry": "https://registry.npmjs.org/"
+  }
+}
