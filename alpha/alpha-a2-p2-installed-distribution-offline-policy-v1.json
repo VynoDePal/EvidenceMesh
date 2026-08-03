@@ -1,0 +1,189 @@
+{
+  "authority": {
+    "artifact_or_attestation_upload_allowed": false,
+    "distribution_publication_allowed": false,
+    "live_closed_alpha_allowed": false,
+    "merge_allowed": false,
+    "phase_12_allowed": false,
+    "production_allowed": false,
+    "release_allowed": false,
+    "tag_allowed": false,
+    "v1_allowed": false
+  },
+  "archive_inventory": {
+    "absolute_or_parent_escaping_members_allowed": false,
+    "duplicate_members_allowed": false,
+    "private_key_or_environment_file_names_allowed": false,
+    "sdist_hardlinks_or_special_files_allowed": false,
+    "symlinks_allowed": false,
+    "vcs_venv_or_bytecode_cache_members_allowed": false
+  },
+  "budgets": {
+    "branch_ref_updates_maximum": 1,
+    "build_invocations_maximum": 2,
+    "candidate_commits_maximum": 1,
+    "changed_files_maximum": 6,
+    "candidate_distribution_installations_maximum": 2,
+    "distribution_publications": 0,
+    "ephemeral_distribution_files_expected": 4,
+    "evidencemesh_runtime_network_requests": 0,
+    "live_document_requests": 0,
+    "live_model_requests": 0,
+    "live_provider_requests": 0,
+    "live_search_requests": 0,
+    "live_tester_sessions": 0,
+    "operating_system_service_activations": 0,
+    "retries": 0,
+    "workflow_attempts_maximum": 1,
+    "workflow_reruns": 0
+  },
+  "build": {
+    "builds_per_clean_export": 1,
+    "clean_git_exports": 2,
+    "corresponding_archives_byte_identical_required": true,
+    "digest_and_size_exported_for_final_receipt": true,
+    "expected_archive_names": [
+      "evidencemesh-0.1.0-py3-none-any.whl",
+      "evidencemesh-0.1.0.tar.gz"
+    ],
+    "source_date_epoch": "exact_candidate_commit_timestamp",
+    "targets_per_build": [
+      "wheel",
+      "sdist"
+    ]
+  },
+  "candidate_decision": {
+    "decision": "pending_until_one_shot_ci",
+    "failure_or_cancellation_is_terminal": true,
+    "historical_evidence_reinterpreted": false,
+    "pr_remains_draft": true
+  },
+  "canonical_environment": {
+    "architecture": "x86_64",
+    "hatchling_version": "1.31.0",
+    "operating_system": "Ubuntu 24.04",
+    "python_version": "3.11",
+    "uv_version": "0.11.33"
+  },
+  "entry": {
+    "branch": "agent/evidencemesh-v0.1",
+    "direct_child_required": true,
+    "exact_parent_commit_sha": "d284f987f712d93980c4d0cf51bd6491153decbe",
+    "exact_parent_tree_sha": "bdddbcb3dfea16a11d584ebfbb74b44f8cc20966",
+    "merge_commit_allowed": false,
+    "pull_request": 1,
+    "pull_request_must_remain_draft": true,
+    "repository": "VynoDePal/EvidenceMesh"
+  },
+  "gate": "Alpha A2-P2 installed-distribution offline",
+  "installation": {
+    "archive_sha256_bound_independently": true,
+    "dependency_acquisition_before_network_isolation": true,
+    "editable_install_allowed": false,
+    "installed_archive_kinds": [
+      "wheel",
+      "sdist"
+    ],
+    "isolated_environment_count": 2,
+    "network_namespace_disabled_during_install_and_smoke": true,
+    "pep610_archive_sha256_declaration_required": true,
+    "pep610_hashed_direct_requirement_required": true,
+    "pep610_exact_archive_url_required": true,
+    "post_install_uv_pip_check_required": true,
+    "preinstall_package_and_launchers_absent_required": true,
+    "runtime_dependency_profile_before_install": "locked_no_dev_no_project",
+    "sdist_build_backend_acquired_separately": "hatchling==1.31.0",
+    "sdist_build_isolation_allowed": false,
+    "uv_flags": [
+      "--offline",
+      "--no-index",
+      "--no-deps",
+      "--no-cache",
+      "--no-build-isolation"
+    ]
+  },
+  "protocol": {
+    "path": "docs/alpha-a2-p2-installed-distribution-offline-gate-v1.md",
+    "sha256": "2b64d1364b5c90894e109d016afa85ef466e9b4f285b2f2c86985b3ad7189cd1"
+  },
+  "schema_version": "evidencemesh.alpha-a2-p2-installed-distribution-offline-policy.v1",
+  "scope": {
+    "allowed_paths": [
+      ".github/workflows/alpha-a2-p2-installed-distribution-offline.yml",
+      "alpha/alpha-a2-p2-installed-distribution-offline-policy-v1.json",
+      "docs/alpha-a2-p2-installed-distribution-offline-gate-v1.md",
+      "scripts/smoke_installed_a2_p2.py",
+      "tests/test_alpha_a2_p2_workflow.py",
+      "tests/test_smoke_installed_a2_p2.py"
+    ],
+    "runtime_and_packaging_immutable_paths": [
+      "src",
+      "pyproject.toml",
+      "uv.lock"
+    ]
+  },
+  "ephemeral_control": {
+    "cleanup_confirmed_before_pass_summary": true,
+    "root_template": "${RUNNER_TEMP}/evidencemesh-alpha-a2-p2-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}",
+    "preexisting_root_allowed": false,
+    "preexisting_symlink_allowed": false
+  },
+  "smoke": {
+    "a2_runtime_blob_count": 5,
+    "archive_name_binding_required": true,
+    "distribution_metadata_and_record_binding_required": true,
+    "installed_console_launchers_required": [
+      "evidencemesh",
+      "evidencemesh-mcp"
+    ],
+    "installed_origin_within_exact_environment_required": true,
+    "harness_copy_digest_verified": true,
+    "harness_executed_outside_repository": true,
+    "harness_source_files": [
+      "scripts/smoke_installed_a2_p2.py",
+      "scripts/smoke_installed_rc4_1a.py"
+    ],
+    "mock_transport_only": true,
+    "rc4_1a_installed_contract_preserved": true,
+    "required_a2_behaviors": [
+      "fresh_v3_bootstrap",
+      "unchanged_v2_refusal",
+      "supervisor_and_session_authority",
+      "governed_permit_consumption",
+      "feedback_retention_withdrawal_and_recovery"
+    ],
+    "source_tree_import_allowed": false
+  },
+  "stop_criteria": [
+    "the candidate is not one non-merge direct child of the exact parent",
+    "the exact six-path allowlist or immutable runtime and packaging boundary drifts",
+    "the policy or protocol content hash differs",
+    "format, lint, typing, coverage, or any test fails or is weakened",
+    "either clean export produces anything other than one wheel and one sdist",
+    "corresponding wheel or sdist archives are not byte-for-byte identical",
+    "an installation is editable, source-bound, unbound to RECORD, or digest-mismatched",
+    "the v2 ledger is migrated or reset or any required A2 v3 behavior fails",
+    "any runtime network, DNS, provider, search, document, model, tester, or live request occurs",
+    "any retry, rerun, second candidate, service activation, artifact, distribution, tag, release, or merge is used",
+    "any ephemeral output remains or Phase 12, production, or V1 authority is claimed"
+  ],
+  "successful_claim": {
+    "local_offline_technical_alpha_v0_1_0_a2": true,
+    "phase_12_ready": false,
+    "public_distribution_available": false,
+    "real_os_supervision_proven": false,
+    "scope": "single_host_local_offline_installed_distribution_successor_only",
+    "v1_ready": false
+  },
+  "validation": {
+    "coverage_minimum_percent": 85.0,
+    "docker_socket_readable_or_writable": false,
+    "full_suite_invocations": 1,
+    "installed_smoke_invocations": 2,
+    "network_namespace": "/usr/bin/unshare --net",
+    "network_namespace_must_differ_from_parent": true,
+    "policy_hash_locked_in_workflow": true,
+    "protocol_hash_locked_in_workflow": true,
+    "uv_offline_during_all_gates": true
+  }
+}
