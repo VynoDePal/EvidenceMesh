@@ -11,6 +11,7 @@ from scripts import verify_alpha_a1_p0_installability as gate
 ROOT = Path(__file__).resolve().parents[1]
 POLICY = ROOT / "alpha" / "alpha_a1_p0_installability_policy_v1.json"
 WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
+CURRENT_ALPHA_SOURCE_COMMIT = "41e0d18e1801cbde0bae61dfd85877fddbc64e4d"
 
 
 def test_gate_pins_exact_public_candidate_and_budgets() -> None:
@@ -200,15 +201,17 @@ def test_ci_runs_one_canonical_gate_without_publication() -> None:
 def test_quick_start_is_pinned_offline_and_platform_honest() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     quick_start = readme.split("## Quick start", maxsplit=1)[1].split("## MCP setup", maxsplit=1)[0]
+    normalized_quick_start = " ".join(quick_start.split())
 
     assert gate.BRANCH in quick_start
-    assert gate.SOURCE_COMMIT in quick_start
+    assert gate.SOURCE_COMMIT != CURRENT_ALPHA_SOURCE_COMMIT
+    assert gate.SOURCE_COMMIT not in quick_start
+    assert quick_start.count(f"ALPHA_SHA={CURRENT_ALPHA_SOURCE_COMMIT}") == 1
     assert "uv sync --locked --no-dev --no-editable --python 3.11" in quick_start
     assert "EVIDENCEMESH_CACHE_PATH" in quick_start
     assert ".venv/bin/evidencemesh providers" in quick_start
     assert ".venv/bin/evidencemesh benchmark-offline" in quick_start
-    assert "Ubuntu 24.04 x86_64" in quick_start
-    assert "macOS has not been validated" in quick_start
-    normalized_quick_start = " ".join(quick_start.lower().split())
-    assert "native windows is not supported" in normalized_quick_start
+    assert "automated Ubuntu 24.04/Python 3.11 simulation" in normalized_quick_start
+    assert "macOS has not been validated" in normalized_quick_start
+    assert "native windows is not supported" in normalized_quick_start.lower()
     assert quick_start.index("benchmark-offline") < quick_start.index("docker compose")

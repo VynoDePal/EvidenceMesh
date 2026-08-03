@@ -1,0 +1,1218 @@
+name: Alpha A3-P0.1 Acceptance Reconciliation Offline
+
+on:
+  pull_request:
+    types:
+      - synchronize
+    paths:
+      - .github/workflows/alpha-a3-p0-1-acceptance-reconciliation-offline.yml
+      - alpha/alpha-a3-p0-1-acceptance-reconciliation-policy-v1.json
+      - docs/alpha-a3-p0-1-acceptance-reconciliation-offline-gate-v1.md
+      - tests/test_alpha_a3_p0_1_workflow.py
+      - tests/test_alpha_a1_p0_installability.py
+
+permissions:
+  contents: read
+
+concurrency:
+  group: alpha-a3-p0-1-reconciliation-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
+  cancel-in-progress: false
+
+env:
+  A3_FAILED_HEAD: 88cf431b67619624c09840174451780b78a9ae41
+  A3_FAILED_TREE: 960bacb500ad390d4ae3a38bc941e30c85e80a8d
+  A3_FAILED_RUN_ID: 30852239811
+  A3_FAILED_JOB_ID: 91814758947
+  A3_FAILED_CI_RUN_ID: 30852239420
+  A3_FAILED_CI_PYTHON_JOB_1_ID: 91814763021
+  A3_FAILED_CI_PYTHON_JOB_2_ID: 91814777751
+  A3_FAILED_CI_PYTHON_JOB_3_ID: 91814777055
+  A2_ACCEPTED_HEAD: 41e0d18e1801cbde0bae61dfd85877fddbc64e4d
+  A2_ACCEPTED_TREE: 41c74b75f270db66b4f5032172e5dff0f6a32aaa
+  A2_ACCEPTED_RUN_ID: 30843140982
+  A2_ACCEPTED_JOB_ID: 91784859717
+  A2_ACCEPTED_CI_RUN_ID: 30843139966
+  A2_WHEEL_NAME: evidencemesh-0.1.0-py3-none-any.whl
+  A2_WHEEL_SHA256: c38841da79c7a71275bda5a925096dc692ce4feabaf2f618233c5379ed1c577a
+  A2_WHEEL_SIZE_BYTES: 146492
+  A2_PARENT_README_SHA256: 72b4870d170c5ef53d2444b0fc23bc5ecbc2ae9b2a13d314e6db461b2bc698d8
+  MCP_TEMPLATE_SHA256: 81f631f82166f70d81712d7e9ab82cdb3dc20b8ba592d65ba59473faf5b4295e
+  A3_HARNESS_SHA256: d7571ca65514e05ad3415d029ed67279f70141238152a8f6e5ef618975e19b83
+  A3_UNIT_TEST_SHA256: 230f1dda7bbe3c08d042c122df7c5b18a6b533dca44c4eb8dbd58b548b373d70
+  A3_POLICY_SHA256: 43255b673e4a90787a3bc95db3398d61d09fe9932f83978b5143816b2d3e62cf
+  A3_PROTOCOL_SHA256: d71c6c035b107a03eff9130163250f344b4c4eb6ef7ba894304ade9287c022a1
+  A3_RUNBOOK_SHA256: ec45efe1fffa9acb8acc1127383b4a97c684bf43a4a16316d078717800c8b791
+  A3_README_SHA256: 0a532c276a58f86b7c6134843c2779dfb8d5e9cc75ba8a00a794991b37c16f7d
+  A3_STATIC_TEST_SHA256: 0aecc7ffe84facad14225420be58868776ded2e66c2f475c479c5d527cbfc7fb
+  A3_WORKFLOW_SHA256: aaba296f3da13fc8405a6e579a2478b943a3a17a12ca21eaacae46d76d194e5e
+  A1_RUNNER_SHA256: 8fa9ec81c9c159a634f1f7ea573aa371a2401dbd6c0abc59701f22ba2a35e8fe
+  A1_POLICY_SHA256: 7e3fbdb3ddb95c6dd25f82626fa0a05cd041c72a53aa725ddb2b081ad64096d8
+  A1_STRACE_PARSER_SHA256: d52bf8cb9f57daed160a2dd10b7e28063640ee2893033c86defaeac7bf718cf9
+  RECONCILIATION_POLICY_SHA256: 47f1d48680d9233a79596234dc1c042c414b35d7110448cb550d0e3d781e535e
+  RECONCILIATION_PROTOCOL_SHA256: 915a7d5aa46d28a4de9f1cd4052514631534433975ce5dcca7c0c3339151b59b
+  RECONCILIATION_STATIC_TEST_SHA256: ce6d72118539b47ef44e6a18a4d2623e0156768e16c39b2e8b28d3ca39e492aa
+  CORRECTED_A1_TEST_SHA256: 27ca95ee2907e2bff0ad4f6615a752bc0fda17569fdc2d990f3049cc053e78fe
+  UV_HTTP_RETRIES: 0
+  UV_NO_CACHE: 1
+  PIP_DISABLE_PIP_VERSION_CHECK: 1
+  PIP_NO_INPUT: 1
+  PIP_RETRIES: 0
+  PYTHONDONTWRITEBYTECODE: "1"
+
+jobs:
+  acceptance-reconciliation-offline:
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.action == 'synchronize' &&
+      github.run_attempt == 1 &&
+      github.repository == 'VynoDePal/EvidenceMesh' &&
+      github.event.pull_request.number == 1 &&
+      github.event.pull_request.draft == true &&
+      github.event.pull_request.head.repo.full_name == 'VynoDePal/EvidenceMesh' &&
+      github.event.pull_request.head.ref == 'agent/evidencemesh-v0.1' &&
+      github.event.pull_request.head.sha == github.event.after &&
+      github.event.before == '88cf431b67619624c09840174451780b78a9ae41'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Check out the exact A3-P0.1 reconciliation candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          fetch-tags: false
+          persist-credentials: false
+
+      - name: Verify exact failed parent, five-path scope and locked evidence
+        env:
+          EVENT_BEFORE: ${{ github.event.before }}
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_RUN_ATTEMPT" = 1
+          test "$EVENT_BEFORE" = "$A3_FAILED_HEAD"
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test "$(git rev-parse "$A3_FAILED_HEAD^{tree}")" = "$A3_FAILED_TREE"
+          test "$(git rev-parse "$A2_ACCEPTED_HEAD^{tree}")" = "$A2_ACCEPTED_TREE"
+          test "$(git rev-list --parents --max-count=1 HEAD)" = \
+            "$EXPECTED_HEAD $A3_FAILED_HEAD"
+
+          expected_statuses=(
+            $'A\t.github/workflows/alpha-a3-p0-1-acceptance-reconciliation-offline.yml'
+            $'A\talpha/alpha-a3-p0-1-acceptance-reconciliation-policy-v1.json'
+            $'A\tdocs/alpha-a3-p0-1-acceptance-reconciliation-offline-gate-v1.md'
+            $'A\ttests/test_alpha_a3_p0_1_workflow.py'
+            $'M\ttests/test_alpha_a1_p0_installability.py'
+          )
+          mapfile -t changed_statuses < <(
+            git diff --name-status --diff-filter=ACDMRT "$A3_FAILED_HEAD" HEAD | sort
+          )
+          test "${#changed_statuses[@]}" = 5
+          diff -u \
+            <(printf '%s\n' "${expected_statuses[@]}" | sort) \
+            <(printf '%s\n' "${changed_statuses[@]}")
+
+          git diff --quiet "$A3_FAILED_HEAD" HEAD -- src pyproject.toml uv.lock
+          git diff --quiet "$A3_FAILED_HEAD" HEAD -- \
+            .github/workflows/alpha-a3-p0-operator-clean-room-offline.yml \
+            README.md \
+            alpha/alpha-a3-p0-operator-clean-room-offline-policy-v1.json \
+            docs/alpha-a3-p0-operator-clean-room-offline-gate-v1.md \
+            docs/alpha-a3-p0-operator-clean-room-runbook-v1.md \
+            scripts/verify_alpha_a3_p0_operator_clean_room.py \
+            tests/test_alpha_a3_p0_workflow.py \
+            tests/test_verify_alpha_a3_p0_operator_clean_room.py
+
+          python -m json.tool \
+            alpha/alpha-a3-p0-1-acceptance-reconciliation-policy-v1.json \
+            >/dev/null
+          echo "$A3_WORKFLOW_SHA256  .github/workflows/alpha-a3-p0-operator-clean-room-offline.yml" \
+            | sha256sum --check
+          echo "$A3_HARNESS_SHA256  scripts/verify_alpha_a3_p0_operator_clean_room.py" \
+            | sha256sum --check
+          echo "$A3_UNIT_TEST_SHA256  tests/test_verify_alpha_a3_p0_operator_clean_room.py" \
+            | sha256sum --check
+          echo "$A3_POLICY_SHA256  alpha/alpha-a3-p0-operator-clean-room-offline-policy-v1.json" \
+            | sha256sum --check
+          echo "$A3_PROTOCOL_SHA256  docs/alpha-a3-p0-operator-clean-room-offline-gate-v1.md" \
+            | sha256sum --check
+          echo "$A3_RUNBOOK_SHA256  docs/alpha-a3-p0-operator-clean-room-runbook-v1.md" \
+            | sha256sum --check
+          echo "$A3_README_SHA256  README.md" | sha256sum --check
+          echo "$A3_STATIC_TEST_SHA256  tests/test_alpha_a3_p0_workflow.py" \
+            | sha256sum --check
+          echo "$A1_RUNNER_SHA256  scripts/verify_alpha_a1_p0_installability.py" \
+            | sha256sum --check
+          echo "$A1_POLICY_SHA256  alpha/alpha_a1_p0_installability_policy_v1.json" \
+            | sha256sum --check
+          echo "$A1_STRACE_PARSER_SHA256  scripts/verify_alpha_a1_p2_named_host.py" \
+            | sha256sum --check
+          git show "$A2_ACCEPTED_HEAD:README.md" | \
+            sha256sum | grep --fixed-strings "$A2_PARENT_README_SHA256  -"
+          git show "$A2_ACCEPTED_HEAD:examples/evidencemesh.mcp.json" | \
+            sha256sum | grep --fixed-strings "$MCP_TEMPLATE_SHA256  -"
+
+          echo "$RECONCILIATION_POLICY_SHA256  alpha/alpha-a3-p0-1-acceptance-reconciliation-policy-v1.json" \
+            | sha256sum --check
+          echo "$RECONCILIATION_PROTOCOL_SHA256  docs/alpha-a3-p0-1-acceptance-reconciliation-offline-gate-v1.md" \
+            | sha256sum --check
+          echo "$RECONCILIATION_STATIC_TEST_SHA256  tests/test_alpha_a3_p0_1_workflow.py" \
+            | sha256sum --check
+          echo "$CORRECTED_A1_TEST_SHA256  tests/test_alpha_a1_p0_installability.py" \
+            | sha256sum --check
+
+          test "$(grep --fixed-strings --count \
+            'ALPHA_SHA=41e0d18e1801cbde0bae61dfd85877fddbc64e4d' README.md)" = 1
+          ! grep --fixed-strings 'ALPHA_SHA=145f5f923825ffeaeb485bd680bc79410ab290d1' README.md
+          grep --fixed-strings \
+            'docs/alpha-a3-p0-operator-clean-room-runbook-v1.md' README.md
+          python - <<'PY'
+          from pathlib import Path
+
+          normalized = " ".join(Path("README.md").read_text(encoding="utf-8").split())
+          assert normalized.count(
+              "it is not a public distribution or a public installation path"
+          ) == 1
+          PY
+          test -z "$(git status --porcelain --untracked-files=all)"
+
+      - name: Set up pinned uv without an Actions cache
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: false
+
+      - name: Build, reconcile the full suite and seal the parent handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          A3_ROOT="${RUNNER_TEMP}/evidencemesh-alpha-a3-p0-1-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          test ! -e "$A3_ROOT"
+          test ! -L "$A3_ROOT"
+          install --directory --mode=0700 "$A3_ROOT"
+          echo "A3_ROOT=$A3_ROOT" >> "$GITHUB_ENV"
+          install --directory --mode=0700 \
+            "$A3_ROOT/build" "$A3_ROOT/build/tmp"
+          export TMPDIR="$A3_ROOT/build/tmp"
+          export RUFF_CACHE_DIR="$A3_ROOT/build/ruff-cache"
+          export COVERAGE_FILE="$A3_ROOT/build/.coverage"
+          export_root="$A3_ROOT/build/parent-export"
+          dist_root="$A3_ROOT/build/dist"
+          handoff="$A3_ROOT/handoff"
+          wheelhouse="$handoff/wheelhouse"
+          supply="$A3_ROOT/build/supply"
+          downloader="$A3_ROOT/build/downloader"
+          controller_env="$A3_ROOT/build/controller"
+          python_store="$A3_ROOT/python"
+          mkdir --parents --mode=0700 \
+            "$export_root" "$dist_root" "$supply" "$wheelhouse" "$handoff/bin"
+
+          UV_PYTHON_INSTALL_DIR="$python_store" uv python install 3.11
+          base_python=$(UV_PYTHON_INSTALL_DIR="$python_store" \
+            uv python find --managed-python 3.11)
+          test -x "$base_python"
+          case "$(uv --version)" in
+            'uv 0.11.33'*) ;;
+            *) echo 'uv version drifted' >&2; exit 1 ;;
+          esac
+          "$base_python" -I -c \
+            'import sys; assert sys.version_info[:2] == (3, 11)'
+
+          git archive --format=tar \
+            --output="$A3_ROOT/build/parent.tar" "$A2_ACCEPTED_HEAD"
+          tar --extract --file="$A3_ROOT/build/parent.tar" --directory="$export_root"
+          test ! -e "$export_root/.git"
+          uv export \
+            --directory "$export_root" \
+            --locked \
+            --no-dev \
+            --no-emit-project \
+            --format requirements.txt \
+            --output-file "$A3_ROOT/build/runtime-requirements.txt"
+          uv export \
+            --directory "$export_root" \
+            --locked \
+            --extra dev \
+            --no-emit-project \
+            --format requirements.txt \
+            --output-file "$A3_ROOT/build/controller-requirements.txt"
+          for requirements in \
+            "$A3_ROOT/build/runtime-requirements.txt" \
+            "$A3_ROOT/build/controller-requirements.txt"; do
+            ! grep -E '(^-e |git\+|file:|\.tar\.gz([#[:space:]]|$))' "$requirements"
+            grep --fixed-strings -- '--hash=sha256:' "$requirements"
+          done
+
+          "$base_python" -m venv "$downloader"
+          pip_version=$(PIP_CONFIG_FILE=/dev/null \
+            "$downloader/bin/python" -m pip --isolated --version)
+          pip_module_sha256=$("$downloader/bin/python" -I - <<'PY'
+          import hashlib
+          from pathlib import Path
+          import pip
+
+          print(hashlib.sha256(Path(pip.__file__).read_bytes()).hexdigest())
+          PY
+          )
+          PIP_CONFIG_FILE=/dev/null \
+            "$downloader/bin/python" -m pip --isolated \
+              --disable-pip-version-check \
+              download \
+              --no-cache-dir \
+              --no-input \
+              --retries 0 \
+              --require-hashes \
+              --only-binary=:all: \
+              --dest "$supply" \
+              --requirement "$A3_ROOT/build/controller-requirements.txt"
+
+          "$base_python" -m venv --without-pip "$controller_env"
+          uv pip install \
+            --python "$controller_env/bin/python" \
+            --offline \
+            --no-index \
+            --no-cache \
+            --no-config \
+            --require-hashes \
+            --find-links "$supply" \
+            --requirements "$A3_ROOT/build/controller-requirements.txt"
+          controller_python="$controller_env/bin/python"
+          "$controller_python" -I -c \
+            'import importlib.metadata; assert importlib.metadata.version("hatchling") == "1.31.0"'
+          full_suite_home="$A3_ROOT/build/full-suite-home"
+          full_suite_trace="$A3_ROOT/build/full-suite-network.strace"
+          full_suite_report="$A3_ROOT/build/full-suite-network-report.json"
+          full_suite_netns="$A3_ROOT/build/full-suite-netns.txt"
+          full_suite_wrapper="$A3_ROOT/build/full-suite-netns.sh"
+          full_suite_basetemp="$A3_ROOT/build/pytest"
+          install --directory --mode=0700 \
+            "$full_suite_home" \
+            "$full_suite_home/xdg-cache" \
+            "$full_suite_home/xdg-config" \
+            "$full_suite_home/xdg-data"
+
+          runner_uid=$(id -u)
+          runner_gid=$(id -g)
+          isolated_gid=$(id -g nobody)
+          test "$runner_uid" != 0
+          test "$isolated_gid" != 0
+          test "$isolated_gid" != "$runner_gid"
+          test "$(id -gn nobody)" = nogroup
+          parent_netns=$(readlink /proc/self/ns/net)
+          ip_bin=$(command -v ip)
+          ip_bin=$(readlink --canonicalize-existing "$ip_bin")
+          test -x "$ip_bin"
+          test -x /usr/bin/setpriv
+          test -x /usr/bin/strace
+          test -x /usr/bin/unshare
+
+          install --mode=0700 /dev/null "$full_suite_wrapper"
+          cat > "$full_suite_wrapper" <<'BASH'
+          #!/bin/bash
+          set -euo pipefail
+
+          case "${1:-}" in
+            setup)
+              shift
+              expected_uid=$1
+              isolated_gid=$2
+              parent_netns=$3
+              ip_bin=$4
+              controller_python=$5
+              workspace=$6
+              suite_home=$7
+              suite_tmp=$8
+              trace_prefix=$9
+              basetemp=${10}
+              coverage_file=${11}
+              netns_file=${12}
+              runner_path=${13}
+
+              test "$(/usr/bin/id -u)" = 0
+              "$ip_bin" link set dev lo up
+              child_netns=$(/usr/bin/readlink /proc/self/ns/net)
+              test "$child_netns" != "$parent_netns"
+
+              mapfile -t links < <("$ip_bin" -o link show)
+              test "${#links[@]}" = 1
+              case "${links[0]}" in
+                *": lo:"*) ;;
+                *) exit 70 ;;
+              esac
+              test -z "$("$ip_bin" -4 route show default)"
+              test -z "$("$ip_bin" -6 route show default)"
+
+              {
+                printf 'parent=%s\n' "$parent_netns"
+                printf 'child=%s\n' "$child_netns"
+                printf 'interfaces=lo\n'
+                printf 'ipv4_default_routes=0\n'
+                printf 'ipv6_default_routes=0\n'
+              } > "$netns_file"
+              /usr/bin/chown "$expected_uid:$isolated_gid" "$netns_file"
+              /usr/bin/chmod 0600 "$netns_file"
+
+              exec /usr/bin/setpriv \
+                --reuid="$expected_uid" \
+                --regid="$isolated_gid" \
+                --clear-groups \
+                --bounding-set=-all \
+                --inh-caps=-all \
+                --ambient-caps=-all \
+                --no-new-privs \
+                /usr/bin/env -i \
+                  A3_EXPECTED_UID="$expected_uid" \
+                  A3_ISOLATED_GID="$isolated_gid" \
+                  A3_CONTROLLER_PYTHON="$controller_python" \
+                  A3_TRACE_PREFIX="$trace_prefix" \
+                  A3_BASETEMP="$basetemp" \
+                  GITHUB_WORKSPACE="$workspace" \
+                  HOME="$suite_home" \
+                  XDG_CACHE_HOME="$suite_home/xdg-cache" \
+                  XDG_CONFIG_HOME="$suite_home/xdg-config" \
+                  XDG_DATA_HOME="$suite_home/xdg-data" \
+                  TMPDIR="$suite_tmp" \
+                  PATH="$runner_path" \
+                  LANG=C.UTF-8 \
+                  LC_ALL=C.UTF-8 \
+                  TZ=UTC \
+                  CI=true \
+                  PYTHONHASHSEED=0 \
+                  PYTHONDONTWRITEBYTECODE=1 \
+                  PYTHONNOUSERSITE=1 \
+                  PYTEST_ADDOPTS= \
+                  PYTHONPATH="$workspace/src" \
+                  COVERAGE_FILE="$coverage_file" \
+                  RUFF_CACHE_DIR="$suite_tmp/ruff-cache" \
+                  MYPY_CACHE_DIR="$suite_tmp/mypy-cache" \
+                  UV_NO_CACHE=1 \
+                  UV_HTTP_RETRIES=0 \
+                  PIP_DISABLE_PIP_VERSION_CHECK=1 \
+                  PIP_NO_INPUT=1 \
+                  PIP_RETRIES=0 \
+                  /bin/bash "$0" run
+              ;;
+            run)
+              test "$(/usr/bin/id -u)" = "$A3_EXPECTED_UID"
+              test "$(/usr/bin/id -g)" = "$A3_ISOLATED_GID"
+              test -z "$(/usr/bin/id -G | tr ' ' '\n' | grep -v "^$A3_ISOLATED_GID$" || true)"
+
+              for broker in \
+                /var/run/docker.sock \
+                /run/containerd/containerd.sock \
+                /run/podman/podman.sock; do
+                if test -r "$broker" || test -w "$broker"; then
+                  echo "Full suite can access host broker: $broker" >&2
+                  exit 71
+                fi
+              done
+              for fd in /proc/self/fd/*; do
+                fd_number=${fd##*/}
+                case "$fd_number" in
+                  0|1|2) continue ;;
+                esac
+                target=$(/usr/bin/readlink "$fd" 2>/dev/null || true)
+                case "$target" in
+                  socket:\[*\])
+                    echo "Full suite inherited a host socket on fd $fd_number" >&2
+                    exit 72
+                    ;;
+                esac
+              done
+
+              cd "$GITHUB_WORKSPACE"
+              exec /usr/bin/strace \
+                -ff \
+                -qq \
+                -v \
+                -yy \
+                -s 256 \
+                -e trace=network \
+                -o "$A3_TRACE_PREFIX" \
+                "$A3_CONTROLLER_PYTHON" -m pytest \
+                  -c pyproject.toml \
+                  --basetemp "$A3_BASETEMP" \
+                  --cov=evidencemesh \
+                  --cov-report=term-missing \
+                  -p no:cacheprovider \
+                  tests \
+                  -q
+              ;;
+            *)
+              exit 64
+              ;;
+          esac
+          BASH
+          sudo chown root:root "$full_suite_wrapper"
+          sudo chmod 0555 "$full_suite_wrapper"
+
+          sudo /usr/bin/unshare --net -- \
+            "$full_suite_wrapper" setup \
+              "$runner_uid" \
+              "$isolated_gid" \
+              "$parent_netns" \
+              "$ip_bin" \
+              "$controller_python" \
+              "$GITHUB_WORKSPACE" \
+              "$full_suite_home" \
+              "$A3_ROOT/build/tmp" \
+              "$full_suite_trace" \
+              "$full_suite_basetemp" \
+              "$COVERAGE_FILE" \
+              "$full_suite_netns" \
+              "$PATH"
+
+          "$controller_python" -I - \
+            "$full_suite_trace" \
+            "$full_suite_netns" \
+            "$full_suite_report" \
+            >> "$GITHUB_ENV" <<'PY'
+          import ipaddress
+          import json
+          import re
+          import sys
+          from pathlib import Path
+
+          trace_prefix = Path(sys.argv[1])
+          netns_path = Path(sys.argv[2])
+          report_path = Path(sys.argv[3])
+
+          def require(condition: bool, message: str) -> None:
+              if not condition:
+                  raise SystemExit(message)
+
+          syscall_pattern = re.compile(
+              r"^(?P<name>"
+              r"accept|accept4|bind|connect|getpeername|getsockname|getsockopt|"
+              r"listen|recvfrom|recvmsg|recvmmsg|recvmmsg_time64|sendmmsg|"
+              r"sendmsg|sendto|setsockopt|shutdown|socket|socketpair"
+              r")\("
+          )
+          socket_pattern = re.compile(
+              r"^socket\((?P<family>AF_[A-Z0-9_]+), "
+              r"(?P<kind>[^,]+), (?P<protocol>[^)]+)\)"
+          )
+          family_pattern = re.compile(r"\bsa_family=(AF_[A-Z0-9_]+)\b")
+          ipv4_pattern = re.compile(r'inet_addr\("([^"]+)"\)')
+          ipv4_pton_pattern = re.compile(r'inet_pton\(AF_INET, "([^"]+)"')
+          ipv6_pattern = re.compile(r'inet_pton\(AF_INET6, "([^"]+)"')
+          port_pattern = re.compile(r"sin6?_port=htons\((\d+)\)")
+          resolver_markers = (
+              "/nscd/socket",
+              "/run/systemd/resolve",
+              "io.systemd.Resolve",
+          )
+
+          traces = sorted(trace_prefix.parent.glob(trace_prefix.name + ".*"))
+          require(bool(traces), "full-suite strace files are missing")
+
+          metadata = {}
+          for line in netns_path.read_text(encoding="utf-8").splitlines():
+              key, separator, value = line.partition("=")
+              require(bool(separator) and key not in metadata, "invalid netns metadata")
+              metadata[key] = value
+          require(
+              set(metadata)
+              == {
+                  "parent",
+                  "child",
+                  "interfaces",
+                  "ipv4_default_routes",
+                  "ipv6_default_routes",
+              },
+              "netns metadata keys drifted",
+          )
+          require(metadata["parent"] != metadata["child"], "network namespace unchanged")
+          require(metadata["interfaces"] == "lo", "non-loopback interface exists")
+          require(metadata["ipv4_default_routes"] == "0", "IPv4 default route exists")
+          require(metadata["ipv6_default_routes"] == "0", "IPv6 default route exists")
+
+          allowed_socket_families = {"AF_LOCAL", "AF_NETLINK", "AF_UNIX"}
+          allowed_endpoint_families = allowed_socket_families | {
+              "AF_INET",
+              "AF_INET6",
+              "AF_UNSPEC",
+          }
+          allowed_flags = {"SOCK_CLOEXEC", "SOCK_NONBLOCK"}
+          allowed_protocols = {
+              "SOCK_DGRAM": {"0", "IPPROTO_IP", "IPPROTO_UDP"},
+              "SOCK_STREAM": {"0", "IPPROTO_IP", "IPPROTO_TCP"},
+          }
+          inherited_destination_calls = {
+              "accept",
+              "accept4",
+              "bind",
+              "connect",
+              "getpeername",
+              "getsockname",
+          }
+
+          def is_loopback(value: str) -> bool:
+              address = ipaddress.ip_address(value.split("%", maxsplit=1)[0])
+              if address.is_loopback:
+                  return True
+              return bool(
+                  address.version == 6
+                  and address.ipv4_mapped is not None
+                  and address.ipv4_mapped.is_loopback
+              )
+
+          network_calls = 0
+          addressless_inet_sockets = 0
+          local_inet_calls = 0
+          dns_violations: list[str] = []
+          external_violations: list[str] = []
+          ambiguous_violations: list[str] = []
+
+          for trace in traces:
+              for line_number, raw_line in enumerate(
+                  trace.read_text(encoding="utf-8").splitlines(), start=1
+              ):
+                  line = raw_line.strip()
+                  location = f"{trace.name}:{line_number}"
+                  if "<unfinished ...>" in line or (
+                      "<... " in line and " resumed>" in line
+                  ):
+                      ambiguous_violations.append(location)
+                      continue
+                  match = syscall_pattern.match(line)
+                  if match is None:
+                      continue
+                  network_calls += 1
+                  name = match.group("name")
+                  if any(marker in line for marker in resolver_markers):
+                      dns_violations.append(location)
+                      continue
+
+                  if name == "socket":
+                      socket_match = socket_pattern.match(line)
+                      if socket_match is None:
+                          ambiguous_violations.append(location)
+                          continue
+                      family = socket_match.group("family")
+                      if family in {"AF_INET", "AF_INET6"}:
+                          tokens = socket_match.group("kind").split("|")
+                          bases = set(tokens) & {"SOCK_DGRAM", "SOCK_STREAM"}
+                          flags = set(tokens) - bases
+                          protocol = socket_match.group("protocol")
+                          base = next(iter(bases)) if len(bases) == 1 else None
+                          if (
+                              base is None
+                              or len(tokens) != len(set(tokens))
+                              or not flags <= allowed_flags
+                              or protocol not in allowed_protocols[base]
+                          ):
+                              external_violations.append(location)
+                          else:
+                              addressless_inet_sockets += 1
+                      elif family not in allowed_socket_families:
+                          external_violations.append(location)
+                      continue
+
+                  if name == "socketpair":
+                      if not (
+                          line.startswith("socketpair(AF_UNIX,")
+                          or line.startswith("socketpair(AF_LOCAL,")
+                      ):
+                          external_violations.append(location)
+                      continue
+
+                  families = set(family_pattern.findall(line))
+                  if not families <= allowed_endpoint_families:
+                      external_violations.append(location)
+                      continue
+                  inet_families = families & {"AF_INET", "AF_INET6"}
+                  if inet_families:
+                      addresses = (
+                          ipv4_pattern.findall(line)
+                          + ipv4_pton_pattern.findall(line)
+                          + ipv6_pattern.findall(line)
+                      )
+                      ports = [int(value) for value in port_pattern.findall(line)]
+                      if 53 in ports:
+                          dns_violations.append(location)
+                      if not addresses:
+                          ambiguous_violations.append(location)
+                          continue
+
+                      local_line = True
+                      for value in addresses:
+                          try:
+                              address = ipaddress.ip_address(
+                                  value.split("%", maxsplit=1)[0]
+                              )
+                          except ValueError:
+                              external_violations.append(location)
+                              local_line = False
+                              continue
+                          wildcard_bind = (
+                              address.is_unspecified
+                              and name in {"bind", "getsockname"}
+                          )
+                          if not wildcard_bind and not is_loopback(value):
+                              external_violations.append(location)
+                              local_line = False
+                      if local_line:
+                          local_inet_calls += 1
+                      continue
+
+                  if families:
+                      continue
+                  if name in inherited_destination_calls:
+                      null_accept = name in {"accept", "accept4"} and "NULL, NULL" in line
+                      if not null_accept:
+                          ambiguous_violations.append(location)
+                  elif name in {"sendto", "recvfrom"}:
+                      if "NULL" not in line:
+                          ambiguous_violations.append(location)
+                  elif name in {
+                      "sendmsg",
+                      "sendmmsg",
+                      "recvmsg",
+                      "recvmmsg",
+                      "recvmmsg_time64",
+                  }:
+                      if "msg_name=NULL" not in line:
+                          ambiguous_violations.append(location)
+
+          require(not dns_violations, f"DNS syscall observed at {dns_violations}")
+          require(
+              not external_violations,
+              f"external/raw network syscall observed at {external_violations}",
+          )
+          require(
+              not ambiguous_violations,
+              f"ambiguous network syscall observed at {ambiguous_violations}",
+          )
+
+          report = {
+              "addressless_inet_socket_creations": addressless_inet_sockets,
+              "dns_attempts": 0,
+              "external_destination_attempts": 0,
+              "local_inet_destination_syscalls": local_inet_calls,
+              "network_syscalls_observed": network_calls,
+              "network_namespace_changed": True,
+              "network_namespace_interfaces": ["lo"],
+          }
+          report_path.write_text(
+              json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+          )
+          report_path.chmod(0o600)
+          print("A3_FULL_SUITE_DNS_ATTEMPTS=0")
+          print("A3_FULL_SUITE_EXTERNAL_ATTEMPTS=0")
+          print(f"A3_FULL_SUITE_LOCAL_INET_CALLS={local_inet_calls}")
+          print(f"A3_FULL_SUITE_NETWORK_SYSCALLS={network_calls}")
+          PY
+          echo "A3_FULL_SUITE_PASSED=1" >> "$GITHUB_ENV"
+          "$controller_python" -m ruff format --check \
+            scripts/verify_alpha_a3_p0_operator_clean_room.py \
+            tests/test_alpha_a3_p0_workflow.py \
+            tests/test_verify_alpha_a3_p0_operator_clean_room.py \
+            tests/test_alpha_a3_p0_1_workflow.py \
+            tests/test_alpha_a1_p0_installability.py
+          "$controller_python" -m ruff check \
+            scripts/verify_alpha_a3_p0_operator_clean_room.py \
+            tests/test_alpha_a3_p0_workflow.py \
+            tests/test_verify_alpha_a3_p0_operator_clean_room.py \
+            tests/test_alpha_a3_p0_1_workflow.py \
+            tests/test_alpha_a1_p0_installability.py
+
+          runtime_report="$A3_ROOT/build/runtime-install-plan.json"
+          PIP_CONFIG_FILE=/dev/null \
+            "$downloader/bin/python" -m pip --isolated \
+              --disable-pip-version-check \
+              install \
+              --dry-run \
+              --ignore-installed \
+              --no-index \
+              --find-links "$supply" \
+              --require-hashes \
+              --only-binary=:all: \
+              --no-cache-dir \
+              --no-input \
+              --retries 0 \
+              --report "$runtime_report" \
+              --requirement "$A3_ROOT/build/runtime-requirements.txt"
+          "$controller_python" - "$supply" "$wheelhouse" "$runtime_report" <<'PY'
+          import hashlib
+          import json
+          import shutil
+          import sys
+          from pathlib import Path
+          from urllib.parse import unquote, urlparse
+
+          supply = Path(sys.argv[1]).resolve()
+          wheelhouse = Path(sys.argv[2]).resolve()
+          report = json.loads(Path(sys.argv[3]).read_text(encoding="utf-8"))
+          planned = report.get("install")
+          assert isinstance(planned, list) and planned
+          copied = set()
+          for item in planned:
+              download = item["download_info"]
+              parsed = urlparse(download["url"])
+              assert parsed.scheme == "file" and parsed.netloc in {"", "localhost"}
+              source = Path(unquote(parsed.path)).resolve()
+              assert source.parent == supply and source.suffix == ".whl"
+              assert source.name not in copied
+              expected = download["archive_info"]["hashes"]["sha256"]
+              observed = hashlib.sha256(source.read_bytes()).hexdigest()
+              assert observed == expected
+              shutil.copy2(source, wheelhouse / source.name)
+              copied.add(source.name)
+          assert len(copied) == len(planned)
+          PY
+
+          source_date_epoch=$(git show --no-patch --format=%ct "$A2_ACCEPTED_HEAD")
+          (
+            cd "$export_root"
+            SOURCE_DATE_EPOCH="$source_date_epoch" \
+              "$controller_python" -m hatchling build \
+                --target wheel --directory "$dist_root"
+          )
+          mapfile -t built_wheels < <(
+            find "$dist_root" -maxdepth 1 -type f -name '*.whl' | sort
+          )
+          test "${#built_wheels[@]}" = 1
+          built_wheel="${built_wheels[0]}"
+          test "$(basename "$built_wheel")" = "$A2_WHEEL_NAME"
+          echo "$A2_WHEEL_SHA256  $built_wheel" | sha256sum --check
+          test "$(stat --format='%s' "$built_wheel")" = "$A2_WHEEL_SIZE_BYTES"
+
+          cp -- "$built_wheel" "$wheelhouse/$A2_WHEEL_NAME"
+          cp -- "$export_root/examples/evidencemesh.mcp.json" \
+            "$handoff/evidencemesh.mcp.json"
+          cp -- scripts/verify_alpha_a3_p0_operator_clean_room.py \
+            "$handoff/verify_alpha_a3_p0_operator_clean_room.py"
+          cp -- "$(command -v uv)" "$handoff/bin/uv"
+
+          cp -- "$A3_ROOT/build/runtime-requirements.txt" \
+            "$handoff/requirements.txt"
+          printf '\nevidencemesh==0.1.0 \\\n    --hash=sha256:%s\n' \
+            "$A2_WHEEL_SHA256" \
+            >> "$handoff/requirements.txt"
+
+          "$controller_python" - "$wheelhouse" <<'PY'
+          import sys
+          from pathlib import Path
+          from packaging.utils import canonicalize_name, parse_wheel_filename
+
+          wheelhouse = Path(sys.argv[1])
+          entries = sorted(wheelhouse.iterdir(), key=lambda path: path.name)
+          assert entries and all(path.is_file() and not path.is_symlink() for path in entries)
+          assert all(path.suffix == ".whl" for path in entries)
+          projects = [canonicalize_name(parse_wheel_filename(path.name)[0]) for path in entries]
+          assert len(projects) == len(set(projects))
+          PY
+          (
+            cd "$handoff"
+            while IFS= read -r relative; do
+              sha256sum -- "${relative#./}"
+            done < <(
+              find . -type f ! -path './SHA256SUMS' | LC_ALL=C sort
+            ) > SHA256SUMS
+          )
+          (
+            cd "$handoff"
+            sha256sum --check SHA256SUMS
+          )
+          echo "$MCP_TEMPLATE_SHA256  $handoff/evidencemesh.mcp.json" \
+            | sha256sum --check
+          echo "$A3_HARNESS_SHA256  $handoff/verify_alpha_a3_p0_operator_clean_room.py" \
+            | sha256sum --check
+
+          mask_root="$A3_ROOT/masked-checkout"
+          operator_root="$A3_ROOT/operator"
+          sudo install --directory --owner=root --group=root --mode=0000 "$mask_root"
+          sudo install --directory --owner=root --group=root --mode=0711 "$operator_root"
+          for path in home xdg-cache xdg-config xdg-data tmp work traces; do
+            sudo install --directory --owner=nobody --group=nogroup --mode=0700 \
+              "$operator_root/$path"
+          done
+          sudo chown --recursive root:root "$handoff" "$python_store" "$mask_root"
+          sudo find "$handoff" -type d -exec chmod 0555 {} +
+          sudo find "$handoff" -type f -exec chmod 0444 {} +
+          sudo chmod 0555 "$handoff/bin/uv"
+          sudo chmod --recursive a+rX "$python_store"
+          sudo chown root:root "$A3_ROOT"
+          sudo chmod 0711 "$A3_ROOT"
+          sudo chmod 0700 "$A3_ROOT/build"
+
+          {
+            echo "A3_BASE_PYTHON=$base_python"
+            echo "A3_HANDOFF=$handoff"
+            echo "A3_MASK_ROOT=$mask_root"
+            echo "A3_OPERATOR_ROOT=$operator_root"
+            echo "A3_WHEELHOUSE_COUNT=$(find "$wheelhouse" -maxdepth 1 -type f -name '*.whl' | wc -l)"
+            echo "A3_HANDOFF_MANIFEST_SHA256=$(sha256sum "$handoff/SHA256SUMS" | cut -d' ' -f1)"
+            echo "A3_PIP_VERSION=$pip_version"
+            echo "A3_PIP_MODULE_SHA256=$pip_module_sha256"
+          } >> "$GITHUB_ENV"
+
+      - name: Execute the complete bounded clean-room operator journey
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -x /usr/bin/strace
+          test -x /usr/bin/unshare
+          test -x /usr/bin/setpriv
+          nobody_uid=$(id -u nobody)
+          nobody_gid=$(id -g nobody)
+          test "$nobody_uid" != 0
+          test "$nobody_uid" != "$(id -u)"
+          test "$(id -gn nobody)" = nogroup
+          test -r "$A3_HANDOFF/SHA256SUMS"
+          sudo --user=nobody test -x "$A3_BASE_PYTHON"
+          sudo --user=nobody test -x "$A3_HANDOFF/bin/uv"
+          sudo --user=nobody "$A3_BASE_PYTHON" -I -c \
+            'import sys; assert sys.version_info[:2] == (3, 11)'
+          case "$(sudo --user=nobody "$A3_HANDOFF/bin/uv" --version)" in
+            'uv 0.11.33'*) ;;
+            *) echo 'operator uv version drifted' >&2; exit 1 ;;
+          esac
+          ! sudo --user=nobody test -r "$A3_ROOT/build"
+          test "$(stat --format='%u:%g' "$A3_HANDOFF")" = 0:0
+          if sudo --user=nobody test -w "$A3_HANDOFF"; then
+            echo 'The operator can write the sealed handoff' >&2
+            exit 1
+          fi
+          parent_netns=$(readlink /proc/self/ns/net)
+          parent_mountns=$(readlink /proc/self/ns/mnt)
+          producer_uid=0
+          receipt="$A3_OPERATOR_ROOT/work/operator-receipt.json"
+          trace_file="$A3_OPERATOR_ROOT/traces/operator.strace.log"
+          workspace_mode=$(stat --format='%a' "$GITHUB_WORKSPACE")
+          echo "A3_WORKSPACE_MODE=$workspace_mode" >> "$GITHUB_ENV"
+          restore_workspace_mode() {
+            chmod "$workspace_mode" "$GITHUB_WORKSPACE"
+          }
+          trap restore_workspace_mode EXIT
+          chmod 0700 "$GITHUB_WORKSPACE"
+          ! sudo --user=nobody test -r "$GITHUB_WORKSPACE/README.md"
+
+          sudo /usr/bin/unshare --mount --net --propagation private -- \
+            /bin/bash -euo pipefail -c '
+              mask_root=$1
+              workspace=$2
+              uid=$3
+              gid=$4
+              base_python=$5
+              driver=$6
+              uv_path=$7
+              handoff=$8
+              operator_root=$9
+              parent_netns=${10}
+              parent_mountns=${11}
+              producer_uid=${12}
+              receipt=${13}
+              trace_file=${14}
+              operator_work="$operator_root/work"
+              cd /
+              mount --bind "$mask_root" "$workspace"
+              mount -o remount,bind,ro,nosuid,nodev,noexec "$workspace"
+              cd "$operator_work"
+              if /usr/bin/setpriv \
+                  --reuid="$uid" --regid="$gid" --clear-groups --no-new-privs \
+                  /usr/bin/test -r /var/run/docker.sock || \
+                /usr/bin/setpriv \
+                  --reuid="$uid" --regid="$gid" --clear-groups --no-new-privs \
+                  /usr/bin/test -w /var/run/docker.sock; then
+                echo "The operator can access the Docker socket" >&2
+                exit 1
+              fi
+              exec /usr/bin/setpriv \
+                --reuid="$uid" \
+                --regid="$gid" \
+                --clear-groups \
+                --no-new-privs \
+                /usr/bin/env -i \
+                  HOME="$operator_root/home" \
+                  XDG_CACHE_HOME="$operator_root/xdg-cache" \
+                  XDG_CONFIG_HOME="$operator_root/xdg-config" \
+                  XDG_DATA_HOME="$operator_root/xdg-data" \
+                  TMPDIR="$operator_root/tmp" \
+                  PATH=/usr/bin:/bin \
+                  LANG=C.UTF-8 \
+                  LC_ALL=C.UTF-8 \
+                  TZ=UTC \
+                  PYTHONHASHSEED=0 \
+                  PYTHONDONTWRITEBYTECODE=1 \
+                  PYTHONNOUSERSITE=1 \
+                  /usr/bin/timeout --signal=TERM --kill-after=5s 600s \
+                  /usr/bin/strace -f -qq \
+                    -o "$trace_file" \
+                    -e trace=network,process,signal \
+                    "$base_python" "$driver" \
+                      --uv "$uv_path" \
+                      --python-base "$base_python" \
+                      --handoff-root "$handoff" \
+                      --home "$operator_root/home" \
+                      --xdg-cache "$operator_root/xdg-cache" \
+                      --xdg-config "$operator_root/xdg-config" \
+                      --xdg-data "$operator_root/xdg-data" \
+                      --tmp "$operator_root/tmp" \
+                      --work-root "$operator_work" \
+                      --state-root "$operator_work/state" \
+                      --install-root "$operator_work/install" \
+                      --forbidden-workspace "$workspace" \
+                      --expected-operator-uid "$uid" \
+                      --producer-uid "$producer_uid" \
+                      --parent-net-namespace "$parent_netns" \
+                      --parent-mount-namespace "$parent_mountns" \
+                      --expected-wheel-sha256 \
+                        c38841da79c7a71275bda5a925096dc692ce4feabaf2f618233c5379ed1c577a \
+                      --expected-wheel-size 146492 \
+                      --expected-version 0.1.0 \
+                      --timeout-seconds 300 \
+                      --receipt "$receipt"
+            ' a3-wrapper \
+              "$A3_MASK_ROOT" \
+              "$GITHUB_WORKSPACE" \
+              "$nobody_uid" \
+              "$nobody_gid" \
+              "$A3_BASE_PYTHON" \
+              "$A3_HANDOFF/verify_alpha_a3_p0_operator_clean_room.py" \
+              "$A3_HANDOFF/bin/uv" \
+              "$A3_HANDOFF" \
+              "$A3_OPERATOR_ROOT" \
+              "$parent_netns" \
+              "$parent_mountns" \
+              "$producer_uid" \
+              "$receipt" \
+              "$trace_file"
+          restore_workspace_mode
+          trap - EXIT
+
+          sudo chown --recursive "$(id -u):$(id -g)" \
+            "$A3_OPERATOR_ROOT/work" "$A3_OPERATOR_ROOT/traces"
+          chmod 0700 "$A3_OPERATOR_ROOT/work" "$A3_OPERATOR_ROOT/traces"
+          test -s "$receipt"
+          test -s "$trace_file"
+          strace_parser="$GITHUB_WORKSPACE/scripts/verify_alpha_a1_p2_named_host.py"
+          strace_report="$A3_OPERATOR_ROOT/work/strace-report.json"
+          test -f "$strace_parser"
+          "$A3_BASE_PYTHON" -I - \
+            "$strace_parser" \
+            "$trace_file" \
+            "$strace_report" \
+            "$A3_BASE_PYTHON" \
+            "$A3_HANDOFF/bin/uv" \
+            "$A3_OPERATOR_ROOT/work/install/bin/python" \
+            "$A3_OPERATOR_ROOT/work/install/bin/evidencemesh" \
+            "$A3_OPERATOR_ROOT/work/install/bin/evidencemesh-mcp" <<'PY'
+          import importlib.util
+          import json
+          import sys
+          from pathlib import Path
+
+          parser_path = Path(sys.argv[1]).resolve()
+          trace_path = Path(sys.argv[2]).resolve()
+          report_path = Path(sys.argv[3]).resolve()
+          executable_inputs = sys.argv[4:]
+          assert len(executable_inputs) == 5
+          allowed_execs = {Path(value).resolve() for value in executable_inputs}
+          specification = importlib.util.spec_from_file_location(
+              "evidencemesh_frozen_a1_p2_strace", parser_path
+          )
+          assert specification is not None and specification.loader is not None
+          module = importlib.util.module_from_spec(specification)
+          sys.modules[specification.name] = module
+          specification.loader.exec_module(module)
+          report = module._validate_strace(trace_path, allowed_execs)
+          assert set(report) == {
+              "addressless_inet_socket_creations",
+              "execve_count",
+              "explicit_local_socket_syscalls",
+              "forbidden_network_syscalls",
+              "network_syscalls_observed",
+              "passive_ipv6_loopback_bind_probes",
+              "process_audit_lines",
+          }
+          assert report["forbidden_network_syscalls"] == 0
+          assert report["execve_count"] > 0
+          assert report["passive_ipv6_loopback_bind_probes"] <= 1
+          assert all(type(value) is int and value >= 0 for value in report.values())
+          report_path.write_text(
+              json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+          )
+          report_path.chmod(0o600)
+          PY
+          if grep --with-filename --line-number -E \
+            '(^|[^a-z])(kill|tgkill|tkill)\(' "$trace_file"; then
+            echo 'The successful operator path signalled a process' >&2
+            exit 1
+          fi
+          if pgrep --uid "$nobody_uid" --full -- "$A3_ROOT"; then
+            echo 'An A3 operator process survived the driver' >&2
+            exit 1
+          fi
+
+          "$A3_BASE_PYTHON" -I - "$receipt" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          receipt = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+          assert receipt["schema_version"] == (
+              "evidencemesh.alpha-a3-p0-operator-clean-room-receipt.v1"
+          )
+          assert receipt["validation"]["passed"] is True
+          assert receipt["validation"]["errors"] == []
+          assert receipt["claim"]["restartability"] is True
+          assert receipt["claim"]["recovery"] is False
+          assert receipt["budgets"]["installations"] == 1
+          assert receipt["budgets"]["uninstallations"] == 1
+          assert receipt["budgets"]["cli_invocations"] == 1
+          assert receipt["budgets"]["mcp_server_launches"] == 2
+          assert receipt["budgets"]["logical_mcp_requests"] == 4
+          assert receipt["budgets"]["health_tool_calls"] == 2
+          assert receipt["installation"]["pip_checks_passed"] == 2
+          assert receipt["trace_boundary"] == {
+              "authoritative_validator": "outer_workflow_after_driver_exit",
+              "driver_validates_process_tree_trace": False,
+          }
+          assert all(value == 0 for value in receipt["traffic"].values())
+          PY
+          echo "A3_RECEIPT_SHA256=$(sha256sum "$receipt" | cut -d' ' -f1)" \
+            >> "$GITHUB_ENV"
+          "$A3_BASE_PYTHON" -I - "$strace_report" >> "$GITHUB_ENV" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          report = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+          names = {
+              "A3_STRACE_ADDRESSLESS_INET": "addressless_inet_socket_creations",
+              "A3_STRACE_EXECVE_COUNT": "execve_count",
+              "A3_STRACE_LOCAL_SYSCALLS": "explicit_local_socket_syscalls",
+              "A3_STRACE_NETWORK_SYSCALLS": "network_syscalls_observed",
+              "A3_STRACE_PASSIVE_IPV6_LOOPBACK": "passive_ipv6_loopback_bind_probes",
+          }
+          for environment_name, report_name in names.items():
+              value = report[report_name]
+              assert type(value) is int and value >= 0
+              print(f"{environment_name}={value}")
+          PY
+
+      - name: Remove every ephemeral A3-P0.1 output
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          A3_ROOT="${RUNNER_TEMP}/evidencemesh-alpha-a3-p0-1-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          expected_root="${RUNNER_TEMP%/}/evidencemesh-alpha-a3-p0-1-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          test "$A3_ROOT" = "$expected_root"
+          test "$A3_ROOT" != "${RUNNER_TEMP%/}"
+          test "$A3_ROOT" != /
+          if [[ "${A3_WORKSPACE_MODE:-}" =~ ^[0-7]{3,4}$ ]]; then
+            chmod "$A3_WORKSPACE_MODE" "$GITHUB_WORKSPACE"
+          fi
+          a3_processes_present() {
+            local status
+            if /usr/bin/pgrep --full -- "$A3_ROOT" >/dev/null; then
+              return 0
+            else
+              status=$?
+              case "$status" in
+                1) return 1 ;;
+                *) echo "pgrep failed with status $status" >&2; exit "$status" ;;
+              esac
+            fi
+          }
+          if a3_processes_present; then
+            sudo /usr/bin/pkill --signal TERM --full -- "$A3_ROOT" || true
+            for _ in 1 2 3 4 5; do
+              if a3_processes_present; then
+                /bin/sleep 1
+              else
+                break
+              fi
+            done
+            if a3_processes_present; then
+              sudo /usr/bin/pkill --signal KILL --full -- "$A3_ROOT" || true
+              for _ in 1 2 3 4 5; do
+                if a3_processes_present; then
+                  /bin/sleep 1
+                else
+                  break
+                fi
+              done
+            fi
+          fi
+          if test -e "$A3_ROOT" || test -L "$A3_ROOT"; then
+            sudo rm --recursive --force -- "$A3_ROOT"
+          fi
+          if a3_processes_present; then
+            echo 'An A3-P0.1 process survived cleanup' >&2
+            exit 1
+          fi
+          test ! -e "$A3_ROOT"
+          test ! -L "$A3_ROOT"
+          echo "A3_CLEANUP_COMPLETED=1" >> "$GITHUB_ENV"
+
+      - name: Confirm complete A3-P0.1 cleanup
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          A3_ROOT="${RUNNER_TEMP}/evidencemesh-alpha-a3-p0-1-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          expected_root="${RUNNER_TEMP%/}/evidencemesh-alpha-a3-p0-1-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          test "$A3_ROOT" = "$expected_root"
+          test "$A3_ROOT" != "${RUNNER_TEMP%/}"
+          test "$A3_ROOT" != /
+          test "${A3_CLEANUP_COMPLETED:-}" = 1
+          if /usr/bin/pgrep --full -- "$A3_ROOT" >/dev/null; then
+            echo 'An A3-P0.1 process survived cleanup confirmation' >&2
+            exit 1
+          else
+            pgrep_status=$?
+            test "$pgrep_status" = 1
+          fi
+          test ! -e "$A3_ROOT"
+          test ! -L "$A3_ROOT"
+          workspace_status=$(git status --porcelain --untracked-files=all)
+          test -z "$workspace_status"
+
+      - name: Summarize only after reconciliation and cleanup
+        env:
+          EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${A3_FULL_SUITE_PASSED:-}" = 1
+          test "${A3_FULL_SUITE_DNS_ATTEMPTS:-}" = 0
+          test "${A3_FULL_SUITE_EXTERNAL_ATTEMPTS:-}" = 0
+          test "${A3_CLEANUP_COMPLETED:-}" = 1
+          exact_tree=$(git rev-parse HEAD^{tree})
+          {
+            echo '## EvidenceMesh Alpha A3-P0.1 acceptance reconciliation offline'
+            echo
+            echo "- Reconciliation HEAD/tree: $EXACT_HEAD/$exact_tree"
+            echo "- Immutable failed A3 parent HEAD/tree: $A3_FAILED_HEAD/$A3_FAILED_TREE"
+            echo "- Historical A3 failure run/job: $A3_FAILED_RUN_ID/$A3_FAILED_JOB_ID"
+            echo "- Historical CI run: $A3_FAILED_CI_RUN_ID"
+            echo "- Historical Python CI jobs: $A3_FAILED_CI_PYTHON_JOB_1_ID/$A3_FAILED_CI_PYTHON_JOB_2_ID/$A3_FAILED_CI_PYTHON_JOB_3_ID"
+            echo "- Product subject HEAD/tree: $A2_ACCEPTED_HEAD/$A2_ACCEPTED_TREE"
+            echo "- A2 accepted run/job and CI: $A2_ACCEPTED_RUN_ID/$A2_ACCEPTED_JOB_ID/$A2_ACCEPTED_CI_RUN_ID"
+            echo "- Workflow run/attempt: $GITHUB_RUN_ID/$GITHUB_RUN_ATTEMPT"
+            echo '- Historical cause classification: wrapped README literal assertion plus stale A1 Quick Start expectations; no product-runtime defect observed'
+            echo '- Full candidate test suite with coverage before operator journey: passed'
+            echo "- Full-suite network/local-INET syscall counts: $A3_FULL_SUITE_NETWORK_SYSCALLS/$A3_FULL_SUITE_LOCAL_INET_CALLS"
+            echo "- Full-suite external/DNS attempts: $A3_FULL_SUITE_EXTERNAL_ATTEMPTS/$A3_FULL_SUITE_DNS_ATTEMPTS"
+            echo "- Wheel SHA-256/bytes: $A2_WHEEL_SHA256/$A2_WHEEL_SIZE_BYTES"
+            echo "- Wheelhouse wheels/handoff manifest SHA-256: $A3_WHEELHOUSE_COUNT/$A3_HANDOFF_MANIFEST_SHA256"
+            echo "- Receipt SHA-256: $A3_RECEIPT_SHA256"
+            echo "- Addressless INET socket creations: $A3_STRACE_ADDRESSLESS_INET"
+            echo "- Explicit local socket syscalls: $A3_STRACE_LOCAL_SYSCALLS"
+            echo "- Passive IPv6 loopback probes: $A3_STRACE_PASSIVE_IPV6_LOOPBACK"
+            echo "- Process-tree execve/network syscall counts: $A3_STRACE_EXECVE_COUNT/$A3_STRACE_NETWORK_SYSCALLS"
+            echo "- Downloader pip identity: $A3_PIP_VERSION/$A3_PIP_MODULE_SHA256"
+            echo '- Operator identity: nobody:nogroup, checkout masked, environment allowlisted'
+            echo '- Package lifecycle: 1 install / 1 CLI / 2 clean MCP starts and stops / 1 uninstall'
+            echo '- MCP requests: 2 initialize + 2 health; initialized notifications: 2'
+            echo '- Runtime/provider/search/document/model/DNS requests: 0'
+            echo '- Artifact, attestation, distribution, tag or release: none'
+            echo '- Claim: automated Ubuntu 24.04/Python 3.11 simulation for an unpublished wheel only'
+            echo '- Human usability, public install, recovery, rollback, purge, OS supervision, Phase 12 and V1: NO-GO'
+            echo '- Same-HEAD ordinary CI remains independently required for the global A3 acceptance claim.'
+          } >> "$GITHUB_STEP_SUMMARY"
