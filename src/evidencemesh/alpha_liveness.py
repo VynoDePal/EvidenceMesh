@@ -304,10 +304,7 @@ class A2SQLiteAlphaControlPlane:
         self._boottime = boottime
         self._boot_identity_reader = boot_identity
         _boot_digest(boot_identity)
-        self._ledger_identity = cast(
-            _LedgerIdentity,
-            _governor._private_ledger_identity(self.ledger_path),
-        )
+        self._ledger_identity = _governor._private_ledger_identity(self.ledger_path)
         self._validate_database()
 
     @classmethod
@@ -331,10 +328,10 @@ class A2SQLiteAlphaControlPlane:
         if _fault_marker_path(path).exists() or _fault_marker_path(path).is_symlink():
             raise BudgetConfigurationError("A2 supervisor fault marker blocks bootstrap")
         _governor.SQLiteAlphaControlPlane._prepare_new_ledger(path)
-        identity = cast(_LedgerIdentity, _governor._private_ledger_identity(path))
+        identity = _governor._private_ledger_identity(path)
         try:
             with contextlib.closing(_governor.SQLiteAlphaControlPlane._connect_path(path)) as db:
-                if cast(_LedgerIdentity, _governor._private_ledger_identity(path)) != identity:
+                if _governor._private_ledger_identity(path) != identity:
                     raise BudgetConfigurationError("A2 ledger identity changed during bootstrap")
                 db.executescript(
                     """
@@ -593,7 +590,7 @@ class A2SQLiteAlphaControlPlane:
         return next_epoch
 
     def _assert_safe(self) -> None:
-        current = cast(_LedgerIdentity, _governor._private_ledger_identity(self.ledger_path))
+        current = _governor._private_ledger_identity(self.ledger_path)
         if current != self._ledger_identity:
             with contextlib.suppress(BudgetConfigurationError):
                 _persist_fault_marker(
@@ -609,14 +606,14 @@ class A2SQLiteAlphaControlPlane:
 
     def _connect(self, *, allow_fault: bool = False) -> sqlite3.Connection:
         if allow_fault:
-            current = cast(_LedgerIdentity, _governor._private_ledger_identity(self.ledger_path))
+            current = _governor._private_ledger_identity(self.ledger_path)
             if current != self._ledger_identity:
                 raise BudgetConfigurationError("A2 ledger identity changed")
         else:
             self._assert_safe()
         db = _governor.SQLiteAlphaControlPlane._connect_path(self.ledger_path)
         try:
-            current = cast(_LedgerIdentity, _governor._private_ledger_identity(self.ledger_path))
+            current = _governor._private_ledger_identity(self.ledger_path)
             if current != self._ledger_identity:
                 raise BudgetConfigurationError("A2 ledger identity changed")
         except BaseException:
@@ -2761,6 +2758,7 @@ class A2SQLiteBudgetGovernor:
 
         if self._closed or self._poisoned:
             raise BudgetConfigurationError("A2 governor is not dispatchable")
+        inner: httpx.AsyncBaseTransport
         if inner_transport is None:
             inner = httpx.AsyncHTTPTransport(retries=0)
         elif type(inner_transport) is httpx.MockTransport:

@@ -9,7 +9,7 @@ import time
 from collections import Counter, defaultdict
 from datetime import UTC, datetime
 from itertools import pairwise
-from typing import Any
+from typing import Any, cast
 
 import httpx
 
@@ -122,7 +122,8 @@ class EvidenceMesh:
             if fetcher is not None:
                 invalid_fetcher_type = (
                     type(fetcher) is not WebFetcher
-                    if type(self.governor) is A2SQLiteBudgetGovernor or self.governor._rc4
+                    if type(self.governor) is A2SQLiteBudgetGovernor
+                    or cast(SQLiteBudgetGovernor, self.governor)._rc4
                     else not isinstance(fetcher, WebFetcher)
                 )
                 if invalid_fetcher_type or fetcher.governor is not self.governor:
