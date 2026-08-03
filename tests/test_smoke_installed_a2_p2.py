@@ -279,7 +279,9 @@ def test_run_smoke_composes_stable_report_and_removes_ephemeral_root(
 
 @pytest.mark.asyncio
 async def test_primary_v3_close_mints_authority_and_withdrawal_cleans(tmp_path: Path) -> None:
-    result = await smoke._exercise_primary_v3(tmp_path, "a" * 64, "wheel")
+    primary_root = tmp_path / "primary"
+    assert not primary_root.exists()
+    result = await smoke._exercise_primary_v3(primary_root, "a" * 64, "wheel")
 
     assert result["closed_session_authority_created"] is True
     assert result["feedback_published_then_withdrawn"] is True
@@ -291,7 +293,9 @@ async def test_primary_v3_close_mints_authority_and_withdrawal_cleans(tmp_path: 
 
 @pytest.mark.asyncio
 async def test_exact_session_expiry_requires_then_resolves_recovery(tmp_path: Path) -> None:
-    result = await smoke._exercise_recovery(tmp_path, "b" * 64, "sdist")
+    recovery_root = tmp_path / "recovery"
+    assert not recovery_root.exists()
+    result = await smoke._exercise_recovery(recovery_root, "b" * 64, "sdist")
 
     assert result == {
         "expired_close_refused": True,

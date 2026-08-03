@@ -1,0 +1,135 @@
+{
+  "authority": {
+    "artifact_or_attestation_upload_allowed": false,
+    "distribution_publication_allowed": false,
+    "live_closed_alpha_allowed": false,
+    "merge_allowed": false,
+    "phase_12_allowed": false,
+    "production_allowed": false,
+    "release_allowed": false,
+    "tag_allowed": false,
+    "v1_allowed": false
+  },
+  "budgets": {
+    "branch_fast_forward_updates_maximum": 1,
+    "build_invocations_maximum": 2,
+    "candidate_commits_maximum": 1,
+    "candidate_distribution_installations_maximum": 2,
+    "changed_files_exact": 5,
+    "distribution_publications": 0,
+    "ephemeral_distribution_files_expected": 4,
+    "evidencemesh_runtime_network_requests": 0,
+    "live_document_requests": 0,
+    "live_model_requests": 0,
+    "live_provider_requests": 0,
+    "live_search_requests": 0,
+    "live_tester_sessions": 0,
+    "operating_system_service_activations": 0,
+    "retries": 0,
+    "workflow_attempts_maximum": 1,
+    "workflow_reruns": 0
+  },
+  "candidate_decision": {
+    "decision": "pending_until_one_shot_ci",
+    "failed_or_cancelled_attempt_is_terminal": true,
+    "historical_failure_reinterpreted": false,
+    "pr_remains_draft": true
+  },
+  "correction": {
+    "affected_test_count": 2,
+    "allowed_runtime_or_harness_change": false,
+    "corrected_path": "tests/test_smoke_installed_a2_p2.py",
+    "corrected_test_sha256": "05eef013f16d2017a36a091e403d6ca8c79f61f1fe5eec58554f0f0f8d6904c3",
+    "fixture_contract": "distinct_nonexistent_child_root_per_exercise",
+    "tests": [
+      "test_primary_v3_close_mints_authority_and_withdrawal_cleans",
+      "test_exact_session_expiry_requires_then_resolves_recovery"
+    ]
+  },
+  "entry": {
+    "branch": "agent/evidencemesh-v0.1",
+    "direct_child_required": true,
+    "exact_parent_commit_sha": "18340f972bbc907912d1fcfa9fe5a2385751cc97",
+    "exact_parent_tree_sha": "06e745383904c37ca277c8f57c45db9ed96df6b4",
+    "merge_commit_allowed": false,
+    "pull_request": 1,
+    "pull_request_must_remain_draft": true,
+    "repository": "VynoDePal/EvidenceMesh"
+  },
+  "gate": "Alpha A2-P2.1 fixture-root correction offline",
+  "historical_failure": {
+    "conclusion": "failure",
+    "exception": "FileExistsError",
+    "failed_before_build": true,
+    "immutable": true,
+    "job_id": 91779399419,
+    "product_runtime_defect_observed": false,
+    "run_attempt": 1,
+    "run_id": 30841501822,
+    "stage": "full_suite_two_test_fixture_failures"
+  },
+  "immutable_parent_content": {
+    ".github/workflows/alpha-a2-p2-installed-distribution-offline.yml": "1c66dcf6bdcf7164e100df3dfa3639caca207669ee1bdda634e16c0aed32ca2c",
+    "alpha/alpha-a2-p2-installed-distribution-offline-policy-v1.json": "6356e5da4dc9ddb5db6cc643a894cc6dd404687297aa86c2005c1963303936f8",
+    "docs/alpha-a2-p2-installed-distribution-offline-gate-v1.md": "2b64d1364b5c90894e109d016afa85ef466e9b4f285b2f2c86985b3ad7189cd1",
+    "scripts/smoke_installed_a2_p2.py": "66aaf1815233e3f9e04b5a898e1b70d5b486ed1b3eae01489f42873a99578309",
+    "tests/test_alpha_a2_p2_workflow.py": "8b26b5de758fcfc5bcd18d1609ffe6d495a660a877a5dba605436f3b8ff12fda"
+  },
+  "protocol": {
+    "path": "docs/alpha-a2-p2-1-fixture-root-correction-offline-gate-v1.md",
+    "sha256": "9c189f7ba5792f3aa28a70d0664bb05b68972a7d68adf6574c4d3085bc96c0c9"
+  },
+  "revalidation": {
+    "archive_inventory_and_reproducibility_required": true,
+    "clean_git_exports": 2,
+    "coverage_minimum_percent": 85.0,
+    "full_suite_invocations": 1,
+    "hashed_pep508_install_requirements_required": true,
+    "installed_smoke_invocations": 2,
+    "network_namespace_must_differ_from_parent": true,
+    "pep610_hashed_url_required": true,
+    "source_quality_gates_required": [
+      "ruff_format",
+      "ruff_lint",
+      "mypy_strict"
+    ],
+    "uv_offline_after_acquisition": true,
+    "uv_pip_check_invocations": 2
+  },
+  "schema_version": "evidencemesh.alpha-a2-p2.1-fixture-root-correction-offline-policy.v1",
+  "scope": {
+    "allowed_additions": [
+      ".github/workflows/alpha-a2-p2-1-fixture-root-correction-offline.yml",
+      "alpha/alpha-a2-p2-1-fixture-root-correction-policy-v1.json",
+      "docs/alpha-a2-p2-1-fixture-root-correction-offline-gate-v1.md",
+      "tests/test_alpha_a2_p2_1_workflow.py"
+    ],
+    "allowed_modifications": [
+      "tests/test_smoke_installed_a2_p2.py"
+    ],
+    "runtime_and_packaging_immutable_paths": [
+      "src",
+      "pyproject.toml",
+      "uv.lock"
+    ]
+  },
+  "stop_criteria": [
+    "the candidate is not one non-merge direct child of the exact failed parent",
+    "the parent tree, exact five path statuses, or immutable P2 content differs",
+    "the failed run or job is rerun, rewritten, reinterpreted, or treated as passed",
+    "either corrected test supplies an existing, shared, or wrong fixture root",
+    "format, lint, strict typing, coverage, or any full-suite test fails or is weakened",
+    "either clean export, build, archive comparison, inventory, install, pip check, or smoke fails",
+    "any runtime network, DNS, provider, search, document, model, tester, or live request occurs",
+    "any retry, rerun, second commit, service activation, artifact, distribution, tag, release, or merge is used",
+    "any ephemeral output remains or Phase 12, production, or V1 authority is claimed"
+  ],
+  "successful_claim": {
+    "local_offline_technical_alpha_v0_1_0_a2": true,
+    "phase_12_ready": false,
+    "public_distribution_available": false,
+    "real_os_supervision_proven": false,
+    "scope": "single_host_local_offline_installed_distribution_after_fixture_correction_only",
+    "v1_ready": false
+  }
+}
