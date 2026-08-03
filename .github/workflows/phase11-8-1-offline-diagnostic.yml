@@ -1,0 +1,88 @@
+name: Phase 11.8.1 Offline Causal Diagnostic
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - .github/workflows/phase11-8-1-offline-diagnostic.yml
+      - benchmarks/analyze_phase11_8_1_offline.py
+      - benchmarks/results/phase11_8_recovery_2026-07-29.json
+      - benchmarks/results/phase11_8_1_offline_diagnostic_2026-07-30.json
+      - benchmarks/results/phase11_8_1_offline_diagnostic_2026-07-30.md
+      - benchmarks/run_phase11_5_quality_recovery.py
+      - benchmarks/run_phase11_8_recovery.py
+      - tests/test_phase11_8_1_offline.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase11-8-1-offline-diagnostic-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  offline-diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6.0.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Verify locked Phase 11.8 source
+        run: |
+          echo \
+            "0bd05884c6e6d019f22d18113ef449d1cf1c8158ac0e598d899ee1a93c4b687a  benchmarks/results/phase11_8_recovery_2026-07-29.json" \
+            | sha256sum --check
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install locked test environment
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Recompute committed offline diagnostic
+        run: |
+          uv run python benchmarks/analyze_phase11_8_1_offline.py \
+            --input benchmarks/results/phase11_8_recovery_2026-07-29.json \
+            --output /tmp/phase11_8_1_offline_diagnostic.json
+          diff \
+            --unified \
+            benchmarks/results/phase11_8_1_offline_diagnostic_2026-07-30.json \
+            /tmp/phase11_8_1_offline_diagnostic.json
+
+      - name: Run offline causal and adversarial tests
+        run: |
+          uv run pytest tests/test_phase11_8_1_offline.py -q
+
+      - name: Confirm zero-provider boundary
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = json.loads(
+              Path(
+                  "benchmarks/results/"
+                  "phase11_8_1_offline_diagnostic_2026-07-30.json"
+              ).read_bytes()
+          )
+          boundary = report["execution_boundary"]
+          assert boundary["network_access"] is False
+          assert boundary["provider_or_model_calls"] is False
+          assert boundary["tavily_requests"] == 0
+          assert boundary["gemini_requests"] == 0
+          assert boundary["phase12_accessed"] is False
+          assert boundary["product_configuration_changed"] is False
+          assert report["decision"]["historical_phase11_8_result_changed"] is False
+          assert report["decision"]["release_decision"] == "no-go"
+          PY

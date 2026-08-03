@@ -1,0 +1,354 @@
+{
+  "benchmark": "evidencemesh-phase11-8-4-offline-guardrails-v1",
+  "decision": {
+    "external_competitor_benchmark_allowed": false,
+    "historical_phase11_8_3_result_changed": false,
+    "merge_allowed": false,
+    "next_step": "Review and separately authorize a small pre-registered live quota/schema smoke test; this offline pass authorizes no API traffic.",
+    "offline_guardrails_passed": true,
+    "phase11_8_4_live_smoke_authorized": false,
+    "phase11_9_executed": false,
+    "phase11_9_protocol_may_be_frozen": false,
+    "phase12_authorized": false,
+    "phase12_executed": false,
+    "product_model_defaults_changed": false,
+    "public_alpha_allowed": false,
+    "quality_profile_promotion_allowed": false,
+    "release_allowed": false,
+    "release_decision": "no-go",
+    "superiority_claim_allowed": false,
+    "users_choose_provider_model_and_credentials": true
+  },
+  "gates": {
+    "authorization_and_release_boundaries_preserved": {
+      "live_smoke_authorized": false,
+      "passed": true,
+      "phase12_accessed": false,
+      "product_configuration_changed": false
+    },
+    "daily_exhaustion_fails_before_request": {
+      "passed": true
+    },
+    "effective_quota_budgets_are_exact": {
+      "passed": true
+    },
+    "flash_schedule_within_rolling_rpm_and_tpm": {
+      "observed": {
+        "duration_seconds": 475.0,
+        "effective_rpm": 12,
+        "effective_tpm": 200000,
+        "maximum_rolling_estimated_input_tokens": 60000,
+        "maximum_rolling_requests": 12,
+        "request_count": 96,
+        "within_rpm": true,
+        "within_tpm": true
+      },
+      "passed": true
+    },
+    "flash_start_interval_at_least_five_seconds": {
+      "observed_seconds": 5.0,
+      "passed": true,
+      "required_seconds": 5.0
+    },
+    "gemma_fixture_is_tpm_bound": {
+      "passed": true,
+      "rpm_only_interval_seconds": 2.5,
+      "scheduled_interval_seconds": 18.75
+    },
+    "gemma_schedule_within_rolling_rpm_and_tpm": {
+      "observed": {
+        "duration_seconds": 457.5,
+        "effective_rpm": 24,
+        "effective_tpm": 12800,
+        "maximum_rolling_estimated_input_tokens": 12000,
+        "maximum_rolling_requests": 3,
+        "request_count": 24,
+        "within_rpm": true,
+        "within_tpm": true
+      },
+      "passed": true
+    },
+    "historical_phase11_8_3_no_go_preserved": {
+      "historical_gate_count": 14,
+      "historical_gates_passed": 10,
+      "historical_http_429": 22,
+      "passed": true
+    },
+    "locked_source_integrity": {
+      "guardrails_sha256": "83a4341b93c49b3fc8c6a7f46da40c24f8bed19b516472229e3b280a3ebc763d",
+      "passed": true,
+      "phase11_8_2_candidate_sha256": "0eb71a0e94b7e21d33105788d05076382f96ab9e5fd6cea9d16669305d38c74e",
+      "phase11_8_3_result_sha256": "167a7eb531966ee0591a1ae01b2a8d9d47307cb1eb52ec152946bbe0dbc6e39c",
+      "protocol_sha256": "ff3c034688dc87a320140b0e5815819603e9800fa14f5ea90cd5ff27b098cc58"
+    },
+    "native_schema_and_request_use_supported_contract": {
+      "passed": true,
+      "request_sha256": "fd59c489207d3ad4b8d3c5df8a5a74d319b4f92b6ff9178a9896f22f952661c4",
+      "schema_sha256": "053b3f3fe6ef521f73425e63c8e58815e13045a05fbcf4848a9185f865a4b09c"
+    },
+    "quota_dimensions_are_bounded_and_correct": {
+      "observed": {
+        "rpd": {
+          "error_kind": "http_429",
+          "http_status": 429,
+          "quota_dimension": "rpd",
+          "retry_after_seconds": null
+        },
+        "rpm": {
+          "error_kind": "http_429",
+          "http_status": 429,
+          "quota_dimension": "rpm",
+          "retry_after_seconds": 15.0
+        },
+        "tpm": {
+          "error_kind": "http_429",
+          "http_status": 429,
+          "quota_dimension": "tpm",
+          "retry_after_seconds": null
+        },
+        "unknown": {
+          "error_kind": "http_429",
+          "http_status": 429,
+          "quota_dimension": "unknown",
+          "retry_after_seconds": null
+        }
+      },
+      "passed": true
+    },
+    "quota_telemetry_omits_raw_provider_content": {
+      "passed": true
+    },
+    "scored_benchmark_aborts_on_429": {
+      "abort_telemetry": {
+        "error_kind": "http_429",
+        "http_status": 429,
+        "quota_dimension": "rpm",
+        "retry_after_seconds": 15.0
+      },
+      "passed": true
+    },
+    "strict_local_semantic_validation_preserved": {
+      "observed": {
+        "invalid_fixture_count": 4,
+        "invalid_rejected": 4,
+        "repair_requests": 0,
+        "valid_accepted": true
+      },
+      "passed": true
+    },
+    "zero_network_provider_model_traffic": {
+      "gemini_requests": 0,
+      "model_calls": 0,
+      "network_requests": 0,
+      "passed": true,
+      "provider_calls": 0,
+      "tavily_requests": 0
+    }
+  },
+  "privacy": {
+    "credentials_in_report": false,
+    "generated_answers_in_report": false,
+    "phase12_reserved_identifiers_in_report": false,
+    "questions_in_report": false,
+    "raw_provider_error_messages_in_report": false,
+    "raw_quota_identifiers_in_report": false,
+    "reference_answers_in_report": false,
+    "source_snippets_or_evidence_in_report": false,
+    "source_titles_or_urls_in_report": false,
+    "system_or_user_prompts_in_report": false
+  },
+  "protocol": {
+    "active_limits_are_project_scoped": true,
+    "candidate_path": "benchmarks/phase11_8_2_candidate.py",
+    "candidate_sha256": "0eb71a0e94b7e21d33105788d05076382f96ab9e5fd6cea9d16669305d38c74e",
+    "guardrails_path": "benchmarks/phase11_8_4_guardrails.py",
+    "guardrails_sha256": "83a4341b93c49b3fc8c6a7f46da40c24f8bed19b516472229e3b280a3ebc763d",
+    "observed_limits_are_universal_defaults": false,
+    "ordinary_integration_429_policy": "bounded exponential backoff with positive jitter",
+    "path": "docs/benchmark-protocol-v19.md",
+    "safety_margin_percent": 20,
+    "scored_benchmark_429_policy": "abort_unscored_without_retry",
+    "sha256": "ff3c034688dc87a320140b0e5815819603e9800fa14f5ea90cd5ff27b098cc58"
+  },
+  "quota_error_diagnostics": {
+    "abort_telemetry": {
+      "error_kind": "http_429",
+      "http_status": 429,
+      "quota_dimension": "rpm",
+      "retry_after_seconds": 15.0
+    },
+    "benchmark_retry_count": 0,
+    "dimensions_match": true,
+    "fixture_count": 4,
+    "production_retry_examples_seconds": [
+      1.1,
+      2.2,
+      4.4,
+      8.8
+    ],
+    "raw_provider_message_omitted": true,
+    "raw_quota_identifiers_omitted": true,
+    "retry_after_uses_safe_maximum_hint": true,
+    "sanitized": {
+      "rpd": {
+        "error_kind": "http_429",
+        "http_status": 429,
+        "quota_dimension": "rpd",
+        "retry_after_seconds": null
+      },
+      "rpm": {
+        "error_kind": "http_429",
+        "http_status": 429,
+        "quota_dimension": "rpm",
+        "retry_after_seconds": 15.0
+      },
+      "tpm": {
+        "error_kind": "http_429",
+        "http_status": 429,
+        "quota_dimension": "tpm",
+        "retry_after_seconds": null
+      },
+      "unknown": {
+        "error_kind": "http_429",
+        "http_status": 429,
+        "quota_dimension": "unknown",
+        "retry_after_seconds": null
+      }
+    },
+    "scored_benchmark_aborted": true
+  },
+  "quota_guardrails": {
+    "daily_exhaustion_rejected_before_request": true,
+    "flash_lite": {
+      "audit": {
+        "duration_seconds": 475.0,
+        "effective_rpm": 12,
+        "effective_tpm": 200000,
+        "maximum_rolling_estimated_input_tokens": 60000,
+        "maximum_rolling_requests": 12,
+        "request_count": 96,
+        "within_rpm": true,
+        "within_tpm": true
+      },
+      "daily_requests_after_plan": 400,
+      "estimated_input_tokens_per_request": 5000,
+      "initial_daily_requests": 304,
+      "minimum_start_interval_seconds": 5.0,
+      "planned_requests": 96
+    },
+    "gemma_26b": {
+      "audit": {
+        "duration_seconds": 457.5,
+        "effective_rpm": 24,
+        "effective_tpm": 12800,
+        "maximum_rolling_estimated_input_tokens": 12000,
+        "maximum_rolling_requests": 3,
+        "request_count": 24,
+        "within_rpm": true,
+        "within_tpm": true
+      },
+      "estimated_input_tokens_per_request": 4000,
+      "first_scheduled_interval_seconds": 18.75,
+      "planned_requests": 24,
+      "rpm_only_interval_seconds": 2.5,
+      "tpm_is_binding": true
+    },
+    "policies": {
+      "gemini-3.5-flash-lite": {
+        "effective_budget": {
+          "rpd": 400,
+          "rpm": 12,
+          "tpm": 200000
+        },
+        "model": "gemini-3.5-flash-lite",
+        "observed_ceiling": {
+          "rpd": 500,
+          "rpm": 15,
+          "tpm": 250000
+        },
+        "safety_fraction": {
+          "denominator": 5,
+          "numerator": 4
+        }
+      },
+      "gemma-4-26b-a4b-it": {
+        "effective_budget": {
+          "rpd": 11520,
+          "rpm": 24,
+          "tpm": 12800
+        },
+        "model": "gemma-4-26b-a4b-it",
+        "observed_ceiling": {
+          "rpd": 14400,
+          "rpm": 30,
+          "tpm": 16000
+        },
+        "safety_fraction": {
+          "denominator": 5,
+          "numerator": 4
+        }
+      },
+      "gemma-4-31b-it": {
+        "effective_budget": {
+          "rpd": 11520,
+          "rpm": 24,
+          "tpm": 12800
+        },
+        "model": "gemma-4-31b-it",
+        "observed_ceiling": {
+          "rpd": 14400,
+          "rpm": 30,
+          "tpm": 16000
+        },
+        "safety_fraction": {
+          "denominator": 5,
+          "numerator": 4
+        }
+      }
+    },
+    "policy_source": "operator-observed active Google AI Studio project limits on 2026-07-30; not universal defaults"
+  },
+  "schema_version": 1,
+  "source": {
+    "historical_http_429": 22,
+    "historical_release_decision": "no-go",
+    "historical_result": "candidate_failed_10_of_14",
+    "phase11_8_3_result_path": "benchmarks/results/phase11_8_3_factorial_2026-07-30.json",
+    "phase11_8_3_result_sha256": "167a7eb531966ee0591a1ae01b2a8d9d47307cb1eb52ec152946bbe0dbc6e39c"
+  },
+  "structured_output": {
+    "legacy_schema_contains_unsupported_keywords": true,
+    "model": "gemini-3.5-flash-lite",
+    "model_structured_output_documented": true,
+    "native_request_sha256": "fd59c489207d3ad4b8d3c5df8a5a74d319b4f92b6ff9178a9896f22f952661c4",
+    "request_contract": {
+      "maximum_output_tokens": 2048,
+      "response_json_schema_present": true,
+      "response_mime_type": "application/json",
+      "thinking_level": "high"
+    },
+    "schema_sha256": "053b3f3fe6ef521f73425e63c8e58815e13045a05fbcf4848a9185f865a4b09c",
+    "strict_local_validation": {
+      "invalid_fixture_count": 4,
+      "invalid_rejected": 4,
+      "repair_requests": 0,
+      "valid_accepted": true
+    }
+  },
+  "task_type": "offline model-quota, HTTP 429 and native structured-output engineering guardrails",
+  "traffic": {
+    "fallback_requests": 0,
+    "gemini_requests": 0,
+    "model_calls": 0,
+    "network_requests": 0,
+    "provider_calls": 0,
+    "repair_requests": 0,
+    "retries": 0,
+    "tavily_requests": 0
+  },
+  "warnings": [
+    "The quota values are an operator-observed project snapshot, not guaranteed Gemini defaults. A future live protocol must review them.",
+    "Native structured output constrains syntax only. The strict local parser remains necessary for evidence and citation semantics.",
+    "The failed 17/24 Phase 11.8.3 projection gate is unaffected by these availability and response-contract guardrails."
+  ]
+}

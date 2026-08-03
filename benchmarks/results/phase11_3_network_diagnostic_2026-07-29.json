@@ -1,0 +1,209 @@
+{
+  "decision": {
+    "default_bundle_eligible": false,
+    "phase12_untouched_evaluation_allowed": false,
+    "quality_claim_allowed": false,
+    "release_decision": "no-go",
+    "release_ready": false,
+    "retrieval_candidate_evaluated": false
+  },
+  "diagnosis": {
+    "classification": "public_endpoint_returned_results",
+    "failure_cases": 1,
+    "result_cases": 3
+  },
+  "diagnostic": "evidencemesh-phase11-3-network-observability-v1",
+  "environment": {
+    "commit_sha": "6a1925771048dcd0e66945ad6876512db88a8adb",
+    "dependency_versions": {
+      "httpx": "0.28.1",
+      "pydantic": "2.13.4"
+    },
+    "finished_at": "2026-07-29T16:32:54.117285+00:00",
+    "network_region": "GitHub-hosted ubuntu-latest; physical region not exposed",
+    "platform": "Linux-6.17.0-1020-azure-x86_64-with-glibc2.39",
+    "python": "3.11.15",
+    "started_at": "2026-07-29T16:32:34.100918+00:00"
+  },
+  "observations": [
+    {
+      "circuit_after": {
+        "consecutive_failures": 0,
+        "probe_in_flight": false,
+        "status": "closed"
+      },
+      "failure_kind_counts": {},
+      "network_telemetry": {
+        "adapter_invocations": 1,
+        "adapter_latency_ms": [
+          798.47
+        ],
+        "cache_hits": 0,
+        "circuit_skips": 0,
+        "http_attempt_latency_ms": [
+          796.689
+        ],
+        "http_attempts": 1,
+        "http_failures_without_response": 0,
+        "http_responses": 1,
+        "http_status_counts": {
+          "200": 1
+        },
+        "logical_calls": 1
+      },
+      "probe_id": "probe-01",
+      "result_count": 10
+    },
+    {
+      "circuit_after": {
+        "consecutive_failures": 1,
+        "probe_in_flight": false,
+        "status": "closed"
+      },
+      "failure_kind_counts": {
+        "timeout": 1
+      },
+      "network_telemetry": {
+        "adapter_invocations": 1,
+        "adapter_latency_ms": [
+          15015.885
+        ],
+        "cache_hits": 0,
+        "circuit_skips": 0,
+        "http_attempt_latency_ms": [
+          15015.539
+        ],
+        "http_attempts": 1,
+        "http_failures_without_response": 1,
+        "http_responses": 0,
+        "http_status_counts": {},
+        "logical_calls": 1
+      },
+      "probe_id": "probe-02",
+      "result_count": 0
+    },
+    {
+      "circuit_after": {
+        "consecutive_failures": 0,
+        "probe_in_flight": false,
+        "status": "closed"
+      },
+      "failure_kind_counts": {},
+      "network_telemetry": {
+        "adapter_invocations": 1,
+        "adapter_latency_ms": [
+          676.142
+        ],
+        "cache_hits": 0,
+        "circuit_skips": 0,
+        "http_attempt_latency_ms": [
+          674.831
+        ],
+        "http_attempts": 1,
+        "http_failures_without_response": 0,
+        "http_responses": 1,
+        "http_status_counts": {
+          "200": 1
+        },
+        "logical_calls": 1
+      },
+      "probe_id": "probe-03",
+      "result_count": 10
+    },
+    {
+      "circuit_after": {
+        "consecutive_failures": 0,
+        "probe_in_flight": false,
+        "status": "closed"
+      },
+      "failure_kind_counts": {},
+      "network_telemetry": {
+        "adapter_invocations": 1,
+        "adapter_latency_ms": [
+          204.028
+        ],
+        "cache_hits": 0,
+        "circuit_skips": 0,
+        "http_attempt_latency_ms": [
+          202.441
+        ],
+        "http_attempts": 1,
+        "http_failures_without_response": 0,
+        "http_responses": 1,
+        "http_status_counts": {
+          "200": 1
+        },
+        "logical_calls": 1
+      },
+      "probe_id": "probe-04",
+      "result_count": 10
+    }
+  ],
+  "privacy": {
+    "credentials_in_report": false,
+    "exception_messages_in_report": false,
+    "http_status_codes_in_report": true,
+    "queries_in_report": false,
+    "response_bodies_in_report": false,
+    "sanitized_failure_classes_in_report": true,
+    "source_snippets_in_report": false,
+    "source_titles_or_urls_in_report": false,
+    "target_domains_in_report": false
+  },
+  "protocol": {
+    "cache": false,
+    "document_path": "docs/benchmark-protocol-v12.md",
+    "failure_threshold": 3,
+    "fixed_public_probe_count": 4,
+    "http_attempt_definition": "shared httpx request dispatch; latency ends at response headers or transport exception",
+    "max_results": 10,
+    "minimum_pause_seconds": 1.1,
+    "provider": "mwmbl",
+    "provider_default_enabled": false,
+    "quality_metrics_computed": false,
+    "queries_disclosed_in_report": false,
+    "recovery_seconds": 300.0,
+    "request_timeout_seconds": 15.0,
+    "retry_policy": "none",
+    "sha256": "d5d4b4e066e2010d3e420e91dfa4a11202eeb98d61174c5c7de965e7f7eff764",
+    "targets_defined": false,
+    "wall_time_seconds": 20.0
+  },
+  "schema_version": 1,
+  "scored": false,
+  "traffic": {
+    "adapter_invocations": 4,
+    "adapter_latency_ms": [
+      798.47,
+      15015.885,
+      676.142,
+      204.028
+    ],
+    "cache_hits": 0,
+    "circuit_skips": 0,
+    "failure_kind_counts": {
+      "timeout": 1
+    },
+    "gemini_requests": 0,
+    "http_attempt_latency_ms": [
+      796.689,
+      15015.539,
+      674.831,
+      202.441
+    ],
+    "http_attempts": 4,
+    "http_failures_without_response": 1,
+    "http_responses": 3,
+    "http_status_counts": {
+      "200": 3
+    },
+    "logical_calls": 4,
+    "maximum_adapter_invocations": 4,
+    "maximum_http_attempts": 4,
+    "maximum_logical_calls": 4,
+    "paid_provider_requests": 0,
+    "retries": 0,
+    "tavily_requests": 0,
+    "unaccounted_before_adapter": 0
+  }
+}

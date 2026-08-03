@@ -1,0 +1,451 @@
+name: Phase 11.8 Corrective Recovery
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - labeled
+    paths:
+      - .github/workflows/phase11-8-corrective-recovery.yml
+      - benchmarks/data/phase11_7_fresh_confirmation_v1.json
+      - benchmarks/data/phase12_untouched_reserve_v1.json
+      - benchmarks/phase11_7_dataset.py
+      - benchmarks/run_phase11_8_recovery.py
+      - benchmarks/results/phase11_7_fresh_confirmation_2026-07-29.json
+      - benchmarks/results/phase11_8_recovery_2026-07-29.json
+      - benchmarks/results/phase11_8_recovery_2026-07-29.md
+      - docs/benchmark-protocol-v16.md
+      - src/evidencemesh/config.py
+      - tests/test_phase11_8_recovery.py
+      - tests/test_deployment.py
+      - tests/test_models_config.py
+  workflow_dispatch:
+    inputs:
+      authorize_live_run:
+        description: Authorize exactly 24 Tavily and 144 Gemini generation requests
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase11-8-corrective-recovery-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  DATASET_PATH: /tmp/simple_qa_test_set_phase11_8.csv
+  RESULT_PATH: /tmp/phase11_8_recovery_2026-07-29.json
+  CACHE_ROOT: /tmp/evidencemesh-phase11-8-cache
+
+jobs:
+  lock-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6.0.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Verify frozen inputs and observed boundary
+        run: |
+          echo \
+            "55b18c9a0e91f645e630dbb0d340482c8821339ecfff97b7f81fc11b207df5ea  docs/benchmark-protocol-v16.md" \
+            | sha256sum --check
+          echo \
+            "da6d1e21c3c1d53539f481fe6789eedc55359bb3b9d32b0be73f96bc693da79e  benchmarks/data/phase11_7_fresh_confirmation_v1.json" \
+            | sha256sum --check
+          echo \
+            "783fdaa60b351f975632b9cf23b57bab8766e39a8d81fabdead590962deea6de  benchmarks/results/phase11_7_fresh_confirmation_2026-07-29.json" \
+            | sha256sum --check
+          echo \
+            "472ec47a21b99f14ab05c4e7b79d179034fc42558910c0bf2ef053b0d25411ee  benchmarks/data/phase12_untouched_reserve_v1.json" \
+            | sha256sum --check
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          prior = json.loads(
+              Path(
+                  "benchmarks/results/"
+                  "phase11_7_fresh_confirmation_2026-07-29.json"
+              ).read_bytes()
+          )
+          reserve = json.loads(
+              Path(
+                  "benchmarks/data/phase12_untouched_reserve_v1.json"
+              ).read_bytes()
+          )
+          assert prior["suite"]["sample_count"] == 24
+          assert prior["decision"]["phase11_7_candidate_passed"] is False
+          assert prior["decision"]["phase12_executed"] is False
+          assert len(reserve["sealed_cases"]) == 96
+          assert all(
+              set(case) == {"row_index", "case_id"}
+              for case in reserve["sealed_cases"]
+          )
+          PY
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install locked test environment
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Validate Phase 11.8 offline
+        run: |
+          uv run pytest \
+            tests/test_phase11_8_recovery.py \
+            tests/test_deployment.py \
+            -q
+
+  live-calibration:
+    needs: lock-validation
+    if: >-
+      (github.event_name == 'workflow_dispatch' &&
+      inputs.authorize_live_run == true) ||
+      (github.event_name == 'pull_request' &&
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'phase11.8-live-authorized' &&
+      github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6.0.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Refuse to overwrite a committed Phase 11.8 result
+        run: |
+          if [[ -e benchmarks/results/phase11_8_recovery_2026-07-29.json ]]; then
+            echo "::error::The Phase 11.8 result is already committed"
+            exit 1
+          fi
+          if [[ -e benchmarks/results/phase11_8_recovery_2026-07-29.md ]]; then
+            echo "::error::The Phase 11.8 report is already committed"
+            exit 1
+          fi
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install locked benchmark environment
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Verify benchmark credentials are available
+        env:
+          GEMINI_API_KEY: ${{ secrets.EVIDENCE_MESH_GEMINI_KEY }}
+          TAVILY_API_KEY: ${{ secrets.EVIDENCE_MESH_TAVILY_KEY }}
+        run: |
+          if [[ -z "${GEMINI_API_KEY:-}" ]]; then
+            echo "::error::EVIDENCE_MESH_GEMINI_KEY is not configured"
+            exit 1
+          fi
+          if [[ -z "${TAVILY_API_KEY:-}" ]]; then
+            echo "::error::EVIDENCE_MESH_TAVILY_KEY is not configured"
+            exit 1
+          fi
+
+      - name: Download checksum-pinned SimpleQA
+        run: |
+          curl \
+            --fail \
+            --location \
+            --silent \
+            --show-error \
+            --output "$DATASET_PATH" \
+            https://openaipublic.blob.core.windows.net/simple-evals/simple_qa_test_set.csv
+          echo \
+            "feee3f7e7db3617e94e8fcf1977b756ec420ef8568f4e0fcbbe0e92e9d5fc032  $DATASET_PATH" \
+            | sha256sum --check
+
+      - name: Run locked 24-case three-arm recovery calibration
+        env:
+          EVIDENCEMESH_BENCHMARK_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+          GEMINI_API_KEY: ${{ secrets.EVIDENCE_MESH_GEMINI_KEY }}
+          TAVILY_API_KEY: ${{ secrets.EVIDENCE_MESH_TAVILY_KEY }}
+        run: |
+          uv run python benchmarks/run_phase11_8_recovery.py \
+            --dataset "$DATASET_PATH" \
+            --manifest benchmarks/data/phase11_7_fresh_confirmation_v1.json \
+            --phase11-7-result benchmarks/results/phase11_7_fresh_confirmation_2026-07-29.json \
+            --reserve-manifest benchmarks/data/phase12_untouched_reserve_v1.json \
+            --protocol docs/benchmark-protocol-v16.md \
+            --models \
+              gemma-4-31b-it \
+              gemini-3.5-flash-lite \
+            --cache-root "$CACHE_ROOT" \
+            --provider-max-results 20 \
+            --current-selection-limit 10 \
+            --expanded-selection-limit 20 \
+            --max-per-domain 3 \
+            --evidence-budget-chars 12000 \
+            --expanded-max-block-chars 1500 \
+            --max-output-tokens 2048 \
+            --retrieval-wall-time-seconds 30 \
+            --generation-wall-time-seconds 60 \
+            --retrieval-pause-seconds 0.5 \
+            --model-pause-seconds 2.0 \
+            --request-timeout-seconds 20 \
+            --network-region "${EVIDENCEMESH_BENCHMARK_REGION:-GitHub-hosted runner}" \
+            --output "$RESULT_PATH" \
+            --progress
+
+      - name: Validate privacy, accounting and decision boundaries
+        env:
+          GEMINI_API_KEY: ${{ secrets.EVIDENCE_MESH_GEMINI_KEY }}
+          TAVILY_API_KEY: ${{ secrets.EVIDENCE_MESH_TAVILY_KEY }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from collections import defaultdict
+          from pathlib import Path
+
+          path = Path(os.environ["RESULT_PATH"])
+          report = json.loads(path.read_bytes())
+          reserve = json.loads(
+              Path(
+                  "benchmarks/data/phase12_untouched_reserve_v1.json"
+              ).read_bytes()
+          )
+          arms = [
+              "current_strict",
+              "expanded_strict",
+              "expanded_structured",
+          ]
+          models = [
+              "gemma-4-31b-it",
+              "gemini-3.5-flash-lite",
+          ]
+
+          assert report["benchmark"] == (
+              "evidencemesh-phase11-8-corrective-recovery-v1"
+          )
+          assert report["suite"]["sample_count"] == 24
+          assert report["suite"]["fresh_for_phase11_8"] is False
+          assert report["suite"]["phase12_cases_used"] is False
+          assert report["protocol"]["models"] == models
+          assert report["protocol"]["generation_arms"] == arms
+          assert report["protocol"]["provider_bundle"] == ["tavily"]
+          assert report["protocol"]["provider_max_results"] == 20
+          assert report["protocol"]["current_selection_limit"] == 10
+          assert report["protocol"]["expanded_selection_limit"] == 20
+          assert report["protocol"]["evidence_prompt_budget_chars"] == 12000
+          assert report["protocol"]["expanded_max_block_chars"] == 1500
+          assert report["protocol"]["one_raw_tavily_pool_per_case"] is True
+          assert report["protocol"]["provider_request_repeated_per_arm"] is False
+          assert (
+              report["protocol"]["expanded_packet_shared_between_prompt_arms"]
+              is True
+          )
+          assert report["protocol"]["gemma_4_26b_blocking"] is False
+          assert report["protocol"]["gemma_4_26b_tested"] is False
+          assert report["protocol"]["gemini_3_5_flash_lite_tested"] is True
+          assert (
+              report["protocol"]["users_choose_provider_model_and_credentials"]
+              is True
+          )
+          assert report["phase12_reserve"]["case_count"] == 96
+          assert (
+              report["phase12_reserve"]["questions_or_answers_materialized"]
+              is False
+          )
+
+          traffic = report["traffic"]
+          assert traffic["case_retrieval_operations"] == 24
+          assert traffic["provider_query_calls"] == 24
+          assert traffic["tavily_requests"] == 24
+          assert traffic["generation_requests"] == 144
+          assert traffic["expected_generation_requests"] == 144
+          assert traffic["retries"] == 0
+          assert traffic["fallback_requests"] == 0
+          assert traffic["repair_requests"] == 0
+          assert len(report["retrieval_diagnostics"]) == 24
+          assert len(report["retrieval_outcomes"]) == 72
+          assert len(report["generation_outcomes"]) == 144
+
+          retrieval = defaultdict(dict)
+          for outcome in report["retrieval_outcomes"]:
+              assert outcome["arm"] in arms
+              retrieval[outcome["case_id"]][outcome["arm"]] = outcome
+          assert len(retrieval) == 24
+          assert all(set(case_arms) == set(arms) for case_arms in retrieval.values())
+          assert all(
+              len(
+                  {
+                      case_arms[arm]["raw_pool_sha256"]
+                      for arm in arms
+                  }
+              )
+              == 1
+              and case_arms["expanded_strict"]["selected_packet_sha256"]
+              == case_arms["expanded_structured"]["selected_packet_sha256"]
+              and case_arms["expanded_strict"]["prompt_packet_sha256"]
+              == case_arms["expanded_structured"]["prompt_packet_sha256"]
+              for case_arms in retrieval.values()
+          )
+          assert report["packet_identity"]["passed"] is True
+
+          generated = {
+              (
+                  outcome["case_id"],
+                  outcome["arm"],
+                  outcome["model"],
+              ): outcome
+              for outcome in report["generation_outcomes"]
+          }
+          assert len(generated) == 144
+          assert {
+              outcome["arm"] for outcome in report["generation_outcomes"]
+          } == set(arms)
+          assert {
+              outcome["model"] for outcome in report["generation_outcomes"]
+          } == set(models)
+          for case_id in retrieval:
+              for model in models:
+                  expanded = generated[(case_id, "expanded_strict", model)]
+                  structured = generated[
+                      (case_id, "expanded_structured", model)
+                  ]
+                  assert (
+                      expanded["prompt_packet_sha256"]
+                      == structured["prompt_packet_sha256"]
+                  )
+
+          decision = report["decision"]
+          assert len(decision["gates"]) == 12
+          gates_passed = all(
+              gate["passed"] for gate in decision["gates"].values()
+          )
+          assert decision["phase11_8_candidate_passed"] == gates_passed
+          assert (
+              decision["phase11_9_fresh_confirmation_allowed"]
+              == gates_passed
+          )
+          assert decision["quality_profile_promotion_allowed"] is False
+          assert decision["quality_profile_promoted"] is False
+          assert decision["phase12_untouched_evaluation_allowed"] is False
+          assert decision["phase12_executed"] is False
+          assert decision["external_competitor_benchmark_allowed"] is False
+          assert decision["public_alpha_allowed"] is False
+          assert decision["superiority_claim_allowed"] is False
+          assert decision["merge_allowed"] is False
+          assert decision["release_ready"] is False
+          assert decision["release_decision"] == "no-go"
+
+          private_fields = {
+              "question",
+              "answer",
+              "reference_answer",
+              "title",
+              "url",
+              "snippet",
+              "content",
+              "evidence",
+              "system_prompt",
+              "user_prompt",
+              "generated_answer",
+              "raw_response",
+              "structured_response",
+          }
+          assert all(
+              not private_fields & set(outcome)
+              for outcome in report["retrieval_outcomes"]
+          )
+          assert all(
+              not private_fields & set(outcome)
+              for outcome in report["generation_outcomes"]
+          )
+          assert report["privacy"]["generated_answers_in_report"] is False
+          assert (
+              report["privacy"]["raw_structured_responses_in_report"] is False
+          )
+          assert (
+              report["privacy"]["source_snippets_or_evidence_in_report"]
+              is False
+          )
+          assert (
+              report["privacy"]["system_or_user_prompts_in_report"] is False
+          )
+          assert (
+              report["privacy"]["phase12_reserved_case_ids_in_report"] is False
+          )
+
+          reserved_ids = {
+              entry["case_id"] for entry in reserve["sealed_cases"]
+          }
+          assert reserved_ids.isdisjoint(report["suite"]["case_ids"])
+          raw = path.read_text(encoding="utf-8")
+          assert all(case_id not in raw for case_id in reserved_ids)
+          for name in ("GEMINI_API_KEY", "TAVILY_API_KEY"):
+              secret = os.environ.get(name)
+              assert secret and secret not in raw
+          PY
+
+      - name: Write benchmark summary
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          path = Path(os.environ["RESULT_PATH"])
+          raw = path.read_bytes()
+          report = json.loads(raw)
+          generated = report["generation_metrics"]["aggregate"]
+          print("## Phase 11.8 corrective recovery")
+          print()
+          print("| Arm | Answer proxy | Citation presence | Support proxy |")
+          print("|---|---:|---:|---:|")
+          for arm in (
+              "current_strict",
+              "expanded_strict",
+              "expanded_structured",
+          ):
+              answer_metric = generated[arm]["answer_key_covered"]
+              print(
+                  f"| `{arm}` | "
+                  f"{answer_metric['numerator']}/"
+                  f"{answer_metric['denominator']} | "
+                  f"{generated[arm]['citation_presence']['rate']} | "
+                  f"{generated[arm]['citation_support_proxy']['rate']} |"
+              )
+          print()
+          print(
+              "Twelve-gate candidate: "
+              f"`{report['decision']['phase11_8_candidate_passed']}`"
+          )
+          print(
+              "Phase 11.9 fresh confirmation allowed: "
+              f"`{report['decision']['phase11_9_fresh_confirmation_allowed']}`"
+          )
+          print("Quality promotion allowed: `False`")
+          print("Phase 12 allowed: `False`")
+          print("Release decision: `no-go`")
+          print()
+          print(f"Raw SHA-256: `{hashlib.sha256(raw).hexdigest()}`")
+          PY
+
+      - name: Upload privacy-safe raw report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: phase11-8-corrective-recovery-${{ github.sha }}
+          path: ${{ env.RESULT_PATH }}
+          if-no-files-found: warn
+          retention-days: 14

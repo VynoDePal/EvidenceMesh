@@ -1,0 +1,888 @@
+from __future__ import annotations
+
+import asyncio
+import json
+import time
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
+
+import httpx
+import pytest
+
+from evidencemesh.config import Settings
+from evidencemesh.errors import ProviderError
+from evidencemesh.models import (
+    SafeSearch,
+    SearchProfile,
+    SearchRequest,
+    TimeRange,
+)
+from evidencemesh.providers.arxiv import ArxivProvider
+from evidencemesh.providers.base import (
+    bounded_bytes_request,
+    bounded_json_request,
+    parse_datetime,
+    strip_markup,
+)
+from evidencemesh.providers.brave import BraveProvider
+from evidencemesh.providers.crossref import CrossrefProvider, _crossref_date
+from evidencemesh.providers.ddgs import DDGSProvider
+from evidencemesh.providers.exa import ExaProvider
+from evidencemesh.providers.factory import build_providers
+from evidencemesh.providers.firecrawl import FirecrawlProvider
+from evidencemesh.providers.github import (
+    GitHubProvider,
+    RepositoryQueryStrategy,
+    normalize_repository_query,
+)
+from evidencemesh.providers.mwmbl import MWMBL_RESULTS_LICENSE_URL, MwmblProvider
+from evidencemesh.providers.openalex import OpenAlexProvider, reconstruct_abstract
+from evidencemesh.providers.searxng import SearxngProvider
+from evidencemesh.providers.tavily import TavilyProvider
+from evidencemesh.providers.wiby import WIBY_ATTRIBUTION_URL, WibyProvider
+from evidencemesh.providers.wikipedia import WikipediaProvider
+from evidencemesh.providers.yacy import YaCyProvider
+
+
+def json_client(
+    payload: object,
+    captured: list[httpx.Request] | None = None,
+    *,
+    status: int = 200,
+) -> httpx.AsyncClient:
+    def handler(request: httpx.Request) -> httpx.Response:
+        if captured is not None:
+            captured.append(request)
+        return httpx.Response(status, json=payload)
+
+    return httpx.AsyncClient(transport=httpx.MockTransport(handler))
+
+
+@pytest.mark.parametrize(
+    ("value", "expected_year"),
+    [
+        ("2026-07-28T12:00:00Z", 2026),
+        ("Tue, 28 Jul 2026 12:00:00 GMT", 2026),
+        (0, None),
+        ("not-a-date", None),
+        (datetime.fromisoformat("2025-01-01"), 2025),
+    ],
+)
+def test_parse_datetime(value: object, expected_year: int | None) -> None:
+    parsed = parse_datetime(value)
+    assert (parsed.year if parsed else None) == expected_year
+    if parsed:
+        assert parsed.tzinfo is not None
+
+
+def test_strip_markup() -> None:
+    assert strip_markup("<b>Alpha</b>&nbsp; beta") == "Alpha beta"
+    assert strip_markup(None) == ""
+
+
+@pytest.mark.asyncio
+async def test_bounded_json_request_validates_size_and_shape() -> None:
+    valid_client = json_client({"ok": True})
+    assert await bounded_json_request(
+        valid_client,
+        "GET",
+        "https://example.com",
+        max_bytes=100,
+    ) == {"ok": True}
+    await valid_client.aclose()
+
+    oversized = httpx.AsyncClient(
+        transport=httpx.MockTransport(
+            lambda request: httpx.Response(
+                200,
+                content=b'{"payload":"too large"}',
+                headers={"content-length": "1000"},
+            )
+        )
+    )
+    with pytest.raises(ValueError, match="byte limit"):
+        await bounded_json_request(
+            oversized,
+            "GET",
+            "https://example.com",
+            max_bytes=20,
+        )
+    await oversized.aclose()
+
+    list_client = httpx.AsyncClient(
+        transport=httpx.MockTransport(lambda request: httpx.Response(200, content=b"[]"))
+    )
+    with pytest.raises(ValueError, match="JSON object"):
+        await bounded_json_request(list_client, "GET", "https://example.com")
+    await list_client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_bounded_bytes_request_returns_bounded_payload() -> None:
+    client = httpx.AsyncClient(
+        transport=httpx.MockTransport(lambda request: httpx.Response(200, content=b"bounded"))
+    )
+    assert (
+        await bounded_bytes_request(client, "GET", "https://example.com", max_bytes=7) == b"bounded"
+    )
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_searxng_provider_maps_request_and_result() -> None:
+    captured: list[httpx.Request] = []
+    client = json_client(
+        {
+            "results": [
+                {
+                    "title": "<b>Alpha</b>",
+                    "url": "https://example.com/a",
+                    "content": "Useful <em>evidence</em>",
+                    "publishedDate": "2026-07-01",
+                    "engines": ["one", "two"],
+                },
+                {"title": "missing URL"},
+                "invalid item",
+            ]
+        },
+        captured,
+    )
+    provider = SearxngProvider("https://search.example/", client)
+    results = await provider.search(
+        "alpha",
+        SearchRequest(
+            query="alpha",
+            profile=SearchProfile.NEWS,
+            safe_search=SafeSearch.STRICT,
+            time_range=TimeRange.WEEK,
+        ),
+    )
+    assert len(results) == 1
+    assert results[0].title == "Alpha"
+    assert results[0].source_type.value == "news"
+    assert results[0].metadata["engines"] == ["one", "two"]
+    assert results[0].metadata["unresponsive_engines"] == []
+    assert captured[0].url.params["categories"] == "news"
+    assert captured[0].url.params["safesearch"] == "2"
+    assert captured[0].url.params["time_range"] == "week"
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_searxng_provider_rejects_total_upstream_failure() -> None:
+    client = json_client(
+        {
+            "results": [],
+            "unresponsive_engines": [
+                ["duckduckgo", "timeout"],
+                ["brave", "rate limit"],
+            ],
+        }
+    )
+    provider = SearxngProvider("https://search.example", client)
+    with pytest.raises(ProviderError, match="2 upstream engine") as error:
+        await provider.search("alpha", SearchRequest(query="alpha"))
+    assert error.value.kind == "upstream_unavailable"
+    assert error.value.upstream_engines == ("brave", "duckduckgo")
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_wikipedia_provider_builds_language_url() -> None:
+    client = json_client(
+        {
+            "query": {
+                "search": [
+                    {
+                        "title": "Recherche scientifique",
+                        "snippet": "<span>Résumé</span>",
+                        "pageid": 12,
+                    }
+                ]
+            }
+        }
+    )
+    provider = WikipediaProvider(
+        "https://{language}.wikipedia.org/w/api.php",
+        client,
+    )
+    result = (
+        await provider.search(
+            "recherche",
+            SearchRequest(query="recherche", language="fr"),
+        )
+    )[0]
+    assert result.url == "https://fr.wikipedia.org/wiki/Recherche_scientifique"
+    assert result.metadata["pageid"] == 12
+    assert provider.supports(SearchProfile.REFERENCE)
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_wiby_provider_maps_array_and_emits_required_attribution() -> None:
+    captured: list[httpx.Request] = []
+    client = json_client(
+        [
+            {
+                "URL": "https://small.example/page",
+                "Title": "<b>Small web result</b>",
+                "Snippet": "Crawler excerpt",
+                "Description": "Human description",
+            },
+            {"Title": "missing URL"},
+            "invalid item",
+        ],
+        captured,
+    )
+    provider = WibyProvider("https://wiby.example/json/", client)
+    results = await provider.search(
+        "small web",
+        SearchRequest(query="small web", safe_search=SafeSearch.OFF),
+    )
+    assert provider.query_budget == 1
+    assert provider.supported_profiles == frozenset({SearchProfile.WEB})
+    assert len(results) == 1
+    assert results[0].title == "Small web result"
+    assert results[0].snippet == "Human description"
+    assert results[0].metadata == {
+        "attribution_url": WIBY_ATTRIBUTION_URL,
+        "index_kind": "independent_crawl",
+    }
+    assert captured[0].url.params["q"] == "small web"
+    assert "nsfw" not in captured[0].url.params
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_wiby_provider_rejects_non_array_response() -> None:
+    client = json_client({"results": []})
+    provider = WibyProvider("https://wiby.example/json/", client)
+    with pytest.raises(ProviderError, match="JSON array"):
+        await provider.search("small web", SearchRequest(query="small web"))
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_mwmbl_provider_maps_independent_results_and_license() -> None:
+    captured: list[httpx.Request] = []
+    client = json_client(
+        {
+            "results": [
+                {
+                    "url": "https://independent.example/page",
+                    "title": "<b>Independent result</b>",
+                    "content": "Community <em>crawl</em>",
+                    "engine": "mwmbl",
+                    "score": 0.75,
+                },
+                {"title": "missing URL"},
+            ]
+        },
+        captured,
+    )
+    provider = MwmblProvider("https://api.mwmbl.example/api/v2/search/", client)
+    results = await provider.search("independent index", SearchRequest(query="independent index"))
+    assert provider.query_budget == 1
+    assert provider.minimum_cache_ttl_seconds == 86_400
+    assert provider.supported_profiles == frozenset({SearchProfile.WEB})
+    assert len(results) == 1
+    assert results[0].title == "Independent result"
+    assert results[0].snippet == "Community crawl"
+    assert results[0].provider_score == 0.75
+    assert results[0].metadata == {
+        "index_kind": "independent_community_crawl",
+        "origin_engine": "mwmbl",
+        "result_license_url": MWMBL_RESULTS_LICENSE_URL,
+    }
+    assert captured[0].url.params["q"] == "independent index"
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_mwmbl_provider_rejects_missing_results_array() -> None:
+    client = json_client({"items": []})
+    provider = MwmblProvider("https://api.mwmbl.example/api/v2/search/", client)
+    with pytest.raises(ProviderError, match="results array"):
+        await provider.search("independent index", SearchRequest(query="independent index"))
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_yacy_provider_maps_local_index_request() -> None:
+    captured: list[httpx.Request] = []
+    client = json_client(
+        {
+            "channels": [
+                {
+                    "items": [
+                        {
+                            "title": "<b>Local result</b>",
+                            "link": "https://local.example/page",
+                            "description": "Operator-controlled <em>index</em>",
+                            "pubDate": "Wed, 29 Jul 2026 12:00:00 GMT",
+                            "host": "local.example",
+                            "ranking": "0.91",
+                        }
+                    ]
+                }
+            ]
+        },
+        captured,
+    )
+    provider = YaCyProvider("http://yacy.example:8090/", client, resource="local")
+    results = await provider.search("local index", SearchRequest(query="local index"))
+    assert provider.endpoint == "http://yacy.example:8090/yacysearch.json"
+    assert provider.query_budget == 1
+    assert provider.minimum_cache_ttl_seconds == 3_600
+    assert len(results) == 1
+    assert results[0].title == "Local result"
+    assert results[0].snippet == "Operator-controlled index"
+    assert results[0].published_at is not None
+    assert results[0].metadata["index_scope"] == "local"
+    params = captured[0].url.params
+    assert params["query"] == "local index"
+    assert params["maximumRecords"] == "30"
+    assert params["resource"] == "local"
+    assert params["verify"] == "false"
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_yacy_provider_rejects_invalid_channels() -> None:
+    client = json_client({"channels": []})
+    provider = YaCyProvider("http://yacy.example:8090", client)
+    with pytest.raises(ProviderError, match="channels array"):
+        await provider.search("local index", SearchRequest(query="local index"))
+    await client.aclose()
+
+
+def test_crossref_date_parsing() -> None:
+    assert _crossref_date({"issued": {"date-parts": [[2024, 6, 2]]}}) == datetime(
+        2024,
+        6,
+        2,
+        tzinfo=UTC,
+    )
+    assert _crossref_date({"issued": {"date-parts": [["bad"]]}}) is None
+    assert _crossref_date({}) is None
+
+
+@pytest.mark.asyncio
+async def test_crossref_provider_prefers_doi_and_abstract() -> None:
+    captured: list[httpx.Request] = []
+    client = json_client(
+        {
+            "message": {
+                "items": [
+                    {
+                        "title": ["<b>Research</b> paper"],
+                        "DOI": "10.1234/example",
+                        "abstract": "<jats:p>Alpha evidence</jats:p>",
+                        "author": [{"given": "Ada", "family": "Lovelace"}],
+                        "issued": {"date-parts": [[2025]]},
+                        "type": "journal-article",
+                    }
+                ]
+            }
+        },
+        captured,
+    )
+    provider = CrossrefProvider("https://api.crossref.test/works", client, "dev@example.com")
+    result = (
+        await provider.search(
+            "alpha",
+            SearchRequest(query="alpha", profile=SearchProfile.ACADEMIC),
+        )
+    )[0]
+    assert result.url == "https://doi.org/10.1234/example"
+    assert result.snippet == "Alpha evidence"
+    assert captured[0].url.params["mailto"] == "dev@example.com"
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_arxiv_provider_parses_atom_and_uses_single_query_budget() -> None:
+    captured: list[httpx.Request] = []
+    atom = b"""<?xml version="1.0" encoding="UTF-8"?>
+    <feed xmlns="http://www.w3.org/2005/Atom"
+          xmlns:arxiv="http://arxiv.org/schemas/atom">
+      <entry>
+        <id>http://arxiv.org/abs/1706.03762v7</id>
+        <updated>2023-08-02T00:41:18Z</updated>
+        <published>2017-06-12T17:57:34Z</published>
+        <title>Attention Is All You Need</title>
+        <summary>A transformer architecture.</summary>
+        <author><name>Ashish Vaswani</name></author>
+        <category term="cs.CL"/>
+        <arxiv:doi>10.48550/arXiv.1706.03762</arxiv:doi>
+        <link href="http://arxiv.org/abs/1706.03762v7" rel="alternate"/>
+      </entry>
+    </feed>"""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured.append(request)
+        return httpx.Response(200, content=atom)
+
+    client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    provider = ArxivProvider(
+        "https://export.arxiv.org/api/query",
+        client,
+        minimum_interval_seconds=0,
+    )
+    result = (
+        await provider.search(
+            "transformer",
+            SearchRequest(query="transformer", profile=SearchProfile.ACADEMIC),
+        )
+    )[0]
+    assert provider.query_budget == 1
+    assert provider.minimum_cache_ttl_seconds == 86_400
+    assert result.url == "https://arxiv.org/abs/1706.03762v7"
+    assert result.metadata["categories"] == ["cs.CL"]
+    assert captured[0].url.params["search_query"] == "all:transformer"
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_arxiv_provider_rejects_xml_declarations() -> None:
+    client = httpx.AsyncClient(
+        transport=httpx.MockTransport(
+            lambda request: httpx.Response(
+                200,
+                content=b"<!DOCTYPE feed [<!ENTITY x 'unsafe'>]><feed/>",
+            )
+        )
+    )
+    provider = ArxivProvider(
+        "https://export.arxiv.org/api/query",
+        client,
+        minimum_interval_seconds=0,
+    )
+    with pytest.raises(ProviderError, match="ValueError"):
+        await provider.search(
+            "transformer",
+            SearchRequest(query="transformer", profile=SearchProfile.ACADEMIC),
+        )
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_arxiv_provider_serializes_and_paces_calls() -> None:
+    atom = b'<feed xmlns="http://www.w3.org/2005/Atom"/>'
+    starts: list[float] = []
+    active = 0
+    maximum_active = 0
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal active, maximum_active
+        starts.append(time.monotonic())
+        active += 1
+        maximum_active = max(maximum_active, active)
+        await asyncio.sleep(0.01)
+        active -= 1
+        return httpx.Response(200, content=atom)
+
+    client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    provider = ArxivProvider(
+        "https://export.arxiv.org/api/query",
+        client,
+        minimum_interval_seconds=0.02,
+    )
+    request = SearchRequest(query="transformer", profile=SearchProfile.ACADEMIC)
+    await asyncio.gather(
+        provider.search("first query", request),
+        provider.search("second query", request),
+    )
+    assert maximum_active == 1
+    assert starts[1] - starts[0] >= 0.018
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_github_provider_searches_public_repositories() -> None:
+    captured: list[httpx.Request] = []
+    client = json_client(
+        {
+            "items": [
+                {
+                    "full_name": "modelcontextprotocol/python-sdk",
+                    "html_url": "https://github.com/modelcontextprotocol/python-sdk",
+                    "description": "<b>MCP</b> Python SDK",
+                    "updated_at": "2026-07-20T12:00:00Z",
+                    "score": 1.0,
+                    "stargazers_count": 1234,
+                    "language": "Python",
+                    "default_branch": "main",
+                    "fork": False,
+                    "license": {"spdx_id": "MIT"},
+                }
+            ]
+        },
+        captured,
+    )
+    result = (
+        await GitHubProvider(
+            "https://api.github.com/search/repositories",
+            client,
+            "token",
+        ).search(
+            "model context protocol sdk",
+            SearchRequest(
+                query="model context protocol sdk",
+                profile=SearchProfile.CODE,
+            ),
+        )
+    )[0]
+    assert result.source_type.value == "code"
+    assert result.metadata["stars"] == 1234
+    assert captured[0].headers["authorization"] == "Bearer token"
+    assert captured[0].url.params["q"] == ("model context protocol in:name,description,topics")
+    assert result.metadata["query_strategy"] == "entity-anchor-v2"
+    await client.aclose()
+
+
+@pytest.mark.parametrize(
+    ("query", "expected"),
+    [
+        (
+            "FastAPI Python framework official GitHub repository",
+            "FastAPI in:name,description,topics",
+        ),
+        ("Astral uv source code", "uv in:name,description,topics"),
+        (
+            "Find the official GitHub repository for Playwright browser automation",
+            "Playwright in:name,description,topics",
+        ),
+        (
+            "Official repository for Home Assistant open source home automation",
+            "Home Assistant in:name,description,topics",
+        ),
+        (
+            "https://github.com/modelcontextprotocol/python-sdk.git",
+            "repo:modelcontextprotocol/python-sdk",
+        ),
+        ("evidence in:readme", "evidence in:readme"),
+        ("repository", "repository in:name,description,topics"),
+    ],
+)
+def test_github_query_normalisation(query: str, expected: str) -> None:
+    assert normalize_repository_query(query) == expected
+
+
+def test_github_query_normalisation_enforces_api_length_limit() -> None:
+    normalised = normalize_repository_query("a" * 512)
+    assert len(normalised) == 256
+    assert normalised.endswith(" in:name,description,topics")
+
+
+def test_github_legacy_query_strategy_is_frozen_for_paired_benchmark() -> None:
+    assert (
+        normalize_repository_query(
+            "FastAPI Python framework official GitHub repository",
+            strategy=RepositoryQueryStrategy.LEGACY,
+        )
+        == "FastAPI Python framework in:name,description"
+    )
+
+
+@pytest.mark.asyncio
+async def test_openalex_provider_requires_factory_key_and_rebuilds_abstract() -> None:
+    captured: list[httpx.Request] = []
+    client = json_client(
+        {
+            "results": [
+                {
+                    "id": "https://openalex.org/W1",
+                    "doi": "https://doi.org/10.1234/example",
+                    "display_name": "Evidence paper",
+                    "publication_date": "2025-01-03",
+                    "abstract_inverted_index": {
+                        "Evidence": [0],
+                        "matters": [1],
+                    },
+                    "authorships": [{"author": {"display_name": "Ada Lovelace"}}],
+                    "primary_location": {"landing_page_url": "https://doi.org/10.1234/example"},
+                    "cited_by_count": 5,
+                    "type": "article",
+                }
+            ]
+        },
+        captured,
+    )
+    result = (
+        await OpenAlexProvider(
+            "https://api.openalex.org/works",
+            "free-key",
+            client,
+        ).search(
+            "evidence",
+            SearchRequest(query="evidence", profile=SearchProfile.ACADEMIC),
+        )
+    )[0]
+    assert reconstruct_abstract({"second": [1], "first": [0]}) == "first second"
+    assert result.snippet == "Evidence matters"
+    assert captured[0].url.params["api_key"] == "free-key"
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_brave_provider_uses_news_vertical_and_key() -> None:
+    captured: list[httpx.Request] = []
+    client = json_client(
+        {
+            "news": {
+                "results": [
+                    {
+                        "title": "Alpha news",
+                        "url": "https://news.example/a",
+                        "description": "News evidence",
+                        "age": "2026-07-01",
+                    }
+                ]
+            }
+        },
+        captured,
+    )
+    provider = BraveProvider("secret", client)
+    result = (
+        await provider.search(
+            "alpha",
+            SearchRequest(
+                query="alpha",
+                profile=SearchProfile.NEWS,
+                time_range=TimeRange.DAY,
+            ),
+        )
+    )[0]
+    assert result.source_type.value == "news"
+    assert "/news/search" in captured[0].url.path
+    assert captured[0].headers["x-subscription-token"] == "secret"
+    assert captured[0].url.params["freshness"] == "pd"
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_tavily_provider_maps_score_and_filters() -> None:
+    captured: list[httpx.Request] = []
+    client = json_client(
+        {
+            "results": [
+                {
+                    "title": "Alpha",
+                    "url": "https://example.com/a",
+                    "content": "Evidence",
+                    "score": 0.9,
+                }
+            ]
+        },
+        captured,
+    )
+    provider = TavilyProvider("key", client)
+    result = (
+        await provider.search(
+            "alpha",
+            SearchRequest(
+                query="alpha",
+                domains=["example.com"],
+                exclude_domains=["other.example"],
+            ),
+        )
+    )[0]
+    body = json.loads(captured[0].content)
+    assert body["include_domains"] == ["example.com"]
+    assert body["exclude_domains"] == ["other.example"]
+    assert body["max_results"] == 10
+    assert body["search_depth"] == "basic"
+    assert provider.query_budget == 1
+    assert not provider.supports(SearchProfile.REFERENCE)
+    assert result.provider_score == 0.9
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_exa_provider_maps_highlights_and_metadata() -> None:
+    captured: list[httpx.Request] = []
+    client = json_client(
+        {
+            "results": [
+                {
+                    "title": "Alpha",
+                    "url": "https://example.com/a",
+                    "highlights": ["One", "Two"],
+                    "author": "Ada",
+                    "id": "doc-1",
+                    "score": 0.8,
+                }
+            ]
+        },
+        captured,
+    )
+    provider = ExaProvider("key", client)
+    result = (
+        await provider.search(
+            "alpha",
+            SearchRequest(query="alpha", domains=["example.com"]),
+        )
+    )[0]
+    assert result.snippet == "One Two"
+    assert result.metadata == {"author": "Ada", "id": "doc-1"}
+    assert captured[0].headers["x-api-key"] == "key"
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"data": {"web": [{"title": "Alpha", "url": "https://example.com/a"}]}},
+        {"data": [{"title": "Alpha", "url": "https://example.com/a"}]},
+    ],
+)
+async def test_firecrawl_provider_accepts_cloud_payload_shapes(
+    payload: dict[str, Any],
+) -> None:
+    client = json_client(payload)
+    results = await FirecrawlProvider("https://firecrawl.test", client, "key").search(
+        "alpha",
+        SearchRequest(query="alpha"),
+    )
+    assert results[0].url == "https://example.com/a"
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_provider_http_error_is_wrapped() -> None:
+    client = json_client({}, status=503)
+    with pytest.raises(ProviderError, match="SearXNG"):
+        await SearxngProvider("https://search.example", client).search(
+            "alpha",
+            SearchRequest(query="alpha"),
+        )
+    await client.aclose()
+
+
+class FakeDDGS:
+    last_call: tuple[str, dict[str, Any]] | None = None
+
+    def __enter__(self) -> FakeDDGS:
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        return None
+
+    def text(self, query: str, **kwargs: Any) -> list[dict[str, Any]]:
+        type(self).last_call = ("text", kwargs)
+        return [{"title": "Alpha", "href": "https://example.com/a", "body": "Evidence"}]
+
+    def news(self, query: str, **kwargs: Any) -> list[dict[str, Any]]:
+        type(self).last_call = ("news", kwargs)
+        return [{"title": "News", "url": "https://news.example/a", "description": "Item"}]
+
+
+@pytest.mark.asyncio
+async def test_ddgs_provider_web_and_news(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("evidencemesh.providers.ddgs.DDGS", FakeDDGS)
+    provider = DDGSProvider()
+    web = await provider.search(
+        "alpha",
+        SearchRequest(
+            query="alpha",
+            time_range=TimeRange.MONTH,
+            safe_search=SafeSearch.OFF,
+        ),
+    )
+    assert web[0].url == "https://example.com/a"
+    assert FakeDDGS.last_call == (
+        "text",
+        {
+            "region": "wt-wt",
+            "safesearch": "off",
+            "timelimit": "m",
+            "max_results": 30,
+        },
+    )
+    news = await provider.search(
+        "alpha",
+        SearchRequest(query="alpha", profile=SearchProfile.NEWS),
+    )
+    assert news[0].source_type.value == "news"
+    assert FakeDDGS.last_call is not None and FakeDDGS.last_call[0] == "news"
+
+
+@pytest.mark.asyncio
+async def test_provider_factory_keys_and_self_hosted_firecrawl(tmp_path: Path) -> None:
+    settings = Settings(
+        enabled_providers=[
+            "arxiv",
+            "searxng",
+            "ddgs",
+            "wiby",
+            "mwmbl",
+            "yacy",
+            "wikipedia",
+            "crossref",
+            "github",
+            "openalex",
+            "brave",
+            "tavily",
+            "exa",
+            "firecrawl",
+        ],
+        brave_api_key="brave",
+        github_token="github",  # noqa: S106 - inert test credential
+        openalex_api_key="openalex",
+        tavily_api_key="tavily",
+        exa_api_key="exa",
+        firecrawl_url="http://127.0.0.1:3002",
+        cache_path=tmp_path / "cache.sqlite3",
+    )
+    client = httpx.AsyncClient()
+    providers, warnings = build_providers(settings, client)
+    assert [provider.name for provider in providers] == settings.enabled_providers
+    assert warnings == []
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_provider_factory_builds_independent_searxng_fallbacks(
+    tmp_path: Path,
+) -> None:
+    settings = Settings(
+        enabled_providers=["searxng"],
+        searxng_url="http://127.0.0.1:8888/",
+        searxng_fallback_urls=[
+            "https://search-one.example",
+            "https://search-two.example/",
+        ],
+        cache_path=tmp_path / "cache.sqlite3",
+    )
+    client = httpx.AsyncClient()
+    providers, warnings = build_providers(settings, client)
+    assert [provider.name for provider in providers] == [
+        "searxng",
+        "searxng-2",
+        "searxng-3",
+    ]
+    assert [
+        provider.base_url for provider in providers if isinstance(provider, SearxngProvider)
+    ] == [
+        "http://127.0.0.1:8888",
+        "https://search-one.example",
+        "https://search-two.example",
+    ]
+    assert warnings == []
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_provider_factory_warns_for_missing_optional_keys(tmp_path: Path) -> None:
+    settings = Settings(
+        enabled_providers=["openalex", "brave", "tavily", "exa", "firecrawl"],
+        cache_path=tmp_path / "cache.sqlite3",
+    )
+    client = httpx.AsyncClient()
+    providers, warnings = build_providers(settings, client)
+    assert providers == []
+    assert len(warnings) == 5
+    await client.aclose()

@@ -1,0 +1,504 @@
+name: Alpha A2-P2.1 Fixture Root Correction Offline
+
+on:
+  pull_request:
+    types:
+      - synchronize
+    paths:
+      - .github/workflows/alpha-a2-p2-1-fixture-root-correction-offline.yml
+      - alpha/alpha-a2-p2-1-fixture-root-correction-policy-v1.json
+      - docs/alpha-a2-p2-1-fixture-root-correction-offline-gate-v1.md
+      - tests/test_alpha_a2_p2_1_workflow.py
+      - tests/test_smoke_installed_a2_p2.py
+
+permissions:
+  contents: read
+
+concurrency:
+  group: alpha-a2-p2-1-fixture-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
+  cancel-in-progress: false
+
+env:
+  A2_P2_FAILED_HEAD: 18340f972bbc907912d1fcfa9fe5a2385751cc97
+  A2_P2_FAILED_TREE: 06e745383904c37ca277c8f57c45db9ed96df6b4
+  A2_P2_FAILED_RUN_ID: 30841501822
+  A2_P2_FAILED_JOB_ID: 91779399419
+  P2_WORKFLOW_SHA256: 1c66dcf6bdcf7164e100df3dfa3639caca207669ee1bdda634e16c0aed32ca2c
+  P2_POLICY_SHA256: 6356e5da4dc9ddb5db6cc643a894cc6dd404687297aa86c2005c1963303936f8
+  P2_PROTOCOL_SHA256: 2b64d1364b5c90894e109d016afa85ef466e9b4f285b2f2c86985b3ad7189cd1
+  P2_SMOKE_SHA256: 66aaf1815233e3f9e04b5a898e1b70d5b486ed1b3eae01489f42873a99578309
+  P2_WORKFLOW_TEST_SHA256: 8b26b5de758fcfc5bcd18d1609ffe6d495a660a877a5dba605436f3b8ff12fda
+  CORRECTED_TEST_SHA256: 05eef013f16d2017a36a091e403d6ca8c79f61f1fe5eec58554f0f0f8d6904c3
+  POLICY_SHA256: c1f14a4c57a65f49d2a8f365f4dea1c1f8bb88904077711c09e12372ab3f4e45
+  PROTOCOL_SHA256: 9c189f7ba5792f3aa28a70d0664bb05b68972a7d68adf6574c4d3085bc96c0c9
+  UV_HTTP_RETRIES: 0
+  UV_NO_CACHE: 1
+
+jobs:
+  fixture-root-correction-offline:
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.action == 'synchronize' &&
+      github.run_attempt == 1 &&
+      github.repository == 'VynoDePal/EvidenceMesh' &&
+      github.event.pull_request.number == 1 &&
+      github.event.pull_request.draft == true &&
+      github.event.pull_request.head.repo.full_name == 'VynoDePal/EvidenceMesh' &&
+      github.event.pull_request.head.ref == 'agent/evidencemesh-v0.1' &&
+      github.event.pull_request.head.sha == github.event.after &&
+      github.event.before == '18340f972bbc907912d1fcfa9fe5a2385751cc97'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Check out the exact A2-P2.1 correction candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          fetch-tags: false
+          persist-credentials: false
+
+      - name: Verify direct-child scope, immutable P2 and locked correction
+        env:
+          EVENT_BEFORE: ${{ github.event.before }}
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_RUN_ATTEMPT" = 1
+          test "$EVENT_BEFORE" = "$A2_P2_FAILED_HEAD"
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test "$(git rev-parse "$A2_P2_FAILED_HEAD^{tree}")" = "$A2_P2_FAILED_TREE"
+          test "$(git rev-list --parents --max-count=1 HEAD)" = \
+            "$EXPECTED_HEAD $A2_P2_FAILED_HEAD"
+
+          immutable_paths=(
+            src
+            pyproject.toml
+            uv.lock
+            .github/workflows/alpha-a2-p2-installed-distribution-offline.yml
+            alpha/alpha-a2-p2-installed-distribution-offline-policy-v1.json
+            docs/alpha-a2-p2-installed-distribution-offline-gate-v1.md
+            scripts/smoke_installed_a2_p2.py
+            tests/test_alpha_a2_p2_workflow.py
+          )
+          git diff --quiet "$A2_P2_FAILED_HEAD" HEAD -- "${immutable_paths[@]}"
+
+          expected_statuses=(
+            $'A\t.github/workflows/alpha-a2-p2-1-fixture-root-correction-offline.yml'
+            $'A\talpha/alpha-a2-p2-1-fixture-root-correction-policy-v1.json'
+            $'A\tdocs/alpha-a2-p2-1-fixture-root-correction-offline-gate-v1.md'
+            $'A\ttests/test_alpha_a2_p2_1_workflow.py'
+            $'M\ttests/test_smoke_installed_a2_p2.py'
+          )
+          mapfile -t changed_statuses < <(
+            git diff --name-status --diff-filter=ACDMRT "$A2_P2_FAILED_HEAD" HEAD | sort
+          )
+          test "${#changed_statuses[@]}" = 5
+          diff -u \
+            <(printf '%s\n' "${expected_statuses[@]}" | sort) \
+            <(printf '%s\n' "${changed_statuses[@]}")
+
+          echo "$P2_WORKFLOW_SHA256  .github/workflows/alpha-a2-p2-installed-distribution-offline.yml" \
+            | sha256sum --check
+          echo "$P2_POLICY_SHA256  alpha/alpha-a2-p2-installed-distribution-offline-policy-v1.json" \
+            | sha256sum --check
+          echo "$P2_PROTOCOL_SHA256  docs/alpha-a2-p2-installed-distribution-offline-gate-v1.md" \
+            | sha256sum --check
+          echo "$P2_SMOKE_SHA256  scripts/smoke_installed_a2_p2.py" | sha256sum --check
+          echo "$P2_WORKFLOW_TEST_SHA256  tests/test_alpha_a2_p2_workflow.py" \
+            | sha256sum --check
+          python -m json.tool \
+            alpha/alpha-a2-p2-1-fixture-root-correction-policy-v1.json \
+            >/dev/null
+          echo "$POLICY_SHA256  alpha/alpha-a2-p2-1-fixture-root-correction-policy-v1.json" \
+            | sha256sum --check
+          echo "$PROTOCOL_SHA256  docs/alpha-a2-p2-1-fixture-root-correction-offline-gate-v1.md" \
+            | sha256sum --check
+          echo "$CORRECTED_TEST_SHA256  tests/test_smoke_installed_a2_p2.py" \
+            | sha256sum --check
+
+          python - <<'PY'
+          from pathlib import Path
+
+          source = Path("tests/test_smoke_installed_a2_p2.py").read_text(encoding="utf-8")
+          required = (
+              'primary_root = tmp_path / "primary"',
+              "assert not primary_root.exists()",
+              "smoke._exercise_primary_v3(primary_root,",
+              'recovery_root = tmp_path / "recovery"',
+              "assert not recovery_root.exists()",
+              "smoke._exercise_recovery(recovery_root,",
+          )
+          assert all(marker in source for marker in required)
+          assert "smoke._exercise_primary_v3(tmp_path," not in source
+          assert "smoke._exercise_recovery(tmp_path," not in source
+          PY
+          test -z "$(git status --porcelain --untracked-files=all)"
+
+      - name: Set up pinned uv without an Actions cache
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: false
+
+      - name: Acquire locked dependencies before network isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          A2_P2_1_ROOT="${RUNNER_TEMP}/evidencemesh-alpha-a2-p2-1-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          runner_uid=$(id -u)
+          test ! -e "$A2_P2_1_ROOT"
+          test ! -L "$A2_P2_1_ROOT"
+          sudo install --directory \
+            --owner="$runner_uid" \
+            --group=nogroup \
+            --mode=0700 \
+            "$A2_P2_1_ROOT"
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11 --no-cache
+          UV_PROJECT_ENVIRONMENT="$A2_P2_1_ROOT/wheel-env" \
+            uv sync --locked --no-dev --no-install-project --python 3.11 --no-cache
+          UV_PROJECT_ENVIRONMENT="$A2_P2_1_ROOT/sdist-env" \
+            uv sync --locked --no-dev --no-install-project --python 3.11 --no-cache
+          uv pip install \
+            --python "$A2_P2_1_ROOT/sdist-env/bin/python" \
+            --no-cache \
+            --no-config \
+            'hatchling==1.31.0'
+
+      - name: Repeat the complete A2-P2 acceptance contract offline
+        shell: bash
+        run: |
+          set -euo pipefail
+          A2_P2_1_ROOT="${RUNNER_TEMP}/evidencemesh-alpha-a2-p2-1-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          runner_uid=$(id -u)
+          source_date_epoch=$(git show --no-patch --format=%ct HEAD)
+          python_path="$PWD/.venv/bin/python"
+          uv_path=$(command -v uv)
+          a2_harness_source="$PWD/scripts/smoke_installed_a2_p2.py"
+          rc4_harness_source="$PWD/scripts/smoke_installed_rc4_1a.py"
+          harness_root="$A2_P2_1_ROOT/harness/bin"
+          smoke_script="$harness_root/smoke_installed_a2_p2.py"
+          wheel_python="$A2_P2_1_ROOT/wheel-env/bin/python"
+          sdist_python="$A2_P2_1_ROOT/sdist-env/bin/python"
+          wheel_cli="$A2_P2_1_ROOT/wheel-env/bin/evidencemesh"
+          wheel_mcp="$A2_P2_1_ROOT/wheel-env/bin/evidencemesh-mcp"
+          sdist_cli="$A2_P2_1_ROOT/sdist-env/bin/evidencemesh"
+          sdist_mcp="$A2_P2_1_ROOT/sdist-env/bin/evidencemesh-mcp"
+          export_one="$A2_P2_1_ROOT/export-one"
+          export_two="$A2_P2_1_ROOT/export-two"
+          dist_one="$A2_P2_1_ROOT/dist-one"
+          dist_two="$A2_P2_1_ROOT/dist-two"
+          run_isolated=(
+            sudo env -i
+            HOME="$A2_P2_1_ROOT"
+            TMPDIR="$A2_P2_1_ROOT"
+            PATH=/usr/bin:/bin
+            LANG=C.UTF-8
+            LC_ALL=C.UTF-8
+            TZ=UTC
+            PYTHONDONTWRITEBYTECODE=1
+            PYTHONHASHSEED=0
+            RUFF_CACHE_DIR="$A2_P2_1_ROOT/ruff-cache"
+            MYPY_CACHE_DIR="$A2_P2_1_ROOT/mypy-cache"
+            COVERAGE_FILE="$A2_P2_1_ROOT/.coverage"
+            SOURCE_DATE_EPOCH="$source_date_epoch"
+            UV_HTTP_RETRIES=0
+            UV_NO_CACHE=1
+            UV_OFFLINE=1
+            /usr/bin/unshare --net --
+            /usr/bin/setpriv
+            --reuid="$runner_uid"
+            --regid=nogroup
+            --clear-groups
+            --no-new-privs
+          )
+
+          parent_network_namespace=$(readlink /proc/self/ns/net)
+          isolated_network_namespace=$(
+            "${run_isolated[@]}" /usr/bin/readlink /proc/self/ns/net
+          )
+          test "$isolated_network_namespace" != "$parent_network_namespace"
+          "${run_isolated[@]}" /usr/bin/test ! -r /var/run/docker.sock
+          "${run_isolated[@]}" /usr/bin/test ! -w /var/run/docker.sock
+          "${run_isolated[@]}" /usr/bin/env --chdir="$A2_P2_1_ROOT" \
+            "$wheel_python" -I -c \
+            'import importlib.util; assert importlib.util.find_spec("evidencemesh") is None'
+          "${run_isolated[@]}" /usr/bin/env --chdir="$A2_P2_1_ROOT" \
+            "$sdist_python" -I -c \
+            'import importlib.util; assert importlib.util.find_spec("evidencemesh") is None'
+          "${run_isolated[@]}" "$wheel_python" -I -c \
+            'import importlib.metadata; assert not any((item.metadata["Name"] or "").lower() == "evidencemesh" for item in importlib.metadata.distributions())'
+          "${run_isolated[@]}" "$sdist_python" -I -c \
+            'import importlib.metadata; assert not any((item.metadata["Name"] or "").lower() == "evidencemesh" for item in importlib.metadata.distributions())'
+          "${run_isolated[@]}" /usr/bin/test ! -e "$wheel_cli"
+          "${run_isolated[@]}" /usr/bin/test ! -e "$wheel_mcp"
+          "${run_isolated[@]}" /usr/bin/test ! -e "$sdist_cli"
+          "${run_isolated[@]}" /usr/bin/test ! -e "$sdist_mcp"
+          "${run_isolated[@]}" "$python_path" -I -c \
+            'import importlib.metadata; assert importlib.metadata.version("hatchling") == "1.31.0"'
+          "${run_isolated[@]}" "$wheel_python" -I -c \
+            'import importlib.util; assert importlib.util.find_spec("hatchling") is None'
+          "${run_isolated[@]}" "$sdist_python" -I -c \
+            'import importlib.metadata; assert importlib.metadata.version("hatchling") == "1.31.0"'
+          "${run_isolated[@]}" /usr/bin/mkdir --parents --mode=0700 "$harness_root"
+          a2_harness_sha256=$(sha256sum "$a2_harness_source" | cut -d' ' -f1)
+          rc4_harness_sha256=$(sha256sum "$rc4_harness_source" | cut -d' ' -f1)
+          "${run_isolated[@]}" /usr/bin/install --mode=0500 \
+            "$a2_harness_source" "$harness_root/smoke_installed_a2_p2.py"
+          "${run_isolated[@]}" /usr/bin/install --mode=0500 \
+            "$rc4_harness_source" "$harness_root/smoke_installed_rc4_1a.py"
+          printf '%s  %s\n' \
+            "$a2_harness_sha256" "$harness_root/smoke_installed_a2_p2.py" \
+            | "${run_isolated[@]}" /usr/bin/sha256sum --check
+          printf '%s  %s\n' \
+            "$rc4_harness_sha256" "$harness_root/smoke_installed_rc4_1a.py" \
+            | "${run_isolated[@]}" /usr/bin/sha256sum --check
+
+          "${run_isolated[@]}" "$python_path" -m ruff format --check .
+          "${run_isolated[@]}" "$python_path" -m ruff check .
+          "${run_isolated[@]}" "$python_path" -m mypy src
+          "${run_isolated[@]}" "$python_path" -m pytest \
+            --cov=evidencemesh \
+            --cov-report=term-missing \
+            -p no:cacheprovider \
+            -q
+
+          "${run_isolated[@]}" /usr/bin/mkdir --mode=0700 "$export_one" "$export_two"
+          "${run_isolated[@]}" /usr/bin/git archive \
+            --format=tar --output="$A2_P2_1_ROOT/export-one.tar" HEAD
+          "${run_isolated[@]}" /usr/bin/git archive \
+            --format=tar --output="$A2_P2_1_ROOT/export-two.tar" HEAD
+          "${run_isolated[@]}" /usr/bin/tar \
+            --extract --file="$A2_P2_1_ROOT/export-one.tar" --directory="$export_one"
+          "${run_isolated[@]}" /usr/bin/tar \
+            --extract --file="$A2_P2_1_ROOT/export-two.tar" --directory="$export_two"
+          "${run_isolated[@]}" /usr/bin/test ! -e "$export_one/.git"
+          "${run_isolated[@]}" /usr/bin/test ! -e "$export_two/.git"
+
+          "${run_isolated[@]}" /usr/bin/env --chdir="$export_one" \
+            "$python_path" -m hatchling build \
+            --target wheel --target sdist --directory "$dist_one"
+          "${run_isolated[@]}" /usr/bin/env --chdir="$export_two" \
+            "$python_path" -m hatchling build \
+            --target wheel --target sdist --directory "$dist_two"
+
+          mapfile -t wheels_one < <(find "$dist_one" -maxdepth 1 -type f -name '*.whl' | sort)
+          mapfile -t wheels_two < <(find "$dist_two" -maxdepth 1 -type f -name '*.whl' | sort)
+          mapfile -t sdists_one < <(find "$dist_one" -maxdepth 1 -type f -name '*.tar.gz' | sort)
+          mapfile -t sdists_two < <(find "$dist_two" -maxdepth 1 -type f -name '*.tar.gz' | sort)
+          test "${#wheels_one[@]}" = 1
+          test "${#wheels_two[@]}" = 1
+          test "${#sdists_one[@]}" = 1
+          test "${#sdists_two[@]}" = 1
+          wheel_one="${wheels_one[0]}"
+          wheel_two="${wheels_two[0]}"
+          sdist_one="${sdists_one[0]}"
+          sdist_two="${sdists_two[0]}"
+          test "$(basename "$wheel_one")" = "evidencemesh-0.1.0-py3-none-any.whl"
+          test "$(basename "$wheel_two")" = "$(basename "$wheel_one")"
+          test "$(basename "$sdist_one")" = "evidencemesh-0.1.0.tar.gz"
+          test "$(basename "$sdist_two")" = "$(basename "$sdist_one")"
+          /usr/bin/cmp --silent "$wheel_one" "$wheel_two"
+          /usr/bin/cmp --silent "$sdist_one" "$sdist_two"
+          wheel_sha256=$(sha256sum "$wheel_one" | cut -d' ' -f1)
+          sdist_sha256=$(sha256sum "$sdist_one" | cut -d' ' -f1)
+          wheel_size_bytes=$(stat --format='%s' "$wheel_one")
+          sdist_size_bytes=$(stat --format='%s' "$sdist_one")
+
+          "${run_isolated[@]}" /usr/bin/env \
+            --chdir="$A2_P2_1_ROOT" \
+            A2_P2_WHEEL="$wheel_one" \
+            A2_P2_SDIST="$sdist_one" \
+            "$python_path" -I - <<'PY'
+          import stat
+          import tarfile
+          import zipfile
+          from pathlib import Path, PurePosixPath
+
+          denied_parts = {".git", ".venv", "__pycache__"}
+          denied_names = {".env", "id_ed25519", "id_rsa"}
+
+          def validate_name(raw_name: str) -> PurePosixPath:
+              name = PurePosixPath(raw_name)
+              assert not name.is_absolute() and ".." not in name.parts
+              assert not denied_parts.intersection(name.parts)
+              assert name.name not in denied_names
+              assert not name.name.endswith((".key", ".pem"))
+              return name
+
+          wheel = Path(__import__("os").environ["A2_P2_WHEEL"])
+          with zipfile.ZipFile(wheel) as archive:
+              seen = set()
+              for item in archive.infolist():
+                  name = validate_name(item.filename)
+                  assert name not in seen
+                  seen.add(name)
+                  mode = (item.external_attr >> 16) & 0xFFFF
+                  assert not stat.S_ISLNK(mode)
+              assert seen
+
+          sdist = Path(__import__("os").environ["A2_P2_SDIST"])
+          with tarfile.open(sdist, mode="r:gz") as archive:
+              seen = set()
+              roots = set()
+              for item in archive.getmembers():
+                  name = validate_name(item.name)
+                  assert name not in seen
+                  seen.add(name)
+                  roots.add(name.parts[0])
+                  assert item.isfile() or item.isdir()
+                  assert not item.issym() and not item.islnk()
+              assert seen and roots == {"evidencemesh-0.1.0"}
+          PY
+          {
+            echo "A2_P2_1_WHEEL_SHA256=$wheel_sha256"
+            echo "A2_P2_1_WHEEL_SIZE_BYTES=$wheel_size_bytes"
+            echo "A2_P2_1_SDIST_SHA256=$sdist_sha256"
+            echo "A2_P2_1_SDIST_SIZE_BYTES=$sdist_size_bytes"
+          } >> "$GITHUB_ENV"
+
+          wheel_reference="evidencemesh @ file://${wheel_one}#sha256=${wheel_sha256}"
+          sdist_reference="evidencemesh @ file://${sdist_one}#sha256=${sdist_sha256}"
+          "${run_isolated[@]}" "$uv_path" pip install \
+            --offline --no-index --no-deps --no-cache --no-build-isolation \
+            --python "$wheel_python" \
+            "$wheel_reference"
+          "${run_isolated[@]}" "$uv_path" pip install \
+            --offline --no-index --no-deps --no-cache --no-build-isolation \
+            --python "$sdist_python" \
+            "$sdist_reference"
+          "${run_isolated[@]}" "$uv_path" pip check --python "$wheel_python"
+          "${run_isolated[@]}" "$uv_path" pip check --python "$sdist_python"
+
+          verify_pep610_archive_sha256() {
+            local interpreter="$1"
+            local archive="$2"
+            local expected_sha256="$3"
+            "${run_isolated[@]}" /usr/bin/env \
+              --chdir="$A2_P2_1_ROOT" \
+              A2_P2_ARCHIVE="$archive" \
+              A2_P2_ARCHIVE_SHA256="$expected_sha256" \
+              A2_P2_FORBIDDEN_WORKSPACE="$GITHUB_WORKSPACE" \
+              "$interpreter" -I - <<'PY'
+          import hashlib
+          import importlib.metadata
+          import json
+          import os
+          import site
+          import sys
+          from pathlib import Path
+
+          archive = Path(os.environ["A2_P2_ARCHIVE"]).resolve()
+          expected = os.environ["A2_P2_ARCHIVE_SHA256"]
+          workspace = Path(os.environ["A2_P2_FORBIDDEN_WORKSPACE"]).resolve()
+          distributions = [
+              item
+              for item in importlib.metadata.distributions()
+              if (item.metadata["Name"] or "").lower() == "evidencemesh"
+          ]
+          assert len(distributions) == 1
+          direct_url_text = distributions[0].read_text("direct_url.json")
+          assert direct_url_text is not None
+          direct_url = json.loads(direct_url_text)
+          assert direct_url["url"] == f"{archive.as_uri()}#sha256={expected}"
+          assert "dir_info" not in direct_url and "vcs_info" not in direct_url
+          archive_info = direct_url.get("archive_info")
+          assert isinstance(archive_info, dict)
+          declared = []
+          legacy_hash = archive_info.get("hash")
+          if legacy_hash is not None:
+              algorithm, separator, digest = legacy_hash.partition("=")
+              assert separator == "=" and algorithm == "sha256"
+              declared.append(digest)
+          hashes = archive_info.get("hashes")
+          if hashes is not None:
+              assert isinstance(hashes, dict)
+              digest = hashes.get("sha256")
+              assert isinstance(digest, str)
+              declared.append(digest)
+          assert archive_info == {} or declared
+          assert all(digest == expected for digest in declared)
+          assert hashlib.sha256(archive.read_bytes()).hexdigest() == expected
+          assert all(
+              not Path(entry).resolve().is_relative_to(workspace)
+              for entry in sys.path
+              if entry
+          )
+          for package_root in site.getsitepackages():
+              for pth_file in Path(package_root).glob("*.pth"):
+                  assert str(workspace) not in pth_file.read_text(encoding="utf-8")
+          PY
+          }
+          verify_pep610_archive_sha256 "$wheel_python" "$wheel_one" "$wheel_sha256"
+          verify_pep610_archive_sha256 "$sdist_python" "$sdist_one" "$sdist_sha256"
+
+          "${run_isolated[@]}" /usr/bin/env \
+            --chdir="$A2_P2_1_ROOT" \
+            PYTHONNOUSERSITE=1 \
+            PYTHONPATH= \
+            "$wheel_python" "$smoke_script" \
+            --label wheel \
+            --cli-command "$wheel_cli" \
+            --mcp-command "$wheel_mcp" \
+            --distribution "$wheel_one" \
+            --expected-archive-sha256 "$wheel_sha256" \
+            --work-root "$A2_P2_1_ROOT/wheel-smoke" \
+            --output "$A2_P2_1_ROOT/wheel-report.json"
+          "${run_isolated[@]}" /usr/bin/env \
+            --chdir="$A2_P2_1_ROOT" \
+            PYTHONNOUSERSITE=1 \
+            PYTHONPATH= \
+            "$sdist_python" "$smoke_script" \
+            --label sdist \
+            --cli-command "$sdist_cli" \
+            --mcp-command "$sdist_mcp" \
+            --distribution "$sdist_one" \
+            --expected-archive-sha256 "$sdist_sha256" \
+            --work-root "$A2_P2_1_ROOT/sdist-smoke" \
+            --output "$A2_P2_1_ROOT/sdist-report.json"
+          "${run_isolated[@]}" "$python_path" -m json.tool \
+            "$A2_P2_1_ROOT/wheel-report.json"
+          "${run_isolated[@]}" "$python_path" -m json.tool \
+            "$A2_P2_1_ROOT/sdist-report.json"
+          test -z "$(git status --porcelain --untracked-files=all)"
+
+      - name: Remove every ephemeral A2-P2.1 output
+        if: always()
+        shell: bash
+        run: |
+          A2_P2_1_ROOT="${RUNNER_TEMP}/evidencemesh-alpha-a2-p2-1-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          sudo rm --recursive --force -- "$A2_P2_1_ROOT"
+
+      - name: Confirm A2-P2.1 ephemeral output removal
+        if: always()
+        shell: bash
+        run: |
+          A2_P2_1_ROOT="${RUNNER_TEMP}/evidencemesh-alpha-a2-p2-1-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          test ! -e "$A2_P2_1_ROOT"
+          test ! -L "$A2_P2_1_ROOT"
+
+      - name: Summarize correction only after complete pass and cleanup
+        env:
+          EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          exact_tree=$(git rev-parse HEAD^{tree})
+          {
+            echo '## EvidenceMesh Alpha A2-P2.1 fixture-root correction offline'
+            echo
+            echo "- Exact HEAD/tree: \`$EXACT_HEAD/$exact_tree\`"
+            echo "- Workflow run/attempt: \`$GITHUB_RUN_ID/$GITHUB_RUN_ATTEMPT\`"
+            echo "- Historical failed run/job preserved: \`$A2_P2_FAILED_RUN_ID/$A2_P2_FAILED_JOB_ID\`"
+            echo '- Historical conclusion: `failure` (unchanged)'
+            echo '- Corrected test fixture roots: `2`'
+            echo "- Wheel SHA-256/bytes: \`$A2_P2_1_WHEEL_SHA256/$A2_P2_1_WHEEL_SIZE_BYTES\`"
+            echo "- Sdist SHA-256/bytes: \`$A2_P2_1_SDIST_SHA256/$A2_P2_1_SDIST_SIZE_BYTES\`"
+            echo '- Complete P2 source/build/install/smoke revalidation: `pass`'
+            echo '- Ephemeral output cleanup: `pass`'
+            echo '- Runtime/provider/search/document/model/DNS requests: `0`'
+            echo '- Artifact, distribution, tag or release publication: `none`'
+            echo '- Local offline technical alpha A2: `pass`'
+            echo '- Live closed alpha, OS supervision, Phase 12 and V1: `NO-GO`'
+          } >> "$GITHUB_STEP_SUMMARY"

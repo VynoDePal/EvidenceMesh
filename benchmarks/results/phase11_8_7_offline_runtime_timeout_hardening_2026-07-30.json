@@ -1,0 +1,188 @@
+{
+  "benchmark": "evidencemesh-phase11-8-7-offline-runtime-timeout-hardening-v1",
+  "decision": {
+    "future_live_run_authorized": false,
+    "historical_phase11_8_6_result_changed": false,
+    "merge_allowed": false,
+    "next_step": "Review this offline runtime hardening; any live test requires a separate frozen protocol and fresh explicit authorization.",
+    "phase11_8_7_runtime_timeout_hardening_passed": true,
+    "phase11_9_executed": false,
+    "phase11_9_protocol_may_be_frozen": false,
+    "phase12_authorized": false,
+    "phase12_executed": false,
+    "product_provider_or_model_defaults_changed": false,
+    "release_allowed": false,
+    "release_decision": "no-go",
+    "superiority_claim_allowed": false,
+    "users_choose_provider_model_and_credentials": true
+  },
+  "gates": {
+    "classification_is_deterministic_bounded_and_private": {
+      "fixture_count": 6,
+      "headers_bodies_or_responses_retained": false,
+      "passed": true,
+      "private_exception_retained": false,
+      "request_url_retained": false
+    },
+    "environment_overrides_are_bound": {
+      "bindings": {
+        "EVIDENCEMESH_PROVIDER_CONNECT_TIMEOUT": "provider_connect_timeout_seconds",
+        "EVIDENCEMESH_PROVIDER_POOL_TIMEOUT": "provider_pool_timeout_seconds",
+        "EVIDENCEMESH_PROVIDER_READ_TIMEOUT": "provider_read_timeout_seconds",
+        "EVIDENCEMESH_PROVIDER_WRITE_TIMEOUT": "provider_write_timeout_seconds"
+      },
+      "passed": true
+    },
+    "exact_default_timeout_policy": {
+      "observed": {
+        "connect_seconds": 5.0,
+        "pool_seconds": 5.0,
+        "read_seconds": 12.0,
+        "wall_seconds": 15.0,
+        "write_seconds": 10.0
+      },
+      "passed": true
+    },
+    "generic_httpx_and_provider_wall_are_distinct": {
+      "httpx_unknown": "httpx_timeout_unknown",
+      "passed": true,
+      "provider_wall": "provider_wall_timeout"
+    },
+    "historical_user_choice_and_release_boundaries_are_preserved": {
+      "future_live_run_authorized": false,
+      "historical_phase11_8_6_changed": false,
+      "merge_allowed": false,
+      "passed": true,
+      "phase11_9_protocol_may_be_frozen": false,
+      "phase12_authorized": false,
+      "release_allowed": false,
+      "users_choose_provider_model_and_credentials": true
+    },
+    "invalid_or_masking_policies_fail_closed": {
+      "invalid_fixture_count": 6,
+      "invalid_rejected": 6,
+      "passed": true
+    },
+    "locked_source_integrity": {
+      "passed": true,
+      "sha256": {
+        "benchmarks/results/phase11_8_6_offline_timeout_diagnostic_2026-07-30.json": "72635a442aa4062f6588e5f7fcaec49abb68de52dc8da96f790fd88b55602207",
+        "docs/benchmark-protocol-v22.md": "e786b5b4f7ade79d40dc81ffab3a20bd0a09ffe45c7b5a8765155519e2cd1dbe",
+        "src/evidencemesh/config.py": "e344e269ddef8f703d8e346e0fd6e9d98367b4d734d8155db24908a0e90bae40",
+        "src/evidencemesh/engine.py": "8e0d9003ee38c2f776547913ce8ddfeb7d80e334b5eb210e124b78eafdd57795",
+        "src/evidencemesh/telemetry.py": "9f485c442a3c7e6d6fa2702b8089dd6d7fec57db9fdc4cda9dd05091e69046b4"
+      }
+    },
+    "owned_client_uses_explicit_httpx_layers": {
+      "connect_seconds": 5.0,
+      "passed": true,
+      "pool_seconds": 5.0,
+      "read_seconds": 12.0,
+      "write_seconds": 10.0
+    },
+    "precedence_and_supplied_client_contract_are_preserved": {
+      "dns_over_connect_timeout": "dns_error",
+      "explicit_provider_kind_over_timeout": "upstream_unavailable",
+      "passed": true,
+      "supplied_client_timeout_mutated": false
+    },
+    "provider_wall_is_independent_and_bounded": {
+      "kind": "provider_wall_timeout",
+      "passed": true,
+      "wall_seconds": 15.0
+    },
+    "specific_httpx_timeouts_are_distinct": {
+      "observed": {
+        "connect": "connect_timeout",
+        "pool": "pool_timeout",
+        "read": "read_timeout",
+        "write": "write_timeout"
+      },
+      "passed": true
+    },
+    "zero_network_provider_model_secret_or_retry_traffic": {
+      "fallback_requests": 0,
+      "gemini_requests": 0,
+      "model_calls": 0,
+      "network_requests": 0,
+      "passed": true,
+      "provider_calls": 0,
+      "repair_requests": 0,
+      "retries": 0,
+      "secrets_bound": 0,
+      "tavily_requests": 0
+    }
+  },
+  "privacy": {
+    "credentials_in_report": false,
+    "generated_answers_in_report": false,
+    "phase12_identifiers_in_report": false,
+    "provider_responses_in_report": false,
+    "questions_or_evidence_in_report": false,
+    "raw_exception_messages_in_report": false,
+    "request_bodies_in_report": false,
+    "request_headers_in_report": false,
+    "request_urls_in_report": false
+  },
+  "protocol": {
+    "historical_phase11_8_6_result_sha256": "72635a442aa4062f6588e5f7fcaec49abb68de52dc8da96f790fd88b55602207",
+    "path": "docs/benchmark-protocol-v22.md",
+    "runtime_source_sha256": {
+      "src/evidencemesh/config.py": "e344e269ddef8f703d8e346e0fd6e9d98367b4d734d8155db24908a0e90bae40",
+      "src/evidencemesh/engine.py": "8e0d9003ee38c2f776547913ce8ddfeb7d80e334b5eb210e124b78eafdd57795",
+      "src/evidencemesh/telemetry.py": "9f485c442a3c7e6d6fa2702b8089dd6d7fec57db9fdc4cda9dd05091e69046b4"
+    },
+    "sha256": "e786b5b4f7ade79d40dc81ffab3a20bd0a09ffe45c7b5a8765155519e2cd1dbe"
+  },
+  "schema_version": 1,
+  "task_type": "offline SDK and MCP runtime timeout hardening",
+  "timeout_policy": {
+    "connect_seconds": 5.0,
+    "pool_seconds": 5.0,
+    "read_seconds": 12.0,
+    "wall_seconds": 15.0,
+    "write_seconds": 10.0
+  },
+  "timeout_taxonomy": {
+    "connect": {
+      "http_status": null,
+      "kind": "connect_timeout"
+    },
+    "httpx_unknown": {
+      "http_status": null,
+      "kind": "httpx_timeout_unknown"
+    },
+    "pool": {
+      "http_status": null,
+      "kind": "pool_timeout"
+    },
+    "provider_wall": {
+      "http_status": null,
+      "kind": "provider_wall_timeout"
+    },
+    "read": {
+      "http_status": null,
+      "kind": "read_timeout"
+    },
+    "write": {
+      "http_status": null,
+      "kind": "write_timeout"
+    }
+  },
+  "traffic": {
+    "fallback_requests": 0,
+    "gemini_requests": 0,
+    "model_calls": 0,
+    "network_requests": 0,
+    "provider_calls": 0,
+    "repair_requests": 0,
+    "retries": 0,
+    "secrets_bound": 0,
+    "tavily_requests": 0
+  },
+  "warnings": [
+    "This is an offline engineering result; it makes no provider or model availability claim.",
+    "The historical Phase 11.8.5 request_timeout remains legacy_request_timeout_unresolved.",
+    "Phase 11.9, Phase 12, merge and release remain blocked pending separate evidence and authorization."
+  ]
+}

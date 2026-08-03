@@ -1,0 +1,456 @@
+{
+  "schema_version": 1,
+  "benchmark": "evidencemesh-phase11-8-2-offline-design-fixtures-v1",
+  "authored_after_phase11_8": true,
+  "contains_phase11_7_or_phase12_content": false,
+  "predictive_quality_claim_allowed": false,
+  "projection_defaults": {
+    "budget_chars": 620,
+    "max_block_chars": 1000,
+    "min_block_chars": 96
+  },
+  "projection_cases": [
+    {
+      "id": "late_top_entity",
+      "question": "What is the capital of Borealis?",
+      "sentinel": "Aurora City",
+      "expected_source_id": "S1",
+      "blocks": [
+        {
+          "citation_id": "S1",
+          "title": "Borealis gazetteer",
+          "url": "https://example.test/borealis",
+          "providers": ["tavily"],
+          "text_parts": [
+            {"repeat": "background ", "count": 34},
+            {"literal": "The capital of Borealis is Aurora City."},
+            {"repeat": " context", "count": 20}
+          ]
+        },
+        {
+          "citation_id": "S2",
+          "title": "Regional notes",
+          "url": "https://example.test/regions",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "regional material ", "count": 40}]
+        }
+      ]
+    },
+    {
+      "id": "late_second_entity",
+      "question": "Who invented the Helioscope?",
+      "sentinel": "Mina Voss",
+      "expected_source_id": "S2",
+      "blocks": [
+        {
+          "citation_id": "S1",
+          "title": "Optics overview",
+          "url": "https://example.test/optics",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "general optics history ", "count": 35}]
+        },
+        {
+          "citation_id": "S2",
+          "title": "Helioscope archive",
+          "url": "https://example.test/helioscope",
+          "providers": ["tavily"],
+          "text_parts": [
+            {"repeat": "archive entry ", "count": 31},
+            {"literal": "The Helioscope was invented by Mina Voss."},
+            {"repeat": " catalogue", "count": 18}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "numeric_measurement",
+      "question": "What height is Mount Orin?",
+      "sentinel": "4,321 metres",
+      "expected_source_id": "S1",
+      "blocks": [
+        {
+          "citation_id": "S1",
+          "title": "Mount Orin survey",
+          "url": "https://example.test/orin",
+          "providers": ["tavily"],
+          "text_parts": [
+            {"repeat": "survey observation ", "count": 27},
+            {"literal": "Mount Orin has a height of 4,321 metres."},
+            {"repeat": " datum", "count": 22}
+          ]
+        },
+        {
+          "citation_id": "S2",
+          "title": "Nearby peaks",
+          "url": "https://example.test/peaks",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "nearby peak record ", "count": 38}]
+        }
+      ]
+    },
+    {
+      "id": "date_answer",
+      "question": "When was the Meridian Archive founded?",
+      "sentinel": "17 March 1984",
+      "expected_source_id": "S1",
+      "blocks": [
+        {
+          "citation_id": "S1",
+          "title": "Meridian Archive history",
+          "url": "https://example.test/meridian",
+          "providers": ["tavily"],
+          "text_parts": [
+            {"repeat": "institutional history ", "count": 26},
+            {"literal": "The Meridian Archive was founded on 17 March 1984."},
+            {"repeat": " collection", "count": 20}
+          ]
+        },
+        {
+          "citation_id": "S2",
+          "title": "Archives directory",
+          "url": "https://example.test/directory",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "directory listing ", "count": 40}]
+        }
+      ]
+    },
+    {
+      "id": "unicode_entity",
+      "question": "Who designed Théâtre Élan?",
+      "sentinel": "Anaïs Koffi",
+      "expected_source_id": "S1",
+      "blocks": [
+        {
+          "citation_id": "S1",
+          "title": "Théâtre Élan",
+          "url": "https://example.test/theatre-elan",
+          "providers": ["tavily"],
+          "text_parts": [
+            {"repeat": "architecture culturelle ", "count": 25},
+            {"literal": "Théâtre Élan was designed by Anaïs Koffi."},
+            {"repeat": " patrimoine", "count": 22}
+          ]
+        },
+        {
+          "citation_id": "S2",
+          "title": "Cultural buildings",
+          "url": "https://example.test/buildings",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "building profile ", "count": 42}]
+        }
+      ]
+    },
+    {
+      "id": "tail_fallback_without_query_anchor",
+      "question": "What identifier is requested?",
+      "sentinel": "ZX-2048",
+      "expected_source_id": "S1",
+      "blocks": [
+        {
+          "citation_id": "S1",
+          "title": "Registry extract",
+          "url": "https://example.test/registry",
+          "providers": ["tavily"],
+          "text_parts": [
+            {"repeat": "neutral record material ", "count": 34},
+            {"literal": "Final value: ZX-2048"}
+          ]
+        },
+        {
+          "citation_id": "S2",
+          "title": "Other records",
+          "url": "https://example.test/other-records",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "unrelated value ", "count": 46}]
+        }
+      ]
+    },
+    {
+      "id": "middle_unpunctuated_anchor",
+      "question": "Which alloy is used by the Novus bridge?",
+      "sentinel": "alloy QN-7",
+      "expected_source_id": "S1",
+      "blocks": [
+        {
+          "citation_id": "S1",
+          "title": "Novus bridge specification",
+          "url": "https://example.test/novus",
+          "providers": ["tavily"],
+          "text_parts": [
+            {"repeat": "technical filler ", "count": 29},
+            {"literal": "the Novus bridge uses alloy QN-7 for its main span"},
+            {"repeat": " specification", "count": 24}
+          ]
+        },
+        {
+          "citation_id": "S2",
+          "title": "Bridge catalogue",
+          "url": "https://example.test/bridge-catalogue",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "catalogue detail ", "count": 42}]
+        }
+      ]
+    },
+    {
+      "id": "many_blocks_top_rank",
+      "question": "What language does Project Selene use?",
+      "sentinel": "LumaScript",
+      "expected_source_id": "S1",
+      "budget_chars": 1200,
+      "blocks": [
+        {
+          "citation_id": "S1",
+          "title": "Project Selene",
+          "url": "https://example.test/selene",
+          "providers": ["tavily"],
+          "text_parts": [
+            {"repeat": "repository documentation ", "count": 22},
+            {"literal": "Project Selene uses the LumaScript language."},
+            {"repeat": " reference", "count": 18}
+          ]
+        },
+        {
+          "citation_id": "S2",
+          "title": "Result two",
+          "url": "https://example.test/two",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "secondary evidence ", "count": 35}]
+        },
+        {
+          "citation_id": "S3",
+          "title": "Result three",
+          "url": "https://example.test/three",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "secondary evidence ", "count": 35}]
+        },
+        {
+          "citation_id": "S4",
+          "title": "Result four",
+          "url": "https://example.test/four",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "secondary evidence ", "count": 35}]
+        },
+        {
+          "citation_id": "S5",
+          "title": "Result five",
+          "url": "https://example.test/five",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "secondary evidence ", "count": 35}]
+        }
+      ]
+    },
+    {
+      "id": "many_blocks_lower_rank",
+      "question": "Where is the Caldera observatory located?",
+      "sentinel": "Nera Plateau",
+      "expected_source_id": "S4",
+      "budget_chars": 1200,
+      "blocks": [
+        {
+          "citation_id": "S1",
+          "title": "Astronomy",
+          "url": "https://example.test/astronomy",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "astronomy overview ", "count": 35}]
+        },
+        {
+          "citation_id": "S2",
+          "title": "Observatories",
+          "url": "https://example.test/observatories",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "observatory list ", "count": 38}]
+        },
+        {
+          "citation_id": "S3",
+          "title": "Caldera weather",
+          "url": "https://example.test/weather",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "weather observation ", "count": 35}]
+        },
+        {
+          "citation_id": "S4",
+          "title": "Caldera observatory",
+          "url": "https://example.test/caldera",
+          "providers": ["tavily"],
+          "text_parts": [
+            {"repeat": "site description ", "count": 24},
+            {"literal": "The Caldera observatory is located on Nera Plateau."},
+            {"repeat": " access", "count": 25}
+          ]
+        },
+        {
+          "citation_id": "S5",
+          "title": "Plateaus",
+          "url": "https://example.test/plateaus",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "plateau note ", "count": 45}]
+        }
+      ]
+    },
+    {
+      "id": "long_headers",
+      "question": "What powers the Aster beacon?",
+      "sentinel": "solar cells",
+      "expected_source_id": "S1",
+      "budget_chars": 760,
+      "blocks": [
+        {
+          "citation_id": "S1",
+          "title": "Aster beacon engineering specification and maintenance reference",
+          "url": "https://example.test/engineering/aster/beacon/specification/version-one",
+          "providers": ["tavily"],
+          "text_parts": [
+            {"repeat": "engineering detail ", "count": 24},
+            {"literal": "The Aster beacon is powered by solar cells."},
+            {"repeat": " maintenance", "count": 20}
+          ]
+        },
+        {
+          "citation_id": "S2",
+          "title": "Navigation beacon component catalogue and compatibility matrix",
+          "url": "https://example.test/catalogue/navigation/beacons/components",
+          "providers": ["tavily"],
+          "text_parts": [{"repeat": "component description ", "count": 32}]
+        }
+      ]
+    },
+    {
+      "id": "short_evidence_no_regression",
+      "question": "Who leads the Orbis Lab?",
+      "sentinel": "Dara Mensah",
+      "expected_source_id": "S1",
+      "blocks": [
+        {
+          "citation_id": "S1",
+          "title": "Orbis Lab",
+          "url": "https://example.test/orbis",
+          "providers": ["tavily"],
+          "text_parts": [{"literal": "The Orbis Lab is led by Dara Mensah."}]
+        },
+        {
+          "citation_id": "S2",
+          "title": "Laboratory directory",
+          "url": "https://example.test/labs",
+          "providers": ["tavily"],
+          "text_parts": [{"literal": "A directory of research laboratories."}]
+        }
+      ]
+    },
+    {
+      "id": "empty_block_filter",
+      "question": "What is the Cygnus protocol version?",
+      "sentinel": "version 7.4",
+      "expected_source_id": "S2",
+      "blocks": [
+        {
+          "citation_id": "S1",
+          "title": "Empty result",
+          "url": "https://example.test/empty",
+          "providers": ["tavily"],
+          "text_parts": [{"literal": ""}]
+        },
+        {
+          "citation_id": "S2",
+          "title": "Cygnus protocol",
+          "url": "https://example.test/cygnus",
+          "providers": ["tavily"],
+          "text_parts": [
+            {"repeat": "protocol history ", "count": 29},
+            {"literal": "The current Cygnus protocol is version 7.4."},
+            {"repeat": " revision", "count": 20}
+          ]
+        },
+        {
+          "citation_id": "S3",
+          "title": "Protocol index",
+          "url": "https://example.test/protocols",
+          "providers": ["community"],
+          "text_parts": [{"repeat": "protocol index ", "count": 42}]
+        }
+      ]
+    }
+  ],
+  "valid_direct_answers": [
+    {
+      "id": "single_citation",
+      "raw": "{\"answer\":\"Aurora City\",\"citation_ids\":[\"S1\"]}",
+      "allowed_ids": ["S1", "S2"],
+      "rendered": "Aurora City [S1]"
+    },
+    {
+      "id": "multiple_citations",
+      "raw": "{\"answer\":\"4,321 metres\",\"citation_ids\":[\"S1\",\"S2\"]}",
+      "allowed_ids": ["S1", "S2"],
+      "rendered": "4,321 metres [S1] [S2]"
+    },
+    {
+      "id": "unicode_answer",
+      "raw": "{\"answer\":\"Anaïs Koffi\",\"citation_ids\":[\"S1\"]}",
+      "allowed_ids": ["S1"],
+      "rendered": "Anaïs Koffi [S1]"
+    },
+    {
+      "id": "insufficient",
+      "raw": "{\"answer\":\"Insufficient evidence.\",\"citation_ids\":[]}",
+      "allowed_ids": ["S1"],
+      "rendered": "Insufficient evidence."
+    }
+  ],
+  "invalid_direct_answers": [
+    {
+      "id": "malformed_json",
+      "raw": "{\"answer\":",
+      "allowed_ids": ["S1"]
+    },
+    {
+      "id": "legacy_claim_shape",
+      "raw": "{\"claims\":[{\"text\":\"Aurora City\",\"citation_ids\":[\"S1\"]}]}",
+      "allowed_ids": ["S1"]
+    },
+    {
+      "id": "extra_key",
+      "raw": "{\"answer\":\"Aurora City\",\"citation_ids\":[\"S1\"],\"reason\":\"x\"}",
+      "allowed_ids": ["S1"]
+    },
+    {
+      "id": "embedded_citation",
+      "raw": "{\"answer\":\"Aurora City [S1]\",\"citation_ids\":[\"S1\"]}",
+      "allowed_ids": ["S1"]
+    },
+    {
+      "id": "missing_supported_citation",
+      "raw": "{\"answer\":\"Aurora City\",\"citation_ids\":[]}",
+      "allowed_ids": ["S1"]
+    },
+    {
+      "id": "citation_on_insufficient",
+      "raw": "{\"answer\":\"Insufficient evidence.\",\"citation_ids\":[\"S1\"]}",
+      "allowed_ids": ["S1"]
+    },
+    {
+      "id": "duplicate_citation",
+      "raw": "{\"answer\":\"Aurora City\",\"citation_ids\":[\"S1\",\"S1\"]}",
+      "allowed_ids": ["S1"]
+    },
+    {
+      "id": "bracketed_identifier",
+      "raw": "{\"answer\":\"Aurora City\",\"citation_ids\":[\"[S1]\"]}",
+      "allowed_ids": ["S1"]
+    },
+    {
+      "id": "unknown_identifier",
+      "raw": "{\"answer\":\"Aurora City\",\"citation_ids\":[\"S9\"]}",
+      "allowed_ids": ["S1", "S2"]
+    },
+    {
+      "id": "empty_answer",
+      "raw": "{\"answer\":\"\",\"citation_ids\":[\"S1\"]}",
+      "allowed_ids": ["S1"]
+    },
+    {
+      "id": "array_payload",
+      "raw": "[{\"answer\":\"Aurora City\",\"citation_ids\":[\"S1\"]}]",
+      "allowed_ids": ["S1"]
+    }
+  ]
+}

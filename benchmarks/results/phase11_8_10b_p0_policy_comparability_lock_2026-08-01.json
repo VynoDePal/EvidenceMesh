@@ -1,0 +1,206 @@
+{
+  "candidate_decisions": [
+    {
+      "acquisition_eligible": false,
+      "blocking_reasons": [
+        "third-party-component-rights-not-itemized",
+        "pinned-snapshot-to-publication-and-leaderboard-mapping-unresolved",
+        "pytrec_eval-version-and-scoring-semantics-unpinned"
+      ],
+      "comparability_complete": false,
+      "component_rights_clearance_complete": false,
+      "evaluation_eligible": false,
+      "status": "blocked",
+      "suite_id": "bright"
+    },
+    {
+      "acquisition_eligible": false,
+      "blocking_reasons": [
+        "third-party-component-rights-not-itemized",
+        "qwen-judge-tokenizer-prompt-generation-and-runtime-closure-unpinned"
+      ],
+      "comparability_complete": false,
+      "component_rights_clearance_complete": false,
+      "evaluation_eligible": false,
+      "status": "blocked",
+      "suite_id": "browsecomp_plus"
+    }
+  ],
+  "engineering_lock": "pass",
+  "external_source_identity": {
+    "external_document_content_digests_verified_locally": 0,
+    "github_documents_with_git_blob_identity": 7,
+    "huggingface_cards_with_revision_and_path_identity_only": 3,
+    "identity_is_not_local_content_integrity_proof": true
+  },
+  "gate_summary": {
+    "failed": 0,
+    "passed": 16,
+    "total": 16
+  },
+  "gates": [
+    {
+      "gate": 1,
+      "gate_id": "phase11_8_10a_authorities_exact",
+      "passed": true
+    },
+    {
+      "gate": 2,
+      "gate_id": "predecessor_no_go_and_no_external_score_preserved",
+      "passed": true
+    },
+    {
+      "gate": 3,
+      "gate_id": "ten_of_fifteen_immutable_primary_documents_bounded",
+      "passed": true
+    },
+    {
+      "gate": 4,
+      "gate_id": "facts_and_inferences_separated",
+      "passed": true
+    },
+    {
+      "gate": 5,
+      "gate_id": "exact_two_independent_candidate_scope",
+      "passed": true
+    },
+    {
+      "gate": 6,
+      "gate_id": "declared_licenses_separated_from_component_rights",
+      "passed": true
+    },
+    {
+      "gate": 7,
+      "gate_id": "bright_component_rights_fail_closed",
+      "passed": true
+    },
+    {
+      "gate": 8,
+      "gate_id": "bright_official_population_mapping_fail_closed",
+      "passed": true
+    },
+    {
+      "gate": 9,
+      "gate_id": "bright_evaluator_dependency_fail_closed",
+      "passed": true
+    },
+    {
+      "gate": 10,
+      "gate_id": "browsecomp_plus_component_rights_fail_closed",
+      "passed": true
+    },
+    {
+      "gate": 11,
+      "gate_id": "browsecomp_plus_fixed_corpus_boundary_locked",
+      "passed": true
+    },
+    {
+      "gate": 12,
+      "gate_id": "browsecomp_plus_judge_and_runtime_fail_closed",
+      "passed": true
+    },
+    {
+      "gate": 13,
+      "gate_id": "official_target_one_suite_later_none_admitted_now",
+      "passed": true
+    },
+    {
+      "gate": 14,
+      "gate_id": "zero_payload_live_score_or_publication_operations",
+      "passed": true
+    },
+    {
+      "gate": 15,
+      "gate_id": "technical_alpha_isolated_from_evidence_promotion",
+      "passed": true
+    },
+    {
+      "gate": 16,
+      "gate_id": "phase11_8_10b_acquisition_phase11_9_and_phase12_blocked",
+      "passed": true
+    }
+  ],
+  "generated_on": "2026-08-01",
+  "governance": {
+    "distributions_must_remain_unpublished": true,
+    "merge_allowed": false,
+    "phase_11_8_10b_acquisition_authorized": false,
+    "phase_11_9_authorized": false,
+    "phase_12_authorized": false,
+    "pull_request_must_remain_draft": true,
+    "release_allowed": false,
+    "superiority_claim_allowed": false
+  },
+  "methodology_commit_sha": "56989d4674f99184b11f72d18c503c320c65c868",
+  "mode": "metadata-only-local-fail-closed",
+  "next_evidence_action": {
+    "action_kind": "browsecomp-plus-immutable-metadata-clarification",
+    "candidate_id": "browsecomp_plus",
+    "entry_criteria_count": 5,
+    "maximum_additional_unique_public_metadata_documents": 5,
+    "maximum_benchmark_payload_requests": 0,
+    "maximum_provider_or_model_requests": 0,
+    "maximum_retries": 0,
+    "requires_separate_go": true,
+    "stop_criteria_count": 6,
+    "success_criteria_count": 3
+  },
+  "officially_comparable_score_available": false,
+  "operation_attestation": {
+    "benchmark_payload_bytes_opened": 0,
+    "benchmark_payload_downloads": 0,
+    "benchmark_search_api_requests": 0,
+    "external_tester_requests": 0,
+    "judge_requests": 0,
+    "measurement_mode": "bounded-process-attestation-and-static-capability-check",
+    "model_requests": 0,
+    "provider_requests": 0,
+    "public_metadata_documents_consulted": 10,
+    "publication_requests": 0,
+    "queries_decrypted": 0,
+    "retrieval_requests": 0,
+    "runtime_network_instrumentation_used": false,
+    "scores_computed": 0,
+    "secret_requests": 0
+  },
+  "outcome": "policy_comparability_lock_complete_acquisition_blocked",
+  "phase": "11.8.10B-P0",
+  "policy_manifest_canonical_sha256": "5578ee0f436187673a0eb4eadb1165023f83471fc4ea9ad2ce60652a1a86db6c",
+  "predecessor_verification": {
+    "external_evaluation_status": "not_run",
+    "quality_decision": "no_go",
+    "real_external_score": false,
+    "verified_file_count": 5,
+    "verified_file_set_sha256": "ad7097e2bec29d9a024df25b06aa365b9a2b09bae806ffb29c40200eeb650d50"
+  },
+  "quality_decision": "no_go",
+  "readiness": {
+    "asset_acquisition_allowed": false,
+    "benchmark_comparability_complete": false,
+    "candidate_suites_admitted": 0,
+    "component_license_clearance_complete": false,
+    "evaluation_allowed": false,
+    "policy_lock_complete": true,
+    "publication_allowed": false,
+    "v1_ready": false
+  },
+  "real_external_score": false,
+  "research_budget": {
+    "consulted_unique_public_metadata_documents": 10,
+    "maximum_unique_public_metadata_documents": 15,
+    "raw_transport_request_count_used_as_budget": false,
+    "remaining_unique_public_metadata_documents": 5
+  },
+  "schema_version": "evidencemesh.phase11_8_10b_p0.policy-comparability-result.v1",
+  "selected_policy": {
+    "asset_acquisition_before_clearance": false,
+    "candidate_suites_admitted_now": 0,
+    "official_score_target": "officially-comparable-external-score",
+    "one_authoritative_suite_may_suffice_later": true,
+    "option_id": "technical_alpha_isolated"
+  },
+  "source_lock": {
+    "source_count": 12,
+    "source_set_sha256": "1d8e0524ecfe8c3c1d02a8925a517e23d67d090eea808e9fc3f9ab8c91265b6f"
+  }
+}

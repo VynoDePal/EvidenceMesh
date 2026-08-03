@@ -1,0 +1,74 @@
+[
+  {
+    "id": "python-taskgroup",
+    "query": "Python asyncio TaskGroup official documentation",
+    "target_domains": ["docs.python.org"],
+    "topic": "software"
+  },
+  {
+    "id": "searxng-settings",
+    "query": "SearXNG settings.yml official documentation",
+    "target_domains": ["docs.searxng.org"],
+    "topic": "software"
+  },
+  {
+    "id": "who-malaria-report",
+    "query": "WHO World malaria report 2024",
+    "target_domains": ["who.int"],
+    "topic": "health"
+  },
+  {
+    "id": "nasa-artemis-two",
+    "query": "NASA Artemis II mission crew",
+    "target_domains": ["nasa.gov"],
+    "topic": "science"
+  },
+  {
+    "id": "attention-paper",
+    "query": "Attention Is All You Need paper arXiv",
+    "target_domains": ["arxiv.org"],
+    "topic": "research"
+  },
+  {
+    "id": "git-interactive-rebase",
+    "query": "Git interactive rebase official documentation",
+    "target_domains": ["git-scm.com"],
+    "topic": "software"
+  },
+  {
+    "id": "eu-ai-act",
+    "query": "European Union Artificial Intelligence Act official journal",
+    "target_domains": ["eur-lex.europa.eu"],
+    "topic": "law"
+  },
+  {
+    "id": "linux-admin-guide",
+    "query": "Linux kernel administration guide official documentation",
+    "target_domains": ["docs.kernel.org"],
+    "topic": "software"
+  },
+  {
+    "id": "nobel-physics-2024",
+    "query": "2024 Nobel Prize in Physics official",
+    "target_domains": ["nobelprize.org"],
+    "topic": "science"
+  },
+  {
+    "id": "openai-simple-evals",
+    "query": "OpenAI simple-evals GitHub",
+    "target_domains": ["github.com"],
+    "topic": "ai"
+  },
+  {
+    "id": "wcag-22",
+    "query": "W3C Web Content Accessibility Guidelines 2.2",
+    "target_domains": ["w3.org"],
+    "topic": "standards"
+  },
+  {
+    "id": "world-bank-benin",
+    "query": "World Bank Benin population data",
+    "target_domains": ["data.worldbank.org"],
+    "topic": "africa"
+  }
+]

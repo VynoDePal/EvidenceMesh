@@ -1,0 +1,55 @@
+{
+  "authority": {
+    "artifact_publication_allowed": false,
+    "distribution_publication_allowed": false,
+    "live_execution_allowed": false,
+    "merge_allowed": false,
+    "phase_12_allowed": false,
+    "production_allowed": false,
+    "release_allowed": false,
+    "tag_allowed": false,
+    "v1_allowed": false
+  },
+  "historical_projection": {
+    "historical_runtime_boundary_commit_sha": "4044840fb3c79d2b65ff1ce7d3c96be423b331b5",
+    "historical_runtime_boundary_tree_sha": "e9d54fef97c583f70dd00d4c095898e545ef6fed",
+    "projection_record_path": "alpha/local_technical_alpha_v0_1_0_public_projection_v1.json",
+    "projection_record_sha256": "19aeace89b0dc978ff1c583132dced4b47d6ec2d2ec8536fe0ecff911f9c38e8",
+    "public_commit_sha": "8026ace0f8c48abf9f9a5664d31d1e9cc66bdf2e",
+    "public_tree_sha": "7a774664442caa9201b419fb219d47c6113a52a3",
+    "runtime_immutable_paths": [
+      "src",
+      "pyproject.toml",
+      "uv.lock"
+    ]
+  },
+  "runtime_successor": {
+    "accepted_head_commit_sha": "a3140a5d7cfc2fde017cc5376aefc47fa02ee78e",
+    "accepted_head_tree_sha": "c155c355e472e08389c3d18fb88e6388defc376f",
+    "canonical_ci_conclusion": "success",
+    "canonical_ci_run_attempt": 1,
+    "canonical_ci_run_id": 30836105388,
+    "canonical_ci_run_url": "https://github.com/VynoDePal/EvidenceMesh/actions/runs/30836105388",
+    "claim": "offline_single_host_a2_p1_runtime_successor_only",
+    "implementation_commit_sha": "14c08d6a068e71afc083a55538dbb51c90c92ce2",
+    "implementation_tree_sha": "1a0718396154f2dfdf47789d3ae2ee92fc4d018d",
+    "parent_commit_sha": "4044840fb3c79d2b65ff1ce7d3c96be423b331b5",
+    "parent_tree_sha": "e9d54fef97c583f70dd00d4c095898e545ef6fed",
+    "pr_receipt_url": "https://github.com/VynoDePal/EvidenceMesh/pull/1#issuecomment-5169698600",
+    "runtime_blob_sha1": {
+      "src/evidencemesh/__init__.py": "370750dd6599166112c5d8338564b59c4c6ce129",
+      "src/evidencemesh/alpha_liveness.py": "e092291017160e3c475277b0930d7d7f4e258050",
+      "src/evidencemesh/closed_alpha_feedback.py": "3d2e778e048a1aaa69dc70bc700a54bfa492795b",
+      "src/evidencemesh/engine.py": "11541d4193962321c9ac2e2021d182196b615380",
+      "src/evidencemesh/fetcher.py": "8f79a3a6739828b1b41be4c8979d658d398b6f12"
+    }
+  },
+  "schema_version": "evidencemesh.local-technical-alpha-v0.1.0-runtime-successor-a2.v1",
+  "verification": {
+    "accepted_successor_to_descendant_runtime_drift_allowed": false,
+    "historical_projection_rewritten": false,
+    "historical_public_to_boundary_runtime_drift_allowed": false,
+    "runtime_successor_paths_are_exact": true,
+    "tree_equivalent_local_audit_commit_allowed": true
+  }
+}

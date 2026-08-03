@@ -1,0 +1,290 @@
+[
+  {
+    "id": "p7-web-01",
+    "query": "NIST Artificial Intelligence Risk Management Framework official",
+    "profile": "web",
+    "expected_family": "web",
+    "target_domains": ["nist.gov"],
+    "target_url_prefixes": [],
+    "topic": "web"
+  },
+  {
+    "id": "p7-web-02",
+    "query": "WHO guidelines for drinking-water quality official",
+    "profile": "web",
+    "expected_family": "web",
+    "target_domains": ["who.int"],
+    "target_url_prefixes": [],
+    "topic": "web"
+  },
+  {
+    "id": "p7-web-03",
+    "query": "World Bank Benin economic update official",
+    "profile": "web",
+    "expected_family": "web",
+    "target_domains": ["worldbank.org"],
+    "target_url_prefixes": [],
+    "topic": "web"
+  },
+  {
+    "id": "p7-web-04",
+    "query": "NASA Artemis program official overview",
+    "profile": "web",
+    "expected_family": "web",
+    "target_domains": ["nasa.gov"],
+    "target_url_prefixes": [],
+    "topic": "web"
+  },
+  {
+    "id": "p7-web-05",
+    "query": "European Commission Digital Markets Act official",
+    "profile": "web",
+    "expected_family": "web",
+    "target_domains": ["ec.europa.eu", "commission.europa.eu"],
+    "target_url_prefixes": [],
+    "topic": "web"
+  },
+  {
+    "id": "p7-web-06",
+    "query": "IETF HTTP Semantics RFC 9110 official",
+    "profile": "web",
+    "expected_family": "web",
+    "target_domains": ["rfc-editor.org", "ietf.org"],
+    "target_url_prefixes": [],
+    "topic": "web"
+  },
+  {
+    "id": "p7-web-07",
+    "query": "Kubernetes Deployment official documentation",
+    "profile": "web",
+    "expected_family": "web",
+    "target_domains": ["kubernetes.io"],
+    "target_url_prefixes": [],
+    "topic": "web"
+  },
+  {
+    "id": "p7-web-08",
+    "query": "UNESCO Global Education Monitoring Report official",
+    "profile": "web",
+    "expected_family": "web",
+    "target_domains": ["unesco.org"],
+    "target_url_prefixes": [],
+    "topic": "web"
+  },
+  {
+    "id": "p7-reference-01",
+    "query": "Grace Hopper computer scientist",
+    "profile": "reference",
+    "expected_family": "reference",
+    "target_domains": ["wikipedia.org"],
+    "target_url_prefixes": ["https://en.wikipedia.org/wiki/Grace_Hopper"],
+    "topic": "reference"
+  },
+  {
+    "id": "p7-reference-02",
+    "query": "Songhai Empire history",
+    "profile": "reference",
+    "expected_family": "reference",
+    "target_domains": ["wikipedia.org"],
+    "target_url_prefixes": ["https://en.wikipedia.org/wiki/Songhai_Empire"],
+    "topic": "reference"
+  },
+  {
+    "id": "p7-reference-03",
+    "query": "James Webb Space Telescope",
+    "profile": "reference",
+    "expected_family": "reference",
+    "target_domains": ["wikipedia.org"],
+    "target_url_prefixes": ["https://en.wikipedia.org/wiki/James_Webb_Space_Telescope"],
+    "topic": "reference"
+  },
+  {
+    "id": "p7-reference-04",
+    "query": "CRISPR gene editing",
+    "profile": "reference",
+    "expected_family": "reference",
+    "target_domains": ["wikipedia.org"],
+    "target_url_prefixes": ["https://en.wikipedia.org/wiki/CRISPR_gene_editing"],
+    "topic": "reference"
+  },
+  {
+    "id": "p7-reference-05",
+    "query": "Great Barrier Reef",
+    "profile": "reference",
+    "expected_family": "reference",
+    "target_domains": ["wikipedia.org"],
+    "target_url_prefixes": ["https://en.wikipedia.org/wiki/Great_Barrier_Reef"],
+    "topic": "reference"
+  },
+  {
+    "id": "p7-reference-06",
+    "query": "Treaty of Versailles",
+    "profile": "reference",
+    "expected_family": "reference",
+    "target_domains": ["wikipedia.org"],
+    "target_url_prefixes": ["https://en.wikipedia.org/wiki/Treaty_of_Versailles"],
+    "topic": "reference"
+  },
+  {
+    "id": "p7-reference-07",
+    "query": "Linux kernel operating system",
+    "profile": "reference",
+    "expected_family": "reference",
+    "target_domains": ["wikipedia.org"],
+    "target_url_prefixes": ["https://en.wikipedia.org/wiki/Linux_kernel"],
+    "topic": "reference"
+  },
+  {
+    "id": "p7-reference-08",
+    "query": "Bayesian inference statistics",
+    "profile": "reference",
+    "expected_family": "reference",
+    "target_domains": ["wikipedia.org"],
+    "target_url_prefixes": ["https://en.wikipedia.org/wiki/Bayesian_inference"],
+    "topic": "reference"
+  },
+  {
+    "id": "p7-academic-01",
+    "query": "LoRA Low-Rank Adaptation of Large Language Models",
+    "profile": "academic",
+    "expected_family": "academic",
+    "target_domains": ["arxiv.org", "doi.org"],
+    "target_url_prefixes": ["https://arxiv.org/abs/2106.09685"],
+    "topic": "academic"
+  },
+  {
+    "id": "p7-academic-02",
+    "query": "Language Models are Few-Shot Learners GPT-3",
+    "profile": "academic",
+    "expected_family": "academic",
+    "target_domains": ["arxiv.org", "doi.org"],
+    "target_url_prefixes": ["https://arxiv.org/abs/2005.14165"],
+    "topic": "academic"
+  },
+  {
+    "id": "p7-academic-03",
+    "query": "Denoising Diffusion Probabilistic Models",
+    "profile": "academic",
+    "expected_family": "academic",
+    "target_domains": ["arxiv.org", "doi.org"],
+    "target_url_prefixes": ["https://arxiv.org/abs/2006.11239"],
+    "topic": "academic"
+  },
+  {
+    "id": "p7-academic-04",
+    "query": "An Image is Worth 16x16 Words Vision Transformer",
+    "profile": "academic",
+    "expected_family": "academic",
+    "target_domains": ["arxiv.org", "doi.org"],
+    "target_url_prefixes": ["https://arxiv.org/abs/2010.11929"],
+    "topic": "academic"
+  },
+  {
+    "id": "p7-academic-05",
+    "query": "Graph Attention Networks",
+    "profile": "academic",
+    "expected_family": "academic",
+    "target_domains": ["arxiv.org", "doi.org"],
+    "target_url_prefixes": ["https://arxiv.org/abs/1710.10903"],
+    "topic": "academic"
+  },
+  {
+    "id": "p7-academic-06",
+    "query": "wav2vec 2.0 self-supervised speech recognition",
+    "profile": "academic",
+    "expected_family": "academic",
+    "target_domains": ["arxiv.org", "doi.org"],
+    "target_url_prefixes": ["https://arxiv.org/abs/2006.11477"],
+    "topic": "academic"
+  },
+  {
+    "id": "p7-academic-07",
+    "query": "Segment Anything",
+    "profile": "academic",
+    "expected_family": "academic",
+    "target_domains": ["arxiv.org", "doi.org"],
+    "target_url_prefixes": ["https://arxiv.org/abs/2304.02643"],
+    "topic": "academic"
+  },
+  {
+    "id": "p7-academic-08",
+    "query": "Adam A Method for Stochastic Optimization",
+    "profile": "academic",
+    "expected_family": "academic",
+    "target_domains": ["arxiv.org", "doi.org"],
+    "target_url_prefixes": ["https://arxiv.org/abs/1412.6980"],
+    "topic": "academic"
+  },
+  {
+    "id": "p7-code-01",
+    "query": "Microsoft GraphRAG repository",
+    "profile": "code",
+    "expected_family": "code",
+    "target_domains": ["github.com"],
+    "target_url_prefixes": ["https://github.com/microsoft/graphrag"],
+    "topic": "code"
+  },
+  {
+    "id": "p7-code-02",
+    "query": "deepset Haystack AI repository",
+    "profile": "code",
+    "expected_family": "code",
+    "target_domains": ["github.com"],
+    "target_url_prefixes": ["https://github.com/deepset-ai/haystack"],
+    "topic": "code"
+  },
+  {
+    "id": "p7-code-03",
+    "query": "LangGraph repository",
+    "profile": "code",
+    "expected_family": "code",
+    "target_domains": ["github.com"],
+    "target_url_prefixes": ["https://github.com/langchain-ai/langgraph"],
+    "topic": "code"
+  },
+  {
+    "id": "p7-code-04",
+    "query": "Ollama repository",
+    "profile": "code",
+    "expected_family": "code",
+    "target_domains": ["github.com"],
+    "target_url_prefixes": ["https://github.com/ollama/ollama"],
+    "topic": "code"
+  },
+  {
+    "id": "p7-code-05",
+    "query": "PyTorch official repository",
+    "profile": "code",
+    "expected_family": "code",
+    "target_domains": ["github.com"],
+    "target_url_prefixes": ["https://github.com/pytorch/pytorch"],
+    "topic": "code"
+  },
+  {
+    "id": "p7-code-06",
+    "query": "Hugging Face Transformers repository",
+    "profile": "code",
+    "expected_family": "code",
+    "target_domains": ["github.com"],
+    "target_url_prefixes": ["https://github.com/huggingface/transformers"],
+    "topic": "code"
+  },
+  {
+    "id": "p7-code-07",
+    "query": "vLLM project repository",
+    "profile": "code",
+    "expected_family": "code",
+    "target_domains": ["github.com"],
+    "target_url_prefixes": ["https://github.com/vllm-project/vllm"],
+    "topic": "code"
+  },
+  {
+    "id": "p7-code-08",
+    "query": "OpenAI Python SDK repository",
+    "profile": "code",
+    "expected_family": "code",
+    "target_domains": ["github.com"],
+    "target_url_prefixes": ["https://github.com/openai/openai-python"],
+    "topic": "code"
+  }
+]

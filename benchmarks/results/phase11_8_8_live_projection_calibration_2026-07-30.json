@@ -1,0 +1,399 @@
+{
+  "authorization": {
+    "attestation_sha256": "0e323eda22ba7db203153f5b4b4c61808cb3f2640e47edae85f28f2cce67662a",
+    "authorization_commit_sha": "c1f847be04bdf5574ad80885f7e00f1fdbb0f049",
+    "lock_commit_sha": "d91f8a85f6e2770ecd83ca95cbc7112803d683cb",
+    "verified": true,
+    "workflow_run_attempt": 1
+  },
+  "benchmark": "evidencemesh-phase11-8-8-live-projection-calibration-v2",
+  "dataset": {
+    "selected_case_count": 24,
+    "sha256": "feee3f7e7db3617e94e8fcf1977b756ec420ef8568f4e0fcbbe0e92e9d5fc032"
+  },
+  "decision": {
+    "diagnostic_status": "retrieval_limited_inconclusive",
+    "gate_count": 13,
+    "gates": [
+      {
+        "name": "historical_dependency_and_commit_a_locks",
+        "passed": true
+      },
+      {
+        "name": "one_shot_authorization_lineage",
+        "passed": true
+      },
+      {
+        "name": "dataset_selection_and_phase12_non_use",
+        "passed": true
+      },
+      {
+        "name": "complete_exact_24_tavily_accounting",
+        "passed": true
+      },
+      {
+        "name": "fail_fast_no_rerun_cache_or_nonretrieval_traffic",
+        "passed": true
+      },
+      {
+        "name": "shared_selected_packet_identity_24_of_24",
+        "passed": true
+      },
+      {
+        "name": "v2_projection_invariants_24_of_24",
+        "passed": true
+      },
+      {
+        "name": "selected_proxy_coverage_at_least_20_of_24",
+        "passed": false
+      },
+      {
+        "name": "v2_proxy_coverage_at_least_20_of_24",
+        "passed": false
+      },
+      {
+        "name": "v2_selected_retention_at_least_95_percent",
+        "passed": false
+      },
+      {
+        "name": "v2_paired_net_gain_vs_equal_at_least_2",
+        "passed": false
+      },
+      {
+        "name": "v2_paired_net_gain_vs_v1_at_least_2",
+        "passed": false
+      },
+      {
+        "name": "public_privacy_and_governance_boundaries",
+        "passed": true
+      }
+    ],
+    "merge_allowed": false,
+    "passed_gate_count": 8,
+    "phase11_9_protocol_may_be_frozen": false,
+    "phase12_authorized": false,
+    "phase12_executed": false,
+    "projection_candidate_passed": false,
+    "quality_profile_promoted": false,
+    "release_allowed": false,
+    "release_decision": "no-go",
+    "superiority_claim_allowed": false
+  },
+  "dependency_manifest_sha256": "0d6ee7f91689fc2679ee0e5c6a2857d25219d5a71cd559d248875d1074693a00",
+  "privacy": {
+    "absolute_paths_found": 0,
+    "api_key_found": false,
+    "case_ids_found": 0,
+    "forbidden_keys_found": 0,
+    "gold_urls_found": 0,
+    "passed": true,
+    "provider_content_values_found": 0,
+    "questions_found": 0,
+    "reference_answers_found": 0,
+    "row_indexes_found": 0,
+    "strict_allowlist_passed": true
+  },
+  "projection": {
+    "available_case_count": 24,
+    "candidate_budget_cases": 24,
+    "equal_cap_over_budget_cases": 0,
+    "equal_cap_prompt_proxy_hits": 16,
+    "projection_invariant_cases": 24,
+    "raw_pool_matching_cases": 24,
+    "scored_case_count": 24,
+    "selected_packet_matching_cases": 24,
+    "selected_proxy_hits": 18,
+    "v1_prompt_proxy_hits": 17,
+    "v2_prompt_proxy_hits": 17,
+    "v2_retention_denominator": 18,
+    "v2_retention_numerator": 17,
+    "v2_retention_rate": 0.944444,
+    "v2_vs_equal_baseline_wins": 1,
+    "v2_vs_equal_candidate_wins": 2,
+    "v2_vs_equal_net_gain": 1,
+    "v2_vs_v1_baseline_wins": 1,
+    "v2_vs_v1_candidate_wins": 1,
+    "v2_vs_v1_net_gain": 0
+  },
+  "protocol": {
+    "abort_on_first_provider_failure": true,
+    "connect_seconds": 5.0,
+    "evidence_budget_chars": 12000,
+    "max_block_chars": 1500,
+    "max_per_domain": 3,
+    "min_block_chars": 192,
+    "models": [],
+    "outer_wall_seconds": 30.0,
+    "pool_seconds": 5.0,
+    "projection_replays": 3,
+    "provider": "tavily",
+    "provider_max_results": 20,
+    "provider_wall_seconds": 15.0,
+    "read_seconds": 12.0,
+    "selection_limit": 20,
+    "write_seconds": 10.0
+  },
+  "retrieval": {
+    "attempted_cases": 24,
+    "failure_kind": null,
+    "http_status_counts": {
+      "200": 24
+    },
+    "stopped_on_first_failure": false,
+    "successful_cases": 24
+  },
+  "run_status": "completed",
+  "schema_version": 1,
+  "selection": {
+    "loaded_rows_match_phase11_selection": true,
+    "phase11_selection_count": 24,
+    "phase12_reserve_count": 96,
+    "reserve_rows_scored": 0,
+    "reserve_rows_selected": 0,
+    "selections_disjoint": true
+  },
+  "source_locks": [
+    {
+      "relative_path": "benchmarks/__init__.py",
+      "sha256": "da6e2659b2c7c5b02f360f1874f575fdd80ca80849b23d1426ae716d0e1ae6e5"
+    },
+    {
+      "relative_path": "benchmarks/data/phase11_7_fresh_confirmation_v1.json",
+      "sha256": "da6d1e21c3c1d53539f481fe6789eedc55359bb3b9d32b0be73f96bc693da79e"
+    },
+    {
+      "relative_path": "benchmarks/data/phase11_8_8_offline_projection_fixtures_v1.json",
+      "sha256": "8955ac33c89c2e16a474182c14eac8df5acaf649642f4dd90a313cf6227db614"
+    },
+    {
+      "relative_path": "benchmarks/data/phase12_untouched_reserve_v1.json",
+      "sha256": "472ec47a21b99f14ab05c4e7b79d179034fc42558910c0bf2ef053b0d25411ee"
+    },
+    {
+      "relative_path": "benchmarks/phase11_7_dataset.py",
+      "sha256": "5ef85dbcc2d16d9cbf896c49ec9519d02b71230d3df116538f6339b4d6b90a05"
+    },
+    {
+      "relative_path": "benchmarks/phase11_8_2_candidate.py",
+      "sha256": "0eb71a0e94b7e21d33105788d05076382f96ab9e5fd6cea9d16669305d38c74e"
+    },
+    {
+      "relative_path": "benchmarks/phase11_8_8_projection_candidate.py",
+      "sha256": "117968687a0c0c150acef42f997967d10b04006d14ed0efa9de87c9c08b1909e"
+    },
+    {
+      "relative_path": "benchmarks/results/phase11_8_3_factorial_2026-07-30.json",
+      "sha256": "167a7eb531966ee0591a1ae01b2a8d9d47307cb1eb52ec152946bbe0dbc6e39c"
+    },
+    {
+      "relative_path": "benchmarks/run_end_to_end_phase10.py",
+      "sha256": "aff536e0fe1f561fd81e39b87462b7dc5f56d92b082b92ae6d94ffe8bf31068f"
+    },
+    {
+      "relative_path": "benchmarks/run_live_retrieval.py",
+      "sha256": "fca26f9167e8edd343bd008b5168a24bc48a53ffe94c41db983823442b4996d0"
+    },
+    {
+      "relative_path": "benchmarks/run_phase11_5_quality_recovery.py",
+      "sha256": "595443bb2ba06ea14c35f1b6f53eb8da34939b5d5df64ba2121917f934f07b22"
+    },
+    {
+      "relative_path": "benchmarks/run_phase11_7_fresh_confirmation.py",
+      "sha256": "88364c575ac1b5dec51c2b31506dff26a72c5077c66dbde8973a856c7baf5f10"
+    },
+    {
+      "relative_path": "benchmarks/run_phase11_8_8_projection_calibration.py",
+      "sha256": "80643144da925c4b9b2d4e106a6c779ce2e6c4cf33ae5470fffe53de5a314c63"
+    },
+    {
+      "relative_path": "benchmarks/run_phase11_8_recovery.py",
+      "sha256": "68836ea97819bfef70f957025129149ab78fc929807bbe3041ee833adc3493b0"
+    },
+    {
+      "relative_path": "benchmarks/run_phase11_calibration.py",
+      "sha256": "cc0220b8f8afdec2d21edd546fa21ceff765397baf6a7f2064bbfd202eb33b6a"
+    },
+    {
+      "relative_path": "docs/benchmark-protocol-v23.md",
+      "sha256": "11a8fe99a3e418eb4161978928f2d682a2adcf6b59b3bcc7b7641c26b601a653"
+    },
+    {
+      "relative_path": "pyproject.toml",
+      "sha256": "eac6ae9e1d5b38f4262d33af137ce82ff019b41719c404a5c9b70a08a4f600a0"
+    },
+    {
+      "relative_path": "src/evidencemesh/__init__.py",
+      "sha256": "8e818c31b3f337349a72f0cf4d9999db561f68cee236f7815b01a22c2763fc01"
+    },
+    {
+      "relative_path": "src/evidencemesh/__main__.py",
+      "sha256": "bdfed80c6716976b0b4bc0939f2cf5ef3ccb114bf55fb35d9a4a6f6eb3c3493b"
+    },
+    {
+      "relative_path": "src/evidencemesh/benchmark.py",
+      "sha256": "dce652c7469da87a76d2d8e99be120ecf69c3e60c221f3769cd886dcf759f719"
+    },
+    {
+      "relative_path": "src/evidencemesh/cache.py",
+      "sha256": "6621b9220bc0f58e5f6b413d3c9c69314206b7914f2a8fb6998a86d482ec2687"
+    },
+    {
+      "relative_path": "src/evidencemesh/citations.py",
+      "sha256": "02e10440e48f716b7e951784ff81580b900f076f1a17ce0bd34d8e9d26b5b395"
+    },
+    {
+      "relative_path": "src/evidencemesh/cli.py",
+      "sha256": "aacb888593f7c0696684fac46ac92926152a298b225fa34673c37e5ef8ac1680"
+    },
+    {
+      "relative_path": "src/evidencemesh/config.py",
+      "sha256": "e344e269ddef8f703d8e346e0fd6e9d98367b4d734d8155db24908a0e90bae40"
+    },
+    {
+      "relative_path": "src/evidencemesh/engine.py",
+      "sha256": "8e0d9003ee38c2f776547913ce8ddfeb7d80e334b5eb210e124b78eafdd57795"
+    },
+    {
+      "relative_path": "src/evidencemesh/errors.py",
+      "sha256": "17054416858b3953c285bce139fb09411e72c259e980ad2312b01245f669bdd6"
+    },
+    {
+      "relative_path": "src/evidencemesh/extraction.py",
+      "sha256": "99e4c9cd4fae39f265d2a1ac1aaaaeef1a7eeca2a0c322d2d13ada0757b84836"
+    },
+    {
+      "relative_path": "src/evidencemesh/fetcher.py",
+      "sha256": "ee9151f6ddc5011c5b2041b31b713a7367a9e460323c26c2f0551a0dca2fb637"
+    },
+    {
+      "relative_path": "src/evidencemesh/mcp_server.py",
+      "sha256": "fbca2aac817f0d8a806b0dc5efffbedea801f0b3f3e0dc79a6db4ba08c231bb3"
+    },
+    {
+      "relative_path": "src/evidencemesh/models.py",
+      "sha256": "f58e750bda28e879c1bffa75ee2145dc8931297027b2050fbf20a413451da227"
+    },
+    {
+      "relative_path": "src/evidencemesh/providers/__init__.py",
+      "sha256": "776b16d8a87e3384d9e378533ad80aab63d3d7d882a97608f800b752ba96ac21"
+    },
+    {
+      "relative_path": "src/evidencemesh/providers/arxiv.py",
+      "sha256": "8610bcab03251386c04f448c2be59babc39bc0bc721f996e542012ef8da0011a"
+    },
+    {
+      "relative_path": "src/evidencemesh/providers/base.py",
+      "sha256": "9eae67d103a3168e232d407225b3c11d5cf54ea223ea84fe8e48e720cab52b00"
+    },
+    {
+      "relative_path": "src/evidencemesh/providers/brave.py",
+      "sha256": "5f3fe9a946b553d090aaaa6443dd0e0bb44e942eb672f902c7374cd144e3c87b"
+    },
+    {
+      "relative_path": "src/evidencemesh/providers/crossref.py",
+      "sha256": "64c67df949c1137ec233f3843aadd92edefe8638f76e471e114550391f94a6e5"
+    },
+    {
+      "relative_path": "src/evidencemesh/providers/ddgs.py",
+      "sha256": "88c6fab2ad38ff19458ab34cde891ae5d16f24503e91500cb75fc0469a9c661e"
+    },
+    {
+      "relative_path": "src/evidencemesh/providers/exa.py",
+      "sha256": "ac8ff3103f54f50325cc48545505ea8ef156f938339cb1e708d26e6c66e8e74f"
+    },
+    {
+      "relative_path": "src/evidencemesh/providers/factory.py",
+      "sha256": "19cd13ac89db16994b1bbe4438d2a37f6a5fb519a78458261372912803a53541"
+    },
+    {
+      "relative_path": "src/evidencemesh/providers/firecrawl.py",
+      "sha256": "bb60ed4c7710fbf96e6c147daf0cfac92eca196444d17838cf47d1b6725001d0"
+    },
+    {
+      "relative_path": "src/evidencemesh/providers/github.py",
+      "sha256": "70ec4d3197c8dde0192cc87e02aa809a0c578a71488bd3df3154ab44ee975c56"
+    },
+    {
+      "relative_path": "src/evidencemesh/providers/mwmbl.py",
+      "sha256": "18d2d21366b053d7ef560026f859313f3366d6f787749da74b995352e6bd3078"
+    },
+    {
+      "relative_path": "src/evidencemesh/providers/openalex.py",
+      "sha256": "09d3bb364f867f43762e130a0a6290052766641c86ab3912f6a2adc598d1a6cd"
+    },
+    {
+      "relative_path": "src/evidencemesh/providers/searxng.py",
+      "sha256": "1c4017e6be0f1a2cdf6c280126bd8f2700da84139adecb3b5dba0529cfbb0163"
+    },
+    {
+      "relative_path": "src/evidencemesh/providers/tavily.py",
+      "sha256": "7c03feff90681a4004661fca873ad5aa5b73120f73da5332d01139c73d7d05b3"
+    },
+    {
+      "relative_path": "src/evidencemesh/providers/wiby.py",
+      "sha256": "78b96d8af5c849b7f0807a69b95beef2c5f023fe2c795a0a38a539f450bb7ff5"
+    },
+    {
+      "relative_path": "src/evidencemesh/providers/wikipedia.py",
+      "sha256": "9f4c008366b00d701e95236bb6236361668c0c3b621559550776ae0a55f3e6dc"
+    },
+    {
+      "relative_path": "src/evidencemesh/providers/yacy.py",
+      "sha256": "ad1fa3e1e2ff2cd8ffa6ca5a28dc26685878f0a7ec328072ea38b00c08e4e4ad"
+    },
+    {
+      "relative_path": "src/evidencemesh/query.py",
+      "sha256": "b1d9237e00a736c9a58ef65345b9f72e13ca7975341565b9010087a626ac91cc"
+    },
+    {
+      "relative_path": "src/evidencemesh/ranking.py",
+      "sha256": "75a40b5eb629f573b28c5f9db923d1634e161a740b7fe39f1df262219eec979a"
+    },
+    {
+      "relative_path": "src/evidencemesh/reliability.py",
+      "sha256": "e3c1dfc3ec244611672b9ccd5a6e14b18b17e98576580ff0a32d45d3d5e0c3a0"
+    },
+    {
+      "relative_path": "src/evidencemesh/routing.py",
+      "sha256": "959247b39f29690b0878890387fc4798692b87adee38ce3f764a0920e3c87238"
+    },
+    {
+      "relative_path": "src/evidencemesh/telemetry.py",
+      "sha256": "9f485c442a3c7e6d6fa2702b8089dd6d7fec57db9fdc4cda9dd05091e69046b4"
+    },
+    {
+      "relative_path": "src/evidencemesh/urls.py",
+      "sha256": "9437239b85e0e06e74c2c8ff5ad842c4c5f7b65769c98e29a35584e670392375"
+    },
+    {
+      "relative_path": "uv.lock",
+      "sha256": "5a47e1815cc2074698e1ab0cfec2932200bb013601d02246324513ffa5404898"
+    }
+  ],
+  "traffic": {
+    "benchmark_network_scope": "one checksum-pinned static dataset fetch plus at most 24 Tavily requests; checkout, install and artifact CI traffic excluded",
+    "cache_reads": 0,
+    "cache_writes": 0,
+    "fallback_requests": 0,
+    "follow_up_document_fetches": 0,
+    "gemini_requests": 0,
+    "http_responses": 24,
+    "logical_operations_completed": 24,
+    "logical_operations_planned": 24,
+    "logical_operations_started": 24,
+    "model_requests": 0,
+    "other_provider_requests": 0,
+    "repair_requests": 0,
+    "retries": 0,
+    "static_dataset_fetches": 1,
+    "tavily_http_attempts_actual": 24,
+    "tavily_http_attempts_maximum": 24,
+    "tavily_requests": 24,
+    "token_count_requests": 0
+  },
+  "warnings": [
+    "This already-observed selector suite supports within-run paired projection comparisons only.",
+    "Reference-answer substring coverage is a transparent proxy, not an official SimpleQA score or semantic correctness judgment.",
+    "Phase 11.9, Phase 12, product promotion, merge, release and superiority claims remain blocked regardless of this result."
+  ]
+}

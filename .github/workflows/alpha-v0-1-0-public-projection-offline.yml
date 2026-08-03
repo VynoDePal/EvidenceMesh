@@ -1,0 +1,55 @@
+name: Alpha v0.1.0 Public Projection Offline
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - converted_to_draft
+    paths:
+      - .github/workflows/alpha-rc4-1a-provider-policy-session-fail-closed-offline.yml
+      - .github/workflows/alpha-v0-1-0-public-projection-offline.yml
+      - alpha/local_technical_alpha_v0_1_0_acceptance_v1.json
+      - alpha/local_technical_alpha_v0_1_0_public_projection_v1.json
+      - docs/workflow-archive/alpha-rc4-1a-provider-policy-session-fail-closed-offline.yml
+      - scripts/verify_alpha_public_projection.py
+      - src/**
+      - pyproject.toml
+      - uv.lock
+
+permissions:
+  contents: read
+
+concurrency:
+  group: alpha-v0-1-0-public-projection-offline-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  validate-draft-public-projection:
+    # This historical projection gate was introduced and accepted at this
+    # exact HEAD. Runtime descendants are reconciled by an append-only record.
+    if: >-
+      github.event.pull_request.head.sha == '145f5f923825ffeaeb485bd680bc79410ab290d1' &&
+      github.repository == 'VynoDePal/EvidenceMesh' &&
+      github.event.pull_request.number == 1 &&
+      github.event.pull_request.head.repo.full_name == 'VynoDePal/EvidenceMesh' &&
+      github.event.pull_request.head.ref == 'agent/evidencemesh-v0.1'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require the PR to remain a draft
+        env:
+          PR_DRAFT: ${{ github.event.pull_request.draft }}
+        run: test "$PR_DRAFT" = "true"
+
+      - name: Check out the exact pull-request head without credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          fetch-tags: false
+          persist-credentials: false
+
+      - name: Verify the public projection offline
+        run: python scripts/verify_alpha_public_projection.py --repository-root .

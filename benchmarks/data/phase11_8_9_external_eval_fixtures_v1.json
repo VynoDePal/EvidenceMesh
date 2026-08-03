@@ -1,0 +1,363 @@
+{
+  "schema_version": "evidencemesh.phase11_8_9.external-eval-fixtures.v1",
+  "fixture_scope": "synthetic-integration-conformance",
+  "contains_official_benchmark_content": false,
+  "real_external_scores": false,
+  "cases": [
+    {
+      "suite_manifest": {
+        "schema_version": "evidencemesh.phase11_8_9.external-suite.v1",
+        "benchmark_id": "bright",
+        "adapter_contract": "local-fixed-corpus-retrieval-v1",
+        "content_origin": "synthetic-conformance",
+        "contains_official_benchmark_content": false,
+        "official_repository": "https://github.com/xlang-ai/BRIGHT",
+        "repository_revision": "d99e8391d967d4c2b3a74732530d2309e2fc92b6",
+        "repository_license_file": {
+          "spdx_id": "CC-BY-4.0",
+          "path": "LICENSE",
+          "git_blob_sha1": "2f244ac814036ecd9ba9f69782e89ce6b1dca9eb",
+          "scope": "repository-license-file-only"
+        },
+        "asset_license": {
+          "status": "resolved",
+          "spdx_id": "Apache-2.0",
+          "scope": "synthetic-fixture-only"
+        }
+      },
+      "queries": [
+        {
+          "_id": "synthetic-bright-alpha",
+          "query": "Which maintenance records are relevant to the fictional Meridian instrument?"
+        },
+        {
+          "_id": "synthetic-bright-beta",
+          "query": "Which fictional registry entry defines the Lumen unit?"
+        }
+      ],
+      "corpus": [
+        {
+          "_id": "synthetic-b1",
+          "title": "Meridian calibration",
+          "text": "Invented calibration note for a fictional instrument."
+        },
+        {
+          "_id": "synthetic-b2",
+          "title": "Meridian assembly",
+          "text": "Invented assembly note for a fictional instrument."
+        },
+        {
+          "_id": "synthetic-b3",
+          "title": "Meridian inspection",
+          "text": "Invented inspection note for a fictional instrument."
+        },
+        {
+          "_id": "synthetic-b4",
+          "title": "Meridian storage",
+          "text": "Invented storage note for a fictional instrument."
+        },
+        {
+          "_id": "synthetic-b5",
+          "title": "Meridian transport",
+          "text": "Invented transport note for a fictional instrument."
+        },
+        {
+          "_id": "synthetic-b6",
+          "title": "Meridian retirement",
+          "text": "Invented retirement note for a fictional instrument."
+        },
+        {
+          "_id": "synthetic-b7",
+          "title": "Unrelated catalogue",
+          "text": "Invented distractor record."
+        },
+        {
+          "_id": "synthetic-b8",
+          "title": "Lumen registry",
+          "text": "Invented definition of a fictional unit."
+        },
+        {
+          "_id": "synthetic-b9",
+          "title": "Lumen distractor",
+          "text": "Invented unrelated registry record."
+        }
+      ],
+      "run": {
+        "synthetic-bright-alpha": {
+          "synthetic-b1": 9.0,
+          "synthetic-b7": 8.0,
+          "synthetic-b2": 7.0,
+          "synthetic-b3": 6.0,
+          "synthetic-b4": 5.0,
+          "synthetic-b5": 4.0,
+          "synthetic-b6": 3.0
+        },
+        "synthetic-bright-beta": {
+          "synthetic-b9": 2.0,
+          "synthetic-b8": 1.0
+        }
+      },
+      "qrels": {
+        "synthetic-bright-alpha": {
+          "synthetic-b1": 3,
+          "synthetic-b2": 2,
+          "synthetic-b3": 1,
+          "synthetic-b4": 1,
+          "synthetic-b5": 1,
+          "synthetic-b6": 1,
+          "synthetic-b7": 0
+        },
+        "synthetic-bright-beta": {
+          "synthetic-b8": 1,
+          "synthetic-b9": 0
+        }
+      },
+      "expected_metrics": {
+        "recall_at_5": 0.833333333333,
+        "recall_at_10": 1.0,
+        "recall_at_20": 1.0,
+        "recall_at_100": 1.0,
+        "recall_at_1000": 1.0,
+        "ndcg_at_5": 0.747190418367,
+        "ndcg_at_10": 0.779366886836,
+        "ndcg_at_20": 0.779366886836
+      }
+    },
+    {
+      "suite_manifest": {
+        "schema_version": "evidencemesh.phase11_8_9.external-suite.v1",
+        "benchmark_id": "browsecomp_plus",
+        "adapter_contract": "local-fixed-corpus-retrieval-v1",
+        "content_origin": "synthetic-conformance",
+        "contains_official_benchmark_content": false,
+        "official_repository": "https://github.com/texttron/BrowseComp-Plus",
+        "repository_revision": "046949032b0328319cc9a02663a759ec601d9402",
+        "repository_license_file": {
+          "spdx_id": "MIT",
+          "path": "LICENSE",
+          "git_blob_sha1": "1eeb9f2ab7b823eef913d01626ca28adf6422fba",
+          "scope": "repository-software-only"
+        },
+        "asset_license": {
+          "status": "resolved",
+          "spdx_id": "Apache-2.0",
+          "scope": "synthetic-fixture-only"
+        }
+      },
+      "queries": [
+        {
+          "query_id": "synthetic-bcp-alpha",
+          "text": "Find the fictional Atlas workshop records."
+        },
+        {
+          "query_id": "synthetic-bcp-beta",
+          "text": "Find the fictional Vela observatory records."
+        }
+      ],
+      "corpus": [
+        {
+          "docid": "synthetic-c1",
+          "title": "Atlas workshop",
+          "text": "Invented primary workshop record.",
+          "url": "https://synthetic.invalid/atlas-workshop"
+        },
+        {
+          "doc_id": "synthetic-c2",
+          "title": "Atlas tools",
+          "text": "Invented secondary workshop record."
+        },
+        {
+          "doc_id": "synthetic-c3",
+          "title": "Atlas schedule",
+          "text": "Invented tertiary workshop record."
+        },
+        {
+          "docid": "synthetic-c4",
+          "title": "Atlas distractor",
+          "text": "Invented unrelated record."
+        },
+        {
+          "doc_id": "synthetic-c5",
+          "title": "Vela foundation",
+          "text": "Invented observatory foundation record."
+        },
+        {
+          "doc_id": "synthetic-c6",
+          "title": "Vela optics",
+          "text": "Invented observatory optics record."
+        },
+        {
+          "doc_id": "synthetic-c7",
+          "title": "Vela dome",
+          "text": "Invented observatory dome record."
+        },
+        {
+          "doc_id": "synthetic-c8",
+          "title": "Vela archive",
+          "text": "Invented observatory archive record."
+        },
+        {
+          "doc_id": "synthetic-c9",
+          "title": "Vela access",
+          "text": "Invented observatory access record."
+        },
+        {
+          "doc_id": "synthetic-c10",
+          "title": "Vela closure",
+          "text": "Invented observatory closure record."
+        },
+        {
+          "doc_id": "synthetic-c11",
+          "title": "Vela distractor",
+          "text": "Invented unrelated record."
+        }
+      ],
+      "run": [
+        {
+          "query_id": "synthetic-bcp-alpha",
+          "doc_id": "synthetic-c4",
+          "rank": 1,
+          "score": 9.0,
+          "system": "synthetic-conformance"
+        },
+        {
+          "query_id": "synthetic-bcp-alpha",
+          "docid": "synthetic-c1",
+          "rank": 2,
+          "score": 8.0,
+          "system": "synthetic-conformance"
+        },
+        {
+          "query_id": "synthetic-bcp-alpha",
+          "doc_id": "synthetic-c2",
+          "rank": 3,
+          "score": 7.0,
+          "system": "synthetic-conformance"
+        },
+        {
+          "query_id": "synthetic-bcp-alpha",
+          "doc_id": "synthetic-c3",
+          "rank": 4,
+          "score": 6.0,
+          "system": "synthetic-conformance"
+        },
+        {
+          "query_id": "synthetic-bcp-beta",
+          "doc_id": "synthetic-c5",
+          "rank": 1,
+          "score": 9.0,
+          "system": "synthetic-conformance"
+        },
+        {
+          "query_id": "synthetic-bcp-beta",
+          "doc_id": "synthetic-c11",
+          "rank": 2,
+          "score": 8.0,
+          "system": "synthetic-conformance"
+        },
+        {
+          "query_id": "synthetic-bcp-beta",
+          "doc_id": "synthetic-c6",
+          "rank": 3,
+          "score": 7.0,
+          "system": "synthetic-conformance"
+        },
+        {
+          "query_id": "synthetic-bcp-beta",
+          "doc_id": "synthetic-c7",
+          "rank": 4,
+          "score": 6.0,
+          "system": "synthetic-conformance"
+        },
+        {
+          "query_id": "synthetic-bcp-beta",
+          "doc_id": "synthetic-c8",
+          "rank": 5,
+          "score": 5.0,
+          "system": "synthetic-conformance"
+        },
+        {
+          "query_id": "synthetic-bcp-beta",
+          "doc_id": "synthetic-c9",
+          "rank": 6,
+          "score": 4.0,
+          "system": "synthetic-conformance"
+        },
+        {
+          "query_id": "synthetic-bcp-beta",
+          "doc_id": "synthetic-c10",
+          "rank": 7,
+          "score": 3.0,
+          "system": "synthetic-conformance"
+        }
+      ],
+      "qrels": [
+        {
+          "query_id": "synthetic-bcp-alpha",
+          "docid": "synthetic-c1",
+          "relevance": 3
+        },
+        {
+          "query_id": "synthetic-bcp-alpha",
+          "doc_id": "synthetic-c2",
+          "relevance": 2
+        },
+        {
+          "query_id": "synthetic-bcp-alpha",
+          "doc_id": "synthetic-c3",
+          "relevance": 1
+        },
+        {
+          "query_id": "synthetic-bcp-alpha",
+          "doc_id": "synthetic-c4",
+          "relevance": 0
+        },
+        {
+          "query_id": "synthetic-bcp-beta",
+          "doc_id": "synthetic-c5",
+          "relevance": 1
+        },
+        {
+          "query_id": "synthetic-bcp-beta",
+          "doc_id": "synthetic-c6",
+          "relevance": 1
+        },
+        {
+          "query_id": "synthetic-bcp-beta",
+          "doc_id": "synthetic-c7",
+          "relevance": 1
+        },
+        {
+          "query_id": "synthetic-bcp-beta",
+          "doc_id": "synthetic-c8",
+          "relevance": 1
+        },
+        {
+          "query_id": "synthetic-bcp-beta",
+          "doc_id": "synthetic-c9",
+          "relevance": 1
+        },
+        {
+          "query_id": "synthetic-bcp-beta",
+          "doc_id": "synthetic-c10",
+          "relevance": 1
+        },
+        {
+          "query_id": "synthetic-bcp-beta",
+          "doc_id": "synthetic-c11",
+          "relevance": 0
+        }
+      ],
+      "expected_metrics": {
+        "recall_at_5": 0.833333333333,
+        "recall_at_10": 1.0,
+        "recall_at_20": 1.0,
+        "recall_at_100": 1.0,
+        "recall_at_1000": 1.0,
+        "ndcg_at_5": 0.741974095015,
+        "ndcg_at_10": 0.803940529876,
+        "ndcg_at_20": 0.803940529876
+      }
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "authority": {
+    "artifact_publication_allowed": false,
+    "distribution_publication_allowed": false,
+    "live_execution_allowed": false,
+    "merge_allowed": false,
+    "phase_12_allowed": false,
+    "production_allowed": false,
+    "release_allowed": false,
+    "tag_allowed": false,
+    "v1_allowed": false
+  },
+  "budgets": {
+    "branch_ref_updates_maximum": 1,
+    "candidate_commits_maximum": 1,
+    "changed_files_maximum": 12,
+    "distribution_publications": 0,
+    "evidencemesh_runtime_network_requests": 0,
+    "live_document_requests": 0,
+    "live_model_requests": 0,
+    "live_provider_requests": 0,
+    "live_search_requests": 0,
+    "retries": 0,
+    "workflow_reruns": 0
+  },
+  "decision": {
+    "candidate_decision": "pending_until_one_shot_ci",
+    "historical_failures_are_reinterpreted": false,
+    "pr_remains_draft": true,
+    "runtime_change_allowed": false
+  },
+  "entry": {
+    "branch": "agent/evidencemesh-v0.1",
+    "exact_parent_commit_sha": "a3140a5d7cfc2fde017cc5376aefc47fa02ee78e",
+    "exact_parent_tree_sha": "c155c355e472e08389c3d18fb88e6388defc376f",
+    "pull_request": 1,
+    "repository": "VynoDePal/EvidenceMesh"
+  },
+  "gate": "Alpha A2-P1.1 global CI and acceptance reconciliation offline",
+  "historical_evidence": {
+    "a2_p1": {
+      "canonical_run_attempt": 1,
+      "canonical_run_conclusion": "success",
+      "canonical_run_id": 30836105388,
+      "receipt_comment_id": 5169698600,
+      "sealed_commit_sha": "a3140a5d7cfc2fde017cc5376aefc47fa02ee78e",
+      "sealed_tree_sha": "c155c355e472e08389c3d18fb88e6388defc376f"
+    },
+    "preserved_failed_runs": {
+      "alpha_rc3_governor_offline": 30836105663,
+      "alpha_rc4_control_plane_offline": 30836105209,
+      "alpha_v0_1_0_public_projection_offline": 30836105142,
+      "ci": 30836105708,
+      "phase11_8_8_live_projection_calibration": 30836105480
+    }
+  },
+  "reconciliation": {
+    "coverage": {
+      "baseline_percent": 83.65,
+      "minimum_percent": 85.0,
+      "target_percent": 86.0,
+      "threshold_or_exclusions_may_be_weakened": false
+    },
+    "historical_projection": {
+      "public_source_commit_sha": "8026ace0f8c48abf9f9a5664d31d1e9cc66bdf2e",
+      "runtime_immutable_through_commit_sha": "4044840fb3c79d2b65ff1ce7d3c96be423b331b5",
+      "successor_record_path": "alpha/local_technical_alpha_v0_1_0_runtime_successor_a2_v1.json"
+    },
+    "root_causes": [
+      "historical runtime immutability was evaluated against every descendant HEAD instead of its sealed boundary",
+      "the Phase 11.8.8 post-phase source classification omitted alpha_liveness.py",
+      "new A2 runtime branches reduced global branch coverage below the unchanged threshold",
+      "the sealed A2-P1 one-shot workflow would reject every third descendant commit"
+    ],
+    "runtime_product_defect_observed": false
+  },
+  "scope": {
+    "allowed_paths": [
+      ".github/workflows/alpha-a2-p1-1-global-ci-acceptance-reconciliation-offline.yml",
+      ".github/workflows/alpha-a2-p1-retention-session-liveness-offline.yml",
+      ".github/workflows/alpha-v0-1-0-public-projection-offline.yml",
+      "alpha/alpha-a2-p1-1-global-ci-acceptance-reconciliation-policy-v1.json",
+      "alpha/local_technical_alpha_v0_1_0_runtime_successor_a2_v1.json",
+      "scripts/verify_alpha_public_projection.py",
+      "tests/test_alpha_a2_p1_feedback_transport.py",
+      "tests/test_alpha_a2_p1_liveness.py",
+      "tests/test_alpha_v0_1_0_public_projection.py",
+      "tests/test_local_technical_alpha_v0_1_0_acceptance.py",
+      "tests/test_phase11_8_8_live_projection_calibration.py"
+    ],
+    "historical_records_modified": false,
+    "runtime_immutable_paths": [
+      "src",
+      "pyproject.toml",
+      "uv.lock"
+    ]
+  },
+  "schema_version": "evidencemesh.alpha-a2-p1.1-global-ci-acceptance-reconciliation-offline-policy.v1",
+  "stop_criteria": [
+    "the candidate is not one direct child of the exact parent",
+    "the exact changed-path allowlist or twelve-file maximum is exceeded",
+    "src, pyproject.toml, or uv.lock changes from the exact parent",
+    "a historical record or failed run is rewritten or reinterpreted",
+    "global coverage remains below 85 percent or the threshold is weakened",
+    "format, lint, typing, any full-suite test, or any historical workflow fails",
+    "any runtime network, provider, model, search, document, or DNS request occurs",
+    "any retry, workflow rerun, artifact, distribution, release, or tag is used"
+  ],
+  "workflow": {
+    "canonical_full_suite_invocations": 1,
+    "changed_path_allowlist_count": 11,
+    "manual_dispatch_allowed": false,
+    "network_namespace_disabled_during_gates": true,
+    "required_run_attempt": 1
+  }
+}

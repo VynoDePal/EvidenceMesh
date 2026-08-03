@@ -1,0 +1,13 @@
+{
+  "name": "@evidencemesh/alpha-a1-p3-gemini-cli",
+  "version": "0.0.0-private",
+  "private": true,
+  "description": "Pinned Gemini CLI harness for the EvidenceMesh Alpha A1-P3 real-host gate.",
+  "engines": {
+    "node": "22.20.0",
+    "npm": "10.9.3"
+  },
+  "dependencies": {
+    "@google/gemini-cli": "0.53.1"
+  }
+}

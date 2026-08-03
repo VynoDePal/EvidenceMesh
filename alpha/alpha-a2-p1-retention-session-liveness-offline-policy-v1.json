@@ -1,0 +1,218 @@
+{
+  "authority": {
+    "artifact_publication_allowed": false,
+    "distribution_publication_allowed": false,
+    "live_closed_alpha_allowed": false,
+    "live_provider_or_model_execution_allowed": false,
+    "merge_allowed": false,
+    "operating_system_activation_allowed": false,
+    "phase_12_allowed": false,
+    "production_allowed": false,
+    "release_allowed": false,
+    "tag_allowed": false,
+    "v1_allowed": false
+  },
+  "budgets": {
+    "candidate_commits_maximum": 2,
+    "changed_files_maximum": 12,
+    "distribution_publications": 0,
+    "evidencemesh_runtime_network_requests": 0,
+    "live_document_requests": 0,
+    "live_executions": 0,
+    "live_model_requests": 0,
+    "live_provider_requests": 0,
+    "live_search_requests": 0,
+    "live_tester_sessions": 0,
+    "operating_system_service_activations": 0,
+    "retries": 0,
+    "workflow_reruns": 0
+  },
+  "claim": {
+    "distributed_liveness_validated": false,
+    "live_provider_or_model_validated": false,
+    "operating_system_supervision_validated": false,
+    "phase_12_validated": false,
+    "scope": "additive v3 single-host retention-supervisor and autonomous session-liveness authority exercised only with deterministic offline fixtures",
+    "v1_readiness_validated": false
+  },
+  "decision": {
+    "candidate_decision": "pending_until_seal",
+    "failure_is_fail_closed": true,
+    "local_results_are_diagnostic_until_seal": true,
+    "pr_remains_draft": true
+  },
+  "entry": {
+    "branch": "agent/evidencemesh-v0.1",
+    "exact_parent_commit_sha": "4044840fb3c79d2b65ff1ce7d3c96be423b331b5",
+    "exact_parent_tree_sha": "e9d54fef97c583f70dd00d4c095898e545ef6fed",
+    "pull_request": 1,
+    "repository": "VynoDePal/EvidenceMesh"
+  },
+  "feedback_publication": {
+    "boottime_anchor_captured_before_utc_observation": true,
+    "cleanup_requires_live_lease": false,
+    "identical_replay_crosses_final_guard": true,
+    "new_report_staged_and_fsynced_before_final_authorization": true,
+    "phase_1": {
+      "commits_before_publication": true,
+      "purpose": "durably fence any heartbeat that observed the earlier retention state",
+      "relevant_cas_token_must_change_even_if_expiry_cap_is_unchanged": true
+    },
+    "phase_2": {
+      "purpose": "revalidate the exact authority and retain the SQLite transaction through atomic link or identical replay",
+      "transaction_held_through_atomic_link": true
+    },
+    "publication_primitive": "os.link",
+    "retention_deadline_includes_sqlite_validation_staging_and_fsync_latency": true,
+    "store_binding_fields": [
+      "root_device",
+      "root_inode",
+      "candidate_sha",
+      "candidate_tree"
+    ],
+    "store_lock_held_across_both_authorization_phases": true,
+    "withdrawal_and_recovery_require_live_lease": false
+  },
+  "final_evidence": {
+    "candidate_commit_sha": "pending_until_seal",
+    "candidate_tree_sha": "pending_until_seal",
+    "ci_conclusion": "pending_until_seal",
+    "ci_run_id": "pending_until_seal"
+  },
+  "gate": "Alpha A2-P1 retention/session liveness offline implementation",
+  "ledger": {
+    "automatic_reset_allowed": false,
+    "bootstrap_requires_absent_destination": true,
+    "existing_v2_ledger_behavior": "refused_unchanged",
+    "implementation_mode": "additive",
+    "migration_from_v2_allowed": false,
+    "schema_version": "evidencemesh.closed-alpha-control-plane.v3",
+    "single_host_only": true,
+    "v2_fallback_allowed": false
+  },
+  "ledger_integrity": {
+    "future_lease_issue_or_heartbeat_is_durable_fault": true,
+    "immutable_authority_metadata_revalidated_at_each_checkpoint": true,
+    "metadata_drift_is_durable_fault": true
+  },
+  "liveness": {
+    "authority_minimum_freshness_seconds_exclusive": 5.0,
+    "retention_supervisor": {
+      "heartbeat_interval_seconds_maximum": 10.0,
+      "lease_seconds": 30.0,
+      "lease_commit_recorded_before_cancellation_is_repropagated": true,
+      "owner_secret_persisted": false,
+      "renewal_requires_successful_retention_pass": true,
+      "shutdown_accepts_only_exact_owner_and_supervisor_epoch": true,
+      "shutdown_reads_current_sequence_and_expiry_in_transaction": true,
+      "singleton": true
+    },
+    "session": {
+      "heartbeat_interval_seconds_maximum": 100.0,
+      "lease_seconds": 300.0,
+      "renewed_by_provider_or_transport_activity": false,
+      "renewed_by_reservation": false,
+      "renewed_by_retention_supervisor": false,
+      "requires_autonomous_exact_owner_heartbeat": true
+    }
+  },
+  "offline_verification": {
+    "credentials_used": false,
+    "external_endpoints_used": false,
+    "fake_boot_identity": true,
+    "fake_boottime_clock": true,
+    "httpx_transport": "MockTransport",
+    "live_network_allowed": false,
+    "provider_adapters_entered": false,
+    "required_coverage": [
+      "fresh v3 bootstrap and unchanged v2 refusal",
+      "supervisor and session owner, epoch, boot and heartbeat-sequence CAS fencing",
+      "lease-lapse pause, permit invalidation, quarantine and explicit recovery",
+      "traffic cannot renew either autonomous heartbeat domain",
+      "prepared, reservation, final transport and feedback-publication checkpoints",
+      "pause and stale-permit races at the final transport wrapper",
+      "two-phase crash-safe feedback publication and identical replay",
+      "pre-UTC boottime anchors include intervening latency conservatively",
+      "exact feedback-store identity binding and decoy-store refusal",
+      "retention CAS snapshot and owned-epoch shutdown under the feedback-store lock",
+      "restart and concurrent-session feedback authority continuity",
+      "immutable metadata and future lease timestamp durable faults",
+      "cancellation-safe supervisor acquisition and orphan-owned-epoch shutdown",
+      "A2 document-resolution denial before DNS and before attempt reservation",
+      "offline cleanup and pre-existing RC4 regression coverage"
+    ],
+    "wall_clock_sleep_is_acceptance_oracle": false
+  },
+  "retention_locking": {
+    "lease_acquire_or_renew_starts_after_store_lock_release": true,
+    "lock_order": "feedback_store_then_bounded_sqlite_callback",
+    "orderly_shutdown_contains_owned_epoch_before_store_lock_release": true,
+    "publication_cannot_interleave_between_purge_and_cas_snapshot": true,
+    "purge_and_supervisor_cas_snapshot_share_store_lock": true,
+    "retention_boottime_anchor_captured_before_utc_purge_observation": true,
+    "snapshot_fields": [
+      "supervisor_epoch",
+      "heartbeat_sequence",
+      "lease_expires_at_boottime"
+    ]
+  },
+  "scope": {
+    "allowed": [
+      "additive v3 liveness control-plane implementation",
+      "narrow optional feedback-publication authority bridge",
+      "deterministic offline tests",
+      "dedicated one-shot network-namespace pull-request workflow",
+      "A2-P1 gate, policy and sealed evidence"
+    ],
+    "existing_v2_semantics_reclassified": false,
+    "live_configuration_added": false,
+    "maximum_changed_files_is_hard_stop": true
+  },
+  "schema_version": "evidencemesh.alpha-a2-p1-retention-session-liveness-offline-policy.v1",
+  "stop_criteria": [
+    "the candidate is not a linear descendant of the exact parent or exceeds two commits",
+    "more than twelve files differ from the exact parent",
+    "an existing v2 ledger is migrated, reset, deleted, reused, or accepted by the A2 path",
+    "a committed supervisor acquisition can be orphaned by task cancellation",
+    "supervisor and session heartbeats are not independent exact-owner CAS domains",
+    "reservation, provider, request-hook, transport, or supervisor activity renews a session lease",
+    "the governed transport wrapper is not the final permit-consumption boundary",
+    "feedback publication or identical replay bypasses either authorization phase",
+    "the phase-one publication fence can leave an earlier heartbeat CAS token valid",
+    "the final publication transaction is not held through the atomic link",
+    "a publication or retention deadline is based on a boottime anchor captured after its UTC observation",
+    "the retention supervisor CAS snapshot is not captured under the feedback-store lock",
+    "orderly supervisor shutdown releases the feedback-store lock before exact owner-epoch containment",
+    "lock ordering permits a SQLite-to-feedback-store callback",
+    "immutable authority metadata or a future lease timestamp can retain authority without a durable fault",
+    "the A2 offline document path can resolve DNS or reserve an attempt",
+    "any runtime network, live provider, live search, live document, or external model request occurs",
+    "any operating-system service or live tester session is activated",
+    "any required offline test or quality check fails",
+    "any retry or workflow rerun is used to reinterpret failure",
+    "any artifact, distribution, release, or tag is published",
+    "a final commit, tree, CI run, or CI conclusion is asserted before the seal"
+  ],
+  "transport": {
+    "a2_document_resolution": "denied_before_dns_until_a_separate_governed_resolver_gate",
+    "automatic_redirects_enabled": false,
+    "automatic_retries_enabled": false,
+    "environment_proxy_inheritance_enabled": false,
+    "final_authority_boundary": "governed HTTPX transport wrapper",
+    "http2_enabled": false,
+    "one_permit_per_inner_transport_invocation": true,
+    "request_hook_is_final_authority_boundary": false,
+    "custom_document_resolver_allowed": false,
+    "test_inner_transport": "httpx.MockTransport"
+  },
+  "workflow": {
+    "artifact_or_distribution_steps": false,
+    "canonical_test_invocations": 1,
+    "changed_path_allowlist_count": 10,
+    "manual_dispatch_allowed": false,
+    "network_namespace_disabled_during_gates": true,
+    "pull_request": 1,
+    "rerun_attempt_allowed": false,
+    "required_run_attempt": 1
+  }
+}

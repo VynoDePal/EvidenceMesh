@@ -1,0 +1,440 @@
+name: Phase 11.8.3 Factorial Calibration
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - labeled
+    paths:
+      - .github/workflows/phase11-8-3-factorial-calibration.yml
+      - benchmarks/data/phase11_7_fresh_confirmation_v1.json
+      - benchmarks/data/phase12_untouched_reserve_v1.json
+      - benchmarks/phase11_7_dataset.py
+      - benchmarks/phase11_8_2_candidate.py
+      - benchmarks/run_phase11_8_recovery.py
+      - benchmarks/run_phase11_8_3_factorial.py
+      - benchmarks/results/phase11_8_recovery_2026-07-29.json
+      - benchmarks/results/phase11_8_2_offline_design_2026-07-30.json
+      - benchmarks/results/phase11_8_3_factorial_2026-07-30.json
+      - benchmarks/results/phase11_8_3_factorial_2026-07-30.md
+      - docs/benchmark-protocol-v18.md
+      - tests/test_phase11_8_3_factorial.py
+  workflow_dispatch:
+    inputs:
+      authorize_live_run:
+        description: Authorize exactly 24 Tavily and 96 Gemini generation requests
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase11-8-3-factorial-calibration-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  DATASET_PATH: /tmp/simple_qa_test_set_phase11_8_3.csv
+  RESULT_PATH: /tmp/phase11_8_3_factorial_2026-07-30.json
+  CACHE_ROOT: /tmp/evidencemesh-phase11-8-3-cache
+
+jobs:
+  lock-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6.0.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Verify frozen protocol and historical boundaries
+        run: |
+          echo \
+            "d139c1fed0d9c2bcfe7cdc02f1cda510802296ababbf360b6381c4db5e55239d  docs/benchmark-protocol-v18.md" \
+            | sha256sum --check
+          echo \
+            "da6d1e21c3c1d53539f481fe6789eedc55359bb3b9d32b0be73f96bc693da79e  benchmarks/data/phase11_7_fresh_confirmation_v1.json" \
+            | sha256sum --check
+          echo \
+            "472ec47a21b99f14ab05c4e7b79d179034fc42558910c0bf2ef053b0d25411ee  benchmarks/data/phase12_untouched_reserve_v1.json" \
+            | sha256sum --check
+          echo \
+            "0bd05884c6e6d019f22d18113ef449d1cf1c8158ac0e598d899ee1a93c4b687a  benchmarks/results/phase11_8_recovery_2026-07-29.json" \
+            | sha256sum --check
+          echo \
+            "91e2ab81e95ca34ba8766f552db60018e44783fe9792857d30d2d9b1195c9bbd  benchmarks/results/phase11_8_2_offline_design_2026-07-30.json" \
+            | sha256sum --check
+          echo \
+            "167a7eb531966ee0591a1ae01b2a8d9d47307cb1eb52ec152946bbe0dbc6e39c  benchmarks/results/phase11_8_3_factorial_2026-07-30.json" \
+            | sha256sum --check
+          echo \
+            "0eb71a0e94b7e21d33105788d05076382f96ab9e5fd6cea9d16669305d38c74e  benchmarks/phase11_8_2_candidate.py" \
+            | sha256sum --check
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install locked test environment
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Validate protocol locks without network traffic
+        run: |
+          uv run python benchmarks/run_phase11_8_3_factorial.py --check-only
+
+      - name: Run factorial, fail-closed and workflow tests
+        run: |
+          uv run pytest tests/test_phase11_8_3_factorial.py -q
+          uv run ruff check \
+            benchmarks/run_phase11_8_3_factorial.py \
+            tests/test_phase11_8_3_factorial.py
+          uv run ruff format --check \
+            benchmarks/run_phase11_8_3_factorial.py \
+            tests/test_phase11_8_3_factorial.py
+
+  live-factorial-calibration:
+    needs: lock-validation
+    if: >-
+      (github.event_name == 'workflow_dispatch' &&
+      inputs.authorize_live_run == true) ||
+      (github.event_name == 'pull_request' &&
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'phase11.8.3-live-authorized' &&
+      github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6.0.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Refuse to overwrite a Phase 11.8.3 result
+        run: |
+          if [[ -e benchmarks/results/phase11_8_3_factorial_2026-07-30.json ]]; then
+            echo "::error::The Phase 11.8.3 JSON result is already committed"
+            exit 1
+          fi
+          if [[ -e benchmarks/results/phase11_8_3_factorial_2026-07-30.md ]]; then
+            echo "::error::The Phase 11.8.3 Markdown report is already committed"
+            exit 1
+          fi
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install locked benchmark environment
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Revalidate frozen sources before live traffic
+        run: |
+          uv run python benchmarks/run_phase11_8_3_factorial.py --check-only
+
+      - name: Verify benchmark credentials are available
+        env:
+          GEMINI_API_KEY: ${{ secrets.EVIDENCE_MESH_GEMINI_KEY }}
+          TAVILY_API_KEY: ${{ secrets.EVIDENCE_MESH_TAVILY_KEY }}
+        run: |
+          if [[ -z "${GEMINI_API_KEY:-}" ]]; then
+            echo "::error::EVIDENCE_MESH_GEMINI_KEY is not configured"
+            exit 1
+          fi
+          if [[ -z "${TAVILY_API_KEY:-}" ]]; then
+            echo "::error::EVIDENCE_MESH_TAVILY_KEY is not configured"
+            exit 1
+          fi
+
+      - name: Download checksum-pinned SimpleQA
+        run: |
+          curl \
+            --fail \
+            --location \
+            --silent \
+            --show-error \
+            --output "$DATASET_PATH" \
+            https://openaipublic.blob.core.windows.net/simple-evals/simple_qa_test_set.csv
+          echo \
+            "feee3f7e7db3617e94e8fcf1977b756ec420ef8568f4e0fcbbe0e92e9d5fc032  $DATASET_PATH" \
+            | sha256sum --check
+
+      - name: Run locked 24-case 2x2 factorial calibration
+        env:
+          EVIDENCEMESH_BENCHMARK_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+          GEMINI_API_KEY: ${{ secrets.EVIDENCE_MESH_GEMINI_KEY }}
+          TAVILY_API_KEY: ${{ secrets.EVIDENCE_MESH_TAVILY_KEY }}
+        run: |
+          uv run python benchmarks/run_phase11_8_3_factorial.py \
+            --dataset "$DATASET_PATH" \
+            --manifest benchmarks/data/phase11_7_fresh_confirmation_v1.json \
+            --reserve-manifest benchmarks/data/phase12_untouched_reserve_v1.json \
+            --phase11-8-result benchmarks/results/phase11_8_recovery_2026-07-29.json \
+            --phase11-8-2-result benchmarks/results/phase11_8_2_offline_design_2026-07-30.json \
+            --candidate benchmarks/phase11_8_2_candidate.py \
+            --protocol docs/benchmark-protocol-v18.md \
+            --models gemini-3.5-flash-lite \
+            --cache-root "$CACHE_ROOT" \
+            --provider-max-results 20 \
+            --selection-limit 20 \
+            --max-per-domain 3 \
+            --evidence-budget-chars 12000 \
+            --max-block-chars 1500 \
+            --min-block-chars 192 \
+            --max-output-tokens 2048 \
+            --retrieval-wall-time-seconds 30 \
+            --generation-wall-time-seconds 60 \
+            --retrieval-pause-seconds 0.5 \
+            --model-pause-seconds 2.0 \
+            --request-timeout-seconds 20 \
+            --network-region "${EVIDENCEMESH_BENCHMARK_REGION:-GitHub-hosted runner}" \
+            --output "$RESULT_PATH" \
+            --progress
+
+      - name: Validate privacy, accounting and decision boundaries
+        env:
+          GEMINI_API_KEY: ${{ secrets.EVIDENCE_MESH_GEMINI_KEY }}
+          TAVILY_API_KEY: ${{ secrets.EVIDENCE_MESH_TAVILY_KEY }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from collections import defaultdict
+          from pathlib import Path
+
+          path = Path(os.environ["RESULT_PATH"])
+          report = json.loads(path.read_bytes())
+          reserve = json.loads(
+              Path(
+                  "benchmarks/data/phase12_untouched_reserve_v1.json"
+              ).read_bytes()
+          )
+          arms = [
+              "equal_claims",
+              "candidate_claims",
+              "equal_direct",
+              "candidate_direct",
+          ]
+          model = "gemini-3.5-flash-lite"
+
+          assert report["benchmark"] == (
+              "evidencemesh-phase11-8-3-factorial-calibration-v1"
+          )
+          assert report["suite"]["sample_count"] == 24
+          assert report["suite"]["fresh_for_phase11_8_3"] is False
+          assert report["suite"]["phase12_cases_used"] is False
+          assert report["protocol"]["models"] == [model]
+          assert report["protocol"]["generation_arms"] == arms
+          assert report["protocol"]["control_arm"] == "equal_claims"
+          assert report["protocol"]["joint_candidate_arm"] == "candidate_direct"
+          assert report["protocol"]["provider_bundle"] == ["tavily"]
+          assert report["protocol"]["provider_max_results"] == 20
+          assert report["protocol"]["selection_limit"] == 20
+          assert report["protocol"]["max_per_domain"] == 3
+          assert report["protocol"]["evidence_prompt_budget_chars"] == 12000
+          assert report["protocol"]["max_block_chars"] == 1500
+          assert report["protocol"]["candidate_min_block_chars"] == 192
+          assert report["protocol"]["candidate_projection_replays"] == 3
+          assert report["protocol"]["one_raw_tavily_pool_per_case"] is True
+          assert report["protocol"]["provider_request_repeated_per_arm"] is False
+          assert report["protocol"]["selected_packet_shared_by_all_arms"] is True
+          assert report["protocol"]["retry_policy"] == (
+              "none; no selective retry, fallback or repair"
+          )
+          assert report["protocol"]["protocol_publication_authorizes_live"] is False
+          assert report["protocol"]["quality_profile_after_run"] == (
+              "unchanged regardless of result"
+          )
+          assert report["phase12_reserve"]["case_count"] == 96
+          assert (
+              report["phase12_reserve"]["questions_or_answers_materialized"]
+              is False
+          )
+
+          traffic = report["traffic"]
+          assert traffic["case_retrieval_operations"] == 24
+          assert traffic["provider_query_calls"] == 24
+          assert traffic["tavily_requests"] == 24
+          assert traffic["generation_requests"] == 96
+          assert traffic["expected_generation_requests"] == 96
+          assert traffic["retries"] == 0
+          assert traffic["fallback_requests"] == 0
+          assert traffic["repair_requests"] == 0
+          assert len(report["retrieval_diagnostics"]) == 24
+          assert len(report["retrieval_outcomes"]) == 96
+          assert len(report["generation_outcomes"]) == 96
+
+          assert report["packet_identity"]["raw_and_selected_passed"] is True
+          assert (
+              report["packet_identity"]["projection_contract_identity_passed"]
+              is True
+          )
+          retrieved = defaultdict(dict)
+          for outcome in report["retrieval_outcomes"]:
+              assert outcome["arm"] in arms
+              retrieved[outcome["case_id"]][outcome["arm"]] = outcome
+          assert len(retrieved) == 24
+          assert all(set(case_arms) == set(arms) for case_arms in retrieved.values())
+          for case_arms in retrieved.values():
+              assert len(
+                  {case_arms[arm]["raw_pool_sha256"] for arm in arms}
+              ) == 1
+              assert len(
+                  {case_arms[arm]["selected_packet_sha256"] for arm in arms}
+              ) == 1
+              assert (
+                  case_arms["equal_claims"]["prompt_packet_sha256"]
+                  == case_arms["equal_direct"]["prompt_packet_sha256"]
+              )
+              assert (
+                  case_arms["candidate_claims"]["prompt_packet_sha256"]
+                  == case_arms["candidate_direct"]["prompt_packet_sha256"]
+              )
+
+          generated = {
+              (outcome["case_id"], outcome["arm"], outcome["model"]): outcome
+              for outcome in report["generation_outcomes"]
+          }
+          assert len(generated) == 96
+          assert {outcome["arm"] for outcome in report["generation_outcomes"]} == set(arms)
+          assert {outcome["model"] for outcome in report["generation_outcomes"]} == {model}
+          for case_id, case_arms in retrieved.items():
+              for arm in arms:
+                  assert (
+                      generated[(case_id, arm, model)]["prompt_packet_sha256"]
+                      == case_arms[arm]["prompt_packet_sha256"]
+                  )
+
+          decision = report["decision"]
+          assert len(decision["gates"]) == 14
+          gates_passed = all(
+              gate["passed"] for gate in decision["gates"].values()
+          )
+          assert decision["phase11_8_3_candidate_passed"] == gates_passed
+          assert decision["phase11_9_protocol_may_be_frozen"] == gates_passed
+          assert decision["phase11_9_executed"] is False
+          assert decision["quality_profile_promotion_allowed"] is False
+          assert decision["quality_profile_promoted"] is False
+          assert decision["phase12_authorized"] is False
+          assert decision["phase12_executed"] is False
+          assert decision["external_competitor_benchmark_allowed"] is False
+          assert decision["public_alpha_allowed"] is False
+          assert decision["superiority_claim_allowed"] is False
+          assert decision["merge_allowed"] is False
+          assert decision["release_allowed"] is False
+          assert decision["release_decision"] == "no-go"
+
+          private_fields = {
+              "question",
+              "answer",
+              "reference_answer",
+              "title",
+              "url",
+              "snippet",
+              "content",
+              "evidence",
+              "system_prompt",
+              "user_prompt",
+              "generated_answer",
+              "raw_response",
+              "structured_response",
+          }
+          assert all(
+              not private_fields & set(outcome)
+              for outcome in report["retrieval_outcomes"]
+          )
+          assert all(
+              not private_fields & set(outcome)
+              for outcome in report["generation_outcomes"]
+          )
+          assert report["privacy"]["questions_in_report"] is False
+          assert report["privacy"]["reference_answers_in_report"] is False
+          assert report["privacy"]["generated_answers_in_report"] is False
+          assert (
+              report["privacy"]["raw_structured_responses_in_report"] is False
+          )
+          assert (
+              report["privacy"]["source_snippets_or_evidence_in_report"]
+              is False
+          )
+          assert (
+              report["privacy"]["system_or_user_prompts_in_report"] is False
+          )
+          assert (
+              report["privacy"]["phase12_reserved_case_ids_in_report"] is False
+          )
+
+          reserved_ids = {
+              entry["case_id"] for entry in reserve["sealed_cases"]
+          }
+          assert reserved_ids.isdisjoint(report["suite"]["case_ids"])
+          raw = path.read_text(encoding="utf-8")
+          assert all(case_id not in raw for case_id in reserved_ids)
+          for name in ("GEMINI_API_KEY", "TAVILY_API_KEY"):
+              secret = os.environ.get(name)
+              assert secret and secret not in raw
+          PY
+
+      - name: Write benchmark summary
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          path = Path(os.environ["RESULT_PATH"])
+          raw = path.read_bytes()
+          report = json.loads(raw)
+          generated = report["generation_metrics"]["aggregate"]
+          print("## Phase 11.8.3 factorial calibration")
+          print()
+          print("| Arm | Answer proxy | Citation presence | Support proxy |")
+          print("|---|---:|---:|---:|")
+          for arm in (
+              "equal_claims",
+              "candidate_claims",
+              "equal_direct",
+              "candidate_direct",
+          ):
+              answer_metric = generated[arm]["answer_key_covered"]
+              print(
+                  f"| `{arm}` | "
+                  f"{answer_metric['numerator']}/"
+                  f"{answer_metric['denominator']} | "
+                  f"{generated[arm]['citation_presence']['rate']} | "
+                  f"{generated[arm]['citation_support_proxy']['rate']} |"
+              )
+          print()
+          print(
+              "Fourteen-gate candidate: "
+              f"`{report['decision']['phase11_8_3_candidate_passed']}`"
+          )
+          print(
+              "Phase 11.9 protocol may be frozen: "
+              f"`{report['decision']['phase11_9_protocol_may_be_frozen']}`"
+          )
+          print("Quality promotion allowed: `False`")
+          print("Phase 12 allowed: `False`")
+          print("Release decision: `no-go`")
+          print()
+          print(f"Raw SHA-256: `{hashlib.sha256(raw).hexdigest()}`")
+          PY
+
+      - name: Upload privacy-safe raw report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: phase11-8-3-factorial-calibration-${{ github.sha }}
+          path: ${{ env.RESULT_PATH }}
+          if-no-files-found: warn
+          retention-days: 14

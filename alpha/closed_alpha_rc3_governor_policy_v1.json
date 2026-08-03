@@ -1,0 +1,61 @@
+{
+  "basis": {
+    "a0_commit_sha": "540eca26ffb97908320a5ecea5f1bf3fb4f0247a",
+    "historical_candidate_sha": "81b5f8a8abd4302b27ad123bd5505e1757eadc7f",
+    "historical_candidate_name": "evidencemesh-0.1.0-alpha-rc.2"
+  },
+  "budget": {
+    "concurrent_sessions_max": 2,
+    "provider_attempts_per_session_max": 6,
+    "provider_attempts_total_max": 240,
+    "request_starts_per_minute_max": 10,
+    "sessions_per_participant_max": 5,
+    "sessions_total_max": 40,
+    "tavily_attempts_community_session_max": 0,
+    "tavily_attempts_quality_session_max": 4,
+    "tavily_attempts_total_max": 40
+  },
+  "decision": {
+    "distributed_global_budget_enforcement_ready": false,
+    "live_execution_authorized": false,
+    "merge_authorized": false,
+    "model_or_provider_traffic_authorized": false,
+    "public_release_authorized": false,
+    "single_host_budget_enforcement_ready": true,
+    "tester_contact_authorized": false
+  },
+  "enforcement": {
+    "automatic_fallbacks_allowed": false,
+    "automatic_repairs_allowed": false,
+    "automatic_retries_allowed": false,
+    "cache_allowed": false,
+    "ledger_scope": "single_host_shared_sqlite",
+    "permits": "pre_dispatch_single_use",
+    "remote_coordinator_implemented": false
+  },
+  "interfaces": {
+    "cli": "one_process_per_session",
+    "mcp_http": "forbidden",
+    "mcp_stdio": "one_process_per_session",
+    "sdk": "explicit_governor_required"
+  },
+  "providers": {
+    "allowed": [
+      "arxiv",
+      "crossref",
+      "github",
+      "searxng",
+      "tavily",
+      "wikipedia"
+    ],
+    "ddgs": "forbidden_before_thread_dispatch",
+    "searxng_fallback_endpoints": "forbidden",
+    "unknown_or_custom": "forbidden"
+  },
+  "schema_version": "evidencemesh.closed-alpha-rc3-governor-policy.v1",
+  "traffic": {
+    "model_requests": 0,
+    "provider_requests": 0,
+    "research_requests": 0
+  }
+}

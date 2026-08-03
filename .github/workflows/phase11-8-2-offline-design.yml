@@ -1,0 +1,105 @@
+name: Phase 11.8.2 Offline Design
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - .github/workflows/phase11-8-2-offline-design.yml
+      - benchmarks/data/phase11_8_2_offline_fixtures_v1.json
+      - benchmarks/phase11_8_2_candidate.py
+      - benchmarks/run_phase11_5_quality_recovery.py
+      - benchmarks/run_phase11_8_2_offline_design.py
+      - benchmarks/results/phase11_8_recovery_2026-07-29.json
+      - benchmarks/results/phase11_8_1_offline_diagnostic_2026-07-30.json
+      - benchmarks/results/phase11_8_2_offline_design_2026-07-30.json
+      - benchmarks/results/phase11_8_2_offline_design_2026-07-30.md
+      - docs/benchmark-protocol-v17.md
+      - tests/test_phase11_8_2_offline_design.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase11-8-2-offline-design-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  offline-design:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6.0.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Verify locked inputs
+        run: |
+          echo \
+            "67a7212f68eeb5ed1b81dd98fabeb2b80d1faa2a88d379c83d7fc20bcd839652  docs/benchmark-protocol-v17.md" \
+            | sha256sum --check
+          echo \
+            "16f5eb38eec4c8669fb6dac4eeb64992df5b81a46b6c02325a559d3da4f621ab  benchmarks/data/phase11_8_2_offline_fixtures_v1.json" \
+            | sha256sum --check
+          echo \
+            "0eb71a0e94b7e21d33105788d05076382f96ab9e5fd6cea9d16669305d38c74e  benchmarks/phase11_8_2_candidate.py" \
+            | sha256sum --check
+          echo \
+            "0bd05884c6e6d019f22d18113ef449d1cf1c8158ac0e598d899ee1a93c4b687a  benchmarks/results/phase11_8_recovery_2026-07-29.json" \
+            | sha256sum --check
+          echo \
+            "9032d9df7d71a3e9c4197577c3e33af315842cae18435d91a7f851e5489de6d8  benchmarks/results/phase11_8_1_offline_diagnostic_2026-07-30.json" \
+            | sha256sum --check
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install locked test environment
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Recompute committed offline report
+        run: |
+          uv run python benchmarks/run_phase11_8_2_offline_design.py \
+            --output /tmp/phase11_8_2_offline_design.json
+          diff \
+            --unified \
+            benchmarks/results/phase11_8_2_offline_design_2026-07-30.json \
+            /tmp/phase11_8_2_offline_design.json
+
+      - name: Run offline design and adversarial tests
+        run: |
+          uv run pytest tests/test_phase11_8_2_offline_design.py -q
+
+      - name: Confirm zero-provider and no-go boundaries
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = json.loads(
+              Path(
+                  "benchmarks/results/"
+                  "phase11_8_2_offline_design_2026-07-30.json"
+              ).read_bytes()
+          )
+          assert all(value == 0 for value in report["traffic"].values())
+          assert report["decision"]["offline_engineering_candidate_passed"] is True
+          assert report["decision"]["real_case_quality_improvement_proven"] is False
+          assert report["decision"]["phase11_8_3_live_calibration_authorized"] is False
+          assert report["decision"]["phase11_9_authorized"] is False
+          assert report["decision"]["phase12_executed"] is False
+          assert report["decision"]["phase12_authorized"] is False
+          assert report["decision"]["quality_profile_promotion_allowed"] is False
+          assert report["decision"]["merge_allowed"] is False
+          assert report["decision"]["release_allowed"] is False
+          assert report["decision"]["superiority_claim_allowed"] is False
+          assert report["decision"]["release_decision"] == "no-go"
+          PY

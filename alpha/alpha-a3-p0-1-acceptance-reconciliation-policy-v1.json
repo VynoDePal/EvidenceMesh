@@ -1,0 +1,225 @@
+{
+  "authority": {
+    "artifact_or_attestation_upload_allowed": false,
+    "distribution_publication_allowed": false,
+    "historical_failure_reclassification_allowed": false,
+    "live_closed_alpha_allowed": false,
+    "merge_allowed": false,
+    "phase_12_allowed": false,
+    "production_allowed": false,
+    "public_installation_claim_allowed": false,
+    "release_allowed": false,
+    "tag_allowed": false,
+    "v1_allowed": false
+  },
+  "budgets": {
+    "branch_fast_forward_updates_maximum": 1,
+    "candidate_commits_maximum": 1,
+    "changed_files_exact": 5,
+    "cli_invocations_exact": 1,
+    "controller_offline_installations_exact": 1,
+    "dependency_download_commands_maximum": 1,
+    "distribution_publications": 0,
+    "dns_attempts": 0,
+    "ephemeral_parent_exports_exact": 1,
+    "ephemeral_wheel_builds_exact": 1,
+    "evidencemesh_runtime_network_requests": 0,
+    "full_suite_dns_attempts": 0,
+    "full_suite_external_destination_attempts": 0,
+    "full_suite_invocations_exact": 1,
+    "full_suite_network_namespaces_exact": 1,
+    "full_suite_network_trace_groups_exact": 1,
+    "historical_failed_a3_workflow_reruns": 0,
+    "historical_failed_ci_reruns": 0,
+    "live_document_requests": 0,
+    "live_model_requests": 0,
+    "live_provider_requests": 0,
+    "live_search_requests": 0,
+    "mcp_initialize_requests_exact": 2,
+    "mcp_initialized_notifications_exact": 2,
+    "mcp_server_processes_exact": 2,
+    "mcp_sessions_exact": 2,
+    "mcp_tool_requests_exact": 2,
+    "operating_system_service_activations": 0,
+    "operator_installations_exact": 1,
+    "operator_path_seconds_maximum": 600,
+    "operator_uninstallations_exact": 1,
+    "passive_ipv6_loopback_bind_probes_maximum": 1,
+    "retries": 0,
+    "toolchain_python_acquisition_commands_maximum": 1,
+    "workflow_attempts_maximum": 1,
+    "workflow_reruns": 0
+  },
+  "candidate_decision": {
+    "decision": "pending_until_distinct_gate_and_same_head_ci",
+    "failed_or_cancelled_attempt_is_terminal": true,
+    "historical_failures_remain_failed": true,
+    "pr_remains_draft": true,
+    "second_candidate_commit_allowed": false
+  },
+  "entry": {
+    "branch": "agent/evidencemesh-v0.1",
+    "direct_child_required": true,
+    "exact_parent_commit_sha": "88cf431b67619624c09840174451780b78a9ae41",
+    "exact_parent_tree_sha": "960bacb500ad390d4ae3a38bc941e30c85e80a8d",
+    "merge_commit_allowed": false,
+    "pull_request": 1,
+    "pull_request_must_remain_draft": true,
+    "repository": "VynoDePal/EvidenceMesh"
+  },
+  "gate": "Alpha A3-P0.1 acceptance reconciliation offline",
+  "historical_failures": {
+    "dedicated_a3": {
+      "conclusion": "failure",
+      "failed_before_operator_journey": true,
+      "immutable": true,
+      "job_id": 91814758947,
+      "product_runtime_defect_observed": false,
+      "root_cause": "literal_multiline_grep_could_not_match_the_wrapped_readme_sentence",
+      "run_attempt": 1,
+      "run_id": 30852239811
+    },
+    "ordinary_ci": {
+      "conclusion": "failure",
+      "failed_test_count_per_python_job": 1,
+      "immutable": true,
+      "product_runtime_defect_observed": false,
+      "python_job_ids": [
+        91814763021,
+        91814777751,
+        91814777055
+      ],
+      "root_cause": "one_stale_a1_readme_source_commit_expectation",
+      "run_id": 30852239420
+    }
+  },
+  "immutable_a2_evidence": {
+    "ci_conclusion": "success",
+    "ci_run_id": 30843139966,
+    "gate_conclusion": "success",
+    "gate_job_id": 91784859717,
+    "gate_run_attempt": 1,
+    "gate_run_id": 30843140982,
+    "product_commit_sha": "41e0d18e1801cbde0bae61dfd85877fddbc64e4d",
+    "product_tree_sha": "41c74b75f270db66b4f5032172e5dff0f6a32aaa",
+    "sdist_not_rebuilt_by_a3": true,
+    "wheel_name": "evidencemesh-0.1.0-py3-none-any.whl",
+    "wheel_sha256": "c38841da79c7a71275bda5a925096dc692ce4feabaf2f618233c5379ed1c577a",
+    "wheel_size_bytes": 146492
+  },
+  "immutable_a3_parent_content": {
+    ".github/workflows/alpha-a3-p0-operator-clean-room-offline.yml": "aaba296f3da13fc8405a6e579a2478b943a3a17a12ca21eaacae46d76d194e5e",
+    "README.md": "0a532c276a58f86b7c6134843c2779dfb8d5e9cc75ba8a00a794991b37c16f7d",
+    "alpha/alpha-a3-p0-operator-clean-room-offline-policy-v1.json": "43255b673e4a90787a3bc95db3398d61d09fe9932f83978b5143816b2d3e62cf",
+    "docs/alpha-a3-p0-operator-clean-room-offline-gate-v1.md": "d71c6c035b107a03eff9130163250f344b4c4eb6ef7ba894304ade9287c022a1",
+    "docs/alpha-a3-p0-operator-clean-room-runbook-v1.md": "ec45efe1fffa9acb8acc1127383b4a97c684bf43a4a16316d078717800c8b791",
+    "scripts/verify_alpha_a3_p0_operator_clean_room.py": "d7571ca65514e05ad3415d029ed67279f70141238152a8f6e5ef618975e19b83",
+    "tests/test_alpha_a3_p0_workflow.py": "0aecc7ffe84facad14225420be58868776ded2e66c2f475c479c5d527cbfc7fb",
+    "tests/test_verify_alpha_a3_p0_operator_clean_room.py": "230f1dda7bbe3c08d042c122df7c5b18a6b533dca44c4eb8dbd58b548b373d70"
+  },
+  "immutable_supporting_controls": {
+    "alpha/alpha_a1_p0_installability_policy_v1.json": "7e3fbdb3ddb95c6dd25f82626fa0a05cd041c72a53aa725ddb2b081ad64096d8",
+    "scripts/verify_alpha_a1_p0_installability.py": "8fa9ec81c9c159a634f1f7ea573aa371a2401dbd6c0abc59701f22ba2a35e8fe",
+    "scripts/verify_alpha_a1_p2_named_host.py": "d52bf8cb9f57daed160a2dd10b7e28063640ee2893033c86defaeac7bf718cf9"
+  },
+  "operator_contract": {
+    "cli_commands": [
+      "providers"
+    ],
+    "descriptor_source": "examples/evidencemesh.mcp.json",
+    "install_mode": "one_offline_no_index_hashed_transaction",
+    "mcp_requests_per_session": [
+      "initialize",
+      "tools/call:health"
+    ],
+    "mcp_sessions": 2,
+    "package_state_after_uninstall": "absent",
+    "restart_kind": "second_planned_start_after_first_natural_stop",
+    "receipt_schema": "evidencemesh.alpha-a3-p0-operator-clean-room-receipt.v1",
+    "state_after_uninstall": "present_and_byte_identical",
+    "uninstall_scope": "evidencemesh_package_only"
+  },
+  "protocol": {
+    "path": "docs/alpha-a3-p0-1-acceptance-reconciliation-offline-gate-v1.md",
+    "sha256": "915a7d5aa46d28a4de9f1cd4052514631534433975ce5dcca7c0c3339151b59b"
+  },
+  "reconciliation": {
+    "a1_correction_path": "tests/test_alpha_a1_p0_installability.py",
+    "a1_correction_sha256": "27ca95ee2907e2bff0ad4f6615a752bc0fda17569fdc2d990f3049cc053e78fe",
+    "a1_runtime_or_gate_runner_change_allowed": false,
+    "a1_platform_assertions_use_normalized_whitespace": true,
+    "a1_quick_start_semantics_must_not_be_weakened": true,
+    "coverage_minimum_percent": 85.0,
+    "dedicated_readme_check": "normalized_whitespace_exactly_once",
+    "failed_a3_files_preserved_byte_exactly": true,
+    "full_operator_journey_repeated_after_full_suite": true,
+    "full_suite_dns_attempts_exact": 0,
+    "full_suite_external_destination_attempts_exact": 0,
+    "full_suite_loopback_only_namespace": true,
+    "full_suite_must_precede_operator_journey": true,
+    "full_suite_network_namespace_distinct": true,
+    "full_suite_network_trace_is_run_scoped": true,
+    "full_suite_runs_as_runner_uid": true,
+    "full_suite_uses_neutral_primary_gid": true,
+    "historical_runs_executed_again": false,
+    "same_head_ordinary_ci_required": true,
+    "static_test_path": "tests/test_alpha_a3_p0_1_workflow.py",
+    "static_test_sha256": "ce6d72118539b47ef44e6a18a4d2623e0156768e16c39b2e8b28d3ca39e492aa"
+  },
+  "schema_version": "evidencemesh.alpha-a3-p0.1-acceptance-reconciliation-offline-policy.v1",
+  "scope": {
+    "allowed_additions": [
+      ".github/workflows/alpha-a3-p0-1-acceptance-reconciliation-offline.yml",
+      "alpha/alpha-a3-p0-1-acceptance-reconciliation-policy-v1.json",
+      "docs/alpha-a3-p0-1-acceptance-reconciliation-offline-gate-v1.md",
+      "tests/test_alpha_a3_p0_1_workflow.py"
+    ],
+    "allowed_modifications": [
+      "tests/test_alpha_a1_p0_installability.py"
+    ],
+    "runtime_and_packaging_immutable_paths": [
+      "src",
+      "pyproject.toml",
+      "uv.lock"
+    ]
+  },
+  "stop_criteria": [
+    "the candidate is not one non-merge direct child of the exact failed A3 parent",
+    "the failed parent tree, draft PR identity, exact five path statuses, or immutable A3 content differs",
+    "the historical A3 or CI failure is executed again, rewritten, reclassified, or treated as passed",
+    "the A1 correction changes anything beyond stale Quick Start source identity and whitespace-stable platform expectations or weakens existing semantics",
+    "the normalized README sentence is absent or appears other than exactly once",
+    "format, lint, the full test suite, branch coverage at 85 percent, or any test fails or is weakened",
+    "the full suite does not finish before the complete A3 operator journey starts",
+    "the A2 wheel name, SHA-256, byte size, handoff, privilege boundary, trace parser, executable allowlist, lifecycle, receipt, or cleanup differs",
+    "any runtime network, DNS, provider, search, document, model, live tester, or OS-service action occurs",
+    "any retry, workflow rerun, second commit, artifact, attestation, distribution, tag, release, merge, rollback, recovery, public-install, Phase 12, production, or V1 claim occurs",
+    "the run-scoped root, trace, process, or other ephemeral output survives cleanup"
+  ],
+  "successful_claim": {
+    "automated_operator_simulation": true,
+    "cross_platform_validated": false,
+    "human_operator_usability_validated": false,
+    "live_behavior_validated": false,
+    "operating_system_supervision_validated": false,
+    "phase_12_ready": false,
+    "public_distribution_available": false,
+    "public_installation_path_validated": false,
+    "recovery_or_rollback_validated": false,
+    "scope": "ubuntu_24_04_python_3_11_full_suite_then_ephemeral_unpublished_a2_wheel_operator_journey_only",
+    "v1_ready": false
+  },
+  "trace_contract": {
+    "authoritative_parser": "scripts/verify_alpha_a1_p2_named_host.py::_validate_strace",
+    "passive_ipv6_loopback_bind_probes_maximum": 1,
+    "resolved_executable_allowlist": [
+      "A3_BASE_PYTHON",
+      "handoff/bin/uv",
+      "work/install/bin/python",
+      "work/install/bin/evidencemesh",
+      "work/install/bin/evidencemesh-mcp"
+    ],
+    "single_process_tree_strace_file": true,
+    "successful_path_kill_tgkill_tkill_syscalls": 0
+  }
+}

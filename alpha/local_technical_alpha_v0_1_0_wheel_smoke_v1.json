@@ -1,0 +1,198 @@
+{
+  "cli": {
+    "command_within_prefix": true,
+    "configured_providers": [
+      "arxiv",
+      "crossref",
+      "github",
+      "searxng",
+      "wikipedia"
+    ],
+    "distinct_subprocess_ledgers": true,
+    "distinct_subprocess_sessions": true,
+    "document_fetches": 0,
+    "http_transport": {
+      "binding_probe": {
+        "governor_environment_match": true,
+        "network_guard": {
+          "implementation": "sitecustomize_python_socket_guard_v1",
+          "loaded": true,
+          "network_access_observed": false,
+          "scope": "python_socket_api_only_not_os_network_namespace"
+        },
+        "settings_environment_match": true
+      },
+      "control_plane": {
+        "admitted_participants": 8,
+        "control_epoch": 2,
+        "global_attempts": 0,
+        "ledger_directory_mode": "0700",
+        "ledger_file_mode": "0600",
+        "privacy_fault": false,
+        "purpose": "cli-http-refusal",
+        "schema_version": "evidencemesh.closed-alpha-control-plane.v2",
+        "sessions": 0,
+        "state": "prepared"
+      },
+      "network_guard": {
+        "implementation": "sitecustomize_python_socket_guard_v1",
+        "loaded": true,
+        "network_access_observed": false,
+        "scope": "python_socket_api_only_not_os_network_namespace"
+      },
+      "refused": true
+    },
+    "model_requests": 0,
+    "provider_requests": 0,
+    "providers_command": {
+      "binding_probe": {
+        "governor_environment_match": true,
+        "network_guard": {
+          "implementation": "sitecustomize_python_socket_guard_v1",
+          "loaded": true,
+          "network_access_observed": false,
+          "scope": "python_socket_api_only_not_os_network_namespace"
+        },
+        "settings_environment_match": true
+      },
+      "control_plane": {
+        "admitted_participants": 8,
+        "control_epoch": 2,
+        "global_attempts": 0,
+        "ledger_directory_mode": "0700",
+        "ledger_file_mode": "0600",
+        "privacy_fault": false,
+        "purpose": "cli-providers",
+        "schema_version": "evidencemesh.closed-alpha-control-plane.v2",
+        "sessions": 0,
+        "state": "prepared"
+      },
+      "health_status": "ready",
+      "network_guard": {
+        "implementation": "sitecustomize_python_socket_guard_v1",
+        "loaded": true,
+        "network_access_observed": false,
+        "scope": "python_socket_api_only_not_os_network_namespace"
+      }
+    }
+  },
+  "control_plane": {
+    "admitted_slots": {
+      "community": 6,
+      "quality": 2
+    },
+    "binding_probe_subprocess_count": 3,
+    "distinct_ledgers": true,
+    "distinct_sessions": true,
+    "fixture_count": 3,
+    "implementation": "SQLiteAlphaControlPlane",
+    "prepared_before_subprocess": true,
+    "product_subprocess_count": 3,
+    "profile": "community"
+  },
+  "installation": {
+    "distribution_module_samefile": true,
+    "entry_points_exact": true,
+    "launchers_exact": true,
+    "package_origin_within_isolated_prefix": true,
+    "package_version": "0.1.0",
+    "virtual_environment": true
+  },
+  "label": "wheel",
+  "mcp_stdio": {
+    "binding_probe": {
+      "governor_environment_match": true,
+      "network_guard": {
+        "implementation": "sitecustomize_python_socket_guard_v1",
+        "loaded": true,
+        "network_access_observed": false,
+        "scope": "python_socket_api_only_not_os_network_namespace"
+      },
+      "settings_environment_match": true
+    },
+    "command_within_prefix": true,
+    "configured_providers": [
+      "arxiv",
+      "crossref",
+      "github",
+      "searxng",
+      "wikipedia"
+    ],
+    "control_plane": {
+      "admitted_participants": 8,
+      "control_epoch": 2,
+      "global_attempts": 0,
+      "ledger_directory_mode": "0700",
+      "ledger_file_mode": "0600",
+      "privacy_fault": false,
+      "purpose": "mcp-health",
+      "schema_version": "evidencemesh.closed-alpha-control-plane.v2",
+      "sessions": 0,
+      "state": "prepared"
+    },
+    "document_fetches": 0,
+    "health_status": "ready",
+    "model_requests": 0,
+    "network_guard": {
+      "implementation": "sitecustomize_python_socket_guard_v1",
+      "loaded": true,
+      "network_access_observed": false,
+      "scope": "python_socket_api_only_not_os_network_namespace"
+    },
+    "prompt_inventory": [
+      "evidence_first_research"
+    ],
+    "provider_requests": 0,
+    "resource_inventory": [
+      "evidencemesh://research-guide"
+    ],
+    "tool_inventory": [
+      "search_web",
+      "deep_research",
+      "fetch_url",
+      "batch_search",
+      "verify_claim",
+      "health"
+    ]
+  },
+  "network_guard": {
+    "binding_probe_markers_verified": 3,
+    "dependency_update_checks_disabled": true,
+    "implementation": "sitecustomize_python_socket_guard_v1",
+    "network_access_observed": false,
+    "os_network_namespace_enforced": false,
+    "product_markers_verified": 3,
+    "scope": "python_socket_api_only_not_os_network_namespace"
+  },
+  "schema_version": 1,
+  "smoke": "evidencemesh-installed-alpha-rc4.1a-v1",
+  "source_archive": {
+    "critical_package_files": {
+      "archive_record_installed_match": true,
+      "critical_file_count": 6
+    },
+    "independent_sha256_after_install_matches": true,
+    "install_to_smoke_toctou_excluded": false,
+    "name": "evidencemesh-0.1.0-py3-none-any.whl",
+    "pep610": {
+      "binding_scope": "url_only",
+      "sha256_status": "not_declared_by_installer",
+      "url_matches": true
+    },
+    "sha256": "857d9f363b76a77000506ac17084c49fa553f76ff881fcb0646c975058af7313",
+    "size_bytes": 118395
+  },
+  "traffic": {
+    "document_fetches": 0,
+    "fallbacks": 0,
+    "model_requests": 0,
+    "provider_requests": 0,
+    "repairs": 0,
+    "retries": 0,
+    "tavily_requests": 0
+  },
+  "validation": {
+    "errors": [],
+    "passed": true
+  }
+}

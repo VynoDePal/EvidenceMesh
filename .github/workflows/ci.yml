@@ -1,0 +1,248 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: true
+      - run: uv python install 3.11
+      - run: uv sync --extra dev --locked --python 3.11
+      - run: uv run ruff format --check .
+      - run: uv run ruff check .
+      - run: uv run mypy src
+      - run: uv run evidencemesh benchmark-offline
+      - name: Audit locked runtime dependencies
+        shell: bash
+        run: |
+          set -o pipefail
+          uv export --frozen --no-dev --format requirements-txt --no-hashes |
+            uvx pip-audit==2.10.1 -r /dev/stdin
+
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+          fetch-tags: false
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: true
+      - run: uv python install ${{ matrix.python-version }}
+      - run: uv sync --extra dev --locked --python ${{ matrix.python-version }}
+      - run: .venv/bin/python -m pytest --cov=evidencemesh --cov-report=term-missing
+
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+      - run: uv python install 3.11
+      - name: Build and validate distributions
+        run: |
+          uv build
+          uvx twine==7.0.0 check dist/*
+      - name: Install and exercise the built wheel
+        shell: bash
+        run: |
+          install_env=/tmp/evidencemesh-wheel-smoke
+          wheels=(dist/evidencemesh-0.1.0-*.whl)
+          if [[ "${#wheels[@]}" -ne 1 ]]; then
+            echo "Expected exactly one EvidenceMesh wheel" >&2
+            exit 1
+          fi
+          uv venv --python 3.11 "$install_env"
+          uv pip install --python "$install_env/bin/python" "${wheels[0]}"
+          "$install_env/bin/evidencemesh" benchmark-offline \
+            > /tmp/evidencemesh-installed-wheel-offline.json
+          "$install_env/bin/python" scripts/smoke_installed_mcp.py \
+            --command "$install_env/bin/evidencemesh-mcp" \
+            --cache-path /tmp/evidencemesh-installed-wheel-mcp.sqlite3 \
+            --expected-version 0.1.0 \
+            --output /tmp/evidencemesh-installed-wheel-mcp.json \
+            --server-log /tmp/evidencemesh-installed-wheel-mcp.server.log
+
+  alpha-a1-p0-installability:
+    name: Alpha A1-P0 installability
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.repository == 'VynoDePal/EvidenceMesh' &&
+      github.event.pull_request.number == 1 &&
+      github.event.pull_request.draft == true &&
+      github.event.pull_request.head.repo.full_name == 'VynoDePal/EvidenceMesh' &&
+      github.event.pull_request.head.ref == 'agent/evidencemesh-v0.1' &&
+      (
+        github.event.pull_request.head.sha == 'd34abe56b95c9daccf361eb86ff1c19421085f62' ||
+        github.event.pull_request.head.sha == 'b967114a177eec00a7ff5f03bcf1169e04b2faac' ||
+        github.event.pull_request.head.sha == 'e33fb3bbfe5278ea30fe568847a1caf263de8c4d'
+      )
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+          fetch-tags: false
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: false
+      - name: Provision canonical Python 3.11
+        env:
+          UV_CACHE_DIR: /tmp/evidencemesh-a1-setup-uv-cache
+        run: uv python install 3.11
+      - name: Verify pinned public-source install path
+        env:
+          A1_OUTPUT: /tmp/evidencemesh-alpha-a1-p0-clean-room/runtime/receipt.json
+          A1_WORK_ROOT: /tmp/evidencemesh-alpha-a1-p0-clean-room
+          UV_CACHE_DIR: /tmp/evidencemesh-a1-setup-uv-cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          python_path="$(uv python find 3.11)"
+          "$python_path" scripts/verify_alpha_a1_p0_installability.py \
+            --work-root "$A1_WORK_ROOT" \
+            --output "$A1_OUTPUT" \
+            --python "$python_path"
+          "$python_path" -m json.tool "$A1_OUTPUT" >/dev/null
+      - name: Verify official MCP SDK first-run journey
+        if: github.event.pull_request.head.sha == 'b967114a177eec00a7ff5f03bcf1169e04b2faac'
+        env:
+          A1_EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+          A1_P0_OUTPUT: /tmp/evidencemesh-alpha-a1-p0-clean-room/runtime/receipt.json
+          A1_P1_OUTPUT: /tmp/evidencemesh-alpha-a1-p0-clean-room/p1-runtime/gate-receipt.json
+          A1_WORK_ROOT: /tmp/evidencemesh-alpha-a1-p0-clean-room
+        shell: bash
+        run: |
+          set -euo pipefail
+          python_path="$(uv python find 3.11)"
+          "$python_path" scripts/verify_alpha_a1_p1_mcp_first_run.py \
+            --work-root "$A1_WORK_ROOT" \
+            --p0-receipt "$A1_P0_OUTPUT" \
+            --expected-head "$A1_EXPECTED_HEAD" \
+            --descriptor-template examples/evidencemesh.mcp.json \
+            --output "$A1_P1_OUTPUT"
+          "$python_path" -m json.tool "$A1_P1_OUTPUT" >/dev/null
+      - name: Provision canonical Node 22.20.0
+        if: github.event.pull_request.head.sha == 'e33fb3bbfe5278ea30fe568847a1caf263de8c4d'
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22.20.0"
+          check-latest: false
+      - name: Verify MCP Inspector CLI interoperability
+        if: github.event.pull_request.head.sha == 'e33fb3bbfe5278ea30fe568847a1caf263de8c4d'
+        env:
+          A1_EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+          A1_P0_OUTPUT: /tmp/evidencemesh-alpha-a1-p0-clean-room/runtime/receipt.json
+          A1_P2_OUTPUT: /tmp/evidencemesh-alpha-a1-p0-clean-room/p2-runtime/gate-receipt.json
+          A1_WORK_ROOT: /tmp/evidencemesh-alpha-a1-p0-clean-room
+          NPM_CONFIG_CACHE: /tmp/evidencemesh-alpha-a1-p0-clean-room/p2-npm-cache
+          NPM_CONFIG_FETCH_RETRIES: "0"
+          NPM_CONFIG_UPDATE_NOTIFIER: "false"
+        shell: bash
+        run: |
+          set -euo pipefail
+          python_path="$(uv python find 3.11)"
+          "$python_path" scripts/verify_alpha_a1_p2_named_host.py \
+            --work-root "$A1_WORK_ROOT" \
+            --p0-receipt "$A1_P0_OUTPUT" \
+            --expected-head "$A1_EXPECTED_HEAD" \
+            --output "$A1_P2_OUTPUT" \
+            --node "$(command -v node)" \
+            --npm "$(command -v npm)" \
+            --strace "$(command -v strace)"
+          "$python_path" -m json.tool "$A1_P2_OUTPUT" >/dev/null
+
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - run: docker compose config --quiet
+      - run: docker build --tag evidencemesh:ci .
+      - run: docker run --rm evidencemesh:ci providers
+
+  searxng-integration:
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.number != 1 ||
+      github.event.pull_request.head.repo.full_name != 'VynoDePal/EvidenceMesh' ||
+      github.event.pull_request.head.ref != 'agent/evidencemesh-v0.1'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: true
+      - run: uv python install 3.11
+      - run: uv sync --extra dev --locked --python 3.11
+      - name: Start checksum-pinned SearXNG
+        run: docker compose up --detach --wait --wait-timeout 180 searxng
+      - name: Verify image digest
+        run: |
+          docker image inspect \
+            "searxng/searxng:2026.7.26-b060c780d@sha256:d0aaeb14880e6e92bde1518fcc7261e995783367d63d95203383607bef9c6516" \
+            --format '{{json .RepoDigests}}' |
+            grep --fixed-strings \
+              "sha256:d0aaeb14880e6e92bde1518fcc7261e995783367d63d95203383607bef9c6516"
+      - name: Exercise the SearXNG adapter
+        env:
+          EVIDENCEMESH_PROVIDERS: searxng
+          EVIDENCEMESH_SEARXNG_URL: http://127.0.0.1:8888
+          EVIDENCEMESH_CACHE_PATH: /tmp/evidencemesh-searxng.sqlite3
+        run: |
+          uv run evidencemesh search \
+            "SearXNG metasearch engine" \
+            --limit 3 \
+            --output json > /tmp/evidencemesh-searxng-smoke.json
+          uv run python - <<'PY'
+          import json
+          from pathlib import Path
+
+          response = json.loads(
+              Path("/tmp/evidencemesh-searxng-smoke.json").read_text(encoding="utf-8")
+          )
+          metadata = response["metadata"]
+          expected = (
+              metadata["providers_requested"] == ["searxng"]
+              and metadata["providers_succeeded"] == ["searxng"]
+              and metadata["provider_failures"] == {}
+          )
+          if not expected:
+              raise AssertionError(json.dumps(metadata, indent=2, sort_keys=True))
+          PY
+      - name: Show SearXNG logs on failure
+        if: failure()
+        run: docker compose logs --no-color searxng
+      - name: Stop SearXNG
+        if: always()
+        run: docker compose down --volumes

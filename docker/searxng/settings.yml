@@ -1,0 +1,40 @@
+use_default_settings:
+  engines:
+    keep_only:
+      - brave.news
+      - brave
+      - docker hub
+      - duckduckgo
+      - duckduckgo news
+      - mdn
+      - openairedatasets
+      - openairepublications
+      - stackoverflow
+      - wikipedia
+      - wikinews
+
+general:
+  debug: false
+  instance_name: EvidenceMesh local search
+
+search:
+  safe_search: 1
+  autocomplete: ""
+  formats:
+    - html
+    - json
+
+server:
+  secret_key: "local-development-only-change-before-public-deployment"
+  limiter: false
+  image_proxy: true
+
+ui:
+  static_use_hash: true
+
+outgoing:
+  request_timeout: 4.0
+  max_request_timeout: 8.0
+  pool_connections: 100
+  pool_maxsize: 20
+  enable_http2: true

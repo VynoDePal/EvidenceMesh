@@ -1,0 +1,210 @@
+{
+  "candidate_admitted": false,
+  "candidate_id": "browsecomp_plus",
+  "clarification_decision": "no_go",
+  "clarification_gates": {
+    "component_rights": "blocked",
+    "end_to_end_comparability": "blocked",
+    "judge_and_runtime": "blocked",
+    "prompt_and_algorithm_source": "partial",
+    "qwen_candidate_revision_identified": true,
+    "resolved_runtime_dependency_lock_complete": false,
+    "runner_binds_qwen_candidate_revision": false,
+    "tokenizer_revision_locked": false
+  },
+  "engineering_lock": "pass",
+  "gate_summary": {
+    "failed": 0,
+    "passed": 18,
+    "total": 18
+  },
+  "gates": [
+    {
+      "gate": 1,
+      "gate_id": "p0_methodology_and_result_authorities_exact",
+      "passed": true
+    },
+    {
+      "gate": 2,
+      "gate_id": "p0_result_reproduced_16_of_16_no_go",
+      "passed": true
+    },
+    {
+      "gate": 3,
+      "gate_id": "browsecomp_plus_only_clarification_scope",
+      "passed": true
+    },
+    {
+      "gate": 4,
+      "gate_id": "exact_five_new_primary_metadata_documents",
+      "passed": true
+    },
+    {
+      "gate": 5,
+      "gate_id": "cumulative_fifteen_document_ceiling_exhausted",
+      "passed": true
+    },
+    {
+      "gate": 6,
+      "gate_id": "source_identity_strengths_and_limits_explicit",
+      "passed": true
+    },
+    {
+      "gate": 7,
+      "gate_id": "zero_benchmark_payload_access",
+      "passed": true
+    },
+    {
+      "gate": 8,
+      "gate_id": "component_rights_absence_recorded_without_legal_inference",
+      "passed": true
+    },
+    {
+      "gate": 9,
+      "gate_id": "component_rights_gate_fail_closed",
+      "passed": true
+    },
+    {
+      "gate": 10,
+      "gate_id": "evaluation_runner_prompt_parser_and_algorithm_source_locked",
+      "passed": true
+    },
+    {
+      "gate": 11,
+      "gate_id": "effective_prompt_and_algorithm_lock_classified_partial",
+      "passed": true
+    },
+    {
+      "gate": 12,
+      "gate_id": "qwen_candidate_revision_identified",
+      "passed": true
+    },
+    {
+      "gate": 13,
+      "gate_id": "runner_to_qwen_and_tokenizer_binding_absent",
+      "passed": true
+    },
+    {
+      "gate": 14,
+      "gate_id": "resolved_runtime_dependency_closure_absent",
+      "passed": true
+    },
+    {
+      "gate": 15,
+      "gate_id": "end_to_end_comparability_gate_fail_closed",
+      "passed": true
+    },
+    {
+      "gate": 16,
+      "gate_id": "p0_stop_criterion_triggered",
+      "passed": true
+    },
+    {
+      "gate": 17,
+      "gate_id": "zero_live_judge_score_secret_retry_or_publication_operations",
+      "passed": true
+    },
+    {
+      "gate": 18,
+      "gate_id": "phase11_8_10b_acquisition_phase11_9_phase12_and_v1_blocked",
+      "passed": true
+    }
+  ],
+  "generated_on": "2026-08-01",
+  "governance": {
+    "distributions_must_remain_unpublished": true,
+    "merge_allowed": false,
+    "phase_11_8_10b_acquisition_authorized": false,
+    "phase_11_9_authorized": false,
+    "phase_12_authorized": false,
+    "pull_request_must_remain_draft": true,
+    "release_allowed": false,
+    "superiority_claim_allowed": false,
+    "upstream_contact_authorized": false
+  },
+  "manifest_canonical_sha256": "f864b7ad54733c3b9ae1a6dcbdd6c78520b68d766f38a7c6700b6c1a4eda428b",
+  "methodology_commit_sha": "1b871eed97039a356b35e7eea5b505b057047388",
+  "mode": "metadata-only-local-fail-closed",
+  "next_step": {
+    "action_kind": "prepare-local-unsent-upstream-clarification-request",
+    "external_contact_allowed": false,
+    "maximum_external_requests": 0,
+    "maximum_publications": 0,
+    "maximum_retries": 0,
+    "sending_requires_separate_explicit_go": true
+  },
+  "officially_comparable_score_available": false,
+  "operation_attestation": {
+    "benchmark_payload_bytes_opened": 0,
+    "benchmark_payload_downloads": 0,
+    "historical_counts_are_process_attestations": true,
+    "judge_requests": 0,
+    "measurement_mode": "recorded-historical-assertion-plus-static-runner-capability-check",
+    "model_requests": 0,
+    "new_public_metadata_documents_consulted": 5,
+    "provider_requests": 0,
+    "publication_requests": 0,
+    "queries_decrypted": 0,
+    "retries": 0,
+    "retrieval_requests": 0,
+    "runtime_network_instrumentation_used": false,
+    "scores_computed": 0,
+    "secret_requests": 0
+  },
+  "outcome": "bounded_clarification_complete_admission_blocked",
+  "phase": "11.8.10B-P1",
+  "predecessor_verification": {
+    "candidate_suites_admitted": 0,
+    "gate_summary": {
+      "failed": 0,
+      "passed": 16,
+      "total": 16
+    },
+    "quality_decision": "no_go",
+    "remaining_metadata_documents": 5,
+    "result_reproduced": true,
+    "verified_file_count": 4,
+    "verified_file_set_sha256": "925290f9044a0ae6c5925f028d59140906c737c711b38ac12b69313b680d878d"
+  },
+  "readiness": {
+    "asset_acquisition_allowed": false,
+    "component_rights_clearance_complete": false,
+    "end_to_end_comparability_complete": false,
+    "evaluation_allowed": false,
+    "judge_runtime_closure_complete": false,
+    "publication_allowed": false,
+    "v1_ready": false
+  },
+  "real_external_score": false,
+  "research_budget": {
+    "cumulative_documents": 15,
+    "maximum_documents": 15,
+    "new_documents": 5,
+    "predecessor_documents": 10,
+    "remaining_documents": 0,
+    "source_ceiling_exhausted": true
+  },
+  "schema_version": "evidencemesh.phase11_8_10b_p1.browsecomp-clarification-result.v1",
+  "source_identity": {
+    "external_document_content_digests_verified_locally": 0,
+    "git_blob_locked_documents": 2,
+    "immutable_revision_and_path_documents": 1,
+    "moving_context_document_closed_no_gate": true,
+    "moving_context_only_documents": 1,
+    "no_go_independent_of_moving_context_document": true,
+    "versioned_arxiv_records": 1
+  },
+  "source_lock": {
+    "source_count": 14,
+    "source_set_sha256": "c071db37072290294abf6d417077e644bca94146b59ebef54a94fdd5ddefb56e"
+  },
+  "stop": {
+    "additional_metadata_documents_allowed": 0,
+    "criterion_triggered": true,
+    "reason_ids": [
+      "fifteen_document_source_ceiling_exhausted",
+      "component_rights_gate_remains_blocked",
+      "judge_and_runtime_gate_remains_blocked"
+    ]
+  }
+}

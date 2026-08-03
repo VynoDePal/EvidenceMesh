@@ -1,0 +1,101 @@
+{
+  "acceptance": {
+    "scope": "single_host_technical_alpha_only",
+    "scored": false,
+    "status": "accepted"
+  },
+  "attestations": {
+    "provenance": {
+      "id": 38206529,
+      "url": "https://github.com/VynoDePal/EvidenceMesh/attestations/38206529"
+    },
+    "result": {
+      "id": 38206635,
+      "url": "https://github.com/VynoDePal/EvidenceMesh/attestations/38206635"
+    },
+    "sbom": {
+      "id": 38206541,
+      "url": "https://github.com/VynoDePal/EvidenceMesh/attestations/38206541"
+    }
+  },
+  "candidate": {
+    "checksums_sha256": "38a64eb382a45e5c1bc2a520d2d91923872b9584fbb8769245551e63b5411c16",
+    "manifest_sha256": "30d443221b2fce01a07b79479f8a7ef01ad4a592f546677d3e0d5df9ffb835a0",
+    "name": "evidencemesh-0.1.0-alpha-rc.3",
+    "parent_sha": "710739311af1c11504e647e94026f13d3dfb221f",
+    "parent_tree": "70d75d4eddef8654e850215d9b3eb6abd778ecdf",
+    "sha": "c1e0be437442b0d97da26f2c9085067a8c09955e",
+    "subjects": {
+      "alpha-rc3-head-manifest.json": "30d443221b2fce01a07b79479f8a7ef01ad4a592f546677d3e0d5df9ffb835a0",
+      "dist/evidencemesh-0.1.0-py3-none-any.whl": "6f9d25930f16e641ba2d2d0d9decc6f0ed8e15cc60a974cfc485abcd5e9334d8",
+      "dist/evidencemesh-0.1.0.tar.gz": "a8af8c9478a345519a3745b936953e2005df7c836ddeb6f1a02e8ed23098130b",
+      "evidencemesh-0.1.0.cdx.json": "5a84d76238e2ca66ad5e80e534f521f2e3da5bcf524ac2918677fa8a834221b7",
+      "installed-sdist-rc3-smoke.json": "44a0c37f40250c82a067847cd7c7feb907939bfad8bf12735cbb3c244fde63c3",
+      "installed-wheel-offline-benchmark.json": "f2d7214e9fd268c1e61ac9de814a6a3c2435013be84903f15215fa6b7ccca4da",
+      "installed-wheel-rc3-smoke.json": "1b0ae1a70a0050c06d2582fedb1366b824cdb338252932d6e73f12bb14893846"
+    },
+    "tree": "44bb1df79b6026c1fc1c2a40218c7347117697a0"
+  },
+  "decision": {
+    "alpha_technical_candidate_passed": true,
+    "closed_alpha_adoption_authorized": false,
+    "distributed_global_enforcement_ready": false,
+    "live_execution_authorized": false,
+    "merge_allowed": false,
+    "public_binary_distribution_allowed": false,
+    "quality_claim_allowed": false,
+    "release_allowed": false,
+    "sealing_commit_required": true,
+    "single_host_governor_installed_and_verified": true,
+    "tester_contact_authorized": false
+  },
+  "distribution": {
+    "binaries_ephemeral_on_runner": true,
+    "binary_artifact_uploaded": false,
+    "github_actions_artifact_count": 0,
+    "github_actions_artifact_created": false,
+    "private_delivery_channel_authorized": false,
+    "public_metadata_only": true,
+    "unpublished_distributions": true
+  },
+  "protocol": {
+    "path": "docs/alpha-rc3-head-exact-protocol-v1.md",
+    "sha256": "5363531629e09fd43b41e17b2f9ad4dc631d8548b308728471e6363c81198456"
+  },
+  "report_sha256": "b9c58e9af912e8847c7d5e746df9a7e09fdbab27489b3ead3a264bb6c2591e21",
+  "run": {
+    "attempt": 1,
+    "conclusion": "success",
+    "id": 30643865155,
+    "job_id": 91200262890,
+    "seal_emitted_at_utc": "2026-07-31T15:42:50Z",
+    "url": "https://github.com/VynoDePal/EvidenceMesh/actions/runs/30643865155"
+  },
+  "schema_version": 1,
+  "seal": {
+    "completed": true,
+    "cleanup_confirmed": true,
+    "log_markers_verified": true,
+    "record_source": "workflow_job_log",
+    "retired_workflow_path": ".github/workflows/alpha-rc3-head-exact.yml",
+    "sealing_commit_identity": "the commit containing this record",
+    "workflow_retirement_method": "deleted_in_sealing_commit",
+    "workflow_retired": true
+  },
+  "traffic": {
+    "benchmark_asset_downloads": 0,
+    "document_fetches": 0,
+    "fallbacks": 0,
+    "model_requests": 0,
+    "provider_requests": 0,
+    "repairs": 0,
+    "retries": 0,
+    "tavily_requests": 0,
+    "tester_sessions": 0,
+    "token_count_requests": 0
+  },
+  "workflow": {
+    "path": ".github/workflows/alpha-rc3-head-exact.yml",
+    "sha256": "92c856ae22987016d513c74c04259257bbc5ba0c6561a8727e334dd21c31c9a2"
+  }
+}

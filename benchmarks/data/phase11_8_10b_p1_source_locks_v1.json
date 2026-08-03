@@ -1,0 +1,62 @@
+{
+  "schema_version": "evidencemesh.phase11_8_10b_p1.source-locks.v1",
+  "source_set_sha256": "c071db37072290294abf6d417077e644bca94146b59ebef54a94fdd5ddefb56e",
+  "authority_sources": [
+    {
+      "relative_path": ".github/workflows/phase11-8-10b-p1-browsecomp-clarification.yml",
+      "sha256": "d5be85334d5e1dc43cf801b8cd9fa12f8462b187db86d9af057289fdd999c681"
+    },
+    {
+      "relative_path": "benchmarks/__init__.py",
+      "sha256": "da6e2659b2c7c5b02f360f1874f575fdd80ca80849b23d1426ae716d0e1ae6e5"
+    },
+    {
+      "relative_path": "benchmarks/data/phase11_8_10b_p0_policy_comparability_lock_v1.json",
+      "sha256": "09e9dfb6475ccf40ffa4d844684ac7036c0255f35e2ad7c6fdeb5e0fe1027082"
+    },
+    {
+      "relative_path": "benchmarks/data/phase11_8_10b_p0_source_locks_v1.json",
+      "sha256": "045b28d1da12ee11f2ca9083d6ea8648de8827f9e80c396f12d8bb6e8ccf93ff"
+    },
+    {
+      "relative_path": "benchmarks/data/phase11_8_10b_p1_browsecomp_clarification_v1.json",
+      "sha256": "284e7003c701e8a1b71d721026201ed6310413b940ced847dcfeb26c39e6bc89"
+    },
+    {
+      "relative_path": "benchmarks/phase11_8_10b_p0_policy_lock.py",
+      "sha256": "2e26a7dad98d2608c2e878d1e9a47b11bc562c6a60d067f81970f30f19bfb3da"
+    },
+    {
+      "relative_path": "benchmarks/phase11_8_10b_p1_browsecomp_clarification.py",
+      "sha256": "c558d7d387436a2276984150c38dcd915952f6e64e2e57b25a16b511cae8fe1a"
+    },
+    {
+      "relative_path": "benchmarks/results/phase11_8_10b_p0_policy_comparability_lock_2026-08-01.json",
+      "sha256": "7e4062e9270eb8dc681783b0aac2ff031ea53310bbd9982c61fea0e458fc3798"
+    },
+    {
+      "relative_path": "benchmarks/run_phase11_8_10b_p0_policy_lock.py",
+      "sha256": "79524173177b6459a4a8ce3ad0a587b2c26df0bb88a47dedbd457bd37ffe0308"
+    },
+    {
+      "relative_path": "benchmarks/run_phase11_8_10b_p1_browsecomp_clarification.py",
+      "sha256": "4845a5d27514539c22b2df675251e535bd1bfaeb035a488d2c65e3fd4e3cdfe0"
+    },
+    {
+      "relative_path": "docs/benchmark-protocol-v27.md",
+      "sha256": "8346b69b1b7261eaf94028d5f2ac2e40bc028b49db0ea68f4f779083680ab0c6"
+    },
+    {
+      "relative_path": "docs/benchmark-protocol-v28.md",
+      "sha256": "e52fb157d32003b21c2af3497b2aa1b642dada68c480231380b4c6a751211e26"
+    },
+    {
+      "relative_path": "tests/test_phase11_8_10b_p1_browsecomp_clarification.py",
+      "sha256": "6bd573d114ff51a80fd5e90f38e64f24487bf3fd30abceb75d9e1c838ee02b4a"
+    },
+    {
+      "relative_path": "tests/test_phase11_8_10b_p1_runner.py",
+      "sha256": "c0c87d36ca64a28cbdc1cc056b10a7d828ec1f80116d4be7fad2dbbeb6f587dc"
+    }
+  ]
+}

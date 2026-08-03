@@ -1,0 +1,411 @@
+{
+  "authority": {
+    "a1_historical_freeze_modified": false,
+    "closed_alpha_live_authorized": false,
+    "implementation_authorized": false,
+    "merge_authorized": false,
+    "phase_11_9_authorized": false,
+    "phase_12_authorized": false,
+    "production_authorized": false,
+    "public_distribution_authorized": false,
+    "release_authorized": false,
+    "tag_authorized": false,
+    "v1_ready": false
+  },
+  "baseline": {
+    "control_plane": {
+      "dispatchable_state": "prepared",
+      "states": [
+        "paused",
+        "prepared",
+        "stopped"
+      ],
+      "supervisor_heartbeat_checked_at_dispatch": false,
+      "supervisor_heartbeat_checked_at_prepare": false,
+      "supervisor_heartbeat_checked_at_reservation": false,
+      "supervisor_lease_present": false,
+      "transport_wrapper_authority_present": false
+    },
+    "feedback_retention_scheduler": {
+      "component": "FeedbackRetentionScheduler",
+      "control_plane_binding_present": false,
+      "maximum_poll_interval_seconds": 30,
+      "purge_on_orderly_exit": true,
+      "runtime_wiring_present": false,
+      "supervisor_lease_renewal_present": false
+    },
+    "feedback_store": {
+      "put_requires_current_supervisor_lease": false,
+      "purge_margin_seconds": 60
+    },
+    "session_lease": {
+      "autonomous_heartbeat_present": false,
+      "background_reconciliation_present": false,
+      "close_reconciles_expiry_first": false,
+      "default_seconds": 300,
+      "distinct_from_required_supervisor_lease": true,
+      "expiry_pauses_control_plane_when_reconciled": true,
+      "renewal_points": [
+        "atomic_reservation",
+        "first_httpx_request_hook"
+      ]
+    }
+  },
+  "budgets": {
+    "additive_files": 2,
+    "authorization_labels": 0,
+    "benchmark_asset_downloads": 0,
+    "document_requests": 0,
+    "external_response_reads": 0,
+    "historical_reruns": 0,
+    "live_sessions": 0,
+    "manual_workflow_reruns": 0,
+    "model_requests": 0,
+    "product_runtime_network_requests": 0,
+    "provider_requests": 0,
+    "public_commits": 1,
+    "ref_updates": 1,
+    "retries": 0,
+    "search_requests": 0,
+    "tester_contacts": 0
+  },
+  "candidate": {
+    "a1_evidence_closure_commit": "ff02de19c2e44cec043603ecb4fa5b526dd10c18",
+    "a1_evidence_closure_tree": "6b2006d75adc64c6cd76a9a23db6e02cfe062bb6",
+    "branch": "agent/evidencemesh-v0.1",
+    "exact_parent_commit": "c07d4af581f20b782fc59287b0ea008ef80c8cce",
+    "exact_parent_tree": "0e0de23d86a73ef94790568a818382d7f888a0ae",
+    "pr_draft_required": true,
+    "pull_request": 1,
+    "repository": "VynoDePal/EvidenceMesh",
+    "runtime_product_candidate_commit": "145f5f923825ffeaeb485bd680bc79410ab290d1",
+    "runtime_product_candidate_tree": "3b36c2d3970a5e3c325a2b20260daabf23d33a29"
+  },
+  "checkpoint_contract": {
+    "feedback_publication": {
+      "gate_immediately_before_atomic_link": true,
+      "identical_replay_requires_fresh_gate": true,
+      "lease_must_be_current": true,
+      "minimum_remaining_freshness_seconds_exclusive": 5,
+      "privacy_cleanup_allowed_without_lease": true,
+      "supervisor_epoch_and_boot_identity_must_match": true,
+      "temporary_file_removed_on_denial": true
+    },
+    "governed_transport_departure": {
+      "client_owned_by_exactly_one_governor_and_session": true,
+      "every_governed_inner_transport_invocation_requires_fresh_permit": true,
+      "httpx_request_hook_is_early_defense_only": true,
+      "lease_epoch_must_match_permit": true,
+      "lease_must_be_current": true,
+      "linearization_point": "successful atomic permit consumption in governed transport immediately before inner transport delegation",
+      "minimum_remaining_freshness_seconds_exclusive": 5,
+      "no_zero_packet_after_revocation_claim": true,
+      "requests_already_linearized_cannot_be_recalled": true,
+      "session_lease_must_be_current": true,
+      "transport_retries": 0
+    },
+    "reservation": {
+      "active_sessions_reconciled_first": true,
+      "autonomous_session_heartbeat_required": true,
+      "lease_epoch_bound_into_every_permit": true,
+      "lease_must_be_current": true,
+      "minimum_remaining_freshness_seconds_exclusive": 5,
+      "reservation_and_lease_validation_atomic": true,
+      "traffic_may_renew_either_lease": false
+    },
+    "session_activation": {
+      "active_row_and_first_heartbeat_committed_atomically": true,
+      "operation": "open_session",
+      "only_after_operator_prepared_transition": true,
+      "reservation_may_substitute_for_activation": false,
+      "supervisor_lease_and_all_owner_epochs_validated": true
+    },
+    "session_close": {
+      "expired_session_normal_close_allowed": false,
+      "global_and_session_leases_reconciled_first": true,
+      "owner_and_epochs_validated_under_begin_immediate": true,
+      "required_expired_state": "recovery_required"
+    },
+    "transition_to_prepared": {
+      "active_sessions_reconciled_first": true,
+      "fresh_retention_pass_required": true,
+      "lease_must_be_current": true,
+      "minimum_remaining_freshness_seconds_exclusive": 5,
+      "privacy_and_supervisor_fault_markers_absent": true,
+      "recovery_rows_must_be_zero": true
+    }
+  },
+  "clock_and_host_identity": {
+    "boot_identity": "sha256_of_linux_boot_id",
+    "boot_identity_change_action": "pause_increment_control_epoch_invalidate_permits_require_recovery",
+    "clock": "linux_CLOCK_BOOTTIME",
+    "clock_fallback_allowed": false,
+    "clock_regression_action": "durable_fault_and_pause",
+    "host_scope": "single_ubuntu_host",
+    "wall_clock_authoritative": false,
+    "wall_clock_may_only_shorten_or_deny_authority": true
+  },
+  "design_decision": {
+    "implementation_status": "not_implemented",
+    "result_if_all_documentary_checks_pass": "retention_and_session_liveness_design_locked",
+    "root_cause": "the current retention scheduler is not wired or supervised and has no durable lease checked at preparation, reservation, transport departure, or feedback publication; the existing session lease also lacks autonomous heartbeat and background reconciliation",
+    "status": "accepted_design_pending_publication_and_ci"
+  },
+  "fault_contract": {
+    "automatic_resume": false,
+    "bounded_fault_codes_only": true,
+    "dispatch_budget_refund_on_fault": false,
+    "fault_marker": {
+      "distinct_suffix": ".retention-supervisor-fault-v1",
+      "ledger_bound": true,
+      "mode": "0600",
+      "regular_file_required": true,
+      "same_uid_operator_tampering_outside_claimed_boundary": true,
+      "supported_runtime_clear_api": false,
+      "symlink_or_identity_drift_fails_closed": true,
+      "versioned_content": true
+    },
+    "heartbeat_write_may_unpause": false,
+    "lapse_effects_on_first_reconciliation": "pause_increment_control_epoch_invalidate_reserved_permits_quarantine_active_sessions_without_permanent_marker",
+    "permanent_integrity_fault_causes": [
+      "same_boot_clock_regression",
+      "unavailable_or_malformed_boot_identity",
+      "unsupported_boottime_clock",
+      "ledger_or_store_identity_drift",
+      "privacy_fault",
+      "invalid_fault_marker",
+      "confirmed_same_epoch_wrong_owner_renewal"
+    ],
+    "permanent_integrity_fault_effect": "contain_as_lapse_then_mark_ledger_non_preparable",
+    "recoverable_lapse_causes": [
+      "missed_heartbeat",
+      "ordinary_expiry",
+      "process_crash",
+      "reboot",
+      "unexpected_cancellation",
+      "incomplete_orderly_stop"
+    ],
+    "recovery_requires_explicit_operator_cas": true,
+    "second_acquisition_while_current_action": "deny_without_permanent_fault",
+    "stale_heartbeat_action": "fence_without_renewal_or_permanent_fault",
+    "unexpected_scheduler_exception_may_be_ignored": false
+  },
+  "immutable_baseline_blobs": {
+    "alpha/closed_alpha_rc4_1a_provider_policy_session_fail_closed_policy_v1.json": "ad8e4a4da1d71012d317961119b77c23542a39bb",
+    "alpha/closed_alpha_rc4_control_plane_policy_v1.json": "e49e4fbb1b53b6962450299e1ad2a9d3b69858d8",
+    "docs/alpha-rc4-1a-provider-policy-session-fail-closed-offline-protocol-v1.md": "b36f0ebed7663700aaa98894924a4011ef3be03e",
+    "docs/alpha-rc4-control-plane-offline-protocol-v1.md": "17a986153c801904e4e68476f51dce3278549947",
+    "docs/local-technical-alpha-v0.1.0-acceptance-protocol-v1.md": "832859b45f0f82dd5c77e53bd543eb91deeaeb99",
+    "src/evidencemesh/closed_alpha_feedback.py": "5a8705265f31029ffacd258e57dd1cf4a8380fec",
+    "src/evidencemesh/engine.py": "7f00b05a0aae3c888350c695e86042a2cb786de5",
+    "src/evidencemesh/fetcher.py": "8b7e7ac382b38760991891f5764dd180a80ac780",
+    "src/evidencemesh/governor.py": "9030bb461340883599a01ef0e0e4092e8f906e86"
+  },
+  "ledger_schema_contract": {
+    "future_schema_version_required": true,
+    "old_lease_values_comparable_after_restart_or_upgrade": false,
+    "v2_automatic_migration_allowed": false,
+    "v2_automatic_reset_allowed": false,
+    "v2_ledger_action": "explicit_refusal"
+  },
+  "implementation_acceptance_requirements": {
+    "a1_revalidation_required_for_new_product_candidate": true,
+    "adversarial_races_required": [
+      "prepare_vs_expiry",
+      "reservation_vs_expiry",
+      "transport_departure_vs_expiry",
+      "retention_heartbeat_vs_pause",
+      "retention_heartbeat_vs_takeover",
+      "session_heartbeat_vs_reservation",
+      "session_heartbeat_vs_close",
+      "session_heartbeat_vs_owner_or_epoch_drift",
+      "scheduler_failure_vs_transport_departure",
+      "feedback_publication_vs_expiry",
+      "clock_rollback_vs_retention_heartbeat",
+      "process_restart_vs_stale_lease",
+      "daemon_death_vs_supervised_restart"
+    ],
+    "daemon_runtime_wiring_proof_required": true,
+    "expired_session_close_must_enter_recovery": true,
+    "implementation_requires_separate_go": true,
+    "installed_distribution_smoke_required": true,
+    "ledger_v2_automatic_migration_allowed": false,
+    "live_execution_required": false,
+    "product_source_change_authorized_by_this_gate": false,
+    "public_quality_claim_allowed": false,
+    "zero_real_network_test_required": true
+  },
+  "privacy_and_audit": {
+    "allowed_persistent_fields": [
+      "supervisor_owner_digest",
+      "supervisor_epoch",
+      "heartbeat_sequence",
+      "boot_identity_digest",
+      "lease_issued_at_boottime",
+      "last_heartbeat_at_boottime",
+      "last_successful_retention_high_water_utc",
+      "lease_expires_at_boottime",
+      "session_boot_identity_digest",
+      "session_heartbeat_sequence",
+      "session_last_heartbeat_at_boottime",
+      "session_lease_expires_at_boottime",
+      "session_owner_digest",
+      "bounded_fault_code"
+    ],
+    "raw_exception_messages_allowed": false,
+    "raw_owner_token_persisted": false,
+    "request_payload_allowed": false,
+    "task_or_query_allowed": false,
+    "url_or_provider_result_allowed": false
+  },
+  "process_supervision_contract": {
+    "automatic_resume_after_restart": false,
+    "dedicated_local_service_required_before_live": true,
+    "lease_alone_proves_deletion_while_process_dead": false,
+    "purge_after_supervised_restart_must_be_proved": true,
+    "restart_acquisition_requires_paused_operator_recovery": true,
+    "restart_may_purge_and_reconcile_while_dispatch_blocked": true,
+    "recovery_sequence": [
+      "reconcile_stale_lease_pause_and_quarantine",
+      "explicitly_resolve_or_close_old_sessions",
+      "complete_successful_purge",
+      "acquire_new_supervisor_epoch_while_paused",
+      "operator_cas_to_prepared",
+      "open_only_new_sessions"
+    ]
+  },
+  "protocol": {
+    "path": "docs/alpha-a2-p0-retention-lease-design-lock-v1.md",
+    "sha256": "84f1d41a98dc7e97fe987a71961cb1ef5a44a542505c88022929ed98a7901dce"
+  },
+  "publication": {
+    "artifacts": 0,
+    "changed_paths": [
+      "alpha/alpha-a2-p0-retention-lease-design-lock-policy-v1.json",
+      "docs/alpha-a2-p0-retention-lease-design-lock-v1.md"
+    ],
+    "distributions": 0,
+    "releases": 0,
+    "tags": 0
+  },
+  "schema_version": "evidencemesh.alpha-a2-p0-retention-lease-design-lock-policy.v1",
+  "state_machine": {
+    "acquisition": {
+      "active_unexpired_lease_blocks_second_owner": true,
+      "initial_retention_pass_precedes_first_heartbeat": true,
+      "only_while_control_paused": true,
+      "takeover_while_prepared": false
+    },
+    "retention_supervisor_states": [
+      "unclaimed",
+      "active",
+      "expired",
+      "revoked",
+      "faulted"
+    ],
+    "prepared": {
+      "automatic_entry": false,
+      "heartbeat_cannot_enter_state": true,
+      "requires_current_supervisor_lease": true
+    },
+    "stopped": {
+      "terminal": true
+    }
+  },
+  "retention_ordering": {
+    "feedback_publication_lock_order": [
+      "feedback_store_lock",
+      "bounded_sqlite_authorization_callback",
+      "atomic_link_or_identical_replay_decision",
+      "release_feedback_store_lock"
+    ],
+    "heartbeat_after_high_water_advance": true,
+    "heartbeat_after_session_reconciliation": true,
+    "heartbeat_after_successful_purge": true,
+    "lease_commit_begins_only_after_purge_returns": true,
+    "lease_commit_may_acquire_feedback_store_lock": false,
+    "lease_expiry_capped_by_next_mandatory_purge_deadline": true,
+    "purge_path_lock_order": [
+      "feedback_store_lock",
+      "bounded_admission_or_high_water_sqlite_callback",
+      "release_feedback_store_lock"
+    ],
+    "sqlite_then_feedback_store_lock_forbidden": true
+  },
+  "session_lease_contract": {
+    "admission_epoch_fenced": true,
+    "autonomous_heartbeat_interval_seconds_maximum": 100,
+    "boot_identity_fenced": true,
+    "control_epoch_fenced": true,
+    "existing_lease_reused": true,
+    "first_heartbeat_required_before_permit_return": true,
+    "open_session_after_prepared": true,
+    "open_session_atomic_validations": [
+      "lease_reconciliation",
+      "current_supervisor_lease",
+      "boot_identity",
+      "control_state",
+      "admission",
+      "exact_owner_and_epochs",
+      "policy",
+      "budgets"
+    ],
+    "open_session_creates_active_row_and_first_heartbeat_in_one_transaction": true,
+    "open_session_failure_after_commit_action": "expire_then_quarantine_without_delete_or_refund",
+    "open_session_failure_before_commit_creates_session": false,
+    "lease_ttl_seconds": 300,
+    "new_second_session_lease_created": false,
+    "owner_and_session_epoch_fenced": true,
+    "reservation_or_traffic_may_renew_lease": false,
+    "reserve_batch_may_create_session": false,
+    "retention_supervisor_may_renew_session_lease": false
+  },
+  "stop_criteria": [
+    "the parent commit or tree, PR, branch, or draft state drifts",
+    "the direct publication scope is not exactly the two additive documentary paths",
+    "any product, runtime, dependency, workflow, test, benchmark, or historical evidence file changes",
+    "the design describes the existing session lease as absent or reuses it as the global retention-supervisor lease",
+    "the existing session lease lacks autonomous owner-fenced heartbeat or can be renewed by reservation or traffic",
+    "reserve_batch can create a session or open_session does not atomically create the active row and first durable heartbeat",
+    "prepared, reservation, governed transport departure, or feedback publication can succeed with a missing, stale, failed, foreign, or wrong-boot supervisor lease",
+    "an expired but unreconciled session can take the normal active-to-closed path",
+    "a retention heartbeat can unpause the ledger, refund a budget, acquire a second owner, or renew without a successful retention pass",
+    "expiry, scheduler failure, cancellation, split brain, clock rollback, reboot, or storage identity drift can fail open",
+    "a redirect, follow-up, pooled client, custom transport, or retry can bypass fresh permit and lease validation",
+    "the HTTPX request hook is claimed as the final transport security boundary",
+    "the design claims an already-started request can be recalled after the transport-boundary linearization point or claims zero packets after revocation",
+    "feedback-store and SQLite lock ordering is ambiguous or inverted",
+    "recoverable liveness lapse and permanent integrity fault are conflated",
+    "raw task, query, URL, response, participant identity, credential, token, or exception data enters the supervisor audit fields",
+    "any provider, search, model, document, benchmark-asset, tester, live-session, or product runtime-network request is required",
+    "any retry, authorization label, one-shot A1 rerun, artifact, tag, distribution, release, merge, production action, Phase 11.9, Phase 12, or V1 claim occurs",
+    "any ordinary synchronization workflow fails; no rerun is allowed"
+  ],
+  "supervisor_lease": {
+    "authorization_cutoff_after_last_successful_heartbeat_seconds_maximum": 25,
+    "deadline_cap_seconds_before_next_purge": 5,
+    "deletion_while_no_process_runs_proved_by_lease": false,
+    "grace_seconds": 0,
+    "heartbeat_interval_seconds_maximum": 10,
+    "heartbeat_renews_only_after_successful_retention_pass": true,
+    "lease_ttl_seconds": 30,
+    "lease_ttl_to_heartbeat_ratio_minimum": 3,
+    "minimum_remaining_freshness_seconds_exclusive": 5,
+    "one_active_lease_per_ledger": true,
+    "owner_secret_bits": 256,
+    "owner_secret_persisted_as": "sha256_digest",
+    "separate_from_session_leases": true,
+    "supervisor_epoch_monotonic": true,
+    "supervisor_epoch_required_in_dispatch_permits": true
+  },
+  "transport_contract": {
+    "automatic_redirects": false,
+    "environment_proxy_inheritance": false,
+    "http2": false,
+    "one_permit_per_governed_inner_transport_invocation": true,
+    "permit_claim_includes_dns_tcp_or_packet_cardinality": false,
+    "request_hook_is_final_security_boundary": false,
+    "transport_retries": 0,
+    "wrapper_required_for_implementation_acceptance": true
+  }
+}

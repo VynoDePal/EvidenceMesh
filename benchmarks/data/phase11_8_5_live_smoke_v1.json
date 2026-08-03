@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "suite": "phase11_8_5_live_smoke_v1",
+  "cases": [
+    {
+      "case_id": "single_source_name",
+      "question": "According to the evidence, which city hosts the Solena Archive?",
+      "expected_answer": "Naro City",
+      "expected_citation_ids": [
+        "S1"
+      ],
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "title": "Synthetic archive note",
+          "url": "https://example.invalid/solena-archive",
+          "text": "The Solena Archive is located in Naro City."
+        }
+      ]
+    },
+    {
+      "case_id": "single_source_year",
+      "question": "According to the evidence, in which year did Project Amber begin?",
+      "expected_answer": "2017",
+      "expected_citation_ids": [
+        "S1"
+      ],
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "title": "Synthetic project register",
+          "url": "https://example.invalid/project-amber",
+          "text": "Project Amber began in 2017 and was reviewed in 2025."
+        }
+      ]
+    },
+    {
+      "case_id": "two_source_unit",
+      "question": "What sensor interval is explicitly reported in the evidence?",
+      "expected_answer": "250 milliseconds",
+      "expected_citation_ids": [
+        "S1"
+      ],
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "title": "Synthetic sensor specification",
+          "url": "https://example.invalid/sensor-interval",
+          "text": "The sensor interval is 250 milliseconds."
+        },
+        {
+          "citation_id": "S2",
+          "title": "Synthetic calibration log",
+          "url": "https://example.invalid/sensor-calibration",
+          "text": "The sensor was calibrated twice before deployment."
+        }
+      ]
+    },
+    {
+      "case_id": "insufficient_evidence",
+      "question": "What population is reported for the fictional town of Teral?",
+      "expected_answer": "Insufficient evidence.",
+      "expected_citation_ids": [],
+      "evidence": [
+        {
+          "citation_id": "S1",
+          "title": "Synthetic orchard record",
+          "url": "https://example.invalid/teral-orchard",
+          "text": "A community orchard was planted near Teral in 2020."
+        }
+      ]
+    }
+  ]
+}

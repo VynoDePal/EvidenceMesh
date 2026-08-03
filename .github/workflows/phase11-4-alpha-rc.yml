@@ -1,0 +1,231 @@
+name: Phase 11.4 Alpha RC
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/ci.yml
+      - .github/workflows/phase11-4-alpha-rc.yml
+      - benchmarks/results/phase11_4_alpha_rc_2026-07-29.json
+      - benchmarks/results/phase11_4_alpha_rc_2026-07-29.md
+      - docs/alpha-rc-protocol-v1.md
+      - docs/alpha-release-v0.1.md
+      - pyproject.toml
+      - scripts/build_alpha_rc_bundle.py
+      - scripts/finalize_alpha_rc_report.py
+      - scripts/smoke_installed_mcp.py
+      - src/evidencemesh/**
+      - tests/test_phase11_4_alpha_rc.py
+      - uv.lock
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+  artifact-metadata: write
+
+concurrency:
+  group: phase11-4-alpha-rc-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  ARTIFACT_PREFIX: phase11-4-alpha-rc
+  EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  PROTOCOL_SHA256: 560e3e0932863ba78c4b5432af78b8dd47e0cdfe80c9e8ff5be9fcb1c2107ed5
+  RC_ROOT: /tmp/evidencemesh-phase11-4
+  RC_BUNDLE: /tmp/evidencemesh-phase11-4/evidencemesh-0.1.0-alpha-rc.1
+  RESULT_PATH: /tmp/phase11_4_alpha_rc_2026-07-29.json
+
+jobs:
+  alpha-rc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out the exact candidate commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Detect an already committed result
+        id: candidate-state
+        shell: bash
+        run: |
+          if [[ -f benchmarks/results/phase11_4_alpha_rc_2026-07-29.json ]]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Reuse the committed candidate decision
+        if: steps.candidate-state.outputs.run == 'false'
+        run: |
+          echo "The immutable Phase 11.4 result is already committed." \
+            >> "$GITHUB_STEP_SUMMARY"
+          echo "No candidate is rebuilt or re-attested on this commit." \
+            >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Set up pinned uv
+        if: steps.candidate-state.outputs.run == 'true'
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install the locked build environment
+        if: steps.candidate-state.outputs.run == 'true'
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Verify the frozen Phase 11.4 protocol
+        if: steps.candidate-state.outputs.run == 'true'
+        run: |
+          echo \
+            "$PROTOCOL_SHA256  docs/alpha-rc-protocol-v1.md" \
+            | sha256sum --check
+
+      - name: Build and inspect wheel and source distribution
+        if: steps.candidate-state.outputs.run == 'true'
+        run: |
+          mkdir --parents "$RC_BUNDLE/dist"
+          uv build --out-dir "$RC_BUNDLE/dist"
+          rm --force -- "$RC_BUNDLE/dist/.gitignore"
+          uvx twine==7.0.0 check "$RC_BUNDLE"/dist/*
+
+      - name: Install and exercise the wheel outside the source environment
+        if: steps.candidate-state.outputs.run == 'true'
+        shell: bash
+        run: |
+          install_env="$RC_ROOT/installed"
+          wheels=("$RC_BUNDLE"/dist/evidencemesh-0.1.0-*.whl)
+          if [[ "${#wheels[@]}" -ne 1 ]]; then
+            echo "Expected exactly one EvidenceMesh wheel" >&2
+            exit 1
+          fi
+          uv venv --python 3.11 "$install_env"
+          uv pip install --python "$install_env/bin/python" "${wheels[0]}"
+          "$install_env/bin/evidencemesh" benchmark-offline \
+            > "$RC_BUNDLE/installed-wheel-offline-benchmark.json"
+          "$install_env/bin/python" scripts/smoke_installed_mcp.py \
+            --command "$install_env/bin/evidencemesh-mcp" \
+            --cache-path "$RC_ROOT/mcp-smoke-cache.sqlite3" \
+            --expected-version 0.1.0 \
+            --output "$RC_BUNDLE/installed-wheel-mcp-stdio.json" \
+            --server-log "$RC_ROOT/installed-wheel-mcp-stdio.server.log"
+
+      - name: Generate and validate the CycloneDX 1.7 SBOM
+        if: steps.candidate-state.outputs.run == 'true'
+        run: |
+          uvx --from cyclonedx-bom==7.3.0 cyclonedx-py environment \
+            "$RC_ROOT/installed/bin/python" \
+            --pyproject pyproject.toml \
+            --mc-type application \
+            --spec-version 1.7 \
+            --output-format JSON \
+            --output-file "$RC_BUNDLE/evidencemesh-0.1.0.cdx.json"
+
+      - name: Validate and checksum the complete candidate bundle
+        if: steps.candidate-state.outputs.run == 'true'
+        run: |
+          uv run python scripts/build_alpha_rc_bundle.py \
+            --bundle-dir "$RC_BUNDLE" \
+            --protocol-sha256 "$PROTOCOL_SHA256" \
+            --commit-sha "$EXPECTED_SHA"
+          cd "$RC_BUNDLE"
+          sha256sum --check SHA256SUMS
+
+      - name: Create keyless SLSA build provenance
+        if: steps.candidate-state.outputs.run == 'true'
+        id: provenance
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        with:
+          subject-checksums: ${{ env.RC_BUNDLE }}/SHA256SUMS
+
+      - name: Create keyless CycloneDX SBOM attestation
+        if: steps.candidate-state.outputs.run == 'true'
+        id: sbom-attestation
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        with:
+          subject-path: ${{ env.RC_BUNDLE }}/dist/evidencemesh-0.1.0-py3-none-any.whl
+          sbom-path: ${{ env.RC_BUNDLE }}/evidencemesh-0.1.0.cdx.json
+
+      - name: Verify provenance and SBOM signatures
+        if: steps.candidate-state.outputs.run == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SIGNER_WORKFLOW: VynoDePal/EvidenceMesh/.github/workflows/phase11-4-alpha-rc.yml
+        run: |
+          wheel="$RC_BUNDLE/dist/evidencemesh-0.1.0-py3-none-any.whl"
+          gh attestation verify "$wheel" \
+            --repo "$GITHUB_REPOSITORY" \
+            --signer-workflow "$SIGNER_WORKFLOW" \
+            --deny-self-hosted-runners
+          gh attestation verify "$wheel" \
+            --repo "$GITHUB_REPOSITORY" \
+            --signer-workflow "$SIGNER_WORKFLOW" \
+            --deny-self-hosted-runners \
+            --predicate-type https://cyclonedx.org/bom
+
+      - name: Finalize the privacy-safe Phase 11.4 result
+        if: steps.candidate-state.outputs.run == 'true'
+        env:
+          PROVENANCE_ID: ${{ steps.provenance.outputs.attestation-id }}
+          PROVENANCE_URL: ${{ steps.provenance.outputs.attestation-url }}
+          SBOM_ID: ${{ steps.sbom-attestation.outputs.attestation-id }}
+          SBOM_URL: ${{ steps.sbom-attestation.outputs.attestation-url }}
+        run: |
+          uv run python scripts/finalize_alpha_rc_report.py \
+            --bundle-dir "$RC_BUNDLE" \
+            --output "$RESULT_PATH" \
+            --repository "$GITHUB_REPOSITORY" \
+            --commit-sha "$EXPECTED_SHA" \
+            --run-id "$GITHUB_RUN_ID" \
+            --run-attempt "$GITHUB_RUN_ATTEMPT" \
+            --artifact-name "$ARTIFACT_PREFIX-$EXPECTED_SHA" \
+            --provenance-attestation-id "$PROVENANCE_ID" \
+            --provenance-attestation-url "$PROVENANCE_URL" \
+            --sbom-attestation-id "$SBOM_ID" \
+            --sbom-attestation-url "$SBOM_URL"
+
+      - name: Summarize the technical candidate boundary
+        if: steps.candidate-state.outputs.run == 'true'
+        run: |
+          uv run python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          import os
+          from pathlib import Path
+
+          report = json.loads(Path(os.environ["RESULT_PATH"]).read_bytes())
+          print("## Phase 11.4 technical alpha candidate")
+          print()
+          print(
+              "- Technical candidate: "
+              f"`{report['decision']['alpha_technical_candidate_passed']}`"
+          )
+          print("- Installed wheel MCP: real `stdio` subprocess")
+          print("- SBOM: CycloneDX `1.7`")
+          print("- Provenance and SBOM attestations: GitHub CLI verified")
+          print()
+          print(
+              "Quality claims, public distribution, GitHub Release, PyPI, "
+              "merge and Phase 12 remain blocked."
+          )
+          PY
+
+      - name: Upload the attested alpha candidate evidence
+        if: steps.candidate-state.outputs.run == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: phase11-4-alpha-rc-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            ${{ env.RC_BUNDLE }}/SHA256SUMS
+            ${{ env.RC_BUNDLE }}/alpha-rc-manifest.json
+            ${{ env.RC_BUNDLE }}/dist/evidencemesh-0.1.0-py3-none-any.whl
+            ${{ env.RC_BUNDLE }}/dist/evidencemesh-0.1.0.tar.gz
+            ${{ env.RC_BUNDLE }}/evidencemesh-0.1.0.cdx.json
+            ${{ env.RC_BUNDLE }}/installed-wheel-mcp-stdio.json
+            ${{ env.RC_BUNDLE }}/installed-wheel-offline-benchmark.json
+            ${{ env.RESULT_PATH }}
+          if-no-files-found: error
+          retention-days: 30

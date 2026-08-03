@@ -1,0 +1,1139 @@
+name: Phase 11.8.8 Live Projection Calibration
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - docs/benchmark-protocol-v24.md
+      - .github/workflows/phase11-8-8-live-projection-calibration.yml
+      - .github/authorizations/phase11-8-8-live-projection-calibration-once.json
+      - benchmarks/data/phase11_8_8_live_projection_dependency_locks_v1.json
+      - benchmarks/data/phase11_7_fresh_confirmation_v1.json
+      - benchmarks/data/phase12_untouched_reserve_v1.json
+      - benchmarks/phase11_8_2_candidate.py
+      - benchmarks/phase11_8_8_projection_candidate.py
+      - benchmarks/run_phase11_8_8_projection_calibration.py
+      - benchmarks/run_phase11_8_8_live_projection_calibration.py
+      - benchmarks/results/phase11_8_3_factorial_2026-07-30.json
+      - tests/test_phase11_8_8_live_projection_calibration.py
+      - tests/test_phase11_8_8_live_workflow.py
+      - uv.lock
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase11-8-8-live-projection-calibration-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+env:
+  HISTORICAL_RC2_SHA: 81b5f8a8abd4302b27ad123bd5505e1757eadc7f
+  DATASET_PATH: /tmp/simple_qa_test_set_phase11_8_8_live.csv
+  RESULT_PATH: /tmp/phase11_8_8_live_projection_calibration.json
+  ARTIFACT_DIR: /tmp/phase11-8-8-live-artifact
+  SIMPLEQA_URL: https://openaipublic.blob.core.windows.net/simple-evals/simple_qa_test_set.csv
+  SIMPLEQA_SHA256: feee3f7e7db3617e94e8fcf1977b756ec420ef8568f4e0fcbbe0e92e9d5fc032
+
+jobs:
+  protocol-lock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify immutable protocol, runner and sources
+        run: |
+          echo \
+            "e63ab4b3f25865890458abd2a001ce3428f9a3ca8c4f1a1a166f25432d1a8dc9  docs/benchmark-protocol-v24.md" \
+            | sha256sum --check
+          echo \
+            "fabad5e66246a10f0f024201c1d031de22e4958141b57cf731393bd6cc936ac3  benchmarks/run_phase11_8_8_live_projection_calibration.py" \
+            | sha256sum --check
+          echo \
+            "0d6ee7f91689fc2679ee0e5c6a2857d25219d5a71cd559d248875d1074693a00  benchmarks/data/phase11_8_8_live_projection_dependency_locks_v1.json" \
+            | sha256sum --check
+          echo \
+            "5a47e1815cc2074698e1ab0cfec2932200bb013601d02246324513ffa5404898  uv.lock" \
+            | sha256sum --check
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install locked validation environment
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Validate the protocol without network or provider traffic
+        shell: bash
+        run: |
+          set -euo pipefail
+          historical_root=/tmp/evidencemesh-phase11-8-8-live-lock
+          current_python="$PWD/.venv/bin/python"
+          cleanup() {
+            git worktree remove --force "$historical_root" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+          test "$(git rev-parse "$HISTORICAL_RC2_SHA^{tree}")" = \
+            8bf47f72814befd5868adc48c7766a0cb278d52d
+          git worktree add --detach "$historical_root" "$HISTORICAL_RC2_SHA"
+          PYTHONPATH="$historical_root/src:$historical_root" "$current_python" \
+            "$historical_root/benchmarks/run_phase11_8_8_live_projection_calibration.py" \
+            --dependency-lock-manifest \
+              "$historical_root/benchmarks/data/phase11_8_8_live_projection_dependency_locks_v1.json" \
+            --check-only
+
+      - name: Run live-lock and workflow tests
+        run: |
+          uv run pytest \
+            tests/test_phase11_8_8_live_projection_calibration.py \
+            tests/test_phase11_8_8_live_workflow.py \
+            -q
+          uv run ruff check \
+            benchmarks/run_phase11_8_8_live_projection_calibration.py \
+            tests/test_phase11_8_8_live_projection_calibration.py \
+            tests/test_phase11_8_8_live_workflow.py
+          uv run ruff format --check \
+            benchmarks/run_phase11_8_8_live_projection_calibration.py \
+            tests/test_phase11_8_8_live_projection_calibration.py \
+            tests/test_phase11_8_8_live_workflow.py
+
+  one-shot-authorization:
+    needs: protocol-lock
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.action == 'synchronize' &&
+      github.run_attempt == 1 &&
+      github.event.pull_request.number == 1 &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'agent/evidencemesh-v0.1' &&
+      github.event.pull_request.head.sha == github.event.after &&
+      github.event.before == 'd91f8a85f6e2770ecd83ca95cbc7112803d683cb'
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      authorization_commit_sha: ${{ steps.verify.outputs.authorization_commit_sha }}
+      lock_commit_sha: ${{ steps.verify.outputs.lock_commit_sha }}
+      no_prior_authorization_run_verified: ${{ steps.history.outputs.no_prior_authorization_run_verified }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Verify the exact one-shot authorization commit
+        id: verify
+        env:
+          EVENT_BEFORE_SHA: ${{ github.event.before }}
+          EVENT_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          FROZEN_LOCK_COMMIT_SHA: d91f8a85f6e2770ecd83ca95cbc7112803d683cb
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import re
+          import subprocess
+          from pathlib import Path
+
+          frozen = os.environ["FROZEN_LOCK_COMMIT_SHA"]
+          head = os.environ["EVENT_HEAD_SHA"]
+          before = os.environ["EVENT_BEFORE_SHA"]
+          workflow_path = (
+              ".github/workflows/"
+              "phase11-8-8-live-projection-calibration.yml"
+          )
+          marker_path = (
+              ".github/authorizations/"
+              "phase11-8-8-live-projection-calibration-once.json"
+          )
+
+          def git(*arguments: str) -> str:
+              return subprocess.check_output(
+                  ("git", *arguments),
+                  text=True,
+              ).strip()
+
+          assert len(frozen) == 40
+          assert all(character in "0123456789abcdef" for character in frozen)
+          assert before == frozen
+          assert git("rev-parse", "HEAD") == head
+
+          parents = git("rev-list", "--parents", "-n", "1", "HEAD").split()
+          assert parents == [head, frozen]
+          assert git("show", "-s", "--format=%s", "HEAD") == (
+              "chore(benchmarks): authorize Phase 11.8.8 live once"
+          )
+
+          changed = git(
+              "diff-tree",
+              "--no-commit-id",
+              "--name-only",
+              "-r",
+              "HEAD",
+          ).splitlines()
+          assert sorted(changed) == sorted((workflow_path, marker_path))
+
+          before_workflow = subprocess.check_output(
+              ("git", "show", f"{frozen}:{workflow_path}"),
+              text=True,
+          )
+          placeholder = "__" + "FROZEN_LOCK_COMMIT_SHA" + "__"
+          assert placeholder in before_workflow
+          expected_workflow = before_workflow.replace(
+              placeholder,
+              frozen,
+          )
+          observed_workflow = Path(workflow_path).read_text(encoding="utf-8")
+          assert observed_workflow == expected_workflow
+          assert placeholder not in observed_workflow
+          assert re.search(r"__[A-Z0-9_]+__", observed_workflow) is None
+
+          marker = json.loads(Path(marker_path).read_bytes())
+          assert marker == {
+              "schema_version": 1,
+              "authorization": (
+                  "phase11.8.8-live-projection-calibration-once"
+              ),
+              "authorized_request": "GO Phase 11.8.8 live",
+              "frozen_lock_commit": frozen,
+              "pull_request": 1,
+              "head_branch": "agent/evidencemesh-v0.1",
+              "maximum_tavily_requests": 24,
+              "maximum_model_requests": 0,
+              "retry_policy": "none",
+              "fallback_policy": "none",
+              "repair_policy": "none",
+              "one_shot": True,
+              "rerun_policy": "forbidden",
+          }
+
+          with Path(os.environ["GITHUB_OUTPUT"]).open(
+              "a",
+              encoding="utf-8",
+          ) as stream:
+              stream.write(f"authorization_commit_sha={head}\n")
+              stream.write(f"lock_commit_sha={frozen}\n")
+          PY
+
+      - name: Fail closed if an authorization-shaped run already exists
+        id: history
+        env:
+          CURRENT_RUN_ID: ${{ github.run_id }}
+          FROZEN_LOCK_COMMIT_SHA: d91f8a85f6e2770ecd83ca95cbc7112803d683cb
+          GITHUB_API_ROOT: ${{ github.api_url }}
+          GITHUB_TOKEN: ${{ github.token }}
+          REPOSITORY_NAME: ${{ github.repository }}
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+
+          import json
+          import os
+          import re
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+          from collections.abc import Callable
+          from pathlib import Path
+          from typing import Any
+
+          AUTHORIZATION_SUBJECT = (
+              "chore(benchmarks): authorize Phase 11.8.8 live once"
+          )
+          WORKFLOW_FILE = (
+              "phase11-8-8-live-projection-calibration.yml"
+          )
+          PAGE_SIZE = 100
+          HEX_SHA = re.compile(r"[0-9a-f]{40}")
+          REPOSITORY_NAME = re.compile(
+              r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+"
+          )
+
+
+          class HistoryVerificationError(RuntimeError):
+              """A GitHub Actions history result could not prove one-shot use."""
+
+
+          def _is_integer(value: object) -> bool:
+              return isinstance(value, int) and not isinstance(value, bool)
+
+
+          def _validated_repository_path(repository: str) -> str:
+              if REPOSITORY_NAME.fullmatch(repository) is None:
+                  raise HistoryVerificationError(
+                      "repository identity is malformed"
+                  )
+              return "/".join(
+                  urllib.parse.quote(part, safe="")
+                  for part in repository.split("/")
+              )
+
+
+          def _commit_subject(message: object) -> str:
+              if not isinstance(message, str) or not message:
+                  raise HistoryVerificationError(
+                      "commit message is missing from GitHub history"
+                  )
+              return message.split("\n", 1)[0]
+
+
+          def _load_all_workflow_runs(
+              api_get: Callable[[str, dict[str, str]], Any],
+              repository_path: str,
+          ) -> list[dict[str, Any]]:
+              workflow = urllib.parse.quote(WORKFLOW_FILE, safe="")
+              endpoint = (
+                  f"/repos/{repository_path}/actions/workflows/"
+                  f"{workflow}/runs"
+              )
+              expected_total: int | None = None
+              observed_ids: set[int] = set()
+              observed_runs: list[dict[str, Any]] = []
+              page = 1
+
+              while True:
+                  payload = api_get(
+                      endpoint,
+                      {
+                          "page": str(page),
+                          "per_page": str(PAGE_SIZE),
+                      },
+                  )
+                  if not isinstance(payload, dict):
+                      raise HistoryVerificationError(
+                          "workflow-run history is not a JSON object"
+                      )
+                  total = payload.get("total_count")
+                  page_runs = payload.get("workflow_runs")
+                  if (
+                      not _is_integer(total)
+                      or total < 0
+                      or not isinstance(page_runs, list)
+                      or len(page_runs) > PAGE_SIZE
+                  ):
+                      raise HistoryVerificationError(
+                          "workflow-run history has an invalid shape"
+                      )
+                  if expected_total is None:
+                      expected_total = total
+                  elif total != expected_total:
+                      raise HistoryVerificationError(
+                          "workflow-run history changed during pagination"
+                      )
+
+                  for run in page_runs:
+                      if not isinstance(run, dict):
+                          raise HistoryVerificationError(
+                              "workflow-run entry is not a JSON object"
+                          )
+                      run_id = run.get("id")
+                      if not _is_integer(run_id) or run_id <= 0:
+                          raise HistoryVerificationError(
+                              "workflow-run identity is malformed"
+                          )
+                      if run_id in observed_ids:
+                          raise HistoryVerificationError(
+                              "workflow-run history contains a duplicate"
+                          )
+                      observed_ids.add(run_id)
+                      observed_runs.append(run)
+
+                  if len(observed_runs) == expected_total:
+                      return observed_runs
+                  if (
+                      len(observed_runs) > expected_total
+                      or len(page_runs) != PAGE_SIZE
+                  ):
+                      raise HistoryVerificationError(
+                          "workflow-run history is incomplete"
+                      )
+                  page += 1
+
+
+          def find_prior_authorization_run_ids(
+              runs: list[dict[str, Any]],
+              *,
+              current_run_id: int,
+              frozen_lock_commit: str,
+              load_commit: Callable[[str], Any],
+          ) -> tuple[int, ...]:
+              if not _is_integer(current_run_id) or current_run_id <= 0:
+                  raise HistoryVerificationError(
+                      "current workflow-run identity is malformed"
+                  )
+              if HEX_SHA.fullmatch(frozen_lock_commit) is None:
+                  raise HistoryVerificationError(
+                      "frozen lock commit is malformed"
+                  )
+
+              current_run_observed = False
+              commit_cache: dict[str, Any] = {}
+              matches: list[int] = []
+              for run in runs:
+                  if not isinstance(run, dict):
+                      raise HistoryVerificationError(
+                          "workflow-run entry is not a JSON object"
+                      )
+                  run_id = run.get("id")
+                  if not _is_integer(run_id) or run_id <= 0:
+                      raise HistoryVerificationError(
+                          "workflow-run identity is malformed"
+                      )
+                  if run_id == current_run_id:
+                      current_run_observed = True
+                      continue
+
+                  head_sha = run.get("head_sha")
+                  if (
+                      not isinstance(head_sha, str)
+                      or HEX_SHA.fullmatch(head_sha) is None
+                  ):
+                      raise HistoryVerificationError(
+                          "prior workflow-run head SHA is malformed"
+                      )
+                  if head_sha not in commit_cache:
+                      commit_cache[head_sha] = load_commit(head_sha)
+                  commit = commit_cache[head_sha]
+                  if not isinstance(commit, dict):
+                      raise HistoryVerificationError(
+                          "prior head commit is not a JSON object"
+                      )
+                  if commit.get("sha") != head_sha:
+                      raise HistoryVerificationError(
+                          "prior head commit identity does not match"
+                      )
+                  subject = _commit_subject(commit.get("message"))
+                  parents = commit.get("parents")
+                  if not isinstance(parents, list):
+                      raise HistoryVerificationError(
+                          "prior head commit parents are missing"
+                      )
+                  parent_shas: list[str] = []
+                  for parent in parents:
+                      if (
+                          not isinstance(parent, dict)
+                          or not isinstance(parent.get("sha"), str)
+                          or HEX_SHA.fullmatch(parent["sha"]) is None
+                      ):
+                          raise HistoryVerificationError(
+                              "prior head commit parent is malformed"
+                          )
+                      parent_shas.append(parent["sha"])
+                  if (
+                      subject == AUTHORIZATION_SUBJECT
+                      and parent_shas == [frozen_lock_commit]
+                  ):
+                      matches.append(run_id)
+
+              if not current_run_observed:
+                  raise HistoryVerificationError(
+                      "current run is absent from GitHub Actions history"
+                  )
+              return tuple(matches)
+
+
+          def _github_api_getter(
+              api_root: str,
+              token: str,
+          ) -> Callable[[str, dict[str, str]], Any]:
+              parsed_root = urllib.parse.urlsplit(api_root)
+              if (
+                  parsed_root.scheme != "https"
+                  or not parsed_root.netloc
+                  or parsed_root.username is not None
+                  or parsed_root.password is not None
+                  or parsed_root.query
+                  or parsed_root.fragment
+              ):
+                  raise HistoryVerificationError(
+                      "GitHub API root is not a trusted HTTPS URL"
+                  )
+              if not token or token.strip() != token:
+                  raise HistoryVerificationError(
+                      "GitHub token is unavailable"
+                  )
+              normalized_root = api_root.rstrip("/")
+
+              def api_get(
+                  endpoint: str,
+                  parameters: dict[str, str],
+              ) -> Any:
+                  if not endpoint.startswith("/repos/"):
+                      raise HistoryVerificationError(
+                          "GitHub API endpoint escaped the repository scope"
+                      )
+                  query = urllib.parse.urlencode(parameters)
+                  request = urllib.request.Request(
+                      f"{normalized_root}{endpoint}?{query}",
+                      headers={
+                          "Accept": "application/vnd.github+json",
+                          "Authorization": f"Bearer {token}",
+                          "User-Agent": (
+                              "EvidenceMesh-one-shot-history-guard"
+                          ),
+                          "X-GitHub-Api-Version": "2022-11-28",
+                      },
+                      method="GET",
+                  )
+                  try:
+                      with urllib.request.urlopen(
+                          request,
+                          timeout=30,
+                      ) as response:
+                          status = response.getcode()
+                          body = response.read()
+                  except (
+                      urllib.error.HTTPError,
+                      urllib.error.URLError,
+                      TimeoutError,
+                      OSError,
+                  ) as exc:
+                      raise HistoryVerificationError(
+                          "GitHub API history request failed closed"
+                      ) from exc
+                  if status != 200:
+                      raise HistoryVerificationError(
+                          "GitHub API history request was not successful"
+                      )
+                  try:
+                      return json.loads(body)
+                  except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+                      raise HistoryVerificationError(
+                          "GitHub API history response is not valid JSON"
+                      ) from exc
+
+              return api_get
+
+
+          def verify_no_prior_authorization_run(
+              *,
+              api_get: Callable[[str, dict[str, str]], Any],
+              repository: str,
+              current_run_id: int,
+              frozen_lock_commit: str,
+          ) -> None:
+              repository_path = _validated_repository_path(repository)
+              runs = _load_all_workflow_runs(
+                  api_get,
+                  repository_path,
+              )
+
+              def load_commit(head_sha: str) -> Any:
+                  return api_get(
+                      (
+                          f"/repos/{repository_path}/git/commits/"
+                          f"{head_sha}"
+                      ),
+                      {},
+                  )
+
+              matches = find_prior_authorization_run_ids(
+                  runs,
+                  current_run_id=current_run_id,
+                  frozen_lock_commit=frozen_lock_commit,
+                  load_commit=load_commit,
+              )
+              if matches:
+                  rendered_ids = ", ".join(str(value) for value in matches)
+                  raise HistoryVerificationError(
+                      "one-shot authorization was already consumed by "
+                      f"workflow run(s): {rendered_ids}"
+                  )
+
+
+          def main() -> None:
+              try:
+                  current_run_id = int(os.environ["CURRENT_RUN_ID"])
+              except (KeyError, ValueError) as exc:
+                  raise HistoryVerificationError(
+                      "current workflow-run identity is unavailable"
+                  ) from exc
+              try:
+                  api_root = os.environ["GITHUB_API_ROOT"]
+                  token = os.environ["GITHUB_TOKEN"]
+                  repository = os.environ["REPOSITORY_NAME"]
+                  frozen_lock_commit = os.environ[
+                      "FROZEN_LOCK_COMMIT_SHA"
+                  ]
+              except KeyError as exc:
+                  raise HistoryVerificationError(
+                      "history-verification environment is incomplete"
+                  ) from exc
+
+              verify_no_prior_authorization_run(
+                  api_get=_github_api_getter(api_root, token),
+                  repository=repository,
+                  current_run_id=current_run_id,
+                  frozen_lock_commit=frozen_lock_commit,
+              )
+              with Path(os.environ["GITHUB_OUTPUT"]).open(
+                  "a",
+                  encoding="utf-8",
+              ) as stream:
+                  stream.write(
+                      "no_prior_authorization_run_verified=true\n"
+                  )
+
+
+          if __name__ == "__main__":
+              main()
+          PY
+
+  live-projection-calibration:
+    needs:
+      - protocol-lock
+      - one-shot-authorization
+    if: >-
+      needs.protocol-lock.result == 'success' &&
+      needs.one-shot-authorization.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: d91f8a85f6e2770ecd83ca95cbc7112803d683cb
+          persist-credentials: false
+
+      - name: Confirm the frozen lock checkout
+        env:
+          FROZEN_LOCK_COMMIT_SHA: d91f8a85f6e2770ecd83ca95cbc7112803d683cb
+        run: |
+          test "$(git rev-parse HEAD)" = "$FROZEN_LOCK_COMMIT_SHA"
+          test ! -e "$RESULT_PATH"
+          test ! -e "$ARTIFACT_DIR"
+
+      - name: Reverify immutable protocol, runner and sources
+        run: |
+          echo \
+            "e63ab4b3f25865890458abd2a001ce3428f9a3ca8c4f1a1a166f25432d1a8dc9  docs/benchmark-protocol-v24.md" \
+            | sha256sum --check
+          echo \
+            "fabad5e66246a10f0f024201c1d031de22e4958141b57cf731393bd6cc936ac3  benchmarks/run_phase11_8_8_live_projection_calibration.py" \
+            | sha256sum --check
+          echo \
+            "0d6ee7f91689fc2679ee0e5c6a2857d25219d5a71cd559d248875d1074693a00  benchmarks/data/phase11_8_8_live_projection_dependency_locks_v1.json" \
+            | sha256sum --check
+          echo \
+            "5a47e1815cc2074698e1ab0cfec2932200bb013601d02246324513ffa5404898  uv.lock" \
+            | sha256sum --check
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install the locked benchmark environment
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Revalidate the frozen protocol without provider traffic
+        run: |
+          uv run python \
+            benchmarks/run_phase11_8_8_live_projection_calibration.py \
+            --dependency-lock-manifest \
+              benchmarks/data/phase11_8_8_live_projection_dependency_locks_v1.json \
+            --check-only
+
+      - name: Materialize the verified one-shot attestation
+        env:
+          ATTESTATION_PATH: /tmp/phase11_8_8_live_authorization_attestation.json
+          AUTHORIZATION_COMMIT_SHA: ${{ needs.one-shot-authorization.outputs.authorization_commit_sha }}
+          LOCK_COMMIT_SHA: ${{ needs.one-shot-authorization.outputs.lock_commit_sha }}
+          NO_PRIOR_AUTHORIZATION_RUN_VERIFIED: ${{ needs.one-shot-authorization.outputs.no_prior_authorization_run_verified }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          lock_commit = os.environ["LOCK_COMMIT_SHA"]
+          authorization_commit = os.environ["AUTHORIZATION_COMMIT_SHA"]
+          assert lock_commit == "d91f8a85f6e2770ecd83ca95cbc7112803d683cb"
+          assert len(authorization_commit) == 40
+          assert lock_commit != authorization_commit
+          assert (
+              os.environ["NO_PRIOR_AUTHORIZATION_RUN_VERIFIED"]
+              == "true"
+          )
+          assert all(
+              character in "0123456789abcdef"
+              for value in (lock_commit, authorization_commit)
+              for character in value
+          )
+          attestation = {
+              "schema_version": 1,
+              "authorization": (
+                  "phase11_8_8_live_projection_calibration_once"
+              ),
+              "repository": "VynoDePal/EvidenceMesh",
+              "pull_request_number": 1,
+              "head_branch": "agent/evidencemesh-v0.1",
+              "workflow_path": (
+                  ".github/workflows/"
+                  "phase11-8-8-live-projection-calibration.yml"
+              ),
+              "lock_commit_sha": lock_commit,
+              "authorization_commit_sha": authorization_commit,
+              "workflow_run_attempt": 1,
+              "commit_a_locks_verified": True,
+              "single_parent_verified": True,
+              "subject_verified": True,
+              "marker_verified": True,
+              "two_path_diff_verified": True,
+              "same_repository_head_verified": True,
+              "no_rerun_verified": True,
+              "no_prior_authorization_run_verified": True,
+          }
+          path = Path(os.environ["ATTESTATION_PATH"])
+          with path.open("x", encoding="utf-8") as stream:
+              json.dump(
+                  attestation,
+                  stream,
+                  ensure_ascii=False,
+                  indent=2,
+                  sort_keys=True,
+              )
+              stream.write("\n")
+          PY
+
+      - name: Download the checksum-pinned static SimpleQA source
+        run: |
+          curl \
+            --fail \
+            --location \
+            --silent \
+            --show-error \
+            --proto '=https' \
+            --tlsv1.2 \
+            --output "$DATASET_PATH" \
+            "$SIMPLEQA_URL"
+          echo "$SIMPLEQA_SHA256  $DATASET_PATH" | sha256sum --check
+
+      - name: Run the locked Tavily-only 24-case calibration
+        env:
+          EVIDENCEMESH_BENCHMARK_COMMIT: d91f8a85f6e2770ecd83ca95cbc7112803d683cb
+          TAVILY_API_KEY: ${{ secrets.EVIDENCE_MESH_TAVILY_KEY }}
+        run: |
+          if [[ -z "${TAVILY_API_KEY:-}" ]]; then
+            echo "::error::EVIDENCE_MESH_TAVILY_KEY is not configured"
+            exit 1
+          fi
+          uv run python \
+            benchmarks/run_phase11_8_8_live_projection_calibration.py \
+            --authorize-live-run \
+            --authorization-verified \
+            --authorization-attestation \
+              /tmp/phase11_8_8_live_authorization_attestation.json \
+            --dataset "$DATASET_PATH" \
+            --dependency-lock-manifest \
+              benchmarks/data/phase11_8_8_live_projection_dependency_locks_v1.json \
+            --output "$RESULT_PATH" \
+            --progress
+
+      - name: Validate privacy, traffic and decision boundaries
+        env:
+          AUTHORIZATION_COMMIT_SHA: ${{ needs.one-shot-authorization.outputs.authorization_commit_sha }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          report = json.loads(Path(os.environ["RESULT_PATH"]).read_bytes())
+          expected_top_level = {
+              "schema_version",
+              "benchmark",
+              "run_status",
+              "dependency_manifest_sha256",
+              "source_locks",
+              "authorization",
+              "dataset",
+              "selection",
+              "protocol",
+              "traffic",
+              "retrieval",
+              "projection",
+              "privacy",
+              "decision",
+              "warnings",
+          }
+          assert set(report) == expected_top_level
+          assert report["schema_version"] == 1
+          assert report["benchmark"] == (
+              "evidencemesh-phase11-8-8-live-projection-calibration-v2"
+          )
+          assert report["run_status"] in {
+              "completed",
+              "aborted_provider_failure",
+          }
+          assert report["dependency_manifest_sha256"] == (
+              "0d6ee7f91689fc2679ee0e5c6a2857d25219d5a71cd559d248875d1074693a00"
+          )
+
+          source_locks = report["source_locks"]
+          assert len(source_locks) == 54
+          assert all(
+              isinstance(lock, dict)
+              and set(lock) == {"relative_path", "sha256"}
+              and isinstance(lock["relative_path"], str)
+              and lock["relative_path"]
+              and not lock["relative_path"].startswith(("/", "\\"))
+              and ".." not in Path(lock["relative_path"]).parts
+              and isinstance(lock["sha256"], str)
+              and len(lock["sha256"]) == 64
+              and all(character in "0123456789abcdef" for character in lock["sha256"])
+              for lock in source_locks
+          )
+          assert len({lock["relative_path"] for lock in source_locks}) == 54
+
+          authorization = report["authorization"]
+          assert set(authorization) == {
+              "attestation_sha256",
+              "lock_commit_sha",
+              "authorization_commit_sha",
+              "workflow_run_attempt",
+              "verified",
+          }
+          assert len(authorization["attestation_sha256"]) == 64
+          assert all(
+              character in "0123456789abcdef"
+              for character in authorization["attestation_sha256"]
+          )
+          assert authorization["lock_commit_sha"] == (
+              "d91f8a85f6e2770ecd83ca95cbc7112803d683cb"
+          )
+          assert authorization["authorization_commit_sha"] == (
+              os.environ["AUTHORIZATION_COMMIT_SHA"]
+          )
+          assert authorization["lock_commit_sha"] != (
+              authorization["authorization_commit_sha"]
+          )
+          assert authorization["workflow_run_attempt"] == 1
+          assert authorization["verified"] is True
+
+          dataset = report["dataset"]
+          assert set(dataset) == {"sha256", "selected_case_count"}
+          assert dataset["sha256"] == os.environ["SIMPLEQA_SHA256"]
+          assert dataset["selected_case_count"] == 24
+
+          selection = report["selection"]
+          assert set(selection) == {
+              "phase11_selection_count",
+              "phase12_reserve_count",
+              "selections_disjoint",
+              "loaded_rows_match_phase11_selection",
+              "reserve_rows_selected",
+              "reserve_rows_scored",
+          }
+          assert selection == {
+              "phase11_selection_count": 24,
+              "phase12_reserve_count": 96,
+              "selections_disjoint": True,
+              "loaded_rows_match_phase11_selection": True,
+              "reserve_rows_selected": 0,
+              "reserve_rows_scored": 0,
+          }
+
+          protocol = report["protocol"]
+          assert protocol == {
+              "provider": "tavily",
+              "provider_max_results": 20,
+              "selection_limit": 20,
+              "max_per_domain": 3,
+              "evidence_budget_chars": 12000,
+              "max_block_chars": 1500,
+              "min_block_chars": 192,
+              "projection_replays": 3,
+              "connect_seconds": 5.0,
+              "read_seconds": 12.0,
+              "write_seconds": 10.0,
+              "pool_seconds": 5.0,
+              "provider_wall_seconds": 15.0,
+              "outer_wall_seconds": 30.0,
+              "abort_on_first_provider_failure": True,
+              "models": [],
+          }
+
+          traffic = report["traffic"]
+          assert set(traffic) == {
+              "benchmark_network_scope",
+              "static_dataset_fetches",
+              "logical_operations_planned",
+              "logical_operations_started",
+              "logical_operations_completed",
+              "tavily_http_attempts_actual",
+              "tavily_http_attempts_maximum",
+              "http_responses",
+              "tavily_requests",
+              "other_provider_requests",
+              "model_requests",
+              "gemini_requests",
+              "token_count_requests",
+              "retries",
+              "fallback_requests",
+              "repair_requests",
+              "cache_reads",
+              "cache_writes",
+              "follow_up_document_fetches",
+          }
+          logical_started = traffic["logical_operations_started"]
+          logical_completed = traffic["logical_operations_completed"]
+          actual_http_attempts = traffic["tavily_http_attempts_actual"]
+          http_responses = traffic["http_responses"]
+          tavily_requests = traffic["tavily_requests"]
+          assert traffic["logical_operations_planned"] == 24
+          assert traffic["tavily_http_attempts_maximum"] == 24
+          assert 1 <= logical_started <= 24
+          assert 0 <= logical_completed <= logical_started
+          assert 0 <= actual_http_attempts <= logical_started
+          assert tavily_requests == actual_http_attempts
+          assert 0 <= http_responses <= actual_http_attempts
+          assert traffic["other_provider_requests"] == 0
+          assert traffic["model_requests"] == 0
+          assert traffic["gem" + "ini_requests"] == 0
+          assert traffic["token_count_requests"] == 0
+          assert traffic["retries"] == 0
+          assert traffic["fallback_requests"] == 0
+          assert traffic["repair_requests"] == 0
+          assert traffic["cache_reads"] == 0
+          assert traffic["cache_writes"] == 0
+          assert traffic["follow_up_document_fetches"] == 0
+          assert traffic["static_dataset_fetches"] == 1
+          assert traffic["benchmark_network_scope"] == (
+              "one checksum-pinned static dataset fetch plus at most 24 "
+              "Tavily requests; checkout, install and artifact CI traffic excluded"
+          )
+
+          retrieval = report["retrieval"]
+          assert set(retrieval) == {
+              "attempted_cases",
+              "successful_cases",
+              "failure_kind",
+              "stopped_on_first_failure",
+              "http_status_counts",
+          }
+          assert retrieval["attempted_cases"] == logical_started
+          assert retrieval["successful_cases"] == logical_completed
+          status_counts = retrieval["http_status_counts"]
+          assert isinstance(status_counts, dict)
+          assert all(
+              isinstance(status, str)
+              and len(status) == 3
+              and status.isdigit()
+              and isinstance(count, int)
+              and not isinstance(count, bool)
+              and count > 0
+              for status, count in status_counts.items()
+          )
+          assert sum(status_counts.values()) == http_responses
+
+          if report["run_status"] == "aborted_provider_failure":
+              assert 1 <= logical_started <= 24
+              assert isinstance(retrieval["failure_kind"], str)
+              assert 0 < len(retrieval["failure_kind"]) <= 64
+              assert retrieval["failure_kind"].replace("_", "").isalnum()
+              assert retrieval["stopped_on_first_failure"] is True
+          else:
+              assert retrieval["failure_kind"] is None
+              assert retrieval["stopped_on_first_failure"] is False
+              assert retrieval["successful_cases"] == 24
+              assert logical_started == 24
+              assert logical_completed == 24
+              assert actual_http_attempts == 24
+              assert tavily_requests == 24
+              assert http_responses == 24
+
+          projection = report["projection"]
+          assert set(projection) == {
+              "scored_case_count",
+              "available_case_count",
+              "selected_proxy_hits",
+              "equal_cap_prompt_proxy_hits",
+              "v1_prompt_proxy_hits",
+              "v2_prompt_proxy_hits",
+              "v2_retention_numerator",
+              "v2_retention_denominator",
+              "v2_retention_rate",
+              "v2_vs_equal_candidate_wins",
+              "v2_vs_equal_baseline_wins",
+              "v2_vs_equal_net_gain",
+              "v2_vs_v1_candidate_wins",
+              "v2_vs_v1_baseline_wins",
+              "v2_vs_v1_net_gain",
+              "raw_pool_matching_cases",
+              "selected_packet_matching_cases",
+              "projection_invariant_cases",
+              "candidate_budget_cases",
+              "equal_cap_over_budget_cases",
+          }
+          scored = projection["scored_case_count"]
+          assert scored == logical_completed
+          bounded_counts = (
+              "available_case_count",
+              "selected_proxy_hits",
+              "equal_cap_prompt_proxy_hits",
+              "v1_prompt_proxy_hits",
+              "v2_prompt_proxy_hits",
+              "v2_retention_numerator",
+              "v2_retention_denominator",
+              "v2_vs_equal_candidate_wins",
+              "v2_vs_equal_baseline_wins",
+              "v2_vs_v1_candidate_wins",
+              "v2_vs_v1_baseline_wins",
+              "raw_pool_matching_cases",
+              "selected_packet_matching_cases",
+              "projection_invariant_cases",
+              "candidate_budget_cases",
+              "equal_cap_over_budget_cases",
+          )
+          assert all(0 <= projection[name] <= scored for name in bounded_counts)
+          retention = projection["v2_retention_rate"]
+          assert retention is None or 0.0 <= retention <= 1.0
+
+          privacy = report["privacy"]
+          assert set(privacy) == {
+              "passed",
+              "strict_allowlist_passed",
+              "absolute_paths_found",
+              "case_ids_found",
+              "row_indexes_found",
+              "questions_found",
+              "reference_answers_found",
+              "gold_urls_found",
+              "provider_content_values_found",
+              "api_key_found",
+              "forbidden_keys_found",
+          }
+          assert privacy == {
+              "passed": True,
+              "strict_allowlist_passed": True,
+              "absolute_paths_found": 0,
+              "case_ids_found": 0,
+              "row_indexes_found": 0,
+              "questions_found": 0,
+              "reference_answers_found": 0,
+              "gold_urls_found": 0,
+              "provider_content_values_found": 0,
+              "api_key_found": False,
+              "forbidden_keys_found": 0,
+          }
+
+          decision = report["decision"]
+          assert set(decision) == {
+              "gate_count",
+              "passed_gate_count",
+              "gates",
+              "projection_candidate_passed",
+              "diagnostic_status",
+              "phase11_9_protocol_may_be_frozen",
+              "phase12_authorized",
+              "phase12_executed",
+              "quality_profile_promoted",
+              "merge_allowed",
+              "release_allowed",
+              "superiority_claim_allowed",
+              "release_decision",
+          }
+          gates = decision["gates"]
+          gate_names = (
+              "historical_dependency_and_commit_a_locks",
+              "one_shot_authorization_lineage",
+              "dataset_selection_and_phase12_non_use",
+              "complete_exact_24_tavily_accounting",
+              "fail_fast_no_rerun_cache_or_nonretrieval_traffic",
+              "shared_selected_packet_identity_24_of_24",
+              "v2_projection_invariants_24_of_24",
+              "selected_proxy_coverage_at_least_20_of_24",
+              "v2_proxy_coverage_at_least_20_of_24",
+              "v2_selected_retention_at_least_95_percent",
+              "v2_paired_net_gain_vs_equal_at_least_2",
+              "v2_paired_net_gain_vs_v1_at_least_2",
+              "public_privacy_and_governance_boundaries",
+          )
+          assert decision["gate_count"] == 13
+          assert len(gates) == 13
+          assert all(set(gate) == {"name", "passed"} for gate in gates)
+          assert tuple(gate["name"] for gate in gates) == gate_names
+          assert all(isinstance(gate["passed"], bool) for gate in gates)
+          assert decision["passed_gate_count"] == sum(
+              gate["passed"] for gate in gates
+          )
+          gate_map = {gate["name"]: gate["passed"] for gate in gates}
+          mandatory_gates = (
+              "historical_dependency_and_commit_a_locks",
+              "one_shot_authorization_lineage",
+              "dataset_selection_and_phase12_non_use",
+              "fail_fast_no_rerun_cache_or_nonretrieval_traffic",
+              "public_privacy_and_governance_boundaries",
+          )
+          assert all(gate_map[name] is True for name in mandatory_gates)
+          if report["run_status"] == "aborted_provider_failure":
+              assert decision["passed_gate_count"] < 13
+              assert decision["projection_candidate_passed"] is False
+          else:
+              completed_invariant_gates = (
+                  "complete_exact_24_tavily_accounting",
+                  "shared_selected_packet_identity_24_of_24",
+                  "v2_projection_invariants_24_of_24",
+              )
+              assert all(
+                  gate_map[name] is True
+                  for name in completed_invariant_gates
+              )
+          assert decision["diagnostic_status"] in {
+              "provider_failure_inconclusive",
+              "retrieval_limited_inconclusive",
+              "projection_calibration_pass",
+              "projection_candidate_fail",
+          }
+          assert isinstance(decision["projection_candidate_passed"], bool)
+          assert decision["phase11_9_protocol_may_be_frozen"] is False
+          assert decision["phase12_authorized"] is False
+          assert decision["phase12_executed"] is False
+          assert decision["quality_profile_promoted"] is False
+          assert decision["merge_allowed"] is False
+          assert decision["release_allowed"] is False
+          assert decision["superiority_claim_allowed"] is False
+          assert decision["release_decision"] == "no-go"
+
+          rendered = json.dumps(report, ensure_ascii=False, sort_keys=True)
+          assert "EVIDENCE_MESH_TAVILY_KEY" not in rendered
+          assert "TAVILY_API_KEY" not in rendered
+          assert isinstance(report["warnings"], list)
+          assert report["warnings"]
+          assert all(isinstance(warning, str) for warning in report["warnings"])
+          PY
+
+      - name: Prepare an exact one-file public artifact
+        run: |
+          install -d -m 0700 "$ARTIFACT_DIR"
+          install -m 0600 \
+            "$RESULT_PATH" \
+            "$ARTIFACT_DIR/phase11_8_8_live_projection_calibration.json"
+          test "$(find "$ARTIFACT_DIR" -mindepth 1 -maxdepth 1 -type f | wc -l)" -eq 1
+          test "$(find "$ARTIFACT_DIR" -mindepth 1 -maxdepth 1 | wc -l)" -eq 1
+          sha256sum \
+            "$ARTIFACT_DIR/phase11_8_8_live_projection_calibration.json"
+
+      - name: Upload the privacy-safe calibration result
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: phase11-8-8-live-projection-calibration-${{ github.run_id }}
+          path: /tmp/phase11-8-8-live-artifact
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 9

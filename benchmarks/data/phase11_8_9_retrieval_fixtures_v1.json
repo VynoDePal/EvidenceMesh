@@ -1,0 +1,772 @@
+{
+  "benchmark": "evidencemesh-phase11-8-9-retrieval-fixtures-v1",
+  "engineering_only": true,
+  "authored_after_phase11_8_8_live_observation": true,
+  "development_diagnostic_only": true,
+  "predictive_quality_claim_allowed": false,
+  "real_world_quality_claim_allowed": false,
+  "fixture_disclosure": "Post-observation synthetic and adversarial controls. These cases may test implementation invariants and falsify regressions, but they cannot establish real-world retrieval quality.",
+  "execution_contract": {
+    "network_allowed": false,
+    "provider_calls_allowed": false,
+    "model_calls_allowed": false,
+    "secrets_allowed": false,
+    "candidate_inputs": [
+      "query",
+      "raw_results",
+      "limit",
+      "max_per_domain"
+    ],
+    "evaluator_only_fields": [
+      "utility_result_ids",
+      "expected_baseline_selected_ids",
+      "expected_candidate_selected_ids"
+    ]
+  },
+  "conformance_case_catalog": [
+    {
+      "id": "lexical_anchor_matrix",
+      "kind": "synthetic_unit_case",
+      "purpose": "Exact, phrase, acronym, numeric, date, unit, rare-token, Unicode and punctuation anchors."
+    },
+    {
+      "id": "canonical_fusion_lineage_and_invalid_url",
+      "kind": "locked_fixture_case",
+      "purpose": "Canonical duplicate fusion with ordered multi-provider lineage."
+    },
+    {
+      "id": "deterministic_tie_and_diversity",
+      "kind": "synthetic_unit_case",
+      "purpose": "Stable tie resolution plus domain, provider and source-type diversity."
+    },
+    {
+      "id": "content_eligibility_matrix",
+      "kind": "synthetic_unit_case",
+      "purpose": "Empty, short, long and malformed source-content eligibility."
+    },
+    {
+      "id": "adaptive_domain_diversity",
+      "kind": "locked_fixture_case",
+      "purpose": "Registrable-domain diversity against same-domain near duplicates."
+    },
+    {
+      "id": "provider_and_source_type_diversity",
+      "kind": "locked_fixture_case",
+      "purpose": "Provider and source-family diversity under comparable lexical evidence."
+    },
+    {
+      "id": "selection_boundaries",
+      "kind": "synthetic_unit_case",
+      "purpose": "Zero-result behavior, valid limits one and twenty, and invalid limit rejection."
+    },
+    {
+      "id": "projection_anchor_budget",
+      "kind": "synthetic_unit_case",
+      "purpose": "Head, query-anchor middle and tail preservation under an exact 12000-character budget."
+    },
+    {
+      "id": "projection_insufficient_budget",
+      "kind": "synthetic_unit_case",
+      "purpose": "Deterministic bounded behavior when headers leave room for only a prefix of sources."
+    },
+    {
+      "id": "static_candidate_audit",
+      "kind": "source_ast_case",
+      "purpose": "Answer/qrel blindness and absence of I/O, network, environment or process access."
+    },
+    {
+      "id": "aggregate_replay",
+      "kind": "synthetic_replay_case",
+      "purpose": "Canonical aggregate-only serialization and hashing."
+    },
+    {
+      "id": "cold_process_replay",
+      "kind": "isolated_process_case",
+      "purpose": "At least two fresh-interpreter executions produce byte-identical output."
+    },
+    {
+      "id": "projection_duplicate_citation",
+      "kind": "synthetic_adversarial_case",
+      "purpose": "A duplicate local citation identifier is rejected before rendering."
+    },
+    {
+      "id": "external_qrels_policy",
+      "kind": "synthetic_adapter_case",
+      "purpose": "Missing qrels, no-positive-qrel queries and binary/graded relevance policies."
+    },
+    {
+      "id": "external_metric_oracles",
+      "kind": "synthetic_adapter_case",
+      "purpose": "Locked Recall and linear-gain nDCG metric oracles and oracle mismatch behavior."
+    },
+    {
+      "id": "external_asset_path_validation",
+      "kind": "synthetic_adversarial_case",
+      "purpose": "Asset paths fail closed on traversal, symlink, non-regular-file and role-alias inputs."
+    },
+    {
+      "id": "external_official_asset_gate",
+      "kind": "synthetic_adapter_case",
+      "purpose": "Official assets remain not evaluated until authoritative asset locks are supported."
+    },
+    {
+      "id": "runner_zero_access",
+      "kind": "runner_adversarial_case",
+      "purpose": "The offline runner proves zero Phase 12, network and environment-secret access."
+    }
+  ],
+  "conformance_requirements": [
+    {
+      "id": "exact_match",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["lexical_anchor_matrix"],
+        "test_names": ["test_lexical_anchor_matrix_handles_exact_phrase_acronym_number_date_unit_rare_unicode"],
+        "proof": "The exact-anchor source outranks a higher-ranked lexical scatter source."
+      }
+    },
+    {
+      "id": "phrase_match",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["lexical_anchor_matrix"],
+        "test_names": ["test_lexical_anchor_matrix_handles_exact_phrase_acronym_number_date_unit_rare_unicode"],
+        "proof": "Ordered phrase anchors contribute only when their order and locality are preserved."
+      }
+    },
+    {
+      "id": "acronym_anchor",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["lexical_anchor_matrix"],
+        "test_names": ["test_lexical_anchor_matrix_handles_exact_phrase_acronym_number_date_unit_rare_unicode"],
+        "proof": "Uppercase acronym anchors are structurally protected."
+      }
+    },
+    {
+      "id": "number_anchor",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["lexical_anchor_matrix"],
+        "test_names": ["test_lexical_anchor_matrix_handles_exact_phrase_acronym_number_date_unit_rare_unicode"],
+        "proof": "Decimal numeric anchors remain intact and protected."
+      }
+    },
+    {
+      "id": "date_anchor",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["lexical_anchor_matrix"],
+        "test_names": ["test_lexical_anchor_matrix_handles_exact_phrase_acronym_number_date_unit_rare_unicode"],
+        "proof": "Hyphenated ISO-style date anchors remain intact and protected."
+      }
+    },
+    {
+      "id": "unit_anchor",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["lexical_anchor_matrix"],
+        "test_names": ["test_lexical_anchor_matrix_handles_exact_phrase_acronym_number_date_unit_rare_unicode"],
+        "proof": "Unicode scientific-unit anchors survive normalization and matching."
+      }
+    },
+    {
+      "id": "rare_token_anchor",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["lexical_anchor_matrix"],
+        "test_names": ["test_lexical_anchor_matrix_handles_exact_phrase_acronym_number_date_unit_rare_unicode"],
+        "proof": "A rare query token is protected when it occurs in no more than one quarter of fused sources."
+      }
+    },
+    {
+      "id": "unicode_punctuation",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["lexical_anchor_matrix"],
+        "test_names": ["test_lexical_anchor_matrix_handles_exact_phrase_acronym_number_date_unit_rare_unicode"],
+        "proof": "NFKC/casefold matching tolerates Unicode text and surrounding punctuation without losing boundaries."
+      }
+    },
+    {
+      "id": "canonical_multi_provider_duplicate",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["canonical_fusion_lineage_and_invalid_url"],
+        "test_names": ["test_fusion_preserves_ordered_provider_lineage_and_counts_only_invalid"],
+        "proof": "Tracking variants collapse to one canonical source while retaining both provider observations."
+      }
+    },
+    {
+      "id": "deterministic_tie",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["deterministic_tie_and_diversity"],
+        "test_names": ["test_deterministic_ties_and_domain_provider_source_diversity"],
+        "proof": "Equal-scored inputs resolve by stable input order on every replay."
+      }
+    },
+    {
+      "id": "empty_input",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["selection_boundaries"],
+        "test_names": ["test_selection_boundaries_zero_one_twenty_and_invalid_limits"],
+        "proof": "An empty valid pool returns zero fused, eligible and selected sources."
+      }
+    },
+    {
+      "id": "short_content",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["content_eligibility_matrix"],
+        "test_names": ["test_empty_short_long_and_malformed_content_have_explicit_eligibility"],
+        "proof": "A one-character non-control snippet remains eligible."
+      }
+    },
+    {
+      "id": "long_content",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["content_eligibility_matrix"],
+        "test_names": ["test_empty_short_long_and_malformed_content_have_explicit_eligibility"],
+        "proof": "Long valid Unicode source content remains eligible without mutation."
+      }
+    },
+    {
+      "id": "malformed_content",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["content_eligibility_matrix"],
+        "test_names": ["test_empty_short_long_and_malformed_content_have_explicit_eligibility"],
+        "proof": "Embedded controls, surrogates and non-text snippets are excluded from selection."
+      }
+    },
+    {
+      "id": "eligibility_exclusions",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["content_eligibility_matrix"],
+        "test_names": ["test_empty_short_long_and_malformed_content_have_explicit_eligibility"],
+        "proof": "The funnel distinguishes valid raw, fused, eligible and selected stage counts."
+      }
+    },
+    {
+      "id": "domain_diversity_tie",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["deterministic_tie_and_diversity", "adaptive_domain_diversity"],
+        "test_names": ["test_deterministic_ties_and_domain_provider_source_diversity"],
+        "proof": "A comparable source on a new registrable domain wins the marginal diversity tie."
+      }
+    },
+    {
+      "id": "provider_diversity_tie",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["deterministic_tie_and_diversity", "provider_and_source_type_diversity"],
+        "test_names": ["test_deterministic_ties_and_domain_provider_source_diversity"],
+        "proof": "A comparable source from an unseen provider receives the bounded marginal bonus."
+      }
+    },
+    {
+      "id": "source_type_diversity_tie",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["deterministic_tie_and_diversity", "provider_and_source_type_diversity"],
+        "test_names": ["test_deterministic_ties_and_domain_provider_source_diversity"],
+        "proof": "A comparable source from an unseen source type receives the bounded marginal bonus."
+      }
+    },
+    {
+      "id": "selection_limit_one",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["selection_boundaries"],
+        "test_names": ["test_selection_boundaries_zero_one_twenty_and_invalid_limits"],
+        "proof": "Limit one returns at most one eligible source for baseline and candidate."
+      }
+    },
+    {
+      "id": "selection_limit_twenty",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["selection_boundaries"],
+        "test_names": ["test_selection_boundaries_zero_one_twenty_and_invalid_limits"],
+        "proof": "The hard selected-source ceiling accepts twenty and rejects twenty-one."
+      }
+    },
+    {
+      "id": "selection_invalid_limits",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["selection_boundaries"],
+        "test_names": ["test_selection_boundaries_zero_one_twenty_and_invalid_limits"],
+        "proof": "Zero, negative and above-ceiling limits fail closed."
+      }
+    },
+    {
+      "id": "projection_head_middle_tail",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["projection_anchor_budget"],
+        "test_names": ["test_projection_head_middle_tail_exact_12000_budget_and_source_preservation"],
+        "proof": "A compacted source contains ordered substrings from its head, query-anchor middle and tail."
+      }
+    },
+    {
+      "id": "projection_budget_12000",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["projection_anchor_budget"],
+        "test_names": ["test_projection_head_middle_tail_exact_12000_budget_and_source_preservation"],
+        "proof": "Rendered evidence uses exactly the assigned 12000-character budget without exceeding it."
+      }
+    },
+    {
+      "id": "projection_insufficient_budget",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["projection_insufficient_budget"],
+        "test_names": ["test_projection_insufficient_budget_is_bounded_and_deterministic"],
+        "proof": "An insufficient budget deterministically drops trailing documents and remains within budget."
+      }
+    },
+    {
+      "id": "citation_ids_unique",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["projection_anchor_budget", "projection_insufficient_budget"],
+        "test_names": ["test_projection_head_middle_tail_exact_12000_budget_and_source_preservation", "test_projection_insufficient_budget_is_bounded_and_deterministic"],
+        "proof": "Every projected document receives one unique sequential local citation identifier."
+      }
+    },
+    {
+      "id": "source_preservation",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["projection_anchor_budget"],
+        "test_names": ["test_projection_head_middle_tail_exact_12000_budget_and_source_preservation"],
+        "proof": "Every projected text segment is an ordered verbatim substring of its selected source."
+      }
+    },
+    {
+      "id": "answer_qrel_blind",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["static_candidate_audit"],
+        "test_names": ["test_candidate_interfaces_are_answer_qrel_blind_and_side_effect_free"],
+        "proof": "Public inputs and candidate identifiers contain no evaluator answer, gold, relevance or qrel channel."
+      }
+    },
+    {
+      "id": "no_io_network_env_process",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["static_candidate_audit"],
+        "test_names": ["test_candidate_interfaces_are_answer_qrel_blind_and_side_effect_free"],
+        "proof": "The candidate import/call graph exposes no filesystem, network, environment or process primitive."
+      }
+    },
+    {
+      "id": "cold_replays_two_plus",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["cold_process_replay"],
+        "test_names": ["test_three_cold_process_replays_are_byte_identical"],
+        "proof": "Three fresh Python interpreter runs emit byte-identical canonical output."
+      }
+    },
+    {
+      "id": "aggregate_serialization_deterministic",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["aggregate_replay"],
+        "test_names": ["test_replay_and_aggregate_funnel_serialization_are_canonical_and_private"],
+        "proof": "Repeated aggregate serialization and hashing are byte deterministic and omit sensitive text."
+      }
+    },
+    {
+      "id": "duplicate_citation_rejected",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["projection_duplicate_citation"],
+        "test_names": ["test_duplicate_citation_identifiers_are_rejected"],
+        "proof": "Rendering fails closed when two projected sources carry the same citation identifier."
+      }
+    },
+    {
+      "id": "missing_qrels_policy",
+      "evidence": {
+        "suite": "external_adapter",
+        "case_ids": ["external_qrels_policy"],
+        "test_names": ["test_external_adapter_missing_qrels_no_relevant_and_relevance_modes"],
+        "proof": "Run and qrel query sets must match exactly; a missing qrel query raises a conformance error."
+      }
+    },
+    {
+      "id": "no_relevant_document_policy",
+      "evidence": {
+        "suite": "external_adapter",
+        "case_ids": ["external_qrels_policy"],
+        "test_names": ["test_external_adapter_missing_qrels_no_relevant_and_relevance_modes"],
+        "proof": "A query whose qrels contain no positive relevance grade fails closed instead of being omitted."
+      }
+    },
+    {
+      "id": "binary_and_graded_relevance",
+      "evidence": {
+        "suite": "external_adapter",
+        "case_ids": ["external_qrels_policy", "external_metric_oracles"],
+        "test_names": ["test_external_adapter_missing_qrels_no_relevant_and_relevance_modes", "test_metrics_are_deterministic_for_score_mappings_and_graded_qrels", "test_ndcg_uses_linear_trec_gains_and_empty_run_scores_zero"],
+        "proof": "Binary judgments reduce to unit gains while graded judgments retain their locked linear TREC gains."
+      }
+    },
+    {
+      "id": "archive_or_path_traversal_rejection",
+      "evidence": {
+        "suite": "external_adapter",
+        "case_ids": ["external_asset_path_validation"],
+        "test_names": ["test_bundle_rejects_path_escape_symlinks_non_regular_files_and_role_aliasing"],
+        "proof": "The local asset boundary rejects traversal, symlink, non-regular and aliased-role paths."
+      }
+    },
+    {
+      "id": "phase12_zero_access",
+      "evidence": {
+        "suite": "runner",
+        "case_ids": ["runner_zero_access"],
+        "test_names": ["test_source_lock_paths_fail_closed"],
+        "proof": "The repository path validator rejects explicit forbidden phase-path variants before access."
+      }
+    },
+    {
+      "id": "external_metric_oracles",
+      "evidence": {
+        "suite": "external_adapter",
+        "case_ids": ["external_metric_oracles"],
+        "test_names": ["test_metrics_are_deterministic_for_score_mappings_and_graded_qrels", "test_ndcg_uses_linear_trec_gains_and_empty_run_scores_zero", "test_fixture_oracle_mismatch_is_a_failed_status"],
+        "proof": "Recall and linear-gain nDCG match locked numeric oracles, and an oracle mismatch marks evaluation failed."
+      }
+    },
+    {
+      "id": "official_assets_fail_closed",
+      "evidence": {
+        "suite": "external_adapter",
+        "case_ids": ["external_official_asset_gate"],
+        "test_names": ["test_registry_has_exact_authoritative_pins_and_fails_closed_on_asset_licenses", "test_official_local_assets_are_not_opened_until_asset_license_is_resolved"],
+        "proof": "Unresolved official asset authority produces not-evaluated status without opening official content."
+      }
+    },
+    {
+      "id": "cold_process_replay",
+      "evidence": {
+        "suite": "runner",
+        "case_ids": ["cold_process_replay"],
+        "test_names": ["test_three_cold_process_replays_are_byte_identical"],
+        "proof": "Three fresh interpreter executions produce byte-identical canonical output."
+      }
+    },
+    {
+      "id": "deterministic_fusion_tie",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["deterministic_tie_and_diversity"],
+        "test_names": ["test_deterministic_ties_and_domain_provider_source_diversity"],
+        "proof": "Equal representative candidates for one canonical document resolve by stable input order across replays."
+      }
+    },
+    {
+      "id": "forbidden_scorer_fields",
+      "evidence": {
+        "suite": "retrieval",
+        "case_ids": ["static_candidate_audit"],
+        "test_names": ["test_candidate_interfaces_are_answer_qrel_blind_and_side_effect_free"],
+        "proof": "Candidate interfaces and identifiers expose no scorer-only answer, gold, relevance or qrel field."
+      }
+    },
+    {
+      "id": "network_zero_access",
+      "evidence": {
+        "suite": "runner",
+        "case_ids": ["runner_zero_access"],
+        "test_names": ["test_workflow_is_read_only_local_and_secret_free", "test_module_has_no_network_model_provider_secret_or_process_path"],
+        "proof": "Static module and workflow checks expose no network, provider or model execution path."
+      }
+    },
+    {
+      "id": "environment_secret_zero_access",
+      "evidence": {
+        "suite": "runner",
+        "case_ids": ["runner_zero_access"],
+        "test_names": ["test_secret_presence_probe_counts_names_without_reading_values", "test_workflow_is_read_only_local_and_secret_free"],
+        "proof": "The direct probe counts only bound-secret names without reading values, and the workflow binds no secret."
+      }
+    }
+  ],
+  "cases": [
+    {
+      "id": "hyphenated_identifier_beats_rank_prior",
+      "purpose": "Preserve a rare identifier and numeric token when an earlier generic result has broad lexical overlap.",
+      "query": "Which QN-7 protocol revision is current?",
+      "limit": 1,
+      "max_per_domain": 1,
+      "utility_result_ids": ["identifier_record"],
+      "expected_baseline_selected_ids": ["generic_protocol"],
+      "expected_candidate_selected_ids": ["identifier_record"],
+      "raw_results": [
+        {
+          "result_id": "generic_protocol",
+          "title": "Protocol revision overview",
+          "url": "https://catalog.example.test/protocol/revisions",
+          "snippet": "Current protocol revision and compatibility guide.",
+          "provider": "tavily",
+          "rank": 1,
+          "query": "Which QN-7 protocol revision is current?",
+          "source_type": "web",
+          "provider_score_micros": 930000,
+          "metadata": {"collection": "catalog", "language": "en"}
+        },
+        {
+          "result_id": "generic_index",
+          "title": "Current protocol index",
+          "url": "https://index.example.test/current-protocol",
+          "snippet": "Revision protocol index with general change records.",
+          "provider": "tavily",
+          "rank": 2,
+          "query": "Which QN-7 protocol revision is current?",
+          "source_type": "reference",
+          "provider_score_micros": 910000,
+          "metadata": {"collection": "index"}
+        },
+        {
+          "result_id": "identifier_record",
+          "title": "QN-7 release record",
+          "url": "https://standards.example.test/qn-7/releases",
+          "snippet": "The current QN-7 protocol revision is 7.4.",
+          "provider": "tavily",
+          "rank": 11,
+          "query": "Which QN-7 protocol revision is current?",
+          "source_type": "reference",
+          "provider_score_micros": 510000,
+          "metadata": {"collection": "release-register", "revision": "7.4"}
+        }
+      ]
+    },
+    {
+      "id": "ordered_acronym_and_number_over_keyword_scatter",
+      "purpose": "Prefer adjacent acronym and version anchors over an earlier keyword-scattered page.",
+      "query": "What is the NASA SLS Block 1B payload capacity?",
+      "limit": 1,
+      "max_per_domain": 2,
+      "utility_result_ids": ["sls_specification"],
+      "expected_baseline_selected_ids": ["keyword_scatter"],
+      "expected_candidate_selected_ids": ["sls_specification"],
+      "raw_results": [
+        {
+          "result_id": "keyword_scatter",
+          "title": "NASA payload archive SLS stories Block catalogue 1B index capacity",
+          "url": "https://archive.example.test/space/index",
+          "snippet": "A broad collection of payload and capacity pages.",
+          "provider": "tavily",
+          "rank": 1,
+          "query": "NASA SLS Block 1B payload capacity",
+          "source_type": "web",
+          "provider_score_micros": 950000,
+          "metadata": {"section": "aggregated-index"}
+        },
+        {
+          "result_id": "sls_specification",
+          "title": "SLS Block 1B payload capacity",
+          "url": "https://engineering.example.test/sls/block-1b",
+          "snippet": "NASA engineering specification for SLS Block 1B.",
+          "provider": "tavily",
+          "rank": 12,
+          "query": "NASA SLS Block 1B payload capacity",
+          "source_type": "reference",
+          "provider_score_micros": 480000,
+          "metadata": {"section": "vehicle-specification"}
+        }
+      ]
+    },
+    {
+      "id": "adaptive_domain_diversity",
+      "purpose": "Avoid spending the whole allowance on near-duplicate pages from one registrable domain.",
+      "query": "Aster climate archive methane records 2042",
+      "limit": 3,
+      "max_per_domain": 3,
+      "utility_result_ids": ["aster_primary", "aster_independent", "aster_academic"],
+      "expected_baseline_selected_ids": [
+        "aster_primary",
+        "aster_same_domain_2",
+        "aster_same_domain_3"
+      ],
+      "expected_candidate_selected_ids": [
+        "aster_primary",
+        "aster_independent",
+        "aster_academic"
+      ],
+      "raw_results": [
+        {
+          "result_id": "aster_primary",
+          "title": "Aster climate archive methane records 2042",
+          "url": "https://aster.example.test/archive/methane-2042",
+          "snippet": "Aster climate archive record.",
+          "provider": "tavily",
+          "rank": 1,
+          "query": "Aster climate archive methane records 2042",
+          "source_type": "web",
+          "metadata": {"edition": "primary"}
+        },
+        {
+          "result_id": "aster_same_domain_2",
+          "title": "Aster climate archive methane records 2042 copy",
+          "url": "https://news.aster.example.test/archive/methane-2042-copy",
+          "snippet": "Aster climate archive record copy.",
+          "provider": "tavily",
+          "rank": 2,
+          "query": "Aster climate archive methane records 2042",
+          "source_type": "web",
+          "metadata": {"edition": "syndicated-a"}
+        },
+        {
+          "result_id": "aster_same_domain_3",
+          "title": "Aster climate archive methane records 2042 mirror",
+          "url": "https://data.aster.example.test/archive/methane-2042-mirror",
+          "snippet": "Aster climate archive record mirror.",
+          "provider": "tavily",
+          "rank": 3,
+          "query": "Aster climate archive methane records 2042",
+          "source_type": "web",
+          "metadata": {"edition": "syndicated-b"}
+        },
+        {
+          "result_id": "aster_independent",
+          "title": "Aster climate archive methane records 2042 review",
+          "url": "https://independent.example.org/aster-review",
+          "snippet": "Independent archive review for 2042.",
+          "provider": "brave",
+          "rank": 8,
+          "query": "Aster climate archive methane records 2042",
+          "source_type": "news",
+          "metadata": {"edition": "independent"}
+        },
+        {
+          "result_id": "aster_academic",
+          "title": "Aster climate archive methane records 2042 study",
+          "url": "https://papers.example.edu/aster-2042",
+          "snippet": "Academic methane archive analysis.",
+          "provider": "openalex",
+          "rank": 10,
+          "query": "Aster climate archive methane records 2042",
+          "source_type": "academic",
+          "metadata": {"edition": "study"}
+        }
+      ]
+    },
+    {
+      "id": "provider_and_source_type_diversity",
+      "purpose": "Use a second provider and source family when lexical utility is otherwise comparable.",
+      "query": "Orbis graph storage benchmark 2026",
+      "limit": 2,
+      "max_per_domain": 2,
+      "utility_result_ids": ["orbis_web", "orbis_paper"],
+      "expected_baseline_selected_ids": ["orbis_web", "orbis_web_copy"],
+      "expected_candidate_selected_ids": ["orbis_web", "orbis_paper"],
+      "raw_results": [
+        {
+          "result_id": "orbis_web",
+          "title": "Orbis graph storage benchmark 2026",
+          "url": "https://bench.example.test/orbis/2026",
+          "snippet": "Orbis graph storage benchmark.",
+          "provider": "tavily",
+          "rank": 1,
+          "query": "Orbis graph storage benchmark 2026",
+          "source_type": "web",
+          "metadata": {"track": "web-a"}
+        },
+        {
+          "result_id": "orbis_web_copy",
+          "title": "Orbis graph storage benchmark 2026 results",
+          "url": "https://copy.example.test/orbis/2026",
+          "snippet": "Orbis graph storage benchmark copy.",
+          "provider": "tavily",
+          "rank": 2,
+          "query": "Orbis graph storage benchmark 2026",
+          "source_type": "web",
+          "metadata": {"track": "web-b"}
+        },
+        {
+          "result_id": "orbis_paper",
+          "title": "Orbis graph storage benchmark 2026 paper",
+          "url": "https://research.example.edu/orbis-graph-2026",
+          "snippet": "Orbis graph storage benchmark study.",
+          "provider": "openalex",
+          "rank": 8,
+          "query": "Orbis graph storage benchmark 2026",
+          "source_type": "academic",
+          "metadata": {"track": "paper"}
+        }
+      ]
+    },
+    {
+      "id": "canonical_fusion_lineage_and_invalid_url",
+      "purpose": "Collapse tracking variants, retain every ordered provider observation and count an invalid URL without exposing content in the funnel.",
+      "query": "Orion SDK API documentation",
+      "limit": 2,
+      "max_per_domain": 1,
+      "utility_result_ids": ["orion_tavily", "orion_brave", "orion_guide"],
+      "expected_baseline_selected_ids": ["orion_brave", "orion_guide"],
+      "expected_candidate_selected_ids": ["orion_brave", "orion_guide"],
+      "raw_results": [
+        {
+          "result_id": "orion_tavily",
+          "title": "Orion SDK documentation",
+          "url": "https://docs.example.test/orion/?utm_source=search",
+          "snippet": "Official Orion SDK index.",
+          "provider": "tavily",
+          "rank": 2,
+          "query": "Orion SDK API documentation",
+          "source_type": "code",
+          "provider_score_micros": 840000,
+          "metadata": {"region": "global", "adapter_order": 1}
+        },
+        {
+          "result_id": "orion_brave",
+          "title": "Orion SDK API documentation",
+          "url": "https://docs.example.test/orion",
+          "snippet": "Orion SDK API documentation with methods and examples.",
+          "provider": "brave",
+          "rank": 4,
+          "query": "Orion SDK API documentation",
+          "source_type": "code",
+          "provider_score_micros": 790000,
+          "metadata": {"region": "global", "adapter_order": 2}
+        },
+        {
+          "result_id": "orion_guide",
+          "title": "Orion SDK API guide",
+          "url": "https://guide.example.org/orion-sdk",
+          "snippet": "Independent Orion SDK documentation guide.",
+          "provider": "github",
+          "rank": 6,
+          "query": "Orion SDK API documentation",
+          "source_type": "code",
+          "provider_score_micros": 700000,
+          "metadata": {"region": "global", "adapter_order": 3}
+        },
+        {
+          "result_id": "invalid_transport",
+          "title": "Orion SDK mirror",
+          "url": "ftp://invalid.example.test/orion",
+          "snippet": "Unsupported transport.",
+          "provider": "tavily",
+          "rank": 7,
+          "query": "Orion SDK API documentation",
+          "source_type": "code",
+          "metadata": {"region": "global", "adapter_order": 4}
+        }
+      ]
+    }
+  ]
+}

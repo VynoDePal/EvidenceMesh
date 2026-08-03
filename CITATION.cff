@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use EvidenceMesh in published work, cite this software."
+title: EvidenceMesh
+type: software
+version: 0.1.0
+date-released: 2026-07-28
+authors:
+  - family-names: ODJO
+    given-names: Kévyn
+repository-code: "https://github.com/VynoDePal/EvidenceMesh"
+license: Apache-2.0

@@ -1,0 +1,92 @@
+{
+  "authority": {
+    "artifact_publication_allowed": false,
+    "distribution_publication_allowed": false,
+    "github_release_allowed": false,
+    "live_execution_allowed": false,
+    "merge_allowed": false,
+    "model_calls_allowed": false,
+    "provider_calls_allowed": false,
+    "tag_publication_allowed": false
+  },
+  "budgets": {
+    "additional_dependency_install_attempts": 0,
+    "additional_public_clone_attempts": 0,
+    "client_timeout_seconds": 30,
+    "external_document_requests": 0,
+    "local_prompt_gets": 1,
+    "local_resource_reads": 1,
+    "logical_mcp_requests_maximum": 7,
+    "maximum_additional_seconds": 60,
+    "mcp_server_launch_attempts": 1,
+    "mcp_sessions": 1,
+    "mcp_tool_calls": 1,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "read_timeout_seconds": 10,
+    "retries": 0,
+    "runtime_network_requests": 0,
+    "search_calls": 0
+  },
+  "candidate": {
+    "commit_sha": "145f5f923825ffeaeb485bd680bc79410ab290d1",
+    "tree_sha": "3b36c2d3970a5e3c325a2b20260daabf23d33a29",
+    "version": "0.1.0"
+  },
+  "canonical_environment": {
+    "architecture": "x86_64",
+    "mcp_python_sdk": "1.29.0",
+    "operating_system": "Ubuntu 24.04",
+    "python_version": "3.11"
+  },
+  "decision": {
+    "fail_closed": true,
+    "phase_12_authorized": false,
+    "public_release_authorized": false,
+    "quality_claim_authorized": false,
+    "v1_ready": false
+  },
+  "descriptor": {
+    "command_absolute_required": true,
+    "environment_allowlist_exact": true,
+    "format": "EvidenceMesh documented mcpServers STDIO descriptor",
+    "mcp_host_configuration_schema_claimed_universal": false,
+    "path": "examples/evidencemesh.mcp.json",
+    "secrets_allowed": false,
+    "template_sha256": "81f631f82166f70d81712d7e9ab82cdb3dc20b8ba592d65ba59473faf5b4295e"
+  },
+  "journey": [
+    "initialize",
+    "tools/list",
+    "resources/list",
+    "prompts/list",
+    "tools/call health",
+    "resources/read evidencemesh://research-guide",
+    "prompts/get evidence_first_research"
+  ],
+  "limitations": {
+    "gui_host_validated": false,
+    "live_provider_validation": false,
+    "macos_validated": false,
+    "network_guard_scope": "python_socket_api",
+    "operating_system_network_namespace_enforced": false,
+    "server_graceful_self_exit_verified": false,
+    "windows_native_supported": false,
+    "windows_validated": false
+  },
+  "prerequisite": {
+    "branch": "agent/evidencemesh-v0.1",
+    "commit_sha": "d34abe56b95c9daccf361eb86ff1c19421085f62",
+    "gate": "Alpha A1-P0 installability",
+    "receipt_required": true,
+    "tree_sha": "c622cfe868a2bc77cd487ec17107eb225f882a4c",
+    "trigger_head_exact_required": true
+  },
+  "publication": {
+    "artifacts": 0,
+    "distributions": 0,
+    "releases": 0,
+    "tags": 0
+  },
+  "schema_version": "evidencemesh.alpha-a1-p1-mcp-first-run-policy.v1"
+}

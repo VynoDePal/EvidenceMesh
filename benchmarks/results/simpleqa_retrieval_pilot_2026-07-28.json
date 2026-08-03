@@ -1,0 +1,3420 @@
+{
+  "schema_version": 2,
+  "benchmark": "retrieval-only/simpleqa-source-recall-v1",
+  "task_type": "retrieval_only",
+  "dataset": {
+    "name": "SimpleQA test set",
+    "source_url": "https://openaipublic.blob.core.windows.net/simple-evals/simple_qa_test_set.csv",
+    "sha256": "feee3f7e7db3617e94e8fcf1977b756ec420ef8568f4e0fcbbe0e92e9d5fc032",
+    "reference_repository_commit": "652c89d0ca9df547706735883097e9537d40dc47",
+    "reference_file_blob": "0fc266800a87ace55ec192c9a91cafe92fef7b48",
+    "license": "MIT (openai/simple-evals)"
+  },
+  "sample": {
+    "count": 30,
+    "seed": 0,
+    "method": "python random.Random(seed).sample without replacement",
+    "ids": [
+      "a5a7f54a0913deeb",
+      "32ad377a70f49efc",
+      "05dc2e9a742478c8",
+      "94c8a1f5ef64e4ab",
+      "7e77065498b8172e",
+      "af8aaa4d8870e5f4",
+      "7f255f9fff634d85",
+      "66c9af24dca536c2",
+      "a67add2b942d2840",
+      "8c5cb29cbf8c243b",
+      "f604387c4f935a3d",
+      "d8b9b49dcc3dd1fd",
+      "8bc109ec15d55d12",
+      "0ac2a4c0b88e5612",
+      "7675c54a51bef507",
+      "b93816745f43365f",
+      "cf1a10a2dc112c28",
+      "76827593bdcea4f5",
+      "4e51705f5babf7aa",
+      "819e4e2ae832d3da",
+      "b46c4ae0d72d9a95",
+      "945898efe6f6bac6",
+      "95e9a61446b4c7b8",
+      "8de31623fb7db2ff",
+      "11fa323ade73b273",
+      "ce8a23cc9096036e",
+      "1bdd4730d5fec353",
+      "bdc7ca31722319c7",
+      "b3fd5fe3112830e6",
+      "fb15cf92460b3a0e"
+    ],
+    "manifest_sha256": "32257293df2cc2eba1381fd7275391ec54d25fb868f4fb3f0d85be7b9403f613",
+    "rows_with_gold_urls": 30,
+    "topic_distribution": {
+      "Art": 4,
+      "Geography": 2,
+      "History": 2,
+      "Other": 3,
+      "Politics": 9,
+      "Science and technology": 3,
+      "Sports": 1,
+      "TV shows": 2,
+      "Video games": 4
+    },
+    "answer_type_distribution": {
+      "Date": 11,
+      "Number": 5,
+      "Other": 5,
+      "Person": 6,
+      "Place": 3
+    }
+  },
+  "protocol": {
+    "profiles": [
+      {
+        "name": "federated",
+        "providers": [
+          "ddgs",
+          "wikipedia"
+        ]
+      },
+      {
+        "name": "ddgs",
+        "providers": [
+          "ddgs"
+        ]
+      },
+      {
+        "name": "wikipedia",
+        "providers": [
+          "wikipedia"
+        ]
+      }
+    ],
+    "snapshot_strategy": "one live call per provider/question; every profile is ranked from the same provider snapshots",
+    "provider_call_order": "interleaved question-major",
+    "live_provider_call_count": 60,
+    "provider_endpoints": {
+      "ddgs": "backend selected at runtime by the ddgs package",
+      "wikipedia": "https://{language}.wikipedia.org/w/api.php"
+    },
+    "max_results": 10,
+    "language": "en",
+    "cache": false,
+    "fetch_content": false,
+    "global_provider_call_concurrency": 3,
+    "request_timeout_seconds": 15.0
+  },
+  "environment": {
+    "started_at": "2026-07-28T18:06:28.181372+00:00",
+    "finished_at": "2026-07-28T18:09:24.880093+00:00",
+    "commit_sha": "cf654b184132e9ae8bbf5d9598b48a52ad4a22ad",
+    "execution_commit_sha": "781e6d62a875b9d1c910d4b506f54dcdabffe960",
+    "source_tree_sha": "2af9340fbb5c8e7769d5b3b8a06a169430cd0f25",
+    "commit_equivalence": "execution and published commits have the identical source tree",
+    "python": "3.12.13",
+    "platform": "Linux-6.12.13-x86_64-with-glibc2.39",
+    "network_region": "not-exposed-by-managed-runtime",
+    "dependency_versions": {
+      "ddgs": "9.14.4",
+      "fastmcp": "3.4.5",
+      "httpx": "0.28.1",
+      "pydantic": "2.13.4"
+    }
+  },
+  "health": {
+    "shared_provider_engine": {
+      "status": "ready",
+      "version": "0.1.0",
+      "providers": [
+        {
+          "name": "ddgs",
+          "profiles": [
+            "academic",
+            "code",
+            "news",
+            "web"
+          ]
+        },
+        {
+          "name": "wikipedia",
+          "profiles": [
+            "academic",
+            "web"
+          ]
+        }
+      ],
+      "configuration_warnings": [],
+      "safety": {
+        "private_networks_allowed": false,
+        "nonstandard_ports_allowed": false,
+        "robots_txt_respected": true,
+        "max_download_bytes": 10000000,
+        "dns_pinning": true,
+        "dns_timeout_seconds": 5.0,
+        "max_pdf_pages": 100
+      }
+    },
+    "profiles": {
+      "federated": {
+        "status": "ready",
+        "intended_providers": [
+          "ddgs",
+          "wikipedia"
+        ],
+        "active_providers": [
+          "ddgs",
+          "wikipedia"
+        ],
+        "missing_providers": []
+      },
+      "ddgs": {
+        "status": "ready",
+        "intended_providers": [
+          "ddgs"
+        ],
+        "active_providers": [
+          "ddgs"
+        ],
+        "missing_providers": []
+      },
+      "wikipedia": {
+        "status": "ready",
+        "intended_providers": [
+          "wikipedia"
+        ],
+        "active_providers": [
+          "wikipedia"
+        ],
+        "missing_providers": []
+      }
+    }
+  },
+  "metrics": {
+    "federated": {
+      "sample_count": 30,
+      "availability": {
+        "numerator": 17,
+        "denominator": 30,
+        "rate": 0.566667,
+        "wilson_95": [
+          0.391973,
+          0.726225
+        ]
+      },
+      "query_exception_rate": {
+        "numerator": 0,
+        "denominator": 30,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.113513
+        ]
+      },
+      "partial_failure_rate": {
+        "numerator": 30,
+        "denominator": 30,
+        "rate": 1.0,
+        "wilson_95": [
+          0.886487,
+          1.0
+        ]
+      },
+      "provider_call_failure_rate": 0.533333,
+      "provider_calls": 60,
+      "provider_failures": 32,
+      "latency_ms": {
+        "p50": 15002.679,
+        "p95": 15007.967
+      },
+      "mean_result_count": 1.4,
+      "mean_unique_domains": 0.566667,
+      "gold_url_mrr": 0.116667,
+      "answer_coverage_at_1": {
+        "numerator": 0,
+        "denominator": 30,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.113513
+        ]
+      },
+      "gold_url_hit_at_1": {
+        "numerator": 3,
+        "denominator": 30,
+        "rate": 0.1,
+        "wilson_95": [
+          0.0346,
+          0.256211
+        ]
+      },
+      "gold_domain_hit_at_1": {
+        "numerator": 15,
+        "denominator": 30,
+        "rate": 0.5,
+        "wilson_95": [
+          0.331541,
+          0.668459
+        ]
+      },
+      "answer_coverage_at_3": {
+        "numerator": 1,
+        "denominator": 30,
+        "rate": 0.033333,
+        "wilson_95": [
+          0.005909,
+          0.166704
+        ]
+      },
+      "gold_url_hit_at_3": {
+        "numerator": 4,
+        "denominator": 30,
+        "rate": 0.133333,
+        "wilson_95": [
+          0.053097,
+          0.296813
+        ]
+      },
+      "gold_domain_hit_at_3": {
+        "numerator": 15,
+        "denominator": 30,
+        "rate": 0.5,
+        "wilson_95": [
+          0.331541,
+          0.668459
+        ]
+      },
+      "answer_coverage_at_5": {
+        "numerator": 1,
+        "denominator": 30,
+        "rate": 0.033333,
+        "wilson_95": [
+          0.005909,
+          0.166704
+        ]
+      },
+      "gold_url_hit_at_5": {
+        "numerator": 4,
+        "denominator": 30,
+        "rate": 0.133333,
+        "wilson_95": [
+          0.053097,
+          0.296813
+        ]
+      },
+      "gold_domain_hit_at_5": {
+        "numerator": 15,
+        "denominator": 30,
+        "rate": 0.5,
+        "wilson_95": [
+          0.331541,
+          0.668459
+        ]
+      },
+      "answer_coverage_at_10": {
+        "numerator": 1,
+        "denominator": 30,
+        "rate": 0.033333,
+        "wilson_95": [
+          0.005909,
+          0.166704
+        ]
+      },
+      "gold_url_hit_at_10": {
+        "numerator": 4,
+        "denominator": 30,
+        "rate": 0.133333,
+        "wilson_95": [
+          0.053097,
+          0.296813
+        ]
+      },
+      "gold_domain_hit_at_10": {
+        "numerator": 15,
+        "denominator": 30,
+        "rate": 0.5,
+        "wilson_95": [
+          0.331541,
+          0.668459
+        ]
+      }
+    },
+    "ddgs": {
+      "sample_count": 30,
+      "availability": {
+        "numerator": 0,
+        "denominator": 30,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.113513
+        ]
+      },
+      "query_exception_rate": {
+        "numerator": 0,
+        "denominator": 30,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.113513
+        ]
+      },
+      "partial_failure_rate": {
+        "numerator": 30,
+        "denominator": 30,
+        "rate": 1.0,
+        "wilson_95": [
+          0.886487,
+          1.0
+        ]
+      },
+      "provider_call_failure_rate": 1.0,
+      "provider_calls": 30,
+      "provider_failures": 30,
+      "latency_ms": {
+        "p50": 15002.679,
+        "p95": 15007.967
+      },
+      "mean_result_count": 0.0,
+      "mean_unique_domains": 0.0,
+      "gold_url_mrr": 0.0,
+      "answer_coverage_at_1": {
+        "numerator": 0,
+        "denominator": 30,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.113513
+        ]
+      },
+      "gold_url_hit_at_1": {
+        "numerator": 0,
+        "denominator": 30,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.113513
+        ]
+      },
+      "gold_domain_hit_at_1": {
+        "numerator": 0,
+        "denominator": 30,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.113513
+        ]
+      },
+      "answer_coverage_at_3": {
+        "numerator": 0,
+        "denominator": 30,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.113513
+        ]
+      },
+      "gold_url_hit_at_3": {
+        "numerator": 0,
+        "denominator": 30,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.113513
+        ]
+      },
+      "gold_domain_hit_at_3": {
+        "numerator": 0,
+        "denominator": 30,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.113513
+        ]
+      },
+      "answer_coverage_at_5": {
+        "numerator": 0,
+        "denominator": 30,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.113513
+        ]
+      },
+      "gold_url_hit_at_5": {
+        "numerator": 0,
+        "denominator": 30,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.113513
+        ]
+      },
+      "gold_domain_hit_at_5": {
+        "numerator": 0,
+        "denominator": 30,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.113513
+        ]
+      },
+      "answer_coverage_at_10": {
+        "numerator": 0,
+        "denominator": 30,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.113513
+        ]
+      },
+      "gold_url_hit_at_10": {
+        "numerator": 0,
+        "denominator": 30,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.113513
+        ]
+      },
+      "gold_domain_hit_at_10": {
+        "numerator": 0,
+        "denominator": 30,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.113513
+        ]
+      }
+    },
+    "wikipedia": {
+      "sample_count": 30,
+      "availability": {
+        "numerator": 17,
+        "denominator": 30,
+        "rate": 0.566667,
+        "wilson_95": [
+          0.391973,
+          0.726225
+        ]
+      },
+      "query_exception_rate": {
+        "numerator": 0,
+        "denominator": 30,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.113513
+        ]
+      },
+      "partial_failure_rate": {
+        "numerator": 2,
+        "denominator": 30,
+        "rate": 0.066667,
+        "wilson_95": [
+          0.018477,
+          0.213235
+        ]
+      },
+      "provider_call_failure_rate": 0.066667,
+      "provider_calls": 30,
+      "provider_failures": 2,
+      "latency_ms": {
+        "p50": 724.632,
+        "p95": 8590.744
+      },
+      "mean_result_count": 1.4,
+      "mean_unique_domains": 0.566667,
+      "gold_url_mrr": 0.116667,
+      "answer_coverage_at_1": {
+        "numerator": 0,
+        "denominator": 30,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.113513
+        ]
+      },
+      "gold_url_hit_at_1": {
+        "numerator": 3,
+        "denominator": 30,
+        "rate": 0.1,
+        "wilson_95": [
+          0.0346,
+          0.256211
+        ]
+      },
+      "gold_domain_hit_at_1": {
+        "numerator": 15,
+        "denominator": 30,
+        "rate": 0.5,
+        "wilson_95": [
+          0.331541,
+          0.668459
+        ]
+      },
+      "answer_coverage_at_3": {
+        "numerator": 1,
+        "denominator": 30,
+        "rate": 0.033333,
+        "wilson_95": [
+          0.005909,
+          0.166704
+        ]
+      },
+      "gold_url_hit_at_3": {
+        "numerator": 4,
+        "denominator": 30,
+        "rate": 0.133333,
+        "wilson_95": [
+          0.053097,
+          0.296813
+        ]
+      },
+      "gold_domain_hit_at_3": {
+        "numerator": 15,
+        "denominator": 30,
+        "rate": 0.5,
+        "wilson_95": [
+          0.331541,
+          0.668459
+        ]
+      },
+      "answer_coverage_at_5": {
+        "numerator": 1,
+        "denominator": 30,
+        "rate": 0.033333,
+        "wilson_95": [
+          0.005909,
+          0.166704
+        ]
+      },
+      "gold_url_hit_at_5": {
+        "numerator": 4,
+        "denominator": 30,
+        "rate": 0.133333,
+        "wilson_95": [
+          0.053097,
+          0.296813
+        ]
+      },
+      "gold_domain_hit_at_5": {
+        "numerator": 15,
+        "denominator": 30,
+        "rate": 0.5,
+        "wilson_95": [
+          0.331541,
+          0.668459
+        ]
+      },
+      "answer_coverage_at_10": {
+        "numerator": 1,
+        "denominator": 30,
+        "rate": 0.033333,
+        "wilson_95": [
+          0.005909,
+          0.166704
+        ]
+      },
+      "gold_url_hit_at_10": {
+        "numerator": 4,
+        "denominator": 30,
+        "rate": 0.133333,
+        "wilson_95": [
+          0.053097,
+          0.296813
+        ]
+      },
+      "gold_domain_hit_at_10": {
+        "numerator": 15,
+        "denominator": 30,
+        "rate": 0.5,
+        "wilson_95": [
+          0.331541,
+          0.668459
+        ]
+      }
+    }
+  },
+  "paired_comparisons": [
+    {
+      "left": "federated",
+      "right": "ddgs",
+      "paired_sample_count": 30,
+      "answer": {
+        "eligible_pairs": 30,
+        "left_only_hits": 1,
+        "right_only_hits": 0,
+        "paired_rate_delta": 0.033333
+      },
+      "gold_url": {
+        "eligible_pairs": 30,
+        "left_only_hits": 4,
+        "right_only_hits": 0,
+        "paired_rate_delta": 0.133333
+      },
+      "gold_domain": {
+        "eligible_pairs": 30,
+        "left_only_hits": 15,
+        "right_only_hits": 0,
+        "paired_rate_delta": 0.5
+      }
+    },
+    {
+      "left": "federated",
+      "right": "wikipedia",
+      "paired_sample_count": 30,
+      "answer": {
+        "eligible_pairs": 30,
+        "left_only_hits": 0,
+        "right_only_hits": 0,
+        "paired_rate_delta": 0.0
+      },
+      "gold_url": {
+        "eligible_pairs": 30,
+        "left_only_hits": 0,
+        "right_only_hits": 0,
+        "paired_rate_delta": 0.0
+      },
+      "gold_domain": {
+        "eligible_pairs": 30,
+        "left_only_hits": 0,
+        "right_only_hits": 0,
+        "paired_rate_delta": 0.0
+      }
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "a5a7f54a0913deeb",
+      "profile": "federated",
+      "latency_ms": 15003.59,
+      "result_count": 3,
+      "raw_result_count": 20,
+      "deduplicated_result_count": 20,
+      "unique_domains": 1,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/List_of_Pakistanis",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "62e3c20c790e71d985ed49392662cc7b60abf81dd6a3573af9e3d5a336ea0343"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/Muhammad_%28name%29",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "0e8353cae9aa14f374a1a88e76368e8f178b8e9a745edbb04d0ddde82e56d1d5"
+        },
+        {
+          "rank": 3,
+          "url": "https://en.wikipedia.org/wiki/List_of_Pakistani_political_families",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "12d9ed7b096f56ffa4358251d0bcbc16dc63126a69a500b7bae1acef65da0db5"
+        }
+      ],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "a5a7f54a0913deeb",
+      "profile": "ddgs",
+      "latency_ms": 15003.59,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "a5a7f54a0913deeb",
+      "profile": "wikipedia",
+      "latency_ms": 8440.291,
+      "result_count": 3,
+      "raw_result_count": 20,
+      "deduplicated_result_count": 20,
+      "unique_domains": 1,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/List_of_Pakistanis",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "62e3c20c790e71d985ed49392662cc7b60abf81dd6a3573af9e3d5a336ea0343"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/Muhammad_%28name%29",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "0e8353cae9aa14f374a1a88e76368e8f178b8e9a745edbb04d0ddde82e56d1d5"
+        },
+        {
+          "rank": 3,
+          "url": "https://en.wikipedia.org/wiki/List_of_Pakistani_political_families",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "12d9ed7b096f56ffa4358251d0bcbc16dc63126a69a500b7bae1acef65da0db5"
+        }
+      ],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "32ad377a70f49efc",
+      "profile": "federated",
+      "latency_ms": 11506.43,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "DDGS request failed: TimeoutException"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "32ad377a70f49efc",
+      "profile": "ddgs",
+      "latency_ms": 11506.43,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "DDGS request failed: TimeoutException"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "32ad377a70f49efc",
+      "profile": "wikipedia",
+      "latency_ms": 278.69,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "05dc2e9a742478c8",
+      "profile": "federated",
+      "latency_ms": 15006.016,
+      "result_count": 3,
+      "raw_result_count": 20,
+      "deduplicated_result_count": 20,
+      "unique_domains": 1,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": 2,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Ichir%C5%8D_Hatoyama",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "480bff139f77308b20ebcf6c6bcc390a90fe81200e7c639df143d1e9ddda0f45"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/List_of_prime_ministers_of_Japan",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "2188be970324e0debfec5d0e8bde75f79c0b184b38195c835c2fbd022ea19db6"
+        },
+        {
+          "rank": 3,
+          "url": "https://en.wikipedia.org/wiki/Yukio_Hatoyama",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "d0e5b0993d10c07726c9259f17a8e40e083579565c62570d99a4deb8ddeb453c"
+        }
+      ],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "05dc2e9a742478c8",
+      "profile": "ddgs",
+      "latency_ms": 15006.016,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "05dc2e9a742478c8",
+      "profile": "wikipedia",
+      "latency_ms": 350.347,
+      "result_count": 3,
+      "raw_result_count": 20,
+      "deduplicated_result_count": 20,
+      "unique_domains": 1,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": 2,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Ichir%C5%8D_Hatoyama",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "480bff139f77308b20ebcf6c6bcc390a90fe81200e7c639df143d1e9ddda0f45"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/List_of_prime_ministers_of_Japan",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "2188be970324e0debfec5d0e8bde75f79c0b184b38195c835c2fbd022ea19db6"
+        },
+        {
+          "rank": 3,
+          "url": "https://en.wikipedia.org/wiki/Yukio_Hatoyama",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "d0e5b0993d10c07726c9259f17a8e40e083579565c62570d99a4deb8ddeb453c"
+        }
+      ],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "94c8a1f5ef64e4ab",
+      "profile": "federated",
+      "latency_ms": 15004.068,
+      "result_count": 2,
+      "raw_result_count": 2,
+      "deduplicated_result_count": 2,
+      "unique_domains": 1,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Records_of_members_of_parliament_of_the_United_Kingdom",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "0d5c69a7ae233ad7481d9717ecbcd93f9f7db4262383c2ffce8ebcc859e8a95e"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/History_of_Plymouth%2C_Pennsylvania",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "8acd8ef3e8ce9f72573530992423fe8568217bc4674452c5930a9c181cb6e27e"
+        }
+      ],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "94c8a1f5ef64e4ab",
+      "profile": "ddgs",
+      "latency_ms": 15004.068,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "94c8a1f5ef64e4ab",
+      "profile": "wikipedia",
+      "latency_ms": 319.779,
+      "result_count": 2,
+      "raw_result_count": 2,
+      "deduplicated_result_count": 2,
+      "unique_domains": 1,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Records_of_members_of_parliament_of_the_United_Kingdom",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "0d5c69a7ae233ad7481d9717ecbcd93f9f7db4262383c2ffce8ebcc859e8a95e"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/History_of_Plymouth%2C_Pennsylvania",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "8acd8ef3e8ce9f72573530992423fe8568217bc4674452c5930a9c181cb6e27e"
+        }
+      ],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "7e77065498b8172e",
+      "profile": "federated",
+      "latency_ms": 15002.43,
+      "result_count": 3,
+      "raw_result_count": 11,
+      "deduplicated_result_count": 11,
+      "unique_domains": 1,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": 1,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Henri_d%27Angoul%C3%AAme",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "0a1a97a8855a4932cfac55d95a0e2c7e9007f96a00c276dc18d8746b09c2ad2c"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/Anne_de_Montmorency%2C_1st_Duke_of_Montmorency",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "f1e34ff3da9e159fa973848a6b701e1ca2a799fca5df18c25da05fc34eb0a35a"
+        },
+        {
+          "rank": 3,
+          "url": "https://en.wikipedia.org/wiki/Louis_de_Saint-Gelais",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "255c47492c1807e2411c7a2ada9d2b87b47cbc241cd984f03ef5d9009f964fa6"
+        }
+      ],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "7e77065498b8172e",
+      "profile": "ddgs",
+      "latency_ms": 15002.43,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "7e77065498b8172e",
+      "profile": "wikipedia",
+      "latency_ms": 8590.744,
+      "result_count": 3,
+      "raw_result_count": 11,
+      "deduplicated_result_count": 11,
+      "unique_domains": 1,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": 1,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Henri_d%27Angoul%C3%AAme",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "0a1a97a8855a4932cfac55d95a0e2c7e9007f96a00c276dc18d8746b09c2ad2c"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/Anne_de_Montmorency%2C_1st_Duke_of_Montmorency",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "f1e34ff3da9e159fa973848a6b701e1ca2a799fca5df18c25da05fc34eb0a35a"
+        },
+        {
+          "rank": 3,
+          "url": "https://en.wikipedia.org/wiki/Louis_de_Saint-Gelais",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "255c47492c1807e2411c7a2ada9d2b87b47cbc241cd984f03ef5d9009f964fa6"
+        }
+      ],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "af8aaa4d8870e5f4",
+      "profile": "federated",
+      "latency_ms": 15007.96,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "af8aaa4d8870e5f4",
+      "profile": "ddgs",
+      "latency_ms": 15007.96,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "af8aaa4d8870e5f4",
+      "profile": "wikipedia",
+      "latency_ms": 1774.073,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "7f255f9fff634d85",
+      "profile": "federated",
+      "latency_ms": 15001.047,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "7f255f9fff634d85",
+      "profile": "ddgs",
+      "latency_ms": 15001.047,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "7f255f9fff634d85",
+      "profile": "wikipedia",
+      "latency_ms": 331.627,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "66c9af24dca536c2",
+      "profile": "federated",
+      "latency_ms": 15000.567,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "66c9af24dca536c2",
+      "profile": "ddgs",
+      "latency_ms": 15000.567,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "66c9af24dca536c2",
+      "profile": "wikipedia",
+      "latency_ms": 4849.067,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "a67add2b942d2840",
+      "profile": "federated",
+      "latency_ms": 15005.911,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "a67add2b942d2840",
+      "profile": "ddgs",
+      "latency_ms": 15005.911,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "a67add2b942d2840",
+      "profile": "wikipedia",
+      "latency_ms": 250.821,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "8c5cb29cbf8c243b",
+      "profile": "federated",
+      "latency_ms": 15001.889,
+      "result_count": 3,
+      "raw_result_count": 20,
+      "deduplicated_result_count": 20,
+      "unique_domains": 1,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/List_of_former_TV_channels_in_the_United_Kingdom",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "07c6154fc397c44b21958b27193ec1f7b813a3948d2d8a320dd6ffe7936915de"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/Television_in_the_United_Kingdom",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "9af26b04e1b4a4ce373c400516299407d4a186547d65521525cdb38ff8537f84"
+        },
+        {
+          "rank": 3,
+          "url": "https://en.wikipedia.org/wiki/List_of_DTT_channels_in_the_United_Kingdom",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "76ea1c9d4e52ba5d265bf739d098aabad70f510070a80e9ac66203b55856f952"
+        }
+      ],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "8c5cb29cbf8c243b",
+      "profile": "ddgs",
+      "latency_ms": 15001.889,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "8c5cb29cbf8c243b",
+      "profile": "wikipedia",
+      "latency_ms": 470.728,
+      "result_count": 3,
+      "raw_result_count": 20,
+      "deduplicated_result_count": 20,
+      "unique_domains": 1,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/List_of_former_TV_channels_in_the_United_Kingdom",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "07c6154fc397c44b21958b27193ec1f7b813a3948d2d8a320dd6ffe7936915de"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/Television_in_the_United_Kingdom",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "9af26b04e1b4a4ce373c400516299407d4a186547d65521525cdb38ff8537f84"
+        },
+        {
+          "rank": 3,
+          "url": "https://en.wikipedia.org/wiki/List_of_DTT_channels_in_the_United_Kingdom",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "76ea1c9d4e52ba5d265bf739d098aabad70f510070a80e9ac66203b55856f952"
+        }
+      ],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "f604387c4f935a3d",
+      "profile": "federated",
+      "latency_ms": 15001.265,
+      "result_count": 1,
+      "raw_result_count": 1,
+      "deduplicated_result_count": 1,
+      "unique_domains": 1,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": 1,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Eritrea",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "3ddd1e324f97c9828c7704b14a1a513ea5e38f58633c44c87b92059fb0eb9360"
+        }
+      ],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "f604387c4f935a3d",
+      "profile": "ddgs",
+      "latency_ms": 15001.265,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "f604387c4f935a3d",
+      "profile": "wikipedia",
+      "latency_ms": 3830.104,
+      "result_count": 1,
+      "raw_result_count": 1,
+      "deduplicated_result_count": 1,
+      "unique_domains": 1,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": 1,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Eritrea",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "3ddd1e324f97c9828c7704b14a1a513ea5e38f58633c44c87b92059fb0eb9360"
+        }
+      ],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "d8b9b49dcc3dd1fd",
+      "profile": "federated",
+      "latency_ms": 15007.967,
+      "result_count": 1,
+      "raw_result_count": 1,
+      "deduplicated_result_count": 1,
+      "unique_domains": 1,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Yoshimasa_Hosoya",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "826a6c4eae66b2cd4d62d2522fc7d3399ca03ec27a7ecde2bff2836dcfdb7452"
+        }
+      ],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "d8b9b49dcc3dd1fd",
+      "profile": "ddgs",
+      "latency_ms": 15007.967,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "d8b9b49dcc3dd1fd",
+      "profile": "wikipedia",
+      "latency_ms": 2623.389,
+      "result_count": 1,
+      "raw_result_count": 1,
+      "deduplicated_result_count": 1,
+      "unique_domains": 1,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Yoshimasa_Hosoya",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "826a6c4eae66b2cd4d62d2522fc7d3399ca03ec27a7ecde2bff2836dcfdb7452"
+        }
+      ],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "8bc109ec15d55d12",
+      "profile": "federated",
+      "latency_ms": 15004.107,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "8bc109ec15d55d12",
+      "profile": "ddgs",
+      "latency_ms": 15004.107,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "8bc109ec15d55d12",
+      "profile": "wikipedia",
+      "latency_ms": 230.653,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "0ac2a4c0b88e5612",
+      "profile": "federated",
+      "latency_ms": 15002.488,
+      "result_count": 1,
+      "raw_result_count": 1,
+      "deduplicated_result_count": 1,
+      "unique_domains": 1,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Sam_Manekshaw",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "f44f16659231ca15355aa39ef551e740ac097e27d53a243f3472b89d7339d051"
+        }
+      ],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "0ac2a4c0b88e5612",
+      "profile": "ddgs",
+      "latency_ms": 15002.488,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "0ac2a4c0b88e5612",
+      "profile": "wikipedia",
+      "latency_ms": 6149.995,
+      "result_count": 1,
+      "raw_result_count": 1,
+      "deduplicated_result_count": 1,
+      "unique_domains": 1,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Sam_Manekshaw",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "f44f16659231ca15355aa39ef551e740ac097e27d53a243f3472b89d7339d051"
+        }
+      ],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "7675c54a51bef507",
+      "profile": "federated",
+      "latency_ms": 15002.679,
+      "result_count": 3,
+      "raw_result_count": 3,
+      "deduplicated_result_count": 3,
+      "unique_domains": 1,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Antioquia_Department",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "f183681f34c4b1ac7c9c1077622dd1da806fbab16619259f637042b58f4da235"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/Montebello%2C_Antioquia",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "62d2d9e297ebef029dbabee1c45d2b4b963b065448c89006c7cf18adc59f82e4"
+        },
+        {
+          "rank": 3,
+          "url": "https://en.wikipedia.org/wiki/Pueblorrico",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "19a4549ca9ffa2634b2e8ddcf282295a6aea34f2b11676cd86d5a1a98c07a8f7"
+        }
+      ],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "7675c54a51bef507",
+      "profile": "ddgs",
+      "latency_ms": 15002.679,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "7675c54a51bef507",
+      "profile": "wikipedia",
+      "latency_ms": 2678.324,
+      "result_count": 3,
+      "raw_result_count": 3,
+      "deduplicated_result_count": 3,
+      "unique_domains": 1,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Antioquia_Department",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "f183681f34c4b1ac7c9c1077622dd1da806fbab16619259f637042b58f4da235"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/Montebello%2C_Antioquia",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "62d2d9e297ebef029dbabee1c45d2b4b963b065448c89006c7cf18adc59f82e4"
+        },
+        {
+          "rank": 3,
+          "url": "https://en.wikipedia.org/wiki/Pueblorrico",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "19a4549ca9ffa2634b2e8ddcf282295a6aea34f2b11676cd86d5a1a98c07a8f7"
+        }
+      ],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "b93816745f43365f",
+      "profile": "federated",
+      "latency_ms": 15003.105,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "b93816745f43365f",
+      "profile": "ddgs",
+      "latency_ms": 15003.105,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "b93816745f43365f",
+      "profile": "wikipedia",
+      "latency_ms": 236.075,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "cf1a10a2dc112c28",
+      "profile": "federated",
+      "latency_ms": 15001.11,
+      "result_count": 3,
+      "raw_result_count": 20,
+      "deduplicated_result_count": 20,
+      "unique_domains": 1,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Indira_Gandhi",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "86b7f06ee2bbeb5a65c125599abb6cacb305f5f1f717f06ac5451b249bcf9ca5"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/Fran%C3%A7ois_Mitterrand",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "60711c7e19896746e67ee576f0be27db40f98f1a1b650a385fc943ab94a3cd80"
+        },
+        {
+          "rank": 3,
+          "url": "https://en.wikipedia.org/wiki/Emmerson_Mnangagwa",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "70523c3599348f29b7ad145c63183bd3c84f3a7e19be20e5ae93b1df2ecde637"
+        }
+      ],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "cf1a10a2dc112c28",
+      "profile": "ddgs",
+      "latency_ms": 15001.11,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "cf1a10a2dc112c28",
+      "profile": "wikipedia",
+      "latency_ms": 5709.026,
+      "result_count": 3,
+      "raw_result_count": 20,
+      "deduplicated_result_count": 20,
+      "unique_domains": 1,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Indira_Gandhi",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "86b7f06ee2bbeb5a65c125599abb6cacb305f5f1f717f06ac5451b249bcf9ca5"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/Fran%C3%A7ois_Mitterrand",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "60711c7e19896746e67ee576f0be27db40f98f1a1b650a385fc943ab94a3cd80"
+        },
+        {
+          "rank": 3,
+          "url": "https://en.wikipedia.org/wiki/Emmerson_Mnangagwa",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "70523c3599348f29b7ad145c63183bd3c84f3a7e19be20e5ae93b1df2ecde637"
+        }
+      ],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "76827593bdcea4f5",
+      "profile": "federated",
+      "latency_ms": 15003.936,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "76827593bdcea4f5",
+      "profile": "ddgs",
+      "latency_ms": 15003.936,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "76827593bdcea4f5",
+      "profile": "wikipedia",
+      "latency_ms": 2166.502,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "4e51705f5babf7aa",
+      "profile": "federated",
+      "latency_ms": 15003.681,
+      "result_count": 3,
+      "raw_result_count": 4,
+      "deduplicated_result_count": 4,
+      "unique_domains": 1,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": 2,
+      "gold_url_rank": 1,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Hong_Joon-pyo",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "72fba892fbc2ac47047ffb4c945658892f606dc85f84d698718866d4150c5828"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/People_Power_Party",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "cee7cde6e570460da031fc58cac9df8558e0bd66299665f05eeb169b069c7b44"
+        },
+        {
+          "rank": 3,
+          "url": "https://en.wikipedia.org/wiki/Park_Geun-hye",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "816a28487d6c886861a64c7ac45c946e4a30a7cf30da1ddef550072bd3785cd9"
+        }
+      ],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "4e51705f5babf7aa",
+      "profile": "ddgs",
+      "latency_ms": 15003.681,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "4e51705f5babf7aa",
+      "profile": "wikipedia",
+      "latency_ms": 479.869,
+      "result_count": 3,
+      "raw_result_count": 4,
+      "deduplicated_result_count": 4,
+      "unique_domains": 1,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": 2,
+      "gold_url_rank": 1,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Hong_Joon-pyo",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "72fba892fbc2ac47047ffb4c945658892f606dc85f84d698718866d4150c5828"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/People_Power_Party",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "cee7cde6e570460da031fc58cac9df8558e0bd66299665f05eeb169b069c7b44"
+        },
+        {
+          "rank": 3,
+          "url": "https://en.wikipedia.org/wiki/Park_Geun-hye",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "816a28487d6c886861a64c7ac45c946e4a30a7cf30da1ddef550072bd3785cd9"
+        }
+      ],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "819e4e2ae832d3da",
+      "profile": "federated",
+      "latency_ms": 15001.875,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "819e4e2ae832d3da",
+      "profile": "ddgs",
+      "latency_ms": 15001.875,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "819e4e2ae832d3da",
+      "profile": "wikipedia",
+      "latency_ms": 6916.579,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "b46c4ae0d72d9a95",
+      "profile": "federated",
+      "latency_ms": 15009.805,
+      "result_count": 3,
+      "raw_result_count": 16,
+      "deduplicated_result_count": 16,
+      "unique_domains": 1,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Miami_Vice_%28film%29",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "fc84b1efcfc95ce9bccc18eeca20e1d3fc94f72914189a0dc030747714560e71"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/John_Houseman",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "27c1f0ea1c964b6f9b105fd3822a701baba6daa44310facc89dfc41eb821818f"
+        },
+        {
+          "rank": 3,
+          "url": "https://en.wikipedia.org/wiki/List_of_X-Men_film_series_characters",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "851f224612ce0829886311b417d9e68f6acdff8d2e22f12a4b40f2b745cd020f"
+        }
+      ],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "b46c4ae0d72d9a95",
+      "profile": "ddgs",
+      "latency_ms": 15009.805,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "b46c4ae0d72d9a95",
+      "profile": "wikipedia",
+      "latency_ms": 3914.24,
+      "result_count": 3,
+      "raw_result_count": 16,
+      "deduplicated_result_count": 16,
+      "unique_domains": 1,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Miami_Vice_%28film%29",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "fc84b1efcfc95ce9bccc18eeca20e1d3fc94f72914189a0dc030747714560e71"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/John_Houseman",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "27c1f0ea1c964b6f9b105fd3822a701baba6daa44310facc89dfc41eb821818f"
+        },
+        {
+          "rank": 3,
+          "url": "https://en.wikipedia.org/wiki/List_of_X-Men_film_series_characters",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "851f224612ce0829886311b417d9e68f6acdff8d2e22f12a4b40f2b745cd020f"
+        }
+      ],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "945898efe6f6bac6",
+      "profile": "federated",
+      "latency_ms": 15005.209,
+      "result_count": 3,
+      "raw_result_count": 11,
+      "deduplicated_result_count": 11,
+      "unique_domains": 1,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Timeline_of_the_New_People%27s_Army_rebellion",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "c1b30facaf9ce58aa476d2a621c4e57d652f39203337707f7d1d77315dae0e55"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/Dance_in_the_Philippines",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "02e85be05ae68b3b2b9fcda11c23fbf769eb8c9cb6bff0f0ade0107f494e8612"
+        },
+        {
+          "rank": 3,
+          "url": "https://en.wikipedia.org/wiki/List_of_Philippine_mythological_figures",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "80310ee06462931fd905f32ac2d7e1238bddfdcfb3fba0aadf25388d13630134"
+        }
+      ],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "945898efe6f6bac6",
+      "profile": "ddgs",
+      "latency_ms": 15005.209,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "945898efe6f6bac6",
+      "profile": "wikipedia",
+      "latency_ms": 634.007,
+      "result_count": 3,
+      "raw_result_count": 11,
+      "deduplicated_result_count": 11,
+      "unique_domains": 1,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Timeline_of_the_New_People%27s_Army_rebellion",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "c1b30facaf9ce58aa476d2a621c4e57d652f39203337707f7d1d77315dae0e55"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/Dance_in_the_Philippines",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "02e85be05ae68b3b2b9fcda11c23fbf769eb8c9cb6bff0f0ade0107f494e8612"
+        },
+        {
+          "rank": 3,
+          "url": "https://en.wikipedia.org/wiki/List_of_Philippine_mythological_figures",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "80310ee06462931fd905f32ac2d7e1238bddfdcfb3fba0aadf25388d13630134"
+        }
+      ],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "95e9a61446b4c7b8",
+      "profile": "federated",
+      "latency_ms": 15000.8,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "95e9a61446b4c7b8",
+      "profile": "ddgs",
+      "latency_ms": 15000.8,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "95e9a61446b4c7b8",
+      "profile": "wikipedia",
+      "latency_ms": 5561.887,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "8de31623fb7db2ff",
+      "profile": "federated",
+      "latency_ms": 15005.977,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "8de31623fb7db2ff",
+      "profile": "ddgs",
+      "latency_ms": 15005.977,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "8de31623fb7db2ff",
+      "profile": "wikipedia",
+      "latency_ms": 7748.598,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "11fa323ade73b273",
+      "profile": "federated",
+      "latency_ms": 15002.319,
+      "result_count": 3,
+      "raw_result_count": 20,
+      "deduplicated_result_count": 20,
+      "unique_domains": 1,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Ralph_Bakshi",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "f5008f3d2411c5fb942f75b7b6ba29a9b7e55b6bfd9bfa4fabac6b0ba8258987"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/William_Shatner",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "8fabcc977dae340dd0c3e16e8de16a2d4f45ebf5f737f850e8988be7a84cdbbd"
+        },
+        {
+          "rank": 3,
+          "url": "https://en.wikipedia.org/wiki/John_Kerry",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "9f798d6d76ebe77a78452f376fe915c5ed6d5828b1937238159d7ab4a03eb529"
+        }
+      ],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "11fa323ade73b273",
+      "profile": "ddgs",
+      "latency_ms": 15002.319,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "11fa323ade73b273",
+      "profile": "wikipedia",
+      "latency_ms": 428.242,
+      "result_count": 3,
+      "raw_result_count": 20,
+      "deduplicated_result_count": 20,
+      "unique_domains": 1,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Ralph_Bakshi",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "f5008f3d2411c5fb942f75b7b6ba29a9b7e55b6bfd9bfa4fabac6b0ba8258987"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/William_Shatner",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "8fabcc977dae340dd0c3e16e8de16a2d4f45ebf5f737f850e8988be7a84cdbbd"
+        },
+        {
+          "rank": 3,
+          "url": "https://en.wikipedia.org/wiki/John_Kerry",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "9f798d6d76ebe77a78452f376fe915c5ed6d5828b1937238159d7ab4a03eb529"
+        }
+      ],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "ce8a23cc9096036e",
+      "profile": "federated",
+      "latency_ms": 15001.439,
+      "result_count": 1,
+      "raw_result_count": 1,
+      "deduplicated_result_count": 1,
+      "unique_domains": 1,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Benito_Mussolini",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "9d7a2734cf1bad48e7011591e9767e1d6b0c90de1021684fa76cb726b821cbdd"
+        }
+      ],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "ce8a23cc9096036e",
+      "profile": "ddgs",
+      "latency_ms": 15001.439,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "ce8a23cc9096036e",
+      "profile": "wikipedia",
+      "latency_ms": 8861.034,
+      "result_count": 1,
+      "raw_result_count": 1,
+      "deduplicated_result_count": 1,
+      "unique_domains": 1,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/Benito_Mussolini",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "9d7a2734cf1bad48e7011591e9767e1d6b0c90de1021684fa76cb726b821cbdd"
+        }
+      ],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "1bdd4730d5fec353",
+      "profile": "federated",
+      "latency_ms": 15004.635,
+      "result_count": 3,
+      "raw_result_count": 20,
+      "deduplicated_result_count": 20,
+      "unique_domains": 1,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/The_National_Museum_of_Computing",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "f2ccee1953d7d7b79d62857a1ee08581a62327996c71d152a457e985035cc3d6"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/Gaming_computer",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "7b35fb1b08bde8d89d98dc2cd04f77835777c26740b2c6c5bd4653d6263a26d8"
+        },
+        {
+          "rank": 3,
+          "url": "https://en.wikipedia.org/wiki/National_Museum_of_Natural_History",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "7c957e8d4598bab31010989f0348afb913907d7795f954e4bb01bc1504bac0c5"
+        }
+      ],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "1bdd4730d5fec353",
+      "profile": "ddgs",
+      "latency_ms": 15004.635,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "1bdd4730d5fec353",
+      "profile": "wikipedia",
+      "latency_ms": 724.632,
+      "result_count": 3,
+      "raw_result_count": 20,
+      "deduplicated_result_count": 20,
+      "unique_domains": 1,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": 1,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/The_National_Museum_of_Computing",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "f2ccee1953d7d7b79d62857a1ee08581a62327996c71d152a457e985035cc3d6"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/Gaming_computer",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "7b35fb1b08bde8d89d98dc2cd04f77835777c26740b2c6c5bd4653d6263a26d8"
+        },
+        {
+          "rank": 3,
+          "url": "https://en.wikipedia.org/wiki/National_Museum_of_Natural_History",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "7c957e8d4598bab31010989f0348afb913907d7795f954e4bb01bc1504bac0c5"
+        }
+      ],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "bdc7ca31722319c7",
+      "profile": "federated",
+      "latency_ms": 15007.336,
+      "result_count": 3,
+      "raw_result_count": 8,
+      "deduplicated_result_count": 8,
+      "unique_domains": 1,
+      "provider_call_count": 2,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/List_of_Happy_Valley_episodes",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "043c34c919596943305ba7af0c919c22af888b18f80ffb6730e14c446f35fe4c"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/2024_in_animation",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "89978238987e86b1d6bbad7196c5edec5825e23a91d9dc7ede06fc1d2b72e63c"
+        },
+        {
+          "rank": 3,
+          "url": "https://en.wikipedia.org/wiki/List_of_political_endorsements_by_Donald_Trump",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "a5ab8f21e93837646b4d2029da59e20437fded8d923804014956121e6649d903"
+        }
+      ],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "bdc7ca31722319c7",
+      "profile": "ddgs",
+      "latency_ms": 15007.336,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "bdc7ca31722319c7",
+      "profile": "wikipedia",
+      "latency_ms": 282.062,
+      "result_count": 3,
+      "raw_result_count": 8,
+      "deduplicated_result_count": 8,
+      "unique_domains": 1,
+      "provider_call_count": 1,
+      "provider_failure_count": 0,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [
+        {
+          "rank": 1,
+          "url": "https://en.wikipedia.org/wiki/List_of_Happy_Valley_episodes",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "043c34c919596943305ba7af0c919c22af888b18f80ffb6730e14c446f35fe4c"
+        },
+        {
+          "rank": 2,
+          "url": "https://en.wikipedia.org/wiki/2024_in_animation",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "89978238987e86b1d6bbad7196c5edec5825e23a91d9dc7ede06fc1d2b72e63c"
+        },
+        {
+          "rank": 3,
+          "url": "https://en.wikipedia.org/wiki/List_of_political_endorsements_by_Donald_Trump",
+          "domain": "en.wikipedia.org",
+          "providers": [
+            "wikipedia"
+          ],
+          "text_sha256": "a5ab8f21e93837646b4d2029da59e20437fded8d923804014956121e6649d903"
+        }
+      ],
+      "provider_failures": [],
+      "error": null
+    },
+    {
+      "id": "b3fd5fe3112830e6",
+      "profile": "federated",
+      "latency_ms": 15002.635,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 2,
+      "provider_failure_count": 2,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        },
+        {
+          "provider": "wikipedia",
+          "error": "Wikipedia request failed: RemoteProtocolError"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "b3fd5fe3112830e6",
+      "profile": "ddgs",
+      "latency_ms": 15002.635,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "ddgs exceeded the configured request deadline"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "b3fd5fe3112830e6",
+      "profile": "wikipedia",
+      "latency_ms": 2.192,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "wikipedia",
+          "error": "Wikipedia request failed: RemoteProtocolError"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "fb15cf92460b3a0e",
+      "profile": "federated",
+      "latency_ms": 10007.22,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 2,
+      "provider_failure_count": 2,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "DDGS request failed: DDGSException"
+        },
+        {
+          "provider": "wikipedia",
+          "error": "Wikipedia request failed: RemoteProtocolError"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "fb15cf92460b3a0e",
+      "profile": "ddgs",
+      "latency_ms": 10007.22,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "ddgs",
+          "error": "DDGS request failed: DDGSException"
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "fb15cf92460b3a0e",
+      "profile": "wikipedia",
+      "latency_ms": 2.232,
+      "result_count": 0,
+      "raw_result_count": 0,
+      "deduplicated_result_count": 0,
+      "unique_domains": 0,
+      "provider_call_count": 1,
+      "provider_failure_count": 1,
+      "answer_rank": null,
+      "gold_url_rank": null,
+      "gold_domain_rank": null,
+      "has_gold_urls": true,
+      "results": [],
+      "provider_failures": [
+        {
+          "provider": "wikipedia",
+          "error": "Wikipedia request failed: RemoteProtocolError"
+        }
+      ],
+      "error": null
+    }
+  ],
+  "warnings": [
+    "This benchmark measures retrieval only. It is not SimpleQA answer accuracy, factuality, citation correctness, or end-to-end deep-research quality.",
+    "Answer coverage is exact normalised substring matching in titles/snippets; gold URL/domain metrics use the source metadata shipped with SimpleQA.",
+    "Live-web results are dated and non-deterministic. Compare profiles only within the same run and shared provider snapshots."
+  ]
+}

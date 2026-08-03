@@ -1,0 +1,54 @@
+{
+  "schema_version": "evidencemesh.phase11_8_10a.source-locks.v1",
+  "source_set_sha256": "4c3fecf50e26b8e37e3ee361af38aca62745a632d0fd5ef59eb66a025dc3ed75",
+  "authority_sources": [
+    {
+      "relative_path": ".github/workflows/phase11-8-10a-external-asset-locks.yml",
+      "sha256": "faf1f9da5509dd3ecbba55703e26c97b0a0e624127340cbfa1f93d2b55f1eae0"
+    },
+    {
+      "relative_path": "benchmarks/data/phase11_8_10a_asset_locks_v1.json",
+      "sha256": "8c470471e250df2f33bb6840bec27c5bdecb9f4ad7654142374c0eb4df615f2c"
+    },
+    {
+      "relative_path": "benchmarks/data/phase11_8_10a_object_inventory_v1.json",
+      "sha256": "d23f81e23e2e1c8e075de7647d7529ccaf9c3a787f8c18106e101d8abef57a3e"
+    },
+    {
+      "relative_path": "benchmarks/data/phase11_8_9_external_benchmarks_v1.json",
+      "sha256": "40828f7bc22d23206ce70ffb2fcf69f066850fbe618c636fd8bd094a11784cdc"
+    },
+    {
+      "relative_path": "benchmarks/data/phase11_8_9_source_locks_v1.json",
+      "sha256": "e16d1c5df80955a59b8ea685adaa5efd9d99865c8ed02687a969b983b73fbb38"
+    },
+    {
+      "relative_path": "benchmarks/phase11_8_10a_asset_preflight.py",
+      "sha256": "2af60b3bc8af81a8a328631995e66ce2759de0a3d0c52769077796bf52f3f159"
+    },
+    {
+      "relative_path": "benchmarks/results/phase11_8_9_offline_retrieval_recovery_2026-07-31.json",
+      "sha256": "cb3f4bd4e2862d4ef170d2c41d17cd7991090f5e933d480d3c76ccab7a197720"
+    },
+    {
+      "relative_path": "benchmarks/run_phase11_8_10a_asset_preflight.py",
+      "sha256": "576048cce3f93485a3596469d8d1d61475a948c0aea2fa57614232df69fedb08"
+    },
+    {
+      "relative_path": "docs/benchmark-protocol-v25.md",
+      "sha256": "e08a9217d8d104202826b0f72944ae5864d181cb20f5fea10d52e908cc26f62c"
+    },
+    {
+      "relative_path": "docs/benchmark-protocol-v26.md",
+      "sha256": "b97a215a6be2294a23db15c4183353371a185d7c11c738d7ca3894beb710bd77"
+    },
+    {
+      "relative_path": "tests/test_phase11_8_10a_asset_preflight.py",
+      "sha256": "d4541fea8134a4c803c68b0751fac7531236d1ee19ad4ec0e5dc4760c166d270"
+    },
+    {
+      "relative_path": "tests/test_phase11_8_10a_runner.py",
+      "sha256": "dd409ca18c7be3b30e3e8b269849ae594e7880fbe93456b7980dcb7d848ce649"
+    }
+  ]
+}

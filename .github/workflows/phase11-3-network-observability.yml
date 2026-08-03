@@ -1,0 +1,214 @@
+name: Phase 11.3 Network Observability
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/phase11-3-network-observability.yml
+      - benchmarks/run_phase11_3_network_diagnostic.py
+      - benchmarks/results/phase11_3_network_diagnostic_2026-07-29.json
+      - docs/benchmark-protocol-v12.md
+      - docs/providers.md
+      - src/evidencemesh/engine.py
+      - src/evidencemesh/errors.py
+      - src/evidencemesh/models.py
+      - src/evidencemesh/providers/mwmbl.py
+      - src/evidencemesh/telemetry.py
+      - tests/test_phase11_3_observability.py
+      - tests/test_provider_observability.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase11-3-network-observability-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  RESULT_PATH: /tmp/phase11_3_network_diagnostic_2026-07-29.json
+  CACHE_ROOT: /tmp/evidencemesh-phase11-3-cache
+
+jobs:
+  network-observability:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Detect an already committed result
+        id: diagnostic-state
+        shell: bash
+        run: |
+          if [[ -f benchmarks/results/phase11_3_network_diagnostic_2026-07-29.json ]]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        if: steps.diagnostic-state.outputs.run == 'true'
+        with:
+          version: "0.11.33"
+          enable-cache: true
+
+      - name: Install diagnostic environment
+        if: steps.diagnostic-state.outputs.run == 'true'
+        run: |
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11
+
+      - name: Verify protocol lock
+        if: steps.diagnostic-state.outputs.run == 'true'
+        run: |
+          echo \
+            "d5d4b4e066e2010d3e420e91dfa4a11202eeb98d61174c5c7de965e7f7eff764  docs/benchmark-protocol-v12.md" \
+            | sha256sum --check
+
+      - name: Run locked non-scored network diagnostic
+        if: steps.diagnostic-state.outputs.run == 'true'
+        env:
+          EVIDENCEMESH_DIAGNOSTIC_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          uv run python benchmarks/run_phase11_3_network_diagnostic.py \
+            --mwmbl-url https://api.mwmbl.org/api/v2/search/ \
+            --cache-root "$CACHE_ROOT" \
+            --max-results 10 \
+            --request-timeout-seconds 15 \
+            --wall-time-seconds 20 \
+            --pause-seconds 1.1 \
+            --failure-threshold 3 \
+            --recovery-seconds 300 \
+            --network-region "GitHub-hosted ubuntu-latest; physical region not exposed" \
+            --progress \
+            --output "$RESULT_PATH"
+
+      - name: Validate accounting, privacy and release boundary
+        if: steps.diagnostic-state.outputs.run == 'true'
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          uv run python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          from benchmarks.run_phase11_3_network_diagnostic import PROBES
+
+          report = json.loads(Path(os.environ["RESULT_PATH"]).read_bytes())
+          serialized = json.dumps(report, ensure_ascii=False)
+          traffic = report["traffic"]
+          observations = report["observations"]
+          forbidden_keys = {
+              "query",
+              "question",
+              "target_domains",
+              "title",
+              "url",
+              "snippet",
+              "content",
+              "evidence",
+              "exception_message",
+              "headers",
+          }
+
+          def keys(value):
+              if isinstance(value, dict):
+                  for key, item in value.items():
+                      yield key
+                      yield from keys(item)
+              elif isinstance(value, list):
+                  for item in value:
+                      yield from keys(item)
+
+          expected = (
+              report["schema_version"] == 1
+              and report["diagnostic"]
+                  == "evidencemesh-phase11-3-network-observability-v1"
+              and report["scored"] is False
+              and report["environment"]["commit_sha"] == os.environ["EXPECTED_SHA"]
+              and report["protocol"]["sha256"]
+                  == "d5d4b4e066e2010d3e420e91dfa4a11202eeb98d61174c5c7de965e7f7eff764"
+              and report["protocol"]["fixed_public_probe_count"] == 4
+              and report["protocol"]["quality_metrics_computed"] is False
+              and report["protocol"]["retry_policy"] == "none"
+              and report["protocol"]["provider"] == "mwmbl"
+              and report["protocol"]["provider_default_enabled"] is False
+              and traffic["logical_calls"] == 4
+              and traffic["cache_hits"] == 0
+              and 0 <= traffic["circuit_skips"] <= 4
+              and 0 <= traffic["adapter_invocations"] <= 4
+              and 0 <= traffic["http_attempts"] <= 4
+              and 0 <= traffic["http_responses"] <= traffic["http_attempts"]
+              and traffic["http_failures_without_response"]
+                  == traffic["http_attempts"] - traffic["http_responses"]
+              and sum(traffic["http_status_counts"].values())
+                  == traffic["http_responses"]
+              and len(traffic["adapter_latency_ms"])
+                  == traffic["adapter_invocations"]
+              and len(traffic["http_attempt_latency_ms"])
+                  == traffic["http_attempts"]
+              and traffic["logical_calls"]
+                  == traffic["cache_hits"]
+                  + traffic["circuit_skips"]
+                  + traffic["adapter_invocations"]
+                  + traffic["unaccounted_before_adapter"]
+              and traffic["paid_provider_requests"] == 0
+              and traffic["tavily_requests"] == 0
+              and traffic["gemini_requests"] == 0
+              and traffic["retries"] == 0
+              and len(observations) == 4
+              and {item["probe_id"] for item in observations}
+                  == {"probe-01", "probe-02", "probe-03", "probe-04"}
+              and not forbidden_keys & set(keys(report))
+              and all(query not in serialized for _, query in PROBES)
+              and report["privacy"]["queries_in_report"] is False
+              and report["privacy"]["response_bodies_in_report"] is False
+              and report["privacy"]["exception_messages_in_report"] is False
+              and report["decision"]["retrieval_candidate_evaluated"] is False
+              and report["decision"]["quality_claim_allowed"] is False
+              and report["decision"]["default_bundle_eligible"] is False
+              and report["decision"]["phase12_untouched_evaluation_allowed"] is False
+              and report["decision"]["release_ready"] is False
+              and report["decision"]["release_decision"] == "no-go"
+          )
+          if not expected:
+              raise AssertionError(
+                  "Phase 11.3 report failed a locked accounting, privacy, "
+                  "traffic, or release invariant"
+              )
+          PY
+
+      - name: Write diagnostic summary
+        if: steps.diagnostic-state.outputs.run == 'true'
+        run: |
+          uv run python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          import os
+          from pathlib import Path
+
+          report = json.loads(Path(os.environ["RESULT_PATH"]).read_bytes())
+          traffic = report["traffic"]
+          print("## Phase 11.3 network observability")
+          print()
+          print(f"- Classification: `{report['diagnosis']['classification']}`")
+          print(f"- Logical calls: `{traffic['logical_calls']}`")
+          print(f"- Adapter invocations: `{traffic['adapter_invocations']}`")
+          print(f"- HTTP attempts: `{traffic['http_attempts']}`")
+          print(f"- Circuit skips: `{traffic['circuit_skips']}`")
+          print()
+          print(
+              "This is a non-scored diagnostic. Default promotion, Phase 12 "
+              "and release remain blocked."
+          )
+          PY
+
+      - name: Upload privacy-safe Phase 11.3 result
+        if: steps.diagnostic-state.outputs.run == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: phase11-3-network-observability-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ env.RESULT_PATH }}
+          if-no-files-found: error
+          retention-days: 14

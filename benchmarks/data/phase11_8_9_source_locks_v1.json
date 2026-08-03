@@ -1,0 +1,80 @@
+{
+  "schema_version": "evidencemesh.phase11_8_9.source-locks.v1",
+  "source_set_sha256": "d5bf3470536f0a9cb9a527fab7a57480863b7157e23609c73d2e40b50358a125",
+  "authority_sources": [
+    {
+      "relative_path": ".github/workflows/phase11-8-9-offline-retrieval-recovery.yml",
+      "sha256": "69e1e57c47420f21a689c4527d6c22d17977e8c842217397f885b190f3492347"
+    },
+    {
+      "relative_path": "benchmarks/data/phase11_7_fresh_confirmation_v1.json",
+      "sha256": "da6d1e21c3c1d53539f481fe6789eedc55359bb3b9d32b0be73f96bc693da79e"
+    },
+    {
+      "relative_path": "benchmarks/data/phase11_8_9_external_benchmarks_v1.json",
+      "sha256": "40828f7bc22d23206ce70ffb2fcf69f066850fbe618c636fd8bd094a11784cdc"
+    },
+    {
+      "relative_path": "benchmarks/data/phase11_8_9_external_eval_fixtures_v1.json",
+      "sha256": "139653ffa8bd7a82a1ad3f30f6a4825cc226a4d227973c56b40c86e3dbe12c77"
+    },
+    {
+      "relative_path": "benchmarks/data/phase11_8_9_retrieval_fixtures_v1.json",
+      "sha256": "79c61fa2edabdccf57360893669758364f884356c066937791188bd5933da186"
+    },
+    {
+      "relative_path": "benchmarks/phase11_8_8_projection_candidate.py",
+      "sha256": "117968687a0c0c150acef42f997967d10b04006d14ed0efa9de87c9c08b1909e"
+    },
+    {
+      "relative_path": "benchmarks/phase11_8_9_external_eval.py",
+      "sha256": "ff740333746244a169f5e227949b9f25f5447f1dbaa1d7aa6ef33b0ed3d4e61d"
+    },
+    {
+      "relative_path": "benchmarks/phase11_8_9_retrieval_candidate.py",
+      "sha256": "9de27bf9de7362b7090ae878375a7275c094fe849a48826266466ac07cac9456"
+    },
+    {
+      "relative_path": "benchmarks/results/phase11_8_8_live_projection_calibration_2026-07-30.json",
+      "sha256": "03e0ad7ef2d4859848c3b4d4d8bf9d25714b9d311741f15a91ec9b3311aca25f"
+    },
+    {
+      "relative_path": "benchmarks/run_phase11_8_9_offline_retrieval_recovery.py",
+      "sha256": "c823f1f837024f2d771b20c73a82daf0d9defdd3b43215dcdadfe9a9dbfd0986"
+    },
+    {
+      "relative_path": "docs/benchmark-protocol-v24.md",
+      "sha256": "e63ab4b3f25865890458abd2a001ce3428f9a3ca8c4f1a1a166f25432d1a8dc9"
+    },
+    {
+      "relative_path": "docs/benchmark-protocol-v25.md",
+      "sha256": "e08a9217d8d104202826b0f72944ae5864d181cb20f5fea10d52e908cc26f62c"
+    },
+    {
+      "relative_path": "pyproject.toml",
+      "sha256": "eac6ae9e1d5b38f4262d33af137ce82ff019b41719c404a5c9b70a08a4f600a0"
+    },
+    {
+      "relative_path": "tests/test_phase11_8_9_external_eval.py",
+      "sha256": "e87d303c5ae30fb7eeaf7e1e5807021d0ee5f4e32982b28bcb45d9b8e07f6976"
+    },
+    {
+      "relative_path": "tests/test_phase11_8_9_offline_retrieval_recovery.py",
+      "sha256": "ba97919354fdbe53737097dec96b0d3f8738649742dab8bad50fb40cbf3ff1e6"
+    },
+    {
+      "relative_path": "tests/test_phase11_8_9_retrieval_candidate.py",
+      "sha256": "c516f100403c01e04f83641b542e1ea2bc307d78e3a3a54380ede9869eeaeee1"
+    },
+    {
+      "relative_path": "uv.lock",
+      "sha256": "5a47e1815cc2074698e1ab0cfec2932200bb013601d02246324513ffa5404898"
+    }
+  ],
+  "historical_locks": {
+    "phase11_7_observed_manifest_sha256": "da6d1e21c3c1d53539f481fe6789eedc55359bb3b9d32b0be73f96bc693da79e",
+    "phase11_8_8_live_result_sha256": "03e0ad7ef2d4859848c3b4d4d8bf9d25714b9d311741f15a91ec9b3311aca25f",
+    "phase11_8_8_projector_sha256": "117968687a0c0c150acef42f997967d10b04006d14ed0efa9de87c9c08b1909e",
+    "phase11_8_8_protocol_sha256": "e63ab4b3f25865890458abd2a001ce3428f9a3ca8c4f1a1a166f25432d1a8dc9"
+  }
+}

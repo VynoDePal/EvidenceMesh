@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "suite": "evidencemesh-end-to-end-phase10-v1",
+  "dataset": {
+    "name": "SimpleQA test set",
+    "source_url": "https://openaipublic.blob.core.windows.net/simple-evals/simple_qa_test_set.csv",
+    "sha256": "feee3f7e7db3617e94e8fcf1977b756ec420ef8568f4e0fcbbe0e92e9d5fc032",
+    "reference_repository_commit": "652c89d0ca9df547706735883097e9537d40dc47",
+    "reference_file_blob": "0fc266800a87ace55ec192c9a91cafe92fef7b48"
+  },
+  "selection": {
+    "seed": 11,
+    "method": "python random.Random(seed).sample after excluding the Phase 3 sample IDs",
+    "eligible_row_count": 4126,
+    "excluded_sample_count": 200,
+    "excluded_sample_manifest_sha256": "d41ec6c806792f4dc0730b6dd1bad0fe30310a7d3ca0b703bcfcd5cd7f580333",
+    "case_count": 12
+  },
+  "case_ids": [
+    "c4ec7d972165d2aa",
+    "5e56677664ce7dcf",
+    "25d1e4d781801150",
+    "3d003948322c38d0",
+    "e43bf10ba2d4702a",
+    "0e2bf0e4e0be5f3b",
+    "83953020921bf927",
+    "5119b2832d895e5b",
+    "b38cfabe9ada576f",
+    "7ee5037842f4067e",
+    "a8bd9c2e0910454a",
+    "2960c349d3ba5aff"
+  ],
+  "topic_distribution": {
+    "Art": 1,
+    "Geography": 2,
+    "Music": 1,
+    "Other": 4,
+    "Politics": 1,
+    "Science and technology": 2,
+    "Sports": 1
+  },
+  "answer_type_distribution": {
+    "Date": 2,
+    "Number": 5,
+    "Other": 2,
+    "Person": 1,
+    "Place": 2
+  },
+  "privacy": {
+    "questions_committed": false,
+    "reference_answers_committed": false,
+    "source_content_committed": false,
+    "generated_answers_committed": false
+  }
+}

@@ -1,0 +1,167 @@
+{
+  "authority": {
+    "distribution": false,
+    "merge": false,
+    "phase_12": false,
+    "production": false,
+    "release": false,
+    "tag": false,
+    "v1": false
+  },
+  "budgets": {
+    "corrective_commit_publications": 1,
+    "corrective_workflow_runs": 1,
+    "dependency_install_attempts": 1,
+    "external_document_requests": 0,
+    "external_model_requests": 0,
+    "historical_run_reruns": 0,
+    "host_invocations": 1,
+    "host_timeout_seconds": 60,
+    "logical_mcp_requests_expected": 5,
+    "logical_mcp_requests_maximum": 5,
+    "maximum_p3_seconds": 240,
+    "mcp_server_launches": 1,
+    "mcp_sessions": 1,
+    "mcp_tool_calls": 1,
+    "node_processes_expected": 2,
+    "provider_calls": 0,
+    "retries": 0,
+    "runtime_network_requests": 0,
+    "search_calls": 0,
+    "synthetic_model_turns": 2,
+    "workflow_retries": 0
+  },
+  "claim_if_passes": {
+    "live_gemini_model_validated": false,
+    "named_ai_application_host": "Gemini CLI",
+    "offline_replayed_agent_loop_validated": true,
+    "production_authentication_validated": false,
+    "scope": "one Ubuntu headless Gemini CLI supervisor-child topology, one offline-replayed agent loop, one discovered EvidenceMesh health tool, and zero external model request"
+  },
+  "correction": {
+    "application_or_server_code_changed": false,
+    "entrypoint": "python -m scripts.verify_alpha_a1_p3_3_node_topology_attestation",
+    "failed_runs_reused": false,
+    "historical_evidence_preserved": true,
+    "root_cause": "P3.2 equated one host invocation with one guard-armed Node PID although Gemini CLI 0.53.1 canonically relaunches one direct Node child that inherits NODE_OPTIONS",
+    "strategy": "preserve the canonical relaunch and require exact two-process supervisor-child roles plus bijective equality between guard-armed Node PIDs and successful canonical Node execution-syscall PIDs"
+  },
+  "decision": {
+    "alpha_a1_p3_3_passes_only_if_all_checks_pass": true,
+    "failure_is_fail_closed": true,
+    "pr_remains_draft": true
+  },
+  "entry_criteria": {
+    "authorization_label": "alpha-a1-p3-3-authorized",
+    "branch": "agent/evidencemesh-v0.1",
+    "exact_parent_commit": "d3b3a00427321ca9130797f179edc0302e2b5952",
+    "exact_parent_tree": "fe995d124667d1f95b75e9130a59049ce69c1a1d",
+    "local_exact_command_reproductions": 2,
+    "local_runtime_network_requests": 0,
+    "pull_request": 1,
+    "pull_request_draft": true,
+    "same_repository_head": true
+  },
+  "gate": "Alpha A1-P3.3 Node launcher topology attestation and real AI host offline replay",
+  "historical_failures": [
+    {
+      "commit_sha": "38eb63ade7024ab32963f894c719fa190fe9346a",
+      "conclusion": "failure",
+      "host_invocations": 0,
+      "job_id": 91490727817,
+      "reason": "ModuleNotFoundError: No module named 'scripts'",
+      "run_id": 30745671040,
+      "tree_sha": "c21496bf690a8c2844a8957b7af12de72cf5b7ad"
+    },
+    {
+      "commit_sha": "06b57853332a89e8adf21317e85cc6f91deecacf",
+      "conclusion": "failure",
+      "host_invocations": 0,
+      "job_id": 91491870812,
+      "reason": "Optional package installed: @github",
+      "run_id": 30746105014,
+      "tree_sha": "c9f3b9bc7356753f751f9cd2dd32fab08c91d382"
+    },
+    {
+      "artifact_publications": 0,
+      "commit_sha": "d3b3a00427321ca9130797f179edc0302e2b5952",
+      "conclusion": "failure",
+      "host_invocations": 1,
+      "job_id": 91493485240,
+      "logical_mcp_requests": 5,
+      "mcp_tool_calls": 1,
+      "reason": "Node guard arming count drifted",
+      "run_id": 30746731127,
+      "runtime_network_requests": 0,
+      "tree_sha": "fe995d124667d1f95b75e9130a59049ce69c1a1d"
+    }
+  ],
+  "limitations": {
+    "external_model_semantics_validated": false,
+    "gemini_api_availability_validated": false,
+    "gemini_api_quota_validated": false,
+    "gui_mode_validated": false,
+    "host_matrix_validated": false,
+    "non_ubuntu_platforms_validated": false,
+    "production_credentials_used": false,
+    "response_replay_is_a_real_model": false
+  },
+  "node_topology_oracle": {
+    "all_node_processes_must_exit": true,
+    "argv_digest_exact": true,
+    "armed_non_node_pids_maximum": 0,
+    "canonical_node_executable_only": true,
+    "child_exec_argv_variants": [
+      "none",
+      "one auto-generated --max-old-space-size positive integer"
+    ],
+    "child_relaunch_marker": true,
+    "count_only_relaxation_forbidden": true,
+    "direct_child_processes_exact": 1,
+    "guard_pid_multiset_equals_traced_node_execution_pid_multiset": true,
+    "host_root_processes_exact": 1,
+    "main_threads_exact": 2,
+    "node_processes_exact": 2,
+    "runtime_network_requests_maximum": 0,
+    "strace_direct_launcher_edge_required": true,
+    "unarmed_node_exec_pids_maximum": 0,
+    "unexpected_node_processes_maximum": 0
+  },
+  "publication": {
+    "artifacts": 0,
+    "distributions": 0,
+    "releases": 0,
+    "tags": 0
+  },
+  "scope": {
+    "cumulative_a1_p3_paths": 23,
+    "direct_corrective_paths": {
+      ".github/workflows/alpha-a1-p3-3-node-topology-attestation.yml": "added",
+      "alpha/alpha_a1_p3_3_node_topology_attestation_policy_v1.json": "added",
+      "docs/alpha-a1-p3-3-node-topology-attestation-gate-v1.md": "added",
+      "scripts/verify_alpha_a1_p3_3_node_topology_attestation.py": "added",
+      "tests/test_alpha_a1_p3_3_node_topology_attestation.py": "added"
+    }
+  },
+  "schema_version": "evidencemesh.alpha-a1-p3-3-node-topology-attestation-policy.v1",
+  "stop_criteria": [
+    "the corrective HEAD is not a one-parent child of the preserved failed A1-P3.2 commit",
+    "the five-path direct scope, twenty-three-path cumulative scope, ancestry, tree or immutable hash drifts",
+    "any historical failed run is rerun, retried, erased or represented as a pass",
+    "the Node guard log is non-regular, linked, non-private, malformed, oversized, unterminated or contains anything other than exactly two bounded armed events",
+    "the successful canonical Node execve or absolute-path execveat multiset is not exactly equal to the guard-armed PID multiset",
+    "there is not exactly one root launcher and one direct relaunched child, or strace does not attest their direct process edge",
+    "either Node uses a non-canonical executable, a different host argv digest, an unknown exec argv, a worker thread or an unexpected relaunch role",
+    "a second dependency installation, root host invocation, MCP server, session or tool call occurs",
+    "Gemini exposes or calls a tool other than mcp_evidencemesh_health",
+    "the MCP sequence differs from the five locked requests",
+    "health is not ready at version 0.1.0 under the community profile",
+    "a third synthetic model turn is requested or either locked replay record remains unused",
+    "any external model, provider, search, document, DNS, socket or network request is attempted",
+    "the EvidenceMesh child inherits a key, token, secret, credential, password or proxy variable",
+    "any observed Node, Python or EvidenceMesh process survives the termination grace period",
+    "the source checkout, locked settings, read-only workspace, read-only server home or explicit state inventory changes",
+    "the 60-second host timeout or 240-second P3 budget is exceeded",
+    "the corrective workflow fails; no retry or rerun is permitted"
+  ]
+}

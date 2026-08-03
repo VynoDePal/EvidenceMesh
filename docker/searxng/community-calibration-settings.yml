@@ -1,0 +1,29 @@
+use_default_settings:
+  engines:
+    keep_only:
+      - duckduckgo
+
+general:
+  debug: false
+  instance_name: EvidenceMesh Phase 6 calibration
+
+search:
+  safe_search: 1
+  autocomplete: ""
+  formats:
+    - html
+    - json
+
+server:
+  limiter: false
+  image_proxy: true
+
+ui:
+  static_use_hash: true
+
+outgoing:
+  request_timeout: 4.0
+  max_request_timeout: 8.0
+  pool_connections: 20
+  pool_maxsize: 10
+  enable_http2: true

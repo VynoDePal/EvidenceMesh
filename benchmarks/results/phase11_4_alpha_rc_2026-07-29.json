@@ -1,0 +1,133 @@
+{
+  "candidate": {
+    "checksums_sha256": "1382a8383bfbbf23d9473716964619ed45395f825091f238e85e56d722c4ecaf",
+    "github_actions_artifact": "phase11-4-alpha-rc-41b2698deee13eb92205a5733452681cc84c9f4c",
+    "manifest_sha256": "cb64b1ef5765009b8696e51f43832c953dc9d549934665652b26b2b1675a9359",
+    "name": "evidencemesh-0.1.0-alpha-rc.1",
+    "sbom": {
+      "component_count": 100,
+      "format": "CycloneDX",
+      "path": "evidencemesh-0.1.0.cdx.json",
+      "root_component": "evidencemesh==0.1.0",
+      "runtime_dependencies_present": true,
+      "schema_validated_by_generator": true,
+      "sha256": "4416309250e495eb633f2a9522c819c9d3cf3a111b9be5555c34ce8730d71357",
+      "size_bytes": 121202,
+      "spec_version": "1.7"
+    },
+    "sdist": {
+      "format": "sdist",
+      "license_file_present": true,
+      "path": "dist/evidencemesh-0.1.0.tar.gz",
+      "required_source_files_present": true,
+      "sha256": "f84b884bc114aac595768a2bf998b397184d2b03e8b960ce8f92d4f1ea15ed8c",
+      "size_bytes": 593450
+    },
+    "wheel": {
+      "console_scripts_present": true,
+      "format": "wheel",
+      "license_file_present": true,
+      "name": "evidencemesh",
+      "path": "dist/evidencemesh-0.1.0-py3-none-any.whl",
+      "required_package_data_present": true,
+      "requires_python": ">=3.11",
+      "runtime_dependencies": [
+        "ddgs",
+        "fastmcp",
+        "httpx",
+        "pydantic",
+        "pypdf",
+        "rich",
+        "trafilatura",
+        "typer"
+      ],
+      "sha256": "49bfc2020618c37b48e0a2d5420c2e30798a78961c997bac4dba1dada6a7e73e",
+      "size_bytes": 82542,
+      "version": "0.1.0"
+    }
+  },
+  "decision": {
+    "alpha_technical_candidate_passed": true,
+    "github_release_allowed": false,
+    "merge_allowed": false,
+    "phase12_allowed": false,
+    "public_distribution_allowed": false,
+    "pypi_publish_allowed": false,
+    "quality_benchmark_passed": false,
+    "quality_claim_allowed": false,
+    "release_decision": "no-go",
+    "release_ready": false
+  },
+  "environment": {
+    "commit_sha": "41b2698deee13eb92205a5733452681cc84c9f4c",
+    "github_run_attempt": 1,
+    "github_run_id": 30476241370,
+    "repository": "VynoDePal/EvidenceMesh"
+  },
+  "evaluation": "evidencemesh-phase11-4-alpha-rc-v1",
+  "phase": "11.4",
+  "protocol": {
+    "path": "docs/alpha-rc-protocol-v1.md",
+    "sha256": "560e3e0932863ba78c4b5432af78b8dd47e0cdfe80c9e8ff5be9fcb1c2107ed5"
+  },
+  "schema_version": 1,
+  "scored": false,
+  "supply_chain": {
+    "builder": "GitHub-hosted ubuntu-latest",
+    "provenance": {
+      "attestation_id": "37796765",
+      "attestation_url": "https://github.com/VynoDePal/EvidenceMesh/attestations/37796765",
+      "predicate_type": "https://slsa.dev/provenance/v1",
+      "verified_by_github_cli": true
+    },
+    "sbom": {
+      "attestation_id": "37796768",
+      "attestation_url": "https://github.com/VynoDePal/EvidenceMesh/attestations/37796768",
+      "predicate_type": "https://cyclonedx.org/bom",
+      "verified_by_github_cli": true
+    },
+    "signing": "GitHub artifact attestations with keyless Sigstore identity"
+  },
+  "traffic": {
+    "model_requests": 0,
+    "paid_provider_requests": 0,
+    "provider_http_requests": 0,
+    "retries": 0
+  },
+  "validation": {
+    "installed_wheel_cli": {
+      "case_count": 12,
+      "fused_hit_at_1": 1.0,
+      "network_requests": 0,
+      "path": "installed-wheel-offline-benchmark.json",
+      "sha256": "f2d7214e9fd268c1e61ac9de814a6a3c2435013be84903f15215fa6b7ccca4da",
+      "size_bytes": 11163
+    },
+    "installed_wheel_mcp": {
+      "external_requests": 0,
+      "health_passed": true,
+      "initialization_passed": true,
+      "inventory_passed": true,
+      "path": "installed-wheel-mcp-stdio.json",
+      "real_subprocess": true,
+      "sha256": "1764c52a858b694b219db45eab1cd6701b954c771a736d089bd7996f502a1437",
+      "size_bytes": 1365,
+      "transport": "stdio"
+    },
+    "local_build_gates": {
+      "cyclonedx_1_7_sbom": true,
+      "exact_candidate_inventory": true,
+      "exactly_one_sdist": true,
+      "exactly_one_wheel": true,
+      "installed_cli_regression": true,
+      "isolated_wheel_install": true,
+      "license_and_package_data": true,
+      "mcp_health_without_network": true,
+      "mcp_inventory": true,
+      "package_metadata": true,
+      "real_mcp_stdio_handshake": true
+    },
+    "sha256sums_verified": true,
+    "twine_check_passed": true
+  }
+}

@@ -1,0 +1,215 @@
+name: Alpha RC4 Control Plane Offline
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - converted_to_draft
+
+permissions:
+  contents: read
+
+concurrency:
+  group: alpha-rc4-control-plane-offline-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+env:
+  C2_SHA: 033d893d7c07e8c31a19e543187d15e28aa58d90
+  C2_TREE: d0d0fb5b6d5954920728a9928891ab73b468d063
+  C1_SHA: c1e0be437442b0d97da26f2c9085067a8c09955e
+  POLICY_SHA256: d8108efa4aaa21b3bef671e7b754c47fde26e31bd7700b3a0e8414993612a83e
+  PROTOCOL_SHA256: b4d6946565538ce865893592f5c0e0e09436780ae102b52629291de3175b455d
+  RC4_ROOT: /tmp/evidencemesh-alpha-rc4-control-plane-offline
+  UV_NO_CACHE: 1
+
+jobs:
+  zero-traffic-control-plane:
+    if: >-
+      github.repository == 'VynoDePal/EvidenceMesh' &&
+      github.event.pull_request.number == 1 &&
+      github.event.pull_request.draft == true &&
+      github.event.pull_request.head.repo.full_name == 'VynoDePal/EvidenceMesh' &&
+      github.event.pull_request.head.ref == 'agent/evidencemesh-v0.1'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Check out the exact pull-request head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify the RC3 seal ancestry and immutable evidence
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test "$(git rev-parse "$C2_SHA^{tree}")" = "$C2_TREE"
+          test "$(git rev-parse "$C2_SHA^")" = "$C1_SHA"
+          git merge-base --is-ancestor "$C2_SHA" HEAD
+          test -z "$(git status --porcelain --untracked-files=all)"
+          immutable=(
+            .github/workflows/alpha-rc3-governor-offline.yml
+            .github/workflows/closed-alpha-a0-preflight.yml
+            alpha/alpha_rc3_head_acceptance_v1.json
+            alpha/closed_alpha_a0_feedback.schema.json
+            alpha/closed_alpha_a0_plan_v1.json
+            alpha/closed_alpha_rc3_governor_policy_v1.json
+            docs/alpha-rc3-governor-protocol-v1.md
+            docs/alpha-rc3-head-exact-protocol-v1.md
+            docs/closed-alpha-a0-protocol-v1.md
+            pyproject.toml
+            scripts/build_alpha_rc3_head_bundle.py
+            scripts/finalize_alpha_rc3_head_report.py
+            scripts/prepare_closed_alpha_a0.py
+            scripts/smoke_installed_rc3.py
+            uv.lock
+          )
+          git diff --quiet "$C2_SHA" HEAD -- "${immutable[@]}"
+
+      - name: Verify the frozen RC4 offline contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "$PROTOCOL_SHA256  docs/alpha-rc4-control-plane-offline-protocol-v1.md" \
+            | sha256sum --check
+          echo "$POLICY_SHA256  alpha/closed_alpha_rc4_control_plane_policy_v1.json" \
+            | sha256sum --check
+
+      - name: Set up pinned uv without an Actions cache
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: false
+
+      - name: Install the locked validation environment before isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11 --no-cache
+
+      - name: Run all source and build gates with networking disabled
+        shell: bash
+        run: |
+          set -euo pipefail
+          runner_uid=$(id -u)
+          source_date_epoch=$(git show --no-patch --format=%ct HEAD)
+          uv_path=$(command -v uv)
+          test -x "$uv_path"
+          sudo install --directory \
+            --owner="$runner_uid" \
+            --group=nogroup \
+            --mode=0700 \
+            "$RC4_ROOT"
+          python_path="$PWD/.venv/bin/python"
+          run_isolated=(
+            sudo env -i
+            HOME="$RC4_ROOT"
+            TMPDIR="$RC4_ROOT"
+            PATH=/usr/bin:/bin
+            LANG=C.UTF-8
+            LC_ALL=C.UTF-8
+            TZ=UTC
+            PYTHONDONTWRITEBYTECODE=1
+            RUFF_CACHE_DIR="$RC4_ROOT/ruff-cache"
+            MYPY_CACHE_DIR="$RC4_ROOT/mypy-cache"
+            COVERAGE_FILE="$RC4_ROOT/.coverage"
+            SOURCE_DATE_EPOCH="$source_date_epoch"
+            UV_NO_CACHE=1
+            /usr/bin/unshare --net --
+            /usr/bin/setpriv
+            --reuid="$runner_uid"
+            --regid=nogroup
+            --clear-groups
+            --no-new-privs
+          )
+          "${run_isolated[@]}" /usr/bin/test ! -w /var/run/docker.sock
+          "${run_isolated[@]}" "$python_path" -m ruff format --check .
+          "${run_isolated[@]}" "$python_path" -m ruff check .
+          "${run_isolated[@]}" "$python_path" -m mypy src
+          "${run_isolated[@]}" "$python_path" -m pytest \
+            --cov=evidencemesh \
+            --cov-report=term-missing \
+            -p no:cacheprovider \
+            -q
+          "${run_isolated[@]}" "$python_path" -m hatchling build \
+            --target wheel \
+            --target sdist \
+            --directory "$RC4_ROOT/dist"
+          test "$(find "$RC4_ROOT/dist" -maxdepth 1 -type f -name '*.whl' | wc -l)" = 1
+          test "$(find "$RC4_ROOT/dist" -maxdepth 1 -type f -name '*.tar.gz' | wc -l)" = 1
+          wheel_path=$(find "$RC4_ROOT/dist" -maxdepth 1 -type f -name '*.whl' -print -quit)
+          smoke_target="$RC4_ROOT/wheel-smoke"
+          "${run_isolated[@]}" "$uv_path" pip install \
+            --offline \
+            --no-index \
+            --no-deps \
+            --no-cache \
+            --python "$python_path" \
+            --target "$smoke_target" \
+            "$wheel_path"
+          "${run_isolated[@]}" /usr/bin/env \
+            PYTHONPATH="$smoke_target" \
+            "$python_path" - "$smoke_target" <<'PY'
+          from pathlib import Path
+          import sys
+
+          from evidencemesh import ClosedAlphaFeedbackIdentity as ExportedIdentity
+          from evidencemesh.closed_alpha_feedback import (
+              ClosedAlphaFeedbackContract,
+              ClosedAlphaFeedbackIdentity,
+              FeedbackValidationError,
+          )
+
+          smoke_target = Path(sys.argv[1]).resolve()
+          assert ExportedIdentity is ClosedAlphaFeedbackIdentity
+          assert getattr(ClosedAlphaFeedbackContract, "__final__", False) is True
+          assert getattr(ClosedAlphaFeedbackIdentity, "__final__", False) is True
+          for packaged_type in (ClosedAlphaFeedbackContract, ClosedAlphaFeedbackIdentity):
+              module = sys.modules[packaged_type.__module__]
+              assert module.__file__ is not None
+              assert Path(module.__file__).resolve().is_relative_to(smoke_target)
+          try:
+              ClosedAlphaFeedbackContract("0" * 40)
+          except FeedbackValidationError:
+              pass
+          else:
+              raise AssertionError("raw candidate SHA unexpectedly constructed a contract")
+          try:
+              ClosedAlphaFeedbackIdentity()
+          except FeedbackValidationError:
+              pass
+          else:
+              raise AssertionError("feedback identity unexpectedly allowed direct construction")
+          PY
+          test -z "$(git status --porcelain --untracked-files=all)"
+
+      - name: Summarize the offline-only decision
+        shell: bash
+        run: |
+          {
+            echo '## EvidenceMesh Alpha-RC4 control plane offline'
+            echo
+            echo '- Offline implementation validation: `pass`'
+            echo '- Provider/model/tester requests: `0`'
+            echo '- Verified-identity packaged wheel smoke: `pass`'
+            echo '- Actions artifact or attestation: `none`'
+            echo '- Single-host scope only: `true`'
+            echo '- Adoption, live, distribution, merge and release: `blocked`'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove every ephemeral RC4 output
+        if: always()
+        shell: bash
+        run: sudo rm --recursive --force -- "$RC4_ROOT"
+
+      - name: Confirm ephemeral output removal
+        if: always()
+        shell: bash
+        run: test ! -e "$RC4_ROOT"
