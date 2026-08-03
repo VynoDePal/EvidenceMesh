@@ -13,6 +13,7 @@ from typing import Any
 
 import httpx
 
+from evidencemesh.alpha_liveness import A2SQLiteBudgetGovernor
 from evidencemesh.cache import SQLiteCache
 from evidencemesh.config import Settings
 from evidencemesh.errors import (
@@ -101,7 +102,7 @@ class EvidenceMesh:
         client: httpx.AsyncClient | None = None,
         fetcher: WebFetcher | None = None,
         cache: SQLiteCache | None = None,
-        governor: SQLiteBudgetGovernor | None = None,
+        governor: SQLiteBudgetGovernor | A2SQLiteBudgetGovernor | None = None,
     ) -> None:
         self.settings = settings or Settings.from_env()
         if governor is not None:
@@ -121,7 +122,7 @@ class EvidenceMesh:
             if fetcher is not None:
                 invalid_fetcher_type = (
                     type(fetcher) is not WebFetcher
-                    if self.governor._rc4
+                    if type(self.governor) is A2SQLiteBudgetGovernor or self.governor._rc4
                     else not isinstance(fetcher, WebFetcher)
                 )
                 if invalid_fetcher_type or fetcher.governor is not self.governor:
@@ -130,16 +131,25 @@ class EvidenceMesh:
                     )
         supplied_client = client
         self._owns_client = client is None
-        self.client = client or httpx.AsyncClient(
-            timeout=httpx.Timeout(
-                connect=self.settings.provider_connect_timeout_seconds,
-                read=self.settings.provider_read_timeout_seconds,
-                write=self.settings.provider_write_timeout_seconds,
-                pool=self.settings.provider_pool_timeout_seconds,
-            ),
-            headers={"User-Agent": self.settings.user_agent},
-            follow_redirects=False,
+        provider_timeout = httpx.Timeout(
+            connect=self.settings.provider_connect_timeout_seconds,
+            read=self.settings.provider_read_timeout_seconds,
+            write=self.settings.provider_write_timeout_seconds,
+            pool=self.settings.provider_pool_timeout_seconds,
         )
+        if client is not None:
+            self.client = client
+        elif type(self.governor) is A2SQLiteBudgetGovernor:
+            self.client = self.governor.make_client(
+                timeout=provider_timeout,
+                headers={"User-Agent": self.settings.user_agent},
+            )
+        else:
+            self.client = httpx.AsyncClient(
+                timeout=provider_timeout,
+                headers={"User-Agent": self.settings.user_agent},
+                follow_redirects=False,
+            )
         if providers is None:
             self.providers, self.configuration_warnings = build_providers(
                 self.settings,
@@ -174,6 +184,9 @@ class EvidenceMesh:
             self.settings.provider_recovery_seconds,
         )
         self._provider_http_instrumentation = ProviderHTTPInstrumentation(self.client)
+        self._a2_session_lock = asyncio.Lock()
+        self._a2_session_stop: asyncio.Event | None = None
+        self._a2_session_task: asyncio.Task[None] | None = None
         self._closed = False
 
     async def __aenter__(self) -> EvidenceMesh:
@@ -186,9 +199,24 @@ class EvidenceMesh:
         if self._closed:
             return
         self._provider_http_instrumentation.detach()
+        failure: BaseException | None = None
+        if self._a2_session_task is not None:
+            if self._a2_session_stop is not None:
+                self._a2_session_stop.set()
+            try:
+                await self._a2_session_task
+            except BaseException as exc:
+                failure = exc
+            finally:
+                self._a2_session_task = None
+                self._a2_session_stop = None
         try:
             if self.governor is not None:
-                await self.governor.aclose()
+                try:
+                    await self.governor.aclose()
+                except BaseException as exc:
+                    if failure is None:
+                        failure = exc
         finally:
             try:
                 await self.fetcher.aclose()
@@ -197,6 +225,34 @@ class EvidenceMesh:
                     await self.client.aclose()
                 self.cache.close()
                 self._closed = True
+        if failure is not None:
+            raise failure
+
+    async def _ensure_a2_session(self) -> None:
+        governor = self.governor
+        if type(governor) is not A2SQLiteBudgetGovernor:
+            return
+        async with self._a2_session_lock:
+            if self._closed:
+                raise BudgetConfigurationError("A2 engine is closed")
+            task = self._a2_session_task
+            if task is not None:
+                if task.done():
+                    try:
+                        task.result()
+                    except BaseException as exc:
+                        raise BudgetConfigurationError(
+                            "A2 session heartbeat stopped fail-closed"
+                        ) from exc
+                    raise BudgetConfigurationError("A2 session heartbeat stopped fail-closed")
+                return
+            await governor.open_session()
+            stop = asyncio.Event()
+            self._a2_session_stop = stop
+            self._a2_session_task = asyncio.create_task(
+                governor.run_session_heartbeat(stop),
+                name="evidencemesh-a2-session-heartbeat",
+            )
 
     async def _provider_search(
         self,
@@ -284,6 +340,7 @@ class EvidenceMesh:
             request = SearchRequest(query=request, **kwargs)
         if self.governor is not None and request.use_cache:
             raise BudgetConfigurationError("closed-alpha search requires use_cache=false")
+        await self._ensure_a2_session()
         started = time.perf_counter()
         queries = list(dict.fromkeys([request.query, *request.query_variants]))
         routes = build_provider_routes(
@@ -704,6 +761,7 @@ class EvidenceMesh:
             request = FetchRequest.model_validate({"url": request, **kwargs})
         if self.governor is not None and request.use_cache:
             raise BudgetConfigurationError("closed-alpha fetch requires use_cache=false")
+        await self._ensure_a2_session()
         url = str(request.url)
         try:
             async with asyncio.timeout(self.settings.fetch_timeout_seconds):

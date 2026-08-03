@@ -12,8 +12,9 @@ from urllib.robotparser import RobotFileParser
 
 import httpx
 
+from evidencemesh.alpha_liveness import A2SQLiteBudgetGovernor
 from evidencemesh.config import Settings
-from evidencemesh.errors import FetchError, UnsupportedContentError
+from evidencemesh.errors import BudgetConfigurationError, FetchError, UnsupportedContentError
 from evidencemesh.extraction import content_sha256, extract_content
 from evidencemesh.governor import DispatchIntent, SQLiteBudgetGovernor
 from evidencemesh.models import FetchedDocument
@@ -27,6 +28,13 @@ from evidencemesh.urls import (
 
 _REDIRECTS = {301, 302, 303, 307, 308}
 _ROBOTS_MAX_BYTES = 512_000
+
+
+class _A2OfflineURLGuard:
+    """Refuse document resolution until a governed DNS gate is authorized."""
+
+    async def validate(self, _url: str) -> str:
+        raise BudgetConfigurationError("A2 offline gate forbids pre-transport DNS resolution")
 
 
 async def _request_targets(guard: URLValidator, url: str) -> list[PinnedURLTarget]:
@@ -59,7 +67,7 @@ class RobotsPolicy:
         user_agent: str,
         *,
         ttl_seconds: int = 3_600,
-        governor: SQLiteBudgetGovernor | None = None,
+        governor: SQLiteBudgetGovernor | A2SQLiteBudgetGovernor | None = None,
     ) -> None:
         self.client = client
         self.guard = guard
@@ -163,24 +171,38 @@ class WebFetcher:
         *,
         client: httpx.AsyncClient | None = None,
         guard: URLValidator | None = None,
-        governor: SQLiteBudgetGovernor | None = None,
+        governor: SQLiteBudgetGovernor | A2SQLiteBudgetGovernor | None = None,
     ) -> None:
         self.settings = settings
         self._owns_client = client is None
-        self.client = client or httpx.AsyncClient(
-            timeout=httpx.Timeout(settings.fetch_timeout_seconds),
-            follow_redirects=False,
-            limits=httpx.Limits(
-                max_connections=settings.max_concurrency,
-                max_keepalive_connections=0,
-            ),
-            trust_env=False,
+        limits = httpx.Limits(
+            max_connections=settings.max_concurrency,
+            max_keepalive_connections=0,
         )
-        self.guard = guard or URLGuard(
-            allow_private_networks=settings.allow_private_networks,
-            allow_nonstandard_ports=settings.allow_nonstandard_ports,
-            dns_timeout_seconds=settings.dns_timeout_seconds,
-        )
+        if client is not None:
+            self.client = client
+        elif type(governor) is A2SQLiteBudgetGovernor:
+            self.client = governor.make_client(
+                timeout=httpx.Timeout(settings.fetch_timeout_seconds),
+                limits=limits,
+            )
+        else:
+            self.client = httpx.AsyncClient(
+                timeout=httpx.Timeout(settings.fetch_timeout_seconds),
+                follow_redirects=False,
+                limits=limits,
+                trust_env=False,
+            )
+        if type(governor) is A2SQLiteBudgetGovernor:
+            if guard is not None and type(guard) is not _A2OfflineURLGuard:
+                raise BudgetConfigurationError("A2 offline gate rejects custom document resolvers")
+            self.guard: URLValidator = _A2OfflineURLGuard()
+        else:
+            self.guard = guard or URLGuard(
+                allow_private_networks=settings.allow_private_networks,
+                allow_nonstandard_ports=settings.allow_nonstandard_ports,
+                dns_timeout_seconds=settings.dns_timeout_seconds,
+            )
         self.governor = governor
         if governor is not None:
             governor.attach_client(self.client)

@@ -25,7 +25,7 @@ from collections.abc import Awaitable, Callable, Iterator, Mapping
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
 from pathlib import Path, PurePosixPath
-from typing import Any, Final, Protocol, cast, final
+from typing import Any, Final, NoReturn, Protocol, TypeVar, cast, final, runtime_checkable
 
 from evidencemesh.errors import ConfigurationError
 
@@ -35,6 +35,7 @@ MAX_SCHEDULER_POLL_SECONDS: Final = 30.0
 MAX_ACCEPTANCE_RECORD_BYTES: Final = 256 * 1024
 MAX_DIRECT_URL_BYTES: Final = 16 * 1024
 MAX_ACCEPTED_ARCHIVE_BYTES: Final = 512 * 1024 * 1024
+_SnapshotT = TypeVar("_SnapshotT")
 
 _LOCK_NAME: Final = ".feedback.lock"
 _REPORT_PATTERN: Final = re.compile(r"^s-[0-9a-f]{32}\.json$")
@@ -794,6 +795,62 @@ class FeedbackAdmission(Protocol):
 
 
 @dataclass(frozen=True, slots=True)
+class FeedbackStoreBinding:
+    """Stable, non-secret identity of one authoritative private feedback store."""
+
+    root_device: int
+    root_inode: int
+    candidate_sha: str
+    candidate_tree: str
+
+
+@runtime_checkable
+class FeedbackPublicationAdmission(Protocol):
+    """Optional A2 fail-closed publication bridge.
+
+    The first phase durably fences a renewal that observed an earlier purge.
+    The second phase keeps its SQLite transaction open through replay or the
+    atomic link.  Both callbacks run while the feedback-store lock is held and
+    must never call back into the store.
+    """
+
+    def feedback_publication_clock_anchor(
+        self,
+        *,
+        store_binding: FeedbackStoreBinding,
+    ) -> object:
+        """Capture boottime before the store observes its retention clock."""
+
+    def discard_feedback_publication_clock_anchor(self, clock_anchor: object) -> None:
+        """Invalidate an unused publication clock anchor without publishing."""
+
+    def prepare_feedback_publication(
+        self,
+        authority: object,
+        *,
+        participant_code: str,
+        session_code: str,
+        checked_at_utc: float,
+        purge_at_utc: float,
+        is_new: bool,
+        store_binding: FeedbackStoreBinding,
+        clock_anchor: object,
+    ) -> object:
+        """Commit the crash-safe lease fence and return its final guard token."""
+
+    def feedback_publication_guard(
+        self,
+        authority: object,
+        *,
+        participant_code: str,
+        session_code: str,
+        checked_at_utc: float,
+        store_binding: FeedbackStoreBinding,
+    ) -> contextlib.AbstractContextManager[None]:
+        """Return the final transaction held through link or replay."""
+
+
+@dataclass(frozen=True, slots=True)
 class FeedbackContext:
     """Authoritative registry and ledger fields bound to one report."""
 
@@ -920,7 +977,24 @@ class ClosedAlphaFeedbackStore:
     def closed(self) -> bool:
         return self._closed
 
-    def put(self, report: Mapping[str, Any]) -> PutResult:
+    @property
+    def retention_admission(self) -> FeedbackAdmission:
+        """Return the registry bridge whose ledger must match the supervisor."""
+
+        return self._admission
+
+    def retention_binding(self) -> FeedbackStoreBinding:
+        """Capture the exact anchored store identity without running retention."""
+
+        with self._exclusive():
+            return self._retention_binding_locked()
+
+    def put(
+        self,
+        report: Mapping[str, Any],
+        *,
+        authority: object | None = None,
+    ) -> PutResult:
         """Validate and publish one immutable report, or accept an identical replay."""
 
         payload = _canonical_json(report)
@@ -930,30 +1004,87 @@ class ClosedAlphaFeedbackStore:
             raise FeedbackValidationError("feedback canonicalization changed its value")
 
         with self._exclusive():
-            now = self._clock_locked()
-            self._purge_locked(now)
-            _participant_code, session_code, purge_at = self._validate_report(frozen, now=now)
-            if now >= purge_at:
-                raise FeedbackValidationError("feedback is already due for private deletion")
+            publication = self._publication_admission()
+            publication_binding: FeedbackStoreBinding | None = None
+            clock_anchor: object | None = None
+            if publication is not None:
+                if authority is None:
+                    raise FeedbackAdmissionError("feedback publication authority is required")
+                publication_binding = self._retention_binding_locked()
+                try:
+                    clock_anchor = publication.feedback_publication_clock_anchor(
+                        store_binding=publication_binding,
+                    )
+                except BaseException as exc:
+                    raise FeedbackAdmissionError("feedback publication is not authorized") from exc
+            try:
+                # The monotonic anchor is deliberately captured before this UTC
+                # observation.  Any intervening SQLite wait can therefore only
+                # shorten, never extend, the effective retention deadline.
+                now = self._clock_locked()
+                self._purge_locked(now)
+                _participant_code, session_code, purge_at = self._validate_report(
+                    frozen,
+                    now=now,
+                )
+                if now >= purge_at:
+                    raise FeedbackValidationError("feedback is already due for private deletion")
 
-            name = f"{session_code}.json"
-            existing = self._read_optional_locked(name)
-            if existing is not None:
-                existing_payload, _ = existing
-                if existing_payload != payload:
-                    raise FeedbackValidationError("feedback session already has another report")
+                name = f"{session_code}.json"
+                existing = self._read_optional_locked(name)
+                if existing is not None:
+                    existing_payload, _ = existing
+                    if existing_payload != payload:
+                        raise FeedbackValidationError("feedback session already has another report")
+                    self._authorize_publication_locked(
+                        publication,
+                        authority,
+                        participant_code=_participant_code,
+                        session_code=session_code,
+                        checked_at=now,
+                        purge_at=purge_at,
+                        is_new=False,
+                        store_binding=publication_binding,
+                        clock_anchor=clock_anchor,
+                    )
+                    return PutResult(
+                        session_code=session_code,
+                        created=False,
+                        size_bytes=len(payload),
+                    )
+
+                if publication is None:
+                    self._publish_locked(name, payload)
+                else:
+                    temporary_name = self._stage_locked(payload)
+                    try:
+                        self._authorize_publication_locked(
+                            publication,
+                            authority,
+                            participant_code=_participant_code,
+                            session_code=session_code,
+                            checked_at=now,
+                            purge_at=purge_at,
+                            is_new=True,
+                            store_binding=publication_binding,
+                            clock_anchor=clock_anchor,
+                            temporary_name=temporary_name,
+                            destination_name=name,
+                        )
+                    finally:
+                        self._unlink_temporary_locked(temporary_name)
                 return PutResult(
                     session_code=session_code,
-                    created=False,
+                    created=True,
                     size_bytes=len(payload),
                 )
-
-            self._publish_locked(name, payload)
-            return PutResult(
-                session_code=session_code,
-                created=True,
-                size_bytes=len(payload),
-            )
+            finally:
+                if publication is not None and clock_anchor is not None:
+                    # The exact A2 implementation consumes the anchor in phase
+                    # A.  This no-op-on-consumed cleanup prevents invalid input
+                    # from accumulating unused process-local capabilities.
+                    with contextlib.suppress(BaseException):
+                        publication.discard_feedback_publication_clock_anchor(clock_anchor)
 
     def get(self, session_code: str) -> dict[str, Any] | None:
         """Return one validated aggregate report after enforcing retention."""
@@ -1008,6 +1139,67 @@ class ClosedAlphaFeedbackStore:
         with self._exclusive():
             now = self._clock_locked()
             return self._purge_locked(now)
+
+    def retention_pass(
+        self,
+        snapshot: Callable[[PurgeResult], _SnapshotT],
+    ) -> tuple[PurgeResult, _SnapshotT]:
+        """Purge and capture one SQLite CAS token before releasing the store lock.
+
+        The callback is intentionally read-only.  Lease acquisition or renewal
+        starts only after this method returns, preserving the one-way
+        store-lock-to-SQLite ordering without letting a publication slip
+        between the purge and the CAS snapshot.
+        """
+
+        with self._exclusive():
+            now = self._clock_locked()
+            result = self._purge_locked(now)
+            try:
+                captured = snapshot(result)
+            except BaseException as exc:
+                raise ClosedAlphaFeedbackError(
+                    "cannot capture retention supervisor CAS state"
+                ) from exc
+            return result, captured
+
+    def bound_retention_pass(
+        self,
+        snapshot: Callable[[PurgeResult, FeedbackStoreBinding], _SnapshotT],
+        boottime_anchor: Callable[[], float],
+    ) -> tuple[PurgeResult, _SnapshotT, FeedbackStoreBinding, float]:
+        """Purge and act under the store lock with a conservative time anchor."""
+
+        with self._exclusive():
+            try:
+                retention_boottime = float(boottime_anchor())
+            except BaseException as exc:
+                raise ClosedAlphaFeedbackError("cannot capture retention boottime anchor") from exc
+            if not math.isfinite(retention_boottime) or retention_boottime < 0.0:
+                raise ClosedAlphaFeedbackError("retention boottime anchor is invalid")
+            now = self._clock_locked()
+            result = self._purge_locked(now)
+            binding = self._retention_binding_locked()
+            try:
+                captured = snapshot(result, binding)
+            except BaseException as exc:
+                raise ClosedAlphaFeedbackError(
+                    "cannot complete the bound retention action"
+                ) from exc
+            return result, captured, binding, retention_boottime
+
+    def _retention_binding_locked(self) -> FeedbackStoreBinding:
+        self._assert_anchors_locked()
+        try:
+            metadata = os.fstat(self._root_fd)
+        except OSError as exc:
+            self._integrity_failure("cannot inspect private feedback identity", cause=exc)
+        return FeedbackStoreBinding(
+            root_device=int(metadata.st_dev),
+            root_inode=int(metadata.st_ino),
+            candidate_sha=self._contract.candidate_sha,
+            candidate_tree=self._contract.candidate_tree,
+        )
 
     def close(self) -> None:
         """Purge on orderly shutdown, then close all anchored descriptors."""
@@ -1258,10 +1450,64 @@ class ClosedAlphaFeedbackStore:
             self._integrity_failure("feedback withdrawal returned an invalid decision")
         return committed
 
-    def _publish_locked(self, name: str, payload: bytes) -> None:
+    def _publication_admission(self) -> FeedbackPublicationAdmission | None:
+        if isinstance(self._admission, FeedbackPublicationAdmission):
+            return cast(FeedbackPublicationAdmission, self._admission)
+        return None
+
+    def _authorize_publication_locked(
+        self,
+        publication: FeedbackPublicationAdmission | None,
+        authority: object | None,
+        *,
+        participant_code: str,
+        session_code: str,
+        checked_at: datetime,
+        purge_at: datetime,
+        is_new: bool,
+        store_binding: FeedbackStoreBinding | None,
+        clock_anchor: object | None,
+        temporary_name: str | None = None,
+        destination_name: str | None = None,
+    ) -> None:
+        if publication is None:
+            return
+        if authority is None or store_binding is None or clock_anchor is None:
+            raise FeedbackAdmissionError("feedback publication authority is required")
+        try:
+            prepared = publication.prepare_feedback_publication(
+                authority,
+                participant_code=participant_code,
+                session_code=session_code,
+                checked_at_utc=checked_at.timestamp(),
+                purge_at_utc=purge_at.timestamp(),
+                is_new=is_new,
+                store_binding=store_binding,
+                clock_anchor=clock_anchor,
+            )
+            guard = publication.feedback_publication_guard(
+                prepared,
+                participant_code=participant_code,
+                session_code=session_code,
+                checked_at_utc=checked_at.timestamp(),
+                store_binding=store_binding,
+            )
+        except BaseException as exc:
+            raise FeedbackAdmissionError("feedback publication is not authorized") from exc
+        try:
+            with guard:
+                if is_new:
+                    if temporary_name is None or destination_name is None:
+                        self._integrity_failure("feedback publication staging is incomplete")
+                    self._publish_staged_locked(temporary_name, destination_name)
+        except (ClosedAlphaFeedbackError, FeedbackValidationError):
+            raise
+        except BaseException as exc:
+            raise FeedbackAdmissionError("feedback publication is not authorized") from exc
+
+    def _stage_locked(self, payload: bytes) -> str:
         temporary_name = f".feedback-tmp-{secrets.token_hex(16)}"
         descriptor = -1
-        published = False
         try:
             descriptor = os.open(
                 temporary_name,
@@ -1281,6 +1527,19 @@ class ClosedAlphaFeedbackStore:
             self._assert_regular_metadata(os.fstat(descriptor), expected_mode=0o600)
             os.close(descriptor)
             descriptor = -1
+            return temporary_name
+        except (OSError, ClosedAlphaFeedbackError) as exc:
+            with contextlib.suppress(OSError):
+                os.unlink(temporary_name, dir_fd=self._root_fd)
+            self._integrity_failure("cannot stage private feedback", cause=exc)
+        finally:
+            if descriptor >= 0:
+                with contextlib.suppress(OSError):
+                    os.close(descriptor)
+        raise AssertionError("unreachable")
+
+    def _publish_staged_locked(self, temporary_name: str, name: str) -> None:
+        try:
             os.link(
                 temporary_name,
                 name,
@@ -1288,7 +1547,6 @@ class ClosedAlphaFeedbackStore:
                 dst_dir_fd=self._root_fd,
                 follow_symlinks=False,
             )
-            published = True
             os.unlink(temporary_name, dir_fd=self._root_fd)
             metadata = os.stat(name, dir_fd=self._root_fd, follow_symlinks=False)
             self._assert_regular_metadata(metadata, expected_mode=0o600)
@@ -1297,13 +1555,22 @@ class ClosedAlphaFeedbackStore:
             raise FeedbackValidationError("feedback session was published concurrently") from exc
         except (OSError, ClosedAlphaFeedbackError) as exc:
             self._integrity_failure("cannot atomically publish private feedback", cause=exc)
+
+    def _unlink_temporary_locked(self, temporary_name: str) -> None:
+        try:
+            os.unlink(temporary_name, dir_fd=self._root_fd)
+        except FileNotFoundError:
+            return
+        except OSError as exc:
+            self._integrity_failure("cannot remove temporary feedback", cause=exc)
+        self._fsync_root_locked()
+
+    def _publish_locked(self, name: str, payload: bytes) -> None:
+        temporary_name = self._stage_locked(payload)
+        try:
+            self._publish_staged_locked(temporary_name, name)
         finally:
-            if descriptor >= 0:
-                with contextlib.suppress(OSError):
-                    os.close(descriptor)
-            if not published:
-                with contextlib.suppress(OSError):
-                    os.unlink(temporary_name, dir_fd=self._root_fd)
+            self._unlink_temporary_locked(temporary_name)
 
     def _purge_locked(self, now: datetime) -> PurgeResult:
         result, _ = self._purge_details_locked(now)
@@ -1531,7 +1798,7 @@ class ClosedAlphaFeedbackStore:
         message: str,
         *,
         cause: BaseException | None = None,
-    ) -> None:
+    ) -> NoReturn:
         self._poisoned = True
         self._record_privacy_fault()
         if cause is None:

@@ -1,5 +1,13 @@
 """Evidence-first web research infrastructure for AI agents."""
 
+from evidencemesh.alpha_liveness import (
+    A2RetentionSupervisor,
+    A2SQLiteAlphaControlPlane,
+    A2SQLiteBudgetGovernor,
+    FeedbackPublicationAuthority,
+    GovernedAsyncTransport,
+    SupervisorLease,
+)
 from evidencemesh.citations import CitationAudit, audit_citations
 from evidencemesh.closed_alpha_feedback import (
     ClosedAlphaFeedbackContract,
@@ -7,6 +15,7 @@ from evidencemesh.closed_alpha_feedback import (
     ClosedAlphaFeedbackStore,
     FeedbackContext,
     FeedbackRetentionScheduler,
+    FeedbackStoreBinding,
 )
 from evidencemesh.config import DeploymentProfile
 from evidencemesh.engine import EvidenceMesh
@@ -29,6 +38,9 @@ from evidencemesh.models import (
 )
 
 __all__ = [
+    "A2RetentionSupervisor",
+    "A2SQLiteAlphaControlPlane",
+    "A2SQLiteBudgetGovernor",
     "AlphaControlState",
     "CitationAudit",
     "ClosedAlphaAdmission",
@@ -41,15 +53,19 @@ __all__ = [
     "DispatchIntent",
     "EvidenceMesh",
     "FeedbackContext",
+    "FeedbackPublicationAuthority",
     "FeedbackRetentionScheduler",
+    "FeedbackStoreBinding",
     "FetchRequest",
     "FetchedDocument",
+    "GovernedAsyncTransport",
     "ResearchPacket",
     "ResearchRequest",
     "SQLiteAlphaControlPlane",
     "SQLiteBudgetGovernor",
     "SearchRequest",
     "SearchResponse",
+    "SupervisorLease",
     "audit_citations",
 ]
 __version__ = "0.1.0"

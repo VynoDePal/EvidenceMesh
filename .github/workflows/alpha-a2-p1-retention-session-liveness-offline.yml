@@ -1,0 +1,169 @@
+name: Alpha A2-P1 Retention Session Liveness Offline
+
+on:
+  pull_request:
+    types:
+      - synchronize
+
+permissions:
+  contents: read
+
+concurrency:
+  group: alpha-a2-p1-offline-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
+  cancel-in-progress: false
+
+env:
+  A2_PARENT_SHA: 4044840fb3c79d2b65ff1ce7d3c96be423b331b5
+  A2_PARENT_TREE: e9d54fef97c583f70dd00d4c095898e545ef6fed
+  A2_ROOT: /tmp/evidencemesh-alpha-a2-p1-retention-session-liveness-offline
+  UV_NO_CACHE: 1
+
+jobs:
+  fail-closed-offline:
+    if: >-
+      github.repository == 'VynoDePal/EvidenceMesh' &&
+      github.event.pull_request.number == 1 &&
+      github.event.pull_request.draft == true &&
+      github.event.pull_request.head.repo.full_name == 'VynoDePal/EvidenceMesh' &&
+      github.event.pull_request.head.ref == 'agent/evidencemesh-v0.1'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Check out the exact pull-request head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 3
+          fetch-tags: false
+          persist-credentials: false
+
+      - name: Verify one-shot entry, ancestry, tree and scope
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_RUN_ATTEMPT" = 1
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test "$(git rev-parse "$A2_PARENT_SHA^{tree}")" = "$A2_PARENT_TREE"
+
+          current=$(git rev-parse HEAD)
+          commit_count=0
+          while test "$current" != "$A2_PARENT_SHA"; do
+            read -r -a parents <<< "$(git show --no-patch --format=%P "$current")"
+            test "${#parents[@]}" = 1
+            current=${parents[0]}
+            commit_count=$((commit_count + 1))
+            test "$commit_count" -le 2
+          done
+          test "$commit_count" -ge 1
+
+          expected_paths=(
+            .github/workflows/alpha-a2-p1-retention-session-liveness-offline.yml
+            alpha/alpha-a2-p1-retention-session-liveness-offline-policy-v1.json
+            docs/alpha-a2-p1-retention-session-liveness-offline-gate-v1.md
+            src/evidencemesh/__init__.py
+            src/evidencemesh/alpha_liveness.py
+            src/evidencemesh/closed_alpha_feedback.py
+            src/evidencemesh/engine.py
+            src/evidencemesh/fetcher.py
+            tests/test_alpha_a2_p1_feedback_transport.py
+            tests/test_alpha_a2_p1_liveness.py
+          )
+          mapfile -t changed_paths < <(
+            git diff --name-only --diff-filter=ACMRT "$A2_PARENT_SHA" HEAD | sort
+          )
+          test "${#changed_paths[@]}" = 10
+          test "${#changed_paths[@]}" -le 12
+          diff -u \
+            <(printf '%s\n' "${expected_paths[@]}" | sort) \
+            <(printf '%s\n' "${changed_paths[@]}")
+          test -z "$(git status --porcelain --untracked-files=all)"
+
+      - name: Set up pinned uv without an Actions cache
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: false
+
+      - name: Install the locked validation environment before isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11 --no-cache
+
+      - name: Run the exact source and test gates with networking disabled
+        shell: bash
+        run: |
+          set -euo pipefail
+          runner_uid=$(id -u)
+          source_date_epoch=$(git show --no-patch --format=%ct HEAD)
+          sudo install --directory \
+            --owner="$runner_uid" \
+            --group=nogroup \
+            --mode=0700 \
+            "$A2_ROOT"
+          python_path="$PWD/.venv/bin/python"
+          run_isolated=(
+            sudo env -i
+            HOME="$A2_ROOT"
+            TMPDIR="$A2_ROOT"
+            PATH=/usr/bin:/bin
+            LANG=C.UTF-8
+            LC_ALL=C.UTF-8
+            TZ=UTC
+            PYTHONDONTWRITEBYTECODE=1
+            PYTHONHASHSEED=0
+            RUFF_CACHE_DIR="$A2_ROOT/ruff-cache"
+            MYPY_CACHE_DIR="$A2_ROOT/mypy-cache"
+            SOURCE_DATE_EPOCH="$source_date_epoch"
+            UV_NO_CACHE=1
+            /usr/bin/unshare --net --
+            /usr/bin/setpriv
+            --reuid="$runner_uid"
+            --regid=nogroup
+            --clear-groups
+            --no-new-privs
+          )
+          "${run_isolated[@]}" /usr/bin/test ! -w /var/run/docker.sock
+          "${run_isolated[@]}" "$python_path" -m ruff format --check .
+          "${run_isolated[@]}" "$python_path" -m ruff check .
+          "${run_isolated[@]}" "$python_path" -m mypy src
+          "${run_isolated[@]}" "$python_path" -m pytest \
+            -p no:cacheprovider \
+            -q \
+            tests/test_alpha_a2_p1_liveness.py \
+            tests/test_alpha_a2_p1_feedback_transport.py \
+            tests/test_alpha_rc4_control_plane.py \
+            tests/test_alpha_rc4_feedback.py \
+            tests/test_alpha_rc4_integration.py
+          test -z "$(git status --porcelain --untracked-files=all)"
+
+      - name: Summarize the one-shot offline decision
+        env:
+          EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          exact_tree=$(git rev-parse HEAD^{tree})
+          {
+            echo '## EvidenceMesh Alpha A2-P1 offline gate'
+            echo
+            echo "- Exact HEAD: \`$EXACT_HEAD\`"
+            echo "- Exact tree: \`$exact_tree\`"
+            echo "- Workflow run: \`$GITHUB_RUN_ID\`"
+            echo "- Run attempt: \`$GITHUB_RUN_ATTEMPT\`"
+            echo '- Runtime/provider/model/document/DNS requests: `0`'
+            echo '- Distribution, artifact, tag or release publication: `none`'
+            echo '- Decision: `pass` within the offline single-host A2-P1 claim only'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove every ephemeral A2-P1 output
+        if: always()
+        shell: bash
+        run: sudo rm --recursive --force -- "$A2_ROOT"
+
+      - name: Confirm ephemeral output removal
+        if: always()
+        shell: bash
+        run: test ! -e "$A2_ROOT"
