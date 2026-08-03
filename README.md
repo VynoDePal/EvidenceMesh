@@ -78,7 +78,7 @@ identity are both checked before installation.
 
 ```bash
 ALPHA_BRANCH=agent/evidencemesh-v0.1
-ALPHA_SHA=145f5f923825ffeaeb485bd680bc79410ab290d1
+ALPHA_SHA=41e0d18e1801cbde0bae61dfd85877fddbc64e4d
 
 git clone \
   --branch "$ALPHA_BRANCH" \
@@ -106,9 +106,12 @@ EVIDENCEMESH_PROVIDERS=wikipedia .venv/bin/evidencemesh providers
 EVIDENCEMESH_PROVIDERS=wikipedia .venv/bin/evidencemesh benchmark-offline
 ```
 
-The Alpha A1-P0 path above was validated on Ubuntu 24.04 x86_64. CI exercises
-Python 3.11, 3.12 and 3.13. macOS has not been validated, and native Windows is
-not supported in this alpha.
+The exact A2 source above is the subject of the internal
+[A3-P0 operator clean-room runbook](docs/alpha-a3-p0-operator-clean-room-runbook-v1.md).
+That runbook is an automated Ubuntu 24.04/Python 3.11 simulation using an
+ephemeral, unpublished local wheel; it is not a public distribution or a
+public installation path. CI exercises Python 3.11, 3.12 and 3.13. macOS has
+not been validated, and native Windows is not supported in this alpha.
 
 ### Optional live search with SearXNG
 
