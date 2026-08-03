@@ -14,16 +14,19 @@ from pathlib import Path
 import httpx
 import pytest
 
+import evidencemesh.alpha_liveness as liveness_module
 import evidencemesh.closed_alpha_feedback as feedback_module
 from evidencemesh.alpha_liveness import (
     A2RetentionSupervisor,
     A2SQLiteAlphaControlPlane,
     A2SQLiteBudgetGovernor,
+    GovernedAsyncTransport,
 )
 from evidencemesh.closed_alpha_feedback import (
     ClosedAlphaFeedbackContract,
     ClosedAlphaFeedbackIdentity,
     ClosedAlphaFeedbackStore,
+    PurgeResult,
 )
 from evidencemesh.config import Settings
 from evidencemesh.engine import EvidenceMesh
@@ -1154,3 +1157,411 @@ async def test_future_heartbeat_timestamp_commits_permanent_fault(
         else:
             await governor.heartbeat_session()
     store.close()
+
+
+@pytest.mark.parametrize(
+    "failure",
+    [
+        "boot-reader-error",
+        "boot-not-bytes",
+        "boot-nul",
+        "boot-not-ascii",
+        "boot-not-uuid",
+        "boot-not-canonical",
+        "clock-error",
+        "clock-bool",
+        "clock-nan",
+        "clock-negative",
+    ],
+)
+def test_bootstrap_rejects_invalid_public_clock_sources(
+    tmp_path: Path,
+    failure: str,
+) -> None:
+    def boot_identity() -> bytes:
+        if failure == "boot-reader-error":
+            raise OSError("synthetic boot identity failure")
+        if failure == "boot-not-bytes":
+            return "not-bytes"  # type: ignore[return-value]
+        if failure == "boot-nul":
+            return b"bad\x00boot"
+        if failure == "boot-not-ascii":
+            return b"\xff" * 16
+        if failure == "boot-not-uuid":
+            return b"not-a-uuid"
+        if failure == "boot-not-canonical":
+            return b"ABCDEFAB-CDEF-ABCD-EFAB-CDEFABCDEFAB"
+        return f"{_BOOT_A}\n".encode("ascii")
+
+    def boottime() -> float:
+        if failure == "clock-error":
+            raise OSError("synthetic boottime failure")
+        if failure == "clock-bool":
+            return True  # type: ignore[return-value]
+        if failure == "clock-nan":
+            return float("nan")
+        if failure == "clock-negative":
+            return -1.0
+        return 100.0
+
+    with pytest.raises(BudgetConfigurationError, match=r"boot identity|boottime clock"):
+        A2SQLiteAlphaControlPlane.bootstrap(
+            tmp_path / failure / "control.sqlite3",
+            boottime=boottime,
+            boot_identity=boot_identity,
+        )
+
+
+def test_bootstrap_uses_and_requires_linux_default_liveness_sources(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    control = A2SQLiteAlphaControlPlane.bootstrap(tmp_path / "default" / "control.sqlite3")
+    snapshot = control.snapshot()
+    assert snapshot["state"] == "paused"
+    assert snapshot["schema_version"] == "evidencemesh.closed-alpha-control-plane.v3"
+
+    monkeypatch.delattr(liveness_module.time, "CLOCK_BOOTTIME")
+    with pytest.raises(BudgetConfigurationError, match="boottime clock is unavailable"):
+        A2SQLiteAlphaControlPlane.bootstrap(tmp_path / "missing-clock" / "control.sqlite3")
+
+
+def test_public_binding_and_transition_cas_rejections(
+    tmp_path: Path,
+) -> None:
+    host = HostClock()
+    feedback_clock = FeedbackClock()
+    control, _ledger, store, _governor = _bound_runtime(
+        tmp_path / "bound",
+        host,
+        feedback_clock,
+    )
+    try:
+        with pytest.raises(BudgetConfigurationError, match="control epoch"):
+            control.bind_feedback_store(store, expected_control_epoch=False)
+        assert control.bind_feedback_store(store, expected_control_epoch=2) == 2
+        with pytest.raises(BudgetConfigurationError, match="binding CAS"):
+            control.bind_feedback_store(store, expected_control_epoch=1)
+
+        with pytest.raises(BudgetConfigurationError, match="control state"):
+            control.transition("invalid", expected_state="paused", expected_epoch=2)
+        with pytest.raises(BudgetConfigurationError, match="control epoch"):
+            control.transition("stopped", expected_state="paused", expected_epoch=0)
+        with pytest.raises(BudgetConfigurationError, match="forbidden"):
+            control.transition("paused", expected_state="paused", expected_epoch=2)
+        with pytest.raises(BudgetConfigurationError, match="control CAS"):
+            control.transition("stopped", expected_state="paused", expected_epoch=99)
+    finally:
+        store.close()
+
+    unbound, _ledger = _bootstrap(tmp_path / "unbound", HostClock())
+    with pytest.raises(BudgetConfigurationError, match="authoritative feedback store"):
+        unbound.transition("prepared", expected_state="paused", expected_epoch=1)
+
+
+@pytest.mark.asyncio
+async def test_prepare_rejects_recovery_required_session(
+    tmp_path: Path,
+) -> None:
+    host = HostClock()
+    feedback_clock = FeedbackClock()
+    control, _ledger, store, supervisor, governor = await _prepared_runtime(
+        tmp_path,
+        host,
+        feedback_clock,
+    )
+    try:
+        await governor.open_session()
+        paused_epoch = control.transition(
+            "paused",
+            expected_state="prepared",
+            expected_epoch=3,
+        )
+        with pytest.raises(BudgetConfigurationError, match="recovery must finish"):
+            control.transition(
+                "prepared",
+                expected_state="paused",
+                expected_epoch=paused_epoch,
+            )
+    finally:
+        with contextlib.suppress(BaseException):
+            await governor.aclose()
+        with contextlib.suppress(BaseException):
+            await supervisor.aclose()
+        store.close()
+
+
+@pytest.mark.parametrize(
+    ("payload", "mode"),
+    [
+        (b"{}\n", 0o644),
+        (b"not-json\n", 0o600),
+        (b"[]\n", 0o600),
+        (b'{"schema_version":1}\n', 0o600),
+    ],
+)
+def test_reconcile_invalid_public_marker_is_durably_contained(
+    tmp_path: Path,
+    payload: bytes,
+    mode: int,
+) -> None:
+    host = HostClock()
+    control, ledger = _bootstrap(tmp_path, host)
+    marker = ledger.with_name(f"{ledger.name}.retention-supervisor-fault-v1")
+    marker.write_bytes(payload)
+    marker.chmod(mode)
+
+    with pytest.raises(BudgetConfigurationError, match="durably contained"):
+        control.reconcile()
+
+    snapshot = control.snapshot()
+    assert snapshot["state"] == "paused"
+    assert snapshot["supervisor_fault"] is True
+
+
+def test_reconcile_existing_valid_marker_remains_fail_closed(
+    tmp_path: Path,
+) -> None:
+    host = HostClock()
+    feedback_clock = FeedbackClock()
+    control, _ledger, store, _governor = _bound_runtime(tmp_path, host, feedback_clock)
+    try:
+        host.now -= 1.0
+        with pytest.raises(BudgetConfigurationError, match="backwards"):
+            control.reconcile()
+        host.now += 2.0
+        with pytest.raises(BudgetConfigurationError, match="durably contained"):
+            control.reconcile()
+        assert control.snapshot()["supervisor_fault"] is True
+    finally:
+        store.close()
+
+
+@pytest.mark.asyncio
+async def test_session_heartbeat_runner_renews_then_stops_cleanly(
+    tmp_path: Path,
+) -> None:
+    host = HostClock()
+    feedback_clock = FeedbackClock()
+    _control, ledger, store, supervisor, governor = await _prepared_runtime(
+        tmp_path,
+        host,
+        feedback_clock,
+    )
+    stop = asyncio.Event()
+    waits: list[float] = []
+
+    async def one_renewal_then_stop(delay: float) -> None:
+        waits.append(delay)
+        if len(waits) == 1:
+            host.advance(5.0)
+            return
+        stop.set()
+
+    try:
+        await governor.open_session()
+        await governor.run_session_heartbeat(stop, wait=one_renewal_then_stop)
+        row = _session_row(ledger)
+        assert int(row["heartbeat_sequence"]) == 2
+        assert float(row["last_heartbeat_at_boottime"]) == host.now
+        assert float(row["lease_expires_at_boottime"]) == host.now + 300.0
+        assert waits == pytest.approx([95.0, 95.0])
+    finally:
+        await governor.aclose()
+        await supervisor.aclose()
+        store.close()
+
+
+@pytest.mark.asyncio
+async def test_supervisor_runner_renews_then_stops_cleanly(
+    tmp_path: Path,
+) -> None:
+    host = HostClock()
+    feedback_clock = FeedbackClock()
+    control, _ledger, store, _governor = _bound_runtime(tmp_path, host, feedback_clock)
+    stop = asyncio.Event()
+    waits: list[float] = []
+
+    async def one_renewal_then_stop(delay: float) -> None:
+        waits.append(delay)
+        if len(waits) == 1:
+            host.advance(delay)
+            feedback_clock.advance(delay)
+            return
+        stop.set()
+
+    supervisor = A2RetentionSupervisor(
+        control,
+        store,
+        owner_secret=_SUPERVISOR_SECRET,
+        wait=one_renewal_then_stop,
+    )
+    try:
+        await supervisor.run(stop)
+        assert waits == pytest.approx([5.0, 5.0])
+        assert supervisor.lease is None
+        assert control.snapshot()["supervisor_state"] == "revoked"
+    finally:
+        with contextlib.suppress(BaseException):
+            await supervisor.aclose()
+        store.close()
+
+
+@pytest.mark.parametrize("invalid_result", ["object", "naive-checked", "naive-next", "past-next"])
+@pytest.mark.asyncio
+async def test_supervisor_rejects_invalid_retention_results_through_run_once(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    invalid_result: str,
+) -> None:
+    host = HostClock()
+    feedback_clock = FeedbackClock()
+    control, _ledger, store, _governor = _bound_runtime(tmp_path, host, feedback_clock)
+    supervisor = A2RetentionSupervisor(control, store, owner_secret=_SUPERVISOR_SECRET)
+    binding = store.retention_binding()
+    checked = feedback_clock.now
+    if invalid_result == "object":
+        result: object = object()
+    elif invalid_result == "naive-checked":
+        result = PurgeResult(checked.replace(tzinfo=None), 0, None)
+    elif invalid_result == "naive-next":
+        result = PurgeResult(checked, 0, checked.replace(tzinfo=None))
+    else:
+        result = PurgeResult(checked, 0, checked - timedelta(seconds=1))
+
+    monkeypatch.setattr(
+        store,
+        "bound_retention_pass",
+        lambda _action, _clock: (
+            result,
+            control.supervisor_cas_snapshot(),
+            binding,
+            host.now,
+        ),
+    )
+    try:
+        with pytest.raises(BudgetConfigurationError, match=r"retention|timezone|deadline"):
+            await supervisor.run_once()
+    finally:
+        with contextlib.suppress(BaseException):
+            await supervisor.aclose()
+        store.close()
+
+
+@pytest.mark.parametrize("case", ["invalid", "regression"])
+@pytest.mark.asyncio
+async def test_feedback_clock_public_api_fails_closed(
+    tmp_path: Path,
+    case: str,
+) -> None:
+    host = HostClock()
+    feedback_clock = FeedbackClock()
+    control, _ledger, store, supervisor, governor = await _prepared_runtime(
+        tmp_path,
+        host,
+        feedback_clock,
+    )
+    try:
+        if case == "invalid":
+            assert governor.advance_feedback_clock(float("nan")) is False
+            assert control.snapshot()["privacy_fault"] is True
+        else:
+            high_water = feedback_clock.now.timestamp()
+            assert governor.advance_feedback_clock(high_water) is True
+            assert governor.advance_feedback_clock(high_water - 1.0) is False
+            snapshot = control.snapshot()
+            assert snapshot["supervisor_fault"] is True
+            assert snapshot["state"] == "paused"
+    finally:
+        with contextlib.suppress(BaseException):
+            await governor.aclose()
+        with contextlib.suppress(BaseException):
+            await supervisor.aclose()
+        store.close()
+
+
+def test_withdraw_and_recovery_reject_invalid_public_cas_inputs(
+    tmp_path: Path,
+) -> None:
+    host = HostClock()
+    control, _ledger = _bootstrap(tmp_path, host)
+
+    with pytest.raises(BudgetConfigurationError, match="participant code"):
+        control.withdraw("invalid", expected_admission_epoch=1)
+    with pytest.raises(BudgetConfigurationError, match="admission epoch"):
+        control.withdraw(_participant(1), expected_admission_epoch=False)
+    with pytest.raises(BudgetConfigurationError, match="withdrawal CAS"):
+        control.withdraw(_participant(1), expected_admission_epoch=1)
+    with pytest.raises(BudgetConfigurationError, match="session code"):
+        control.resolve_recovery("invalid", expected_control_epoch=1)
+    with pytest.raises(BudgetConfigurationError, match="control epoch"):
+        control.resolve_recovery(_session(1), expected_control_epoch=False)
+    with pytest.raises(BudgetConfigurationError, match="not recoverable"):
+        control.resolve_recovery(_session(1), expected_control_epoch=1)
+
+
+@pytest.mark.parametrize("fault", ["boot", "clock", "metadata"])
+def test_public_reconcile_commits_runtime_source_faults(
+    tmp_path: Path,
+    fault: str,
+) -> None:
+    host = HostClock()
+    control, ledger = _bootstrap(tmp_path, host)
+    if fault == "boot":
+        host.boot = "not-a-uuid"
+        message = "boot identity"
+    elif fault == "clock":
+        host.now = float("nan")
+        message = "boottime clock"
+    else:
+        with sqlite3.connect(ledger) as db:
+            db.execute("UPDATE metadata SET value = 'invalid' WHERE key = 'last_boottime'")
+            db.commit()
+        message = "high-water"
+
+    with pytest.raises(BudgetConfigurationError, match=message):
+        control.reconcile()
+    snapshot = control.snapshot()
+    assert snapshot["supervisor_fault"] is True
+    assert snapshot["state"] == "paused"
+
+
+@pytest.mark.asyncio
+async def test_public_constructor_and_transport_boundaries_fail_closed(
+    tmp_path: Path,
+) -> None:
+    host = HostClock()
+    feedback_clock = FeedbackClock()
+    control, ledger, store, governor = _bound_runtime(tmp_path, host, feedback_clock)
+
+    class CustomTransport(httpx.AsyncBaseTransport):
+        async def handle_async_request(self, _request: httpx.Request) -> httpx.Response:
+            raise AssertionError("invalid transport must not be delegated")
+
+    try:
+        with pytest.raises(BudgetConfigurationError, match="exact control plane"):
+            A2RetentionSupervisor(object(), store)  # type: ignore[arg-type]
+        with pytest.raises(BudgetConfigurationError, match="exact feedback store"):
+            A2RetentionSupervisor(control, object())  # type: ignore[arg-type]
+        with pytest.raises(BudgetConfigurationError, match="owner secret"):
+            A2RetentionSupervisor(control, store, owner_secret=b"short")
+        with pytest.raises(BudgetConfigurationError, match="exact feedback store"):
+            control.bind_feedback_store(object(), expected_control_epoch=2)  # type: ignore[arg-type]
+        with pytest.raises(BudgetConfigurationError, match="session identity"):
+            A2SQLiteBudgetGovernor(ledger, object())  # type: ignore[arg-type]
+        with pytest.raises(BudgetConfigurationError, match="zero-retry production transport"):
+            GovernedAsyncTransport(governor, CustomTransport())
+
+        assert governor.scope == "single_host_shared_sqlite_a2"
+        assert governor.owner_digest == hashlib.sha256(_SESSION_SECRET).hexdigest()
+        transport = GovernedAsyncTransport(
+            governor,
+            httpx.MockTransport(lambda request: httpx.Response(200, request=request)),
+        )
+        await transport.aclose()
+        await transport.aclose()
+        with pytest.raises(BudgetConfigurationError, match="transport is closed"):
+            await transport.handle_async_request(httpx.Request("GET", "https://offline.invalid"))
+    finally:
+        await governor.aclose()
+        store.close()

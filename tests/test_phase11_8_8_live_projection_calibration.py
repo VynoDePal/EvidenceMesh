@@ -237,6 +237,7 @@ def test_dependency_contract_covers_the_frozen_phase_runtime_and_lockfiles() -> 
         path.relative_to(root).as_posix() for path in (root / "src/evidencemesh").rglob("*.py")
     }
     post_phase_sources = {
+        "src/evidencemesh/alpha_liveness.py",
         "src/evidencemesh/closed_alpha_feedback.py",
         "src/evidencemesh/governor.py",
     }

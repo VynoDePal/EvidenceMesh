@@ -25,6 +25,14 @@ CANDIDATE_SHA = "644064b5fa097bbf7055f3bf4335ea613afb6387"
 CANDIDATE_TREE = "7a774664442caa9201b419fb219d47c6113a52a3"
 CANDIDATE_PARENT = "61a58660cb77ba160e8ecfed53d09fdcd1d60c57"
 PUBLIC_SOURCE_SHA = "8026ace0f8c48abf9f9a5664d31d1e9cc66bdf2e"
+HISTORICAL_RUNTIME_BOUNDARY_SHA = "4044840fb3c79d2b65ff1ce7d3c96be423b331b5"
+A2_RUNTIME_SUCCESSOR_PATHS = {
+    "src/evidencemesh/__init__.py",
+    "src/evidencemesh/alpha_liveness.py",
+    "src/evidencemesh/closed_alpha_feedback.py",
+    "src/evidencemesh/engine.py",
+    "src/evidencemesh/fetcher.py",
+}
 
 
 def _sha256(path: Path) -> str:
@@ -310,17 +318,35 @@ def test_protocol_and_seal_state_are_narrow_and_honest() -> None:
         "seal_commit_identity": "the commit containing this record",
     }
     assert _git("rev-parse", f"{PUBLIC_SOURCE_SHA}^{{tree}}") == CANDIDATE_TREE
-    assert _git_succeeds("merge-base", "--is-ancestor", PUBLIC_SOURCE_SHA, "HEAD")
+    assert _git_succeeds(
+        "merge-base", "--is-ancestor", PUBLIC_SOURCE_SHA, HISTORICAL_RUNTIME_BOUNDARY_SHA
+    )
     assert (
         _git(
             "diff",
             "--name-only",
             PUBLIC_SOURCE_SHA,
-            "HEAD",
+            HISTORICAL_RUNTIME_BOUNDARY_SHA,
             "--",
             "src",
             "pyproject.toml",
             "uv.lock",
         )
         == ""
+    )
+    assert _git_succeeds("merge-base", "--is-ancestor", HISTORICAL_RUNTIME_BOUNDARY_SHA, "HEAD")
+    assert (
+        set(
+            _git(
+                "diff",
+                "--name-only",
+                HISTORICAL_RUNTIME_BOUNDARY_SHA,
+                "HEAD",
+                "--",
+                "src",
+                "pyproject.toml",
+                "uv.lock",
+            ).splitlines()
+        )
+        == A2_RUNTIME_SUCCESSOR_PATHS
     )

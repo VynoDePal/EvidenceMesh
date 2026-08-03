@@ -27,7 +27,10 @@ concurrency:
 
 jobs:
   validate-draft-public-projection:
+    # This historical projection gate was introduced and accepted at this
+    # exact HEAD. Runtime descendants are reconciled by an append-only record.
     if: >-
+      github.event.pull_request.head.sha == '145f5f923825ffeaeb485bd680bc79410ab290d1' &&
       github.repository == 'VynoDePal/EvidenceMesh' &&
       github.event.pull_request.number == 1 &&
       github.event.pull_request.head.repo.full_name == 'VynoDePal/EvidenceMesh' &&

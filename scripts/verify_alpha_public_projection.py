@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, cast
 
 PROJECTION_PATH = Path("alpha/local_technical_alpha_v0_1_0_public_projection_v1.json")
+SUCCESSOR_PATH = Path("alpha/local_technical_alpha_v0_1_0_runtime_successor_a2_v1.json")
 
 
 def _sha256(path: Path) -> str:
@@ -50,10 +51,22 @@ def _require_equal(actual: object, expected: object, label: str) -> None:
         )
 
 
+def _ancestor_with_tree(root: Path, expected_tree: str) -> str:
+    for line in _git(root, "log", "--format=%H %T", "HEAD").splitlines():
+        commit_sha, tree_sha = line.split()
+        if tree_sha == expected_tree:
+            return commit_sha
+    raise ValueError(
+        "Public projection verification failed: "
+        f"accepted runtime-successor tree {expected_tree!r} is not in HEAD history"
+    )
+
+
 def verify(root: Path) -> dict[str, Any]:
     """Validate the projection record and return a compact offline result."""
     projection_path = root / PROJECTION_PATH
     record = cast(dict[str, Any], json.loads(projection_path.read_bytes()))
+    successor = cast(dict[str, Any], json.loads((root / SUCCESSOR_PATH).read_bytes()))
 
     _require_equal(
         record["schema_version"],
@@ -118,8 +131,40 @@ def verify(root: Path) -> dict[str, Any]:
         "public tree resolution",
     )
     _require(
-        _git_succeeds(root, "merge-base", "--is-ancestor", public_commit, "HEAD"),
-        "public source commit is not an ancestor of HEAD",
+        _git_succeeds(
+            root,
+            "merge-base",
+            "--is-ancestor",
+            public_commit,
+            successor["historical_projection"]["historical_runtime_boundary_commit_sha"],
+        ),
+        "public source commit is not an ancestor of the historical runtime boundary",
+    )
+
+    _require_equal(
+        successor["schema_version"],
+        "evidencemesh.local-technical-alpha-v0.1.0-runtime-successor-a2.v1",
+        "runtime-successor schema version",
+    )
+    historical = successor["historical_projection"]
+    _require_equal(historical["projection_record_path"], PROJECTION_PATH.as_posix(), "record path")
+    _require_equal(
+        historical["projection_record_sha256"],
+        _sha256(projection_path),
+        "historical projection digest",
+    )
+    _require_equal(historical["public_commit_sha"], public_commit, "successor public commit")
+    _require_equal(historical["public_tree_sha"], public_tree, "successor public tree")
+    _require_equal(
+        historical["runtime_immutable_paths"],
+        source["runtime_immutable_paths"],
+        "successor runtime paths",
+    )
+    boundary_commit = historical["historical_runtime_boundary_commit_sha"]
+    _require_equal(
+        _git(root, "rev-parse", f"{boundary_commit}^{{tree}}"),
+        historical["historical_runtime_boundary_tree_sha"],
+        "historical runtime-boundary tree",
     )
     _require(
         _git_succeeds(
@@ -127,10 +172,59 @@ def verify(root: Path) -> dict[str, Any]:
             "diff",
             "--quiet",
             public_commit,
+            boundary_commit,
             "--",
             *source["runtime_immutable_paths"],
         ),
-        "runtime paths drifted from the tree-equivalent public source",
+        "runtime paths drifted before the historical runtime boundary",
+    )
+
+    runtime_successor = successor["runtime_successor"]
+    successor_tree = runtime_successor["accepted_head_tree_sha"]
+    successor_commit = _ancestor_with_tree(root, successor_tree)
+    _require(
+        _git_succeeds(root, "merge-base", "--is-ancestor", boundary_commit, successor_commit),
+        "accepted A2 successor does not descend from the historical runtime boundary",
+    )
+    runtime_blobs = cast(dict[str, str], runtime_successor["runtime_blob_sha1"])
+    changed_runtime_paths = _git(
+        root,
+        "diff",
+        "--name-only",
+        boundary_commit,
+        successor_commit,
+        "--",
+        *source["runtime_immutable_paths"],
+    ).splitlines()
+    _require_equal(
+        changed_runtime_paths,
+        sorted(runtime_blobs),
+        "exact A2 runtime-successor paths",
+    )
+    for relative_path, expected_blob in runtime_blobs.items():
+        _require_equal(
+            _git(root, "rev-parse", f"{successor_commit}:{relative_path}"),
+            expected_blob,
+            f"A2 runtime blob {relative_path}",
+        )
+    canonical_successor = runtime_successor["accepted_head_commit_sha"]
+    if _git_succeeds(root, "cat-file", "-e", f"{canonical_successor}^{{commit}}"):
+        _require_equal(
+            _git(root, "rev-parse", f"{canonical_successor}^{{tree}}"),
+            successor_tree,
+            "canonical A2 successor tree",
+        )
+    _require(
+        _git_succeeds(
+            root,
+            "diff",
+            "--quiet",
+            successor_commit,
+            "HEAD",
+            "--",
+            *source["runtime_immutable_paths"],
+        ),
+        "runtime paths drifted after the accepted A2 successor",
     )
 
     retirement = record["workflow_retirement"]
@@ -191,6 +285,9 @@ def verify(root: Path) -> dict[str, Any]:
         "provider_requests": 0,
         "public_source_commit": public_commit,
         "public_source_tree": public_tree,
+        "historical_runtime_boundary_commit": boundary_commit,
+        "accepted_successor_commit": successor_commit,
+        "accepted_successor_tree": successor_tree,
     }
 
 

@@ -20,7 +20,10 @@ env:
 
 jobs:
   fail-closed-offline:
+    # A2-P1 was sealed at this exact HEAD by run 30836105388. Descendants use
+    # the A2-P1.1 reconciliation gate instead of replaying this one-shot gate.
     if: >-
+      github.event.pull_request.head.sha == 'a3140a5d7cfc2fde017cc5376aefc47fa02ee78e' &&
       github.repository == 'VynoDePal/EvidenceMesh' &&
       github.event.pull_request.number == 1 &&
       github.event.pull_request.draft == true &&

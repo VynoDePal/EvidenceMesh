@@ -1,0 +1,185 @@
+name: Alpha A2-P1.1 Global CI Acceptance Reconciliation Offline
+
+on:
+  pull_request:
+    types:
+      - synchronize
+    paths:
+      - .github/workflows/alpha-a2-p1-1-global-ci-acceptance-reconciliation-offline.yml
+      - .github/workflows/alpha-a2-p1-retention-session-liveness-offline.yml
+      - .github/workflows/alpha-v0-1-0-public-projection-offline.yml
+      - alpha/alpha-a2-p1-1-global-ci-acceptance-reconciliation-policy-v1.json
+      - alpha/local_technical_alpha_v0_1_0_runtime_successor_a2_v1.json
+      - scripts/verify_alpha_public_projection.py
+      - tests/test_alpha_a2_p1_feedback_transport.py
+      - tests/test_alpha_a2_p1_liveness.py
+      - tests/test_alpha_v0_1_0_public_projection.py
+      - tests/test_local_technical_alpha_v0_1_0_acceptance.py
+      - tests/test_phase11_8_8_live_projection_calibration.py
+
+permissions:
+  contents: read
+
+concurrency:
+  group: alpha-a2-p1-1-reconciliation-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
+  cancel-in-progress: false
+
+env:
+  A2_P1_ACCEPTED_HEAD: a3140a5d7cfc2fde017cc5376aefc47fa02ee78e
+  A2_P1_ACCEPTED_TREE: c155c355e472e08389c3d18fb88e6388defc376f
+  RECONCILIATION_ROOT: /tmp/evidencemesh-alpha-a2-p1-1-global-reconciliation
+  UV_NO_CACHE: 1
+
+jobs:
+  reconcile-global-ci-offline:
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.action == 'synchronize' &&
+      github.run_attempt == 1 &&
+      github.repository == 'VynoDePal/EvidenceMesh' &&
+      github.event.pull_request.number == 1 &&
+      github.event.pull_request.draft == true &&
+      github.event.pull_request.head.repo.full_name == 'VynoDePal/EvidenceMesh' &&
+      github.event.pull_request.head.ref == 'agent/evidencemesh-v0.1' &&
+      github.event.pull_request.head.sha == github.event.after &&
+      github.event.before == 'a3140a5d7cfc2fde017cc5376aefc47fa02ee78e'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Check out the exact reconciliation candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          fetch-tags: false
+          persist-credentials: false
+
+      - name: Verify one-shot lineage, immutable runtime and exact scope
+        env:
+          EVENT_BEFORE: ${{ github.event.before }}
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_RUN_ATTEMPT" = 1
+          test "$EVENT_BEFORE" = "$A2_P1_ACCEPTED_HEAD"
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test "$(git rev-parse "$A2_P1_ACCEPTED_HEAD^{tree}")" = "$A2_P1_ACCEPTED_TREE"
+          test "$(git rev-list --parents --max-count=1 HEAD)" = \
+            "$EXPECTED_HEAD $A2_P1_ACCEPTED_HEAD"
+          git diff --quiet "$A2_P1_ACCEPTED_HEAD" HEAD -- src pyproject.toml uv.lock
+
+          expected_paths=(
+            .github/workflows/alpha-a2-p1-1-global-ci-acceptance-reconciliation-offline.yml
+            .github/workflows/alpha-a2-p1-retention-session-liveness-offline.yml
+            .github/workflows/alpha-v0-1-0-public-projection-offline.yml
+            alpha/alpha-a2-p1-1-global-ci-acceptance-reconciliation-policy-v1.json
+            alpha/local_technical_alpha_v0_1_0_runtime_successor_a2_v1.json
+            scripts/verify_alpha_public_projection.py
+            tests/test_alpha_a2_p1_feedback_transport.py
+            tests/test_alpha_a2_p1_liveness.py
+            tests/test_alpha_v0_1_0_public_projection.py
+            tests/test_local_technical_alpha_v0_1_0_acceptance.py
+            tests/test_phase11_8_8_live_projection_calibration.py
+          )
+          mapfile -t changed_paths < <(
+            git diff --name-only --diff-filter=ACMRT "$A2_P1_ACCEPTED_HEAD" HEAD | sort
+          )
+          test "${#changed_paths[@]}" = 11
+          test "${#changed_paths[@]}" -le 12
+          diff -u \
+            <(printf '%s\n' "${expected_paths[@]}" | sort) \
+            <(printf '%s\n' "${changed_paths[@]}")
+          python -m json.tool \
+            alpha/alpha-a2-p1-1-global-ci-acceptance-reconciliation-policy-v1.json \
+            >/dev/null
+          python -m json.tool \
+            alpha/local_technical_alpha_v0_1_0_runtime_successor_a2_v1.json \
+            >/dev/null
+          test -z "$(git status --porcelain --untracked-files=all)"
+
+      - name: Set up pinned uv without an Actions cache
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          version: "0.11.33"
+          enable-cache: false
+
+      - name: Install the locked validation environment before isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          uv python install 3.11
+          uv sync --extra dev --locked --python 3.11 --no-cache
+
+      - name: Run the single global acceptance pass with networking disabled
+        shell: bash
+        run: |
+          set -euo pipefail
+          runner_uid=$(id -u)
+          source_date_epoch=$(git show --no-patch --format=%ct HEAD)
+          sudo install --directory \
+            --owner="$runner_uid" \
+            --group=nogroup \
+            --mode=0700 \
+            "$RECONCILIATION_ROOT"
+          python_path="$PWD/.venv/bin/python"
+          run_isolated=(
+            sudo env -i
+            HOME="$RECONCILIATION_ROOT"
+            TMPDIR="$RECONCILIATION_ROOT"
+            LANG=C.UTF-8
+            LC_ALL=C.UTF-8
+            TZ=UTC
+            PYTHONDONTWRITEBYTECODE=1
+            PYTHONHASHSEED=0
+            RUFF_CACHE_DIR="$RECONCILIATION_ROOT/ruff-cache"
+            MYPY_CACHE_DIR="$RECONCILIATION_ROOT/mypy-cache"
+            COVERAGE_FILE="$RECONCILIATION_ROOT/.coverage"
+            SOURCE_DATE_EPOCH="$source_date_epoch"
+            UV_NO_CACHE=1
+            /usr/bin/unshare --net --
+            /usr/bin/setpriv
+            --reuid="$runner_uid"
+            --regid=nogroup
+            --clear-groups
+            --no-new-privs
+          )
+          "${run_isolated[@]}" /usr/bin/test ! -w /var/run/docker.sock
+          "${run_isolated[@]}" "$python_path" -m ruff format --check .
+          "${run_isolated[@]}" "$python_path" -m ruff check .
+          "${run_isolated[@]}" "$python_path" -m mypy src
+          "${run_isolated[@]}" "$python_path" -m pytest \
+            --cov=evidencemesh \
+            --cov-report=term-missing \
+            -p no:cacheprovider \
+            -q
+          test -z "$(git status --porcelain --untracked-files=all)"
+
+      - name: Summarize the one-shot reconciliation boundary
+        env:
+          EXACT_HEAD: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          exact_tree=$(git rev-parse HEAD^{tree})
+          {
+            echo '## EvidenceMesh Alpha A2-P1.1 global reconciliation'
+            echo
+            echo "- Exact HEAD: \`$EXACT_HEAD\`"
+            echo "- Exact tree: \`$exact_tree\`"
+            echo "- Workflow run: \`$GITHUB_RUN_ID\`"
+            echo "- Run attempt: \`$GITHUB_RUN_ATTEMPT\`"
+            echo '- Runtime paths changed from sealed A2-P1: `none`'
+            echo '- Runtime/provider/model/document/DNS requests: `0`'
+            echo '- Artifact, distribution, tag or release publication: `none`'
+            echo '- Decision: `pass` only if the unchanged 85% global threshold is met'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove every ephemeral reconciliation output
+        if: always()
+        shell: bash
+        run: sudo rm --recursive --force -- "$RECONCILIATION_ROOT"
+
+      - name: Confirm ephemeral output removal
+        if: always()
+        shell: bash
+        run: test ! -e "$RECONCILIATION_ROOT"

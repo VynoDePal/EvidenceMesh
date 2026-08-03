@@ -9,7 +9,7 @@ import socket
 import sqlite3
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, Protocol, cast
@@ -1124,5 +1124,352 @@ async def test_purge_and_withdraw_cleanup_do_not_require_a_live_lease(
             )
             assert harness.store.withdraw(_participant(1)) == 1
         assert not report_path.exists()
+    finally:
+        await harness.shutdown()
+
+
+@pytest.mark.parametrize("denial", ["stale-epoch", "rate-limit"])
+@pytest.mark.asyncio
+async def test_final_transport_denials_are_consumed_and_durable(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    denial: str,
+) -> None:
+    harness = await _prepared_harness(tmp_path, monkeypatch)
+    inner_calls = 0
+
+    async def inner(_request: httpx.Request) -> httpx.Response:
+        nonlocal inner_calls
+        inner_calls += 1
+        return httpx.Response(200)
+
+    client = harness.governor.make_client(httpx.MockTransport(inner))
+    client.event_hooks["request"].clear()
+    permit = await _reserve_one(harness)
+    with sqlite3.connect(harness.ledger) as db:
+        if denial == "stale-epoch":
+            db.execute(
+                "UPDATE attempts SET control_epoch = control_epoch + 1 WHERE outcome = 'reserved'"
+            )
+        else:
+            row = db.execute("SELECT * FROM attempts WHERE outcome = 'reserved'").fetchone()
+            assert row is not None
+            for index in range(harness.governor.policy.request_starts_per_minute_max):
+                db.execute(
+                    """
+                    INSERT INTO attempts(
+                        token_digest, session_code, kind, provider,
+                        reserved_at_boottime, supervisor_epoch, control_epoch,
+                        admission_epoch, session_epoch, dispatched,
+                        dispatched_at_boottime, consumed_at_boottime, outcome
+                    ) VALUES (?, ?, 'provider', 'wikipedia', ?, ?, ?, ?, ?, 1, ?, ?, 'started')
+                    """,
+                    (
+                        hashlib.sha256(f"started-{index}".encode()).hexdigest(),
+                        _session(1),
+                        harness.boottime.now,
+                        row[6],
+                        row[7],
+                        row[8],
+                        row[9],
+                        harness.boottime.now,
+                        harness.boottime.now,
+                    ),
+                )
+        db.commit()
+
+    try:
+        with (
+            harness.governor.capture(permit),  # type: ignore[arg-type]
+            pytest.raises(BudgetExceededError),
+        ):
+            await client.get("https://offline.invalid/denied")
+        assert inner_calls == 0
+        with sqlite3.connect(harness.ledger) as db:
+            outcome = db.execute(
+                "SELECT dispatched, outcome FROM attempts WHERE token_digest = ?",
+                (hashlib.sha256(bytes.fromhex(permit.token)).hexdigest(),),  # type: ignore[attr-defined]
+            ).fetchone()
+        expected = "denied_epoch" if denial == "stale-epoch" else "denied_rate"
+        assert outcome == (1, expected)
+    finally:
+        await harness.shutdown()
+
+
+@pytest.mark.asyncio
+async def test_public_capture_rejects_invalid_foreign_and_nested_permits(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    harness = await _prepared_harness(tmp_path, monkeypatch)
+    permit = await _reserve_one(harness)
+    try:
+        with (
+            pytest.raises(BudgetConfigurationError, match="exact dispatch permit"),
+            harness.governor.capture(object()),  # type: ignore[arg-type]
+        ):
+            pass
+        foreign = replace(permit, _governor_id="foreign")  # type: ignore[call-overload]
+        with (
+            pytest.raises(BudgetConfigurationError, match="another governor"),
+            harness.governor.capture(foreign),
+        ):
+            pass
+        with (
+            harness.governor.capture(permit),  # type: ignore[arg-type]
+            pytest.raises(BudgetConfigurationError, match="nested"),
+            harness.governor.capture(permit),  # type: ignore[arg-type]
+        ):
+            pass
+
+        client = harness.governor.make_client(
+            httpx.MockTransport(lambda _request: httpx.Response(200))
+        )
+        with pytest.raises(BudgetConfigurationError, match="has no permit"):
+            await client.get("https://offline.invalid/no-permit")
+    finally:
+        await harness.shutdown()
+
+
+@pytest.mark.parametrize("token", ["not-hex", "AA" * 32])
+@pytest.mark.asyncio
+async def test_transport_rejects_noncanonical_public_permit_tokens(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    token: str,
+) -> None:
+    harness = await _prepared_harness(tmp_path, monkeypatch)
+    client = harness.governor.make_client(httpx.MockTransport(lambda _request: httpx.Response(200)))
+    client.event_hooks["request"].clear()
+    permit = await _reserve_one(harness)
+    invalid = replace(permit, token=token)  # type: ignore[call-overload]
+    try:
+        with (
+            harness.governor.capture(invalid),
+            pytest.raises(BudgetConfigurationError, match="permit token"),
+        ):
+            await client.get("https://offline.invalid/invalid-token")
+    finally:
+        await harness.shutdown()
+
+
+@pytest.mark.asyncio
+async def test_public_reservation_limits_fail_before_creating_extra_attempts(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    harness = await _prepared_harness(tmp_path, monkeypatch)
+    intent = DispatchIntent("provider", "wikipedia")
+    try:
+        with pytest.raises(BudgetConfigurationError, match="cannot be empty"):
+            await harness.governor.reserve_batch([])
+        with pytest.raises(BudgetConfigurationError, match="exact dispatch intents"):
+            await harness.governor.reserve_batch([object()])  # type: ignore[list-item]
+        with pytest.raises(BudgetConfigurationError, match="outside the admitted bundle"):
+            await harness.governor.reserve_batch([DispatchIntent("provider", "tavily")])
+
+        permits = await harness.governor.reserve_batch([intent] * 6)
+        assert len(permits) == 6
+        with pytest.raises(BudgetExceededError, match="session dispatch budget"):
+            await harness.governor.reserve_batch([intent])
+        assert harness.control.snapshot()["global_attempts"] == 6
+    finally:
+        await harness.shutdown()
+
+
+@pytest.mark.asyncio
+async def test_quality_tavily_and_global_rolling_limits_are_enforced(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    (tmp_path / "tavily").mkdir()
+    tavily_harness = await _prepared_harness(tmp_path / "tavily", monkeypatch)
+    quality = A2SQLiteBudgetGovernor(
+        tavily_harness.ledger,
+        ClosedAlphaSession(_participant(7), _session(7), "quality"),
+        boottime=tavily_harness.boottime,
+        boot_identity=lambda: BOOT_ID,
+        owner_secret=b"q" * 32,
+    )
+    try:
+        await quality.open_session()
+        with pytest.raises(BudgetExceededError, match="Tavily session budget"):
+            await quality.reserve_batch([DispatchIntent("provider", "tavily")] * 5)
+    finally:
+        await quality.aclose()
+        await tavily_harness.shutdown()
+
+    (tmp_path / "rate").mkdir()
+    rate_harness = await _prepared_harness(tmp_path / "rate", monkeypatch)
+    second = A2SQLiteBudgetGovernor(
+        rate_harness.ledger,
+        ClosedAlphaSession(_participant(2), _session(2), "community"),
+        boottime=rate_harness.boottime,
+        boot_identity=lambda: BOOT_ID,
+        owner_secret=b"2" * 32,
+    )
+    try:
+        await rate_harness.governor.reserve_batch([DispatchIntent("provider", "wikipedia")] * 6)
+        await second.open_session()
+        with pytest.raises(BudgetExceededError, match="rolling request-start budget"):
+            await second.reserve_batch([DispatchIntent("provider", "wikipedia")] * 5)
+    finally:
+        await second.aclose()
+        await rate_harness.shutdown()
+
+
+@pytest.mark.asyncio
+async def test_public_provider_and_client_validation_matrix(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    harness = await _prepared_harness(tmp_path, monkeypatch)
+    exact_bundle = ("arxiv", "crossref", "github", "searxng", "wikipedia")
+    try:
+        with pytest.raises(BudgetConfigurationError, match="SearXNG fallbacks"):
+            harness.governor.validate_provider_configuration(
+                exact_bundle,
+                ("https://offline.invalid",),
+                deployment_profile="community",
+            )
+        with pytest.raises(BudgetConfigurationError, match="deployment profile"):
+            harness.governor.validate_provider_configuration(
+                exact_bundle,
+                (),
+                deployment_profile="quality",
+            )
+        with pytest.raises(BudgetConfigurationError, match="exact admitted provider bundle"):
+            harness.governor.validate_provider_configuration(
+                ("wikipedia",),
+                (),
+                deployment_profile="community",
+            )
+        with pytest.raises(BudgetConfigurationError, match="audited"):
+            harness.governor.validate_provider(object(), httpx.AsyncClient())
+        with pytest.raises(BudgetConfigurationError, match="client created by this governor"):
+            harness.governor.attach_client(httpx.AsyncClient())
+    finally:
+        await harness.shutdown()
+
+    with pytest.raises(BudgetConfigurationError, match="fail-closed"):
+        harness.governor.validate_provider_configuration(
+            exact_bundle,
+            (),
+            deployment_profile="community",
+        )
+
+
+@pytest.mark.parametrize(
+    "rejection",
+    ["anchor-type", "inputs", "deadline", "guard-type", "guard-stale", "binding-stale"],
+)
+@pytest.mark.asyncio
+async def test_feedback_publication_public_rejection_matrix(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    rejection: str,
+) -> None:
+    harness = await _prepared_harness(tmp_path, monkeypatch)
+    await harness.governor.aclose()
+    authority = harness.governor.feedback_authority
+    binding = harness.store.retention_binding()
+    checked = harness.feedback_clock.now.timestamp()
+    try:
+        if rejection == "guard-type":
+            with (
+                pytest.raises(BudgetConfigurationError, match="preparation token"),
+                harness.governor.feedback_publication_guard(
+                    object(),
+                    participant_code=_participant(1),
+                    session_code=_session(1),
+                    checked_at_utc=checked,
+                    store_binding=binding,
+                ),
+            ):
+                pass
+            return
+
+        anchor = harness.governor.feedback_publication_clock_anchor(store_binding=binding)
+        if rejection == "anchor-type":
+            with pytest.raises(BudgetConfigurationError, match="clock anchor"):
+                harness.governor.prepare_feedback_publication(
+                    authority,
+                    participant_code=_participant(1),
+                    session_code=_session(1),
+                    checked_at_utc=checked,
+                    purge_at_utc=checked + 20.0,
+                    is_new=True,
+                    store_binding=binding,
+                    clock_anchor=object(),
+                )
+            return
+        if rejection == "inputs":
+            with pytest.raises(BudgetConfigurationError, match="inputs"):
+                harness.governor.prepare_feedback_publication(
+                    authority,
+                    participant_code=_participant(2),
+                    session_code=_session(1),
+                    checked_at_utc=checked,
+                    purge_at_utc=checked + 20.0,
+                    is_new=True,
+                    store_binding=binding,
+                    clock_anchor=anchor,
+                )
+            return
+        if rejection == "binding-stale":
+            with sqlite3.connect(harness.ledger) as db:
+                db.execute(
+                    "UPDATE participants SET admission_epoch = admission_epoch + 1 "
+                    "WHERE participant_code = ?",
+                    (_participant(1),),
+                )
+                db.commit()
+            with pytest.raises(BudgetConfigurationError, match="closed feedback binding"):
+                harness.governor.prepare_feedback_publication(
+                    authority,
+                    participant_code=_participant(1),
+                    session_code=_session(1),
+                    checked_at_utc=checked,
+                    purge_at_utc=checked + 20.0,
+                    is_new=True,
+                    store_binding=binding,
+                    clock_anchor=anchor,
+                )
+            return
+        if rejection == "deadline":
+            with pytest.raises(BudgetConfigurationError, match="deadline is too close"):
+                harness.governor.prepare_feedback_publication(
+                    authority,
+                    participant_code=_participant(1),
+                    session_code=_session(1),
+                    checked_at_utc=checked,
+                    purge_at_utc=checked + 5.0,
+                    is_new=True,
+                    store_binding=binding,
+                    clock_anchor=anchor,
+                )
+            return
+
+        prepared = harness.governor.prepare_feedback_publication(
+            authority,
+            participant_code=_participant(1),
+            session_code=_session(1),
+            checked_at_utc=checked,
+            purge_at_utc=checked + 20.0,
+            is_new=True,
+            store_binding=binding,
+            clock_anchor=anchor,
+        )
+        with (
+            pytest.raises(BudgetConfigurationError, match="preparation token is stale"),
+            harness.governor.feedback_publication_guard(
+                prepared,
+                participant_code=_participant(2),
+                session_code=_session(1),
+                checked_at_utc=checked,
+                store_binding=binding,
+            ),
+        ):
+            pass
     finally:
         await harness.shutdown()
